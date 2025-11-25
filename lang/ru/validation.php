@@ -117,6 +117,7 @@ return [
         'symbols'       => 'Значение поля :attribute должно содержать хотя бы один символ.',
         'uncompromised' => 'Значение поля :attribute обнаружено в утёкших данных. Пожалуйста, выберите другое значение для :attribute.',
     ],
+    'phone' => 'The :attribute field must be a valid number.',
     'present'                => 'Значение поля :attribute должно быть.',
     'present_if'             => 'Значение поля :attribute должно быть когда :other содержит :value.',
     'present_unless'         => 'Значение поля :attribute должно быть, если только :other не содержит :value.',
