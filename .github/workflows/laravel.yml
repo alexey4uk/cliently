@@ -57,6 +57,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
+            git pull origin
             git checkout develop
             git reset --hard
             composer install --no-dev --optimize-autoloader --no-interaction --no-progress
