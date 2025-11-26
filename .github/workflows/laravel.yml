@@ -58,7 +58,7 @@ jobs:
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
             
-            rm -rf * .*
+            find . -maxdepth 1 ! -name '.httpauth' ! -name '.' -exec rm -rf {} +
 
             git clone git@github.com:alexey4uk/cliently.git .
 
