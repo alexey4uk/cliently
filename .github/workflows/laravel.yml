@@ -65,10 +65,8 @@ jobs:
             git checkout develop
 
             cp .env.dev .env
-
-            php artisan key:generate
             
-            composer install --ignore-platform-req=ext-bcmath
+            composer install -q --ignore-platform-req=ext-bcmath
             
             php artisan migrate:fresh
             
@@ -77,3 +75,5 @@ jobs:
             npm install  
             
             npm run build
+
+            php artisan key:generate
