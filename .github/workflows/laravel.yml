@@ -58,6 +58,7 @@ jobs:
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
             git checkout develop
+            git reset --hard
             composer install --no-dev --optimize-autoloader --no-interaction --no-progress
             php artisan migrate:fresh  # Сбрасываем и применяем миграции
             # php artisan db:seed  # Заполняем базу данными
