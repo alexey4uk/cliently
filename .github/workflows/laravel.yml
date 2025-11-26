@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js (если есть frontend)
         uses: actions/setup-node@v4
         with:
-          node-version: '18'  # Смени, если нужно
+          node-version: '20'
 
       - name: Install PHP dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
@@ -34,7 +34,7 @@ jobs:
       - name: Build assets (если есть)
         run: npm run build
 
-      - name: Copy .env.testing
+      - name: Copy .env
         run: cp .env.example .env
 
       - name: Generate app key
