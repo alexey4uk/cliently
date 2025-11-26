@@ -28,7 +28,7 @@
             @csrf
 
             <!-- Скрытое поле для нормализованного номера -->
-            <input type="hidden" name="phone_normalized" id="phone_normalized">
+            <input type="hidden" name="phone_normalized" value="{{ old('phone_normalized') }}" id="phone_normalized">
 
             <div class="space-y-4">
                 <!-- Имя -->
