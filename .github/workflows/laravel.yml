@@ -58,6 +58,7 @@ jobs:
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
             git pull origin develop  # Подтягиваем код из develop
+            git reset --hard
             php artisan migrate:fresh  # Сбрасываем и применяем миграции
             # php artisan db:seed  # Заполняем базу данными
             composer install --no-dev --optimize-autoloader  # Переустанавливаем зависимости
