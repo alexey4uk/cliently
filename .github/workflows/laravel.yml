@@ -1,0 +1,65 @@
+name: CI/CD for Laravel
+
+on:
+  push:
+    branches: [ develop ]  # Триггерим на develop
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'  # Смени на свою версию (8.2, 8.3)
+          extensions: pdo, pdo_mysql, mbstring, zip, exif, pcntl, bcmath, gd  # Стандартные для Laravel
+          tools: composer:v2
+
+      - name: Setup Node.js (если есть frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'  # Смени, если нужно
+
+      - name: Install PHP dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies (если есть)
+        run: npm install
+
+      - name: Build assets (если есть)
+        run: npm run build
+
+      - name: Copy .env.testing
+        run: cp .env.example .env.testing  # Или .env.ci, если у тебя свой
+
+      - name: Generate app key
+        run: php artisan key:generate --show
+
+      - name: Run tests
+        run: php artisan test  # Или vendor/bin/phpunit, если PHPUnit напрямую
+
+  deploy:
+    needs: test  # Деплой только после успешных тестов
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'  # Деплой только из develop
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /var/www/cliently/data/www/dev.cliently.by
+            git pull origin develop  # Подтягиваем код из develop
+            php artisan migrate:fresh  # Сбрасываем и применяем миграции
+            # php artisan db:seed  # Заполняем базу данными
+            composer install --no-dev --optimize-autoloader  # Переустанавливаем зависимости
+            npm install  # Устанавливаем Node-зависимости
+            npm run build  # Собираем ассеты
