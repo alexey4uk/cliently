@@ -58,15 +58,19 @@ jobs:
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
             
-            git pull origin
-            
-            git checkout develop
-            
-            git reset --hard
+            rm -rf * .*
 
-            composer install --no-dev --optimize-autoloader --no-interaction --no-progress --ignore-platform-req=ext-bcmath
+            git clone git@github.com:alexey4uk/cliently.git .
+
+            git checkout develop
+
+            cp .env.dev .env
+
+            php artisan key:generate
             
-            php artisan migrate:fresh
+            composer install --no-interaction --no-progress --ignore-platform-req=ext-bcmath
+            
+            php artisan migrate
             
             php artisan db:seed
             
