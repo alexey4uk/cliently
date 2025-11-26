@@ -4,34 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cliently - Простая CRM для самозанятых и мастеров</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            DEFAULT: '#8B5CF6',
-                            dark: '#7C3AED'
-                        },
-                        secondary: {
-                            DEFAULT: '#06B6D4',
-                            dark: '#0891B2'
-                        },
-                        accent: {
-                            DEFAULT: '#10B981',
-                            dark: '#059669'
-                        },
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .faq-answer {
             display: none;
