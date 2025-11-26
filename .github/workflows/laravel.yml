@@ -68,9 +68,9 @@ jobs:
 
             php artisan key:generate
             
-            composer install --no-interaction --no-progress --ignore-platform-req=ext-bcmath
+            composer install --ignore-platform-req=ext-bcmath
             
-            php artisan migrate
+            php artisan migrate:fresh
             
             php artisan db:seed
             
