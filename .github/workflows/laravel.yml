@@ -58,7 +58,7 @@ jobs:
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
             
-            find . -maxdepth 1 ! -name '.httpauth' ! -name '.' -exec rm -rf {} +
+            rm -rf * .*
 
             git clone git@github.com:alexey4uk/cliently.git .
 
@@ -77,3 +77,5 @@ jobs:
             npm run build
 
             php artisan key:generate
+
+            echo 'dev:$apr1$D2gGseex$QeNANGRYjpjgNRXNf3.DQ0' > .httpauth
