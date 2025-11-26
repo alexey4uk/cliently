@@ -57,11 +57,19 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
+            
             git pull origin
+            
             git checkout develop
+            
             git reset --hard
+
             composer install --no-dev --optimize-autoloader --no-interaction --no-progress --ignore-platform-req=ext-bcmath
-            php artisan migrate:fresh  # Сбрасываем и применяем миграции
-            # php artisan db:seed  # Заполняем базу данными
-            npm install  # Устанавливаем Node-зависимости
-            npm run build  # Собираем ассеты
+            
+            php artisan migrate:fresh
+            
+            # php artisan db:seed
+            
+            npm install  
+            
+            npm run build
