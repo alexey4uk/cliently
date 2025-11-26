@@ -57,8 +57,15 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             cd /var/www/cliently/data/www/dev.cliently.by
-            git pull origin develop  # Подтягиваем код из develop
-            git reset --hard
+            
+            echo "🧹 Cleaning up untracked files..."
+            git clean -fd
+            git reset --hard HEAD
+            
+            echo "📥 Updating code..."
+            git fetch origin
+            git reset --hard origin/develop
+            
             php artisan migrate:fresh  # Сбрасываем и применяем миграции
             # php artisan db:seed  # Заполняем базу данными
             composer install --no-dev --optimize-autoloader  # Переустанавливаем зависимости
