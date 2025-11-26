@@ -2,7 +2,7 @@ name: CI/CD for Laravel
 
 on:
   push:
-    branches: [ develop ]  # Триггерим на develop
+    branches: [ develop ]
   pull_request:
     branches: [ develop ]
 
@@ -16,8 +16,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'  # Смени на свою версию (8.2, 8.3)
-          extensions: pdo, pdo_mysql, mbstring, zip, exif, pcntl, bcmath, gd  # Стандартные для Laravel
+          php-version: '8.3'
+          extensions: pdo, pdo_mysql, mbstring, zip, exif, pcntl, bcmath, gd
           tools: composer:v2
 
       - name: Setup Node.js (если есть frontend)
@@ -35,7 +35,7 @@ jobs:
         run: npm run build
 
       - name: Copy .env.testing
-        run: cp .env.example .env.testing  # Или .env.ci, если у тебя свой
+        run: cp .env.example .env
 
       - name: Generate app key
         run: php artisan key:generate --show
