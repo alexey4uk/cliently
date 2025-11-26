@@ -47,7 +47,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'phone' => E164PhoneNumberCast::class,
+            'phone' => E164PhoneNumberCast::class.":BY",
         ];
     }
 }
