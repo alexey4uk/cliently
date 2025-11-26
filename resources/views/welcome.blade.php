@@ -182,7 +182,7 @@
                         <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                         <div class="w-3 h-3 rounded-full bg-green-500"></div>
                     </div>
-                    <span class="text-sm">Cliently - Мои клиенты</span>
+                    <span class="ml-10 text-sm">Cliently - Мои клиенты</span>
                 </div>
                 <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-b-lg">
                     <div class="bg-white dark:bg-gray-600 p-4 rounded-lg shadow mb-4">
