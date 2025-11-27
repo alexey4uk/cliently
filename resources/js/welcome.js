@@ -5,6 +5,7 @@ class App {
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
+            //this.initTheme();
             this.initMobileMenu();
             this.initFAQ();
             this.initSmoothScroll();
@@ -31,6 +32,13 @@ class App {
 
         this.mobileNavLinks.forEach(link => {
             link.addEventListener('click', () => this.closeMobileMenu());
+        });
+
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeMobileMenu();
+            }
         });
     }
 
@@ -105,8 +113,12 @@ class App {
     }
 
     handleSmoothScroll(e, anchor) {
-        e.preventDefault();
         const targetId = anchor.getAttribute('href');
+
+        // Don't prevent default for empty anchors
+        if (targetId === '#') return;
+
+        e.preventDefault();
         const target = document.querySelector(targetId);
 
         if (target) {
