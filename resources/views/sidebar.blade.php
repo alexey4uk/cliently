@@ -1,52 +1,111 @@
 <div class="hidden lg:flex lg:flex-shrink-0">
     <div class="flex flex-col w-64">
-        <div class="flex flex-col flex-grow bg-white dark:bg-gray-800 pt-5 pb-4 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
+        <div class="flex flex-col flex-grow bg-white dark:bg-gray-800 pt-5 pb-4 overflow-y-auto border-r border-gray-200 dark:border-gray-700 transition-colors duration-300">
             <!-- Логотип -->
-            <div class="flex items-center flex-shrink-0 px-4">
-                <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">{{ config('app.name', 'Мастерская CRM') }}</span>
+            <div class="flex items-center flex-shrink-0 px-4 mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 text-white p-2 rounded-lg">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold text-gray-900 dark:text-white block">CLIENTLY</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block">CRM для мастеров</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Навигация -->
-            <div class="mt-8 flex-grow flex flex-col">
-                <nav class="flex-1 px-4 space-y-2">
-                    <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('dashboard') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                        </svg>
+            <div class="flex-grow flex flex-col">
+                <nav class="flex-1 px-3 space-y-1">
+                    <!-- Панель управления -->
+                    <a href="{{ route('dashboard') }}" class="{{ Request::routeIs('dashboard') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('dashboard') ? 'fas fa-tachometer-alt text-blue-600' : 'fas fa-tachometer-alt text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Панель управления
                     </a>
-                    <a href="" class="{{ Request::routeIs('clients.*') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('clients.*') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
+
+                    <!-- Клиенты -->
+                    <a href="" class="{{ Request::routeIs('clients.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('clients.*') ? 'fas fa-users text-blue-600' : 'fas fa-users text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Клиенты
+                        <span class="ml-auto bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
+                            24
+                        </span>
                     </a>
-                    <a href="" class="{{ Request::routeIs('appointments.*') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('appointments.*') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
+
+                    <!-- Записи -->
+                    <a href="" class="{{ Request::routeIs('appointments.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('appointments.*') ? 'fas fa-calendar-check text-blue-600' : 'fas fa-calendar-check text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Записи
+                        <span class="ml-auto bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-300 text-xs font-medium px-2 py-0.5 rounded-full">
+                            5
+                        </span>
                     </a>
-                    <a href="" class="{{ Request::routeIs('finance.*') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('finance.*') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
+
+                    <!-- Финансы -->
+                    <a href="" class="{{ Request::routeIs('finance.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('finance.*') ? 'fas fa-chart-line text-blue-600' : 'fas fa-chart-line text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Финансы
                     </a>
-                    <a href="" class="{{ Request::routeIs('reports.*') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('reports.*') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
+
+                    <!-- Отчеты -->
+                    <a href="" class="{{ Request::routeIs('reports.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('reports.*') ? 'fas fa-chart-bar text-blue-600' : 'fas fa-chart-bar text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Отчеты
                     </a>
-                    <a href="" class="{{ Request::routeIs('settings.*') ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' }} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="{{ Request::routeIs('settings.*') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} mr-3 flex-shrink-0 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+
+                    <!-- Настройки -->
+                    <a href="" class="{{ Request::routeIs('settings.*') ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 border-r-2 border-blue-600' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white' }} group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200">
+                        <i class="{{ Request::routeIs('settings.*') ? 'fas fa-cog text-blue-600' : 'fas fa-cog text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }} w-5 text-center mr-3"></i>
                         Настройки
                     </a>
                 </nav>
+            </div>
+
+            <!-- Нижняя часть сайдбара -->
+            <div class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <!-- Профиль пользователя -->
+                <div class="px-3 space-y-3">
+                    <div class="flex items-center px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                                {{ strtoupper(substr(Auth::user()->email, 0, 1)) }}
+                            </div>
+                        </div>
+                        <div class="ml-3 min-w-0 flex-1">
+                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                {{ Auth::user()->email }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Выход -->
+                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200">
+                            <i class="fas fa-sign-out-alt w-5 text-center mr-3 text-gray-400"></i>
+                            Выйти
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Информация о тарифе -->
+                <div class="mt-4 px-3">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-3 text-white">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-medium">Бесплатный тариф</span>
+                            <span class="text-xs bg-white/20 px-1.5 py-0.5 rounded">30/30</span>
+                        </div>
+                        <div class="w-full bg-white/30 rounded-full h-1.5 mb-2">
+                            <div class="bg-white h-1.5 rounded-full" style="width: 100%"></div>
+                        </div>
+                        <button class="w-full text-xs font-medium bg-white text-blue-600 py-1.5 rounded hover:bg-blue-50 transition-colors duration-200">
+                            Обновить тариф
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
