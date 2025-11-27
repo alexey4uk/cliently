@@ -122,10 +122,5 @@
         </form>
     </div>
 </div>
-
-<!-- Скрипт для темы -->
-<script>
-    window.matchMedia('(prefers-color-scheme: dark)');
-</script>
 </body>
 </html>

@@ -1,4 +1,6 @@
 import './bootstrap';
+import './user-panel.js';
+import './welcome.js';
 
 import Alpine from 'alpinejs';
 
