@@ -6,6 +6,7 @@
     <title>Cliently - Простая CRM для самозанятых и мастеров</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ Vite::asset('resources/images/favicon.svg') }}">
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -45,11 +46,11 @@
 <!-- Header -->
 <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-4">
             <div class="bg-primary dark:bg-primary-dark text-white p-2 rounded-lg">
                 <i class="fas fa-users text-xl"></i>
             </div>
-            <span class="text-xl font-bold text-gray-800 dark:text-white">Cliently</span>
+            <span class="text-xl font-bold text-gray-800 dark:text-white">C L I E N T L Y</span>
         </div>
 
         <nav class="hidden md:flex space-x-8">
