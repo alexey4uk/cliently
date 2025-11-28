@@ -33,9 +33,11 @@ class ProfileController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone' => 'nullable|string|max:255',
+            'phone_normalized' => 'required|string|max:255|unique:users,phone,' . $user->id,
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'remove_avatar' => 'sometimes|boolean',
+        ], [
+            'phone_normalized.unique' => 'Номер уже используется'
         ]);
 
         // Обработка удаления аватара
@@ -63,7 +65,7 @@ class ProfileController extends Controller
         $user->first_name = $validated['first_name'];
         $user->last_name = $validated['last_name'];
         $user->email = $validated['email'];
-        $user->phone = $validated['phone'];
+        $user->phone = $validated['phone_normalized'];
 
         $user->save();
 
