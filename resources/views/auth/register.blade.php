@@ -17,10 +17,6 @@
         .dark .register-bg {
             background: linear-gradient(135deg, #1e3a8a 0%, #7e22ce 100%);
         }
-        /* Убираем скролл на body */
-        body {
-            overflow: hidden;
-        }
     </style>
 </head>
 <body class="h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
