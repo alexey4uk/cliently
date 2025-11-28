@@ -19,9 +19,9 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-1">
+                <div class="flex items-center space-x-2">
                     <!-- Переключатель темы -->
-                    <button id="theme-toggle" class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200">
+                    <button id="theme-toggle" class="flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200">
                         <svg id="theme-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                         </svg>
@@ -31,20 +31,27 @@
                     </button>
 
                     <!-- Уведомления с бейджем -->
-                    <button class="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200 relative">
-                        <i class="fas fa-bell w-5 h-5"></i>
-                        <span class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold border border-white dark:border-gray-800">
-                            3
-                        </span>
+                    <button class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none relative">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <!-- Бейдж уведомлений -->
+                        <span class="absolute top-0 right-0 bg-red-500 text-white text-[12px] rounded-full h-4 w-4 flex items-center justify-center font-medium">3</span>
                     </button>
 
                     <!-- Профиль -->
                     <div class="relative flex-shrink-0">
                         <button id="user-menu-button" class="flex text-sm rounded-full focus:outline-none">
                             <span class="sr-only">Открыть меню пользователя</span>
-                            <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-                                {{ Str::substr(auth()->user()->first_name, 0, 1) }}
-                            </div>
+                            @if(auth()->user()->avatar)
+                                <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Аватар" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+                            @else
+                                <div class="w-8 h-8 rounded-full border-white dark:border-gray-800 shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                                    <span class="font-bold text-white">
+                                        {{ Str::substr(auth()->user()->first_name, 0, 1) }}
+                                    </span>
+                                </div>
+                            @endif
                         </button>
 
                         <!-- Выпадающее меню профиля -->
@@ -60,7 +67,7 @@
                             </div>
 
                             <div class="py-2" role="none">
-                                <a href="" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                                <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
                                     <i class="fas fa-user w-4 mr-3 text-center"></i>
                                     Ваш профиль
                                 </a>
