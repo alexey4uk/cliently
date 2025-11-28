@@ -65,6 +65,8 @@ jobs:
             git checkout develop
 
             cp .env.dev .env
+
+            echo 'dev:$apr1$Aa9tQWMu$xc6XDAPJwYfJB49s6CbSr0' > .httpauth
             
             composer install -q --ignore-platform-req=ext-bcmath
             
@@ -77,5 +79,5 @@ jobs:
             npm run build
 
             php artisan key:generate
-
-            echo 'dev:$apr1$D2gGseex$QeNANGRYjpjgNRXNf3.DQ0' > .httpauth
+            
+            php artisan storage:link
