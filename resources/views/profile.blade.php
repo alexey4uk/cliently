@@ -3,295 +3,221 @@
 @section('title', 'Профиль пользователя - Cliently')
 
 @section('content')
-    <div class="max-w-4xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
         <!-- Заголовок -->
         <div class="mb-6 sm:mb-8">
             <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Профиль пользователя</h1>
             <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">Управление вашими личными данными</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            <!-- Левая колонка - аватар и информация -->
-{{--            <div class="lg:col-span-1">--}}
-{{--                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">--}}
-{{--                    <!-- Аватар -->--}}
-{{--                    <div class="text-center mb-4 sm:mb-6">--}}
-{{--                        <div class="relative inline-block">--}}
-{{--                            @if(auth()->user()->avatar)--}}
-{{--                                <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Аватар" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto border-4 border-white dark:border-gray-800 shadow-lg">--}}
-{{--                            @else--}}
-{{--                                <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full mx-auto border-4 border-white dark:border-gray-800 shadow-lg bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">--}}
-{{--                                <span class="text-2xl sm:text-4xl font-bold text-white">--}}
-{{--                                    {{ Str::substr(auth()->user()->first_name, 0, 1) }}{{ Str::substr(auth()->user()->last_name, 0, 1) }}--}}
-{{--                                </span>--}}
-{{--                                </div>--}}
-{{--                            @endif--}}
-{{--                        </div>--}}
-{{--                        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mt-3 sm:mt-4">--}}
-{{--                            {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}--}}
-{{--                        </h2>--}}
-{{--                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 break-words">{{ auth()->user()->email }}</p>--}}
-{{--                    </div>--}}
+        <!-- Основной контент -->
+        <div class="space-y-6">
+            <!-- Карточка профиля -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
 
-{{--                    <!-- Статистика -->--}}
-{{--                    <div class="space-y-3 sm:space-y-4">--}}
-{{--                        <div class="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">--}}
-{{--                            <div class="flex items-center">--}}
-{{--                                <i class="fas fa-users text-blue-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>--}}
-{{--                                <span class="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Клиентов</span>--}}
-{{--                            </div>--}}
-{{--                            <span class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">24</span>--}}
-{{--                        </div>--}}
+                <!-- Форма -->
+                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
+                    @csrf
+                    @method('PATCH')
 
-{{--                        <div class="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">--}}
-{{--                            <div class="flex items-center">--}}
-{{--                                <i class="fas fa-calendar-check text-green-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>--}}
-{{--                                <span class="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Записей в этом месяце</span>--}}
-{{--                            </div>--}}
-{{--                            <span class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">18</span>--}}
-{{--                        </div>--}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <!-- Имя -->
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                                Имя *
+                            </label>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value="{{ old('first_name', auth()->user()->first_name) }}"
+                                required
+                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('first_name') border-red-500 @enderror"
+                                placeholder="Введите ваше имя"
+                            >
+                            @error('first_name')
+                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-{{--                        <div class="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">--}}
-{{--                            <div class="flex items-center">--}}
-{{--                                <i class="fas fa-star text-yellow-600 mr-2 sm:mr-3 text-sm sm:text-base"></i>--}}
-{{--                                <span class="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Рейтинг</span>--}}
-{{--                            </div>--}}
-{{--                            <span class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">4.8</span>--}}
-{{--                        </div>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            </div>--}}
+                        <!-- Фамилия -->
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                                Фамилия *
+                            </label>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                value="{{ old('last_name', auth()->user()->last_name) }}"
+                                required
+                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('last_name') border-red-500 @enderror"
+                                placeholder="Введите вашу фамилию"
+                            >
+                            @error('last_name')
+                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-            <!-- Правая колонка - форма редактирования -->
-            <div class="lg:col-span-2">
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <!-- Заголовок формы -->
-                    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">Редактирование профиля</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Обновите вашу личную информацию</p>
-                    </div>
+                        <!-- Email -->
+                        <div class="md:col-span-2">
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                                Email адрес *
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ old('email', auth()->user()->email) }}"
+                                required
+                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('email') border-red-500 @enderror"
+                                placeholder="your@email.com"
+                            >
+                            @error('email')
+                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <!-- Форма -->
-                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
-                        @csrf
-                        @method('PATCH')
+                        <!-- Телефон -->
+                        <input type="hidden" name="phone_normalized" value="{{ old('phone_normalized', auth()->user()->phone) }}" id="phone_normalized">
 
-                        <!-- Уведомления -->
-                        @if(session('success'))
-                            <div class="mb-4 sm:mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-3 sm:p-4">
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-check-circle text-green-500 text-base sm:text-lg"></i>
-                                    <p class="text-green-700 dark:text-green-300 font-medium text-sm sm:text-base">{{ session('success') }}</p>
+                        <div class="md:col-span-2">
+                            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
+                                Телефон *
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-phone text-gray-400 text-xs sm:text-sm"></i>
                                 </div>
-                            </div>
-                        @endif
-
-                        @if($errors->any())
-                            <div class="mb-4 sm:mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 sm:p-4">
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-exclamation-circle text-red-500 text-base sm:text-lg"></i>
-                                    <p class="text-red-700 dark:text-red-300 font-medium text-sm sm:text-base">Пожалуйста, исправьте ошибки в форме</p>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="grid grid-cols-1 gap-4 sm:gap-6">
-                            <!-- Имя -->
-                            <div>
-                                <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                    Имя *
-                                </label>
                                 <input
-                                    type="text"
-                                    id="first_name"
-                                    name="first_name"
-                                    value="{{ old('first_name', auth()->user()->first_name) }}"
+                                    id="phone"
+                                    name="phone"
+                                    type="tel"
+                                    autocomplete="tel"
                                     required
-                                    class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('first_name') border-red-500 @enderror"
-                                    placeholder="Введите ваше имя"
+                                    class="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 @error('phone') border-red-500 ring-2 ring-red-500/20 @enderror"
+                                    placeholder="+375 (29) 123-45-67"
+                                    value="{{ old('phone', auth()->user()->phone) }}"
                                 >
-                                @error('first_name')
-                                <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
                             </div>
-
-                            <!-- Фамилия -->
-                            <div>
-                                <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                    Фамилия *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="last_name"
-                                    name="last_name"
-                                    value="{{ old('last_name', auth()->user()->last_name) }}"
-                                    required
-                                    class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('last_name') border-red-500 @enderror"
-                                    placeholder="Введите вашу фамилию"
-                                >
-                                @error('last_name')
-                                <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
+                            @error('phone')
+                            <div class="mt-1 flex items-center space-x-1">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                                <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             </div>
-
-                            <!-- Email -->
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                    Email адрес *
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value="{{ old('email', auth()->user()->email) }}"
-                                    required
-                                    class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('email') border-red-500 @enderror"
-                                    placeholder="your@email.com"
-                                >
-                                @error('email')
-                                <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                @enderror
+                            @enderror
+                            @error('phone_normalized')
+                            <div class="mt-1 flex items-center space-x-1">
+                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                                <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             </div>
+                            @enderror
+                        </div>
 
-                            <!-- Телефон -->
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                    Телефон *
-                                </label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-phone text-gray-400 text-xs sm:text-sm"></i>
-                                    </div>
-                                    <input
-                                        id="phone"
-                                        name="phone"
-                                        type="tel"
-                                        autocomplete="tel"
-                                        required
-                                        class="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('phone') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                        placeholder="+375 (29) 123-45-67"
-                                        value="{{ old('phone', auth()->user()->phone) }}"
-                                    >
-                                </div>
-                                @error('phone')
-                                <div class="mt-1 flex items-center space-x-1">
-                                    <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                    <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                </div>
-                                @enderror
-                                @error('phone_normalized')
-                                <div class="mt-1 flex items-center space-x-1">
-                                    <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                    <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                </div>
-                                @enderror
-                            </div>
+                        <!-- Аватар -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Аватар
+                            </label>
 
-                            <!-- Аватар -->
-                            <div class="md:col-span-2">
-                                <label for="avatar" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Аватар
-                                </label>
-
-                                <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                                    <!-- Предпросмотр аватара -->
-                                        <div class="flex-shrink-0 relative">
-                                            <div id="avatar-preview" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                                                @if(auth()->user()->avatar)
-                                                    <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Текущий аватар"
-                                                         class="w-full h-full object-cover" id="current-avatar">
-                                                @else
-                                                    <div class="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span class="text-white font-bold text-lg sm:text-xl" id="avatar-initials">
+                            <div class="flex flex-row items-start gap-4 sm:gap-6">
+                                <!-- Предпросмотр аватара -->
+                                <div class="flex-shrink-0 relative">
+                                    <div id="avatar-preview" class="w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+                                        @if(auth()->user()->avatar)
+                                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Текущий аватар"
+                                                 class="w-full h-full object-cover" id="current-avatar">
+                                        @else
+                                            <div class="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-white font-bold text-base sm:text-xl" id="avatar-initials">
                             {{ Str::substr(auth()->user()->first_name, 0, 1) }}{{ Str::substr(auth()->user()->last_name, 0, 1) }}
                         </span>
-                                                    </div>
-                                                @endif
                                             </div>
-                                            <div id="avatar-loading" class="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full flex items-center justify-center hidden">
-                                                <i class="fas fa-spinner fa-spin text-white text-xl"></i>
-                                            </div>
-                                        </div>
-
-
-                                    <!-- Поле загрузки -->
-                                    <div class="flex-1">
-                                        <div class="flex flex-col sm:flex-row gap-3">
-                                            <!-- Контейнер для кнопки выбора файла -->
-                                            <div class="flex-1">
-                                                <input
-                                                    type="file"
-                                                    id="avatar"
-                                                    name="avatar"
-                                                    accept="image/*"
-                                                    class="hidden"
-                                                >
-                                                <label for="avatar" class="cursor-pointer bg-blue-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2">
-                                                    <i class="fas fa-upload"></i>
-                                                    <span>Выбрать файл</span>
-                                                </label>
-                                                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400" id="file-name">
-                                                    PNG, JPG, GIF до 5MB
-                                                </p>
-                                            </div>
-
-                                            <!-- Кнопка удаления -->
-                                            @if(auth()->user()->avatar)
-                                                <button type="button" id="remove-avatar-btn" class="bg-red-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 flex items-center justify-center space-x-2 sm:self-start"> <!-- sm:self-start для выравнивания по верху на ПК -->
-                                                    <i class="fas fa-trash"></i>
-                                                    <span>Удалить</span>
-                                                </button>
-                                            @endif
-                                        </div>
-
-                                        @error('avatar')
-                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                        @enderror
+                                        @endif
                                     </div>
+                                    <div id="avatar-loading" class="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full flex items-center justify-center hidden">
+                                        <i class="fas fa-spinner fa-spin text-white text-xl"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Поле загрузки -->
+                                <div class="flex-1 space-y-3">
+                                    <div class="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                                        <!-- Кнопка выбора файла -->
+                                        <div class="flex-1">
+                                            <input
+                                                type="file"
+                                                id="avatar"
+                                                name="avatar"
+                                                accept="image/*"
+                                                class="hidden"
+                                            >
+                                            <label for="avatar" class="cursor-pointer bg-blue-600 text-white py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full">
+                                                <i class="fas fa-upload"></i>
+                                                <span class="text-xs sm:text-sm">Выбрать файл</span>
+                                            </label>
+                                        </div>
+
+                                        <!-- Кнопка удаления -->
+                                        @if(auth()->user()->avatar)
+                                            <button type="button" id="remove-avatar-btn" class="bg-red-600 text-white py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full xs:w-auto">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="text-xs sm:text-sm">Удалить</span>
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <p class="text-xs text-gray-500 dark:text-gray-400" id="file-name">
+                                        PNG, JPG, GIF до 5MB
+                                    </p>
+
+                                    @error('avatar')
+                                    <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Кнопки -->
-                        <div class="flex flex-col gap-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
-                                <i class="fas fa-save mr-2"></i>
-                                Сохранить изменения
-                            </button>
-                            <a href="{{ route('dashboard') }}" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
-                                <i class="fas fa-times mr-2"></i>
-                                Отмена
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Дополнительные настройки -->
-                <div class="mt-4 sm:mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">Безопасность</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Управление безопасностью аккаунта</p>
                     </div>
-                    <div class="p-4 sm:p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 sm:gap-0">
-                            <div class="mb-2 sm:mb-0">
-                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Смена пароля</h4>
-                                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Обновите ваш пароль для безопасности</p>
-                            </div>
-                            <a href="" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 text-center">
-                                Сменить пароль
-                            </a>
-                        </div>
 
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-t border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
-                            <div class="mb-2 sm:mb-0">
-                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Двухфакторная аутентификация</h4>
-                                <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Дополнительная защита вашего аккаунта</p>
-                            </div>
-                            <button class="w-full sm:w-auto bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                                Включить
-                            </button>
+                    <!-- Кнопки -->
+                    <div class="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
+                            <i class="fas fa-save mr-2"></i>
+                            Сохранить изменения
+                        </button>
+                        <a href="{{ route('dashboard') }}" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
+                            <i class="fas fa-times mr-2"></i>
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Дополнительные настройки -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">Безопасность</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Управление безопасностью аккаунта</p>
+                </div>
+                <div class="px-4 sm:px-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 sm:gap-0">
+                        <div class="mb-2 sm:mb-0">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Смена пароля</h4>
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Обновите ваш пароль для безопасности</p>
                         </div>
+                        <a href="{{ route('password.edit') }}" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 text-center">
+                            Сменить пароль
+                        </a>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-t border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
+                        <div class="mb-2 sm:mb-0">
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Двухфакторная аутентификация</h4>
+                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Дополнительная защита вашего аккаунта</p>
+                        </div>
+                        <button class="w-full sm:w-auto bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                            Включить
+                        </button>
                     </div>
                 </div>
             </div>
