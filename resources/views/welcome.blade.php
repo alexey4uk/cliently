@@ -218,24 +218,6 @@
             </a>
         </nav>
 
-        <!-- Управление темой -->
-        <div class="mb-6">
-            <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-2">
-                Внешний вид
-            </div>
-
-            <button id="mobileThemeToggle" class="w-full flex items-center justify-between text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-palette text-gray-400 w-5 text-center"></i>
-                    <span>Тема оформления</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-moon text-sm text-gray-400" id="mobileThemeIcon"></i>
-                    <i class="fas fa-chevron-right text-xs text-gray-400"></i>
-                </div>
-            </button>
-        </div>
-
         <!-- Аккаунт пользователя -->
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
             <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 px-2">
