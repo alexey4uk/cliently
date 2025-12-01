@@ -242,8 +242,7 @@
                             name="terms"
                             type="checkbox"
                             required
-                            class="h-4 w-4 text-blue-600 focus:ring-blue-500/20 border-gray-300 dark:border-gray-600 rounded transition-colors duration-300 mt-0.5" <!-- Уменьшил отступ -->
-                        >
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500/20 border-gray-300 dark:border-gray-600 rounded transition-colors duration-300 mt-0.5">
                         <label for="terms" class="block text-xs text-gray-700 dark:text-gray-300 leading-relaxed"> <!-- Уменьшил размер -->
                             Я соглашаюсь с
                             <a href="#" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300">

@@ -9,7 +9,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard', ['upcomingAppointments' => []]);
+    return view('dashboard', [
+        'upcomingAppointments' => [],
+        'title' => 'Панель управления',
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
