@@ -42,19 +42,19 @@
         }
     </style>
 </head>
-<body class="font-sans bg-gray-50 dark:bg-gray-900">
+<body class="font-sans bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
 <!-- Header -->
-<header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 border-b border-gray-200 dark:border-gray-700">
+<header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-sm sticky top-0 z-40 border-b border-gray-200/50 dark:border-gray-700/50">
     <div class="container mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
             <!-- Логотип и бренд -->
             <div class="flex items-center space-x-4">
                 <a href="/" class="flex items-center space-x-3 group">
-                    <div class="bg-primary dark:bg-primary-dark text-white p-2 rounded-lg group-hover:bg-secondary dark:group-hover:bg-secondary-dark transition-colors">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white p-2 rounded-xl group-hover:from-blue-600 group-hover:to-purple-700 dark:group-hover:from-blue-700 dark:group-hover:to-purple-800 transition-all duration-300 shadow-md">
                         <i class="fas fa-users text-xl"></i>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-xl font-bold text-gray-800 dark:text-white leading-tight">CLIENTLY</span>
+                        <span class="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">CLIENTLY</span>
                         <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">CRM для мастеров</span>
                     </div>
                 </a>
@@ -62,22 +62,22 @@
 
             <!-- Основная навигация -->
             <nav class="hidden lg:flex items-center space-x-1">
-                <a href="#features" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                <a href="#features" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-2 px-4 rounded-xl transition-all duration-300">
                     <i class="fas fa-star text-sm w-5 text-center"></i>
                     <span>Возможности</span>
                 </a>
 
-                <a href="#how-it-works" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                <a href="#how-it-works" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-2 px-4 rounded-xl transition-all duration-300">
                     <i class="fas fa-play-circle text-sm w-5 text-center"></i>
                     <span>Как работает</span>
                 </a>
 
-                <a href="#pricing" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                <a href="#pricing" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-2 px-4 rounded-xl transition-all duration-300">
                     <i class="fas fa-tag text-sm w-5 text-center"></i>
                     <span>Тарифы</span>
                 </a>
 
-                <a href="#faq" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                <a href="#faq" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-2 px-4 rounded-xl transition-all duration-300">
                     <i class="fas fa-question-circle text-sm w-5 text-center"></i>
                     <span>Вопросы</span>
                 </a>
@@ -86,7 +86,7 @@
             <!-- Правая часть: действия и кнопки -->
             <div class="flex items-center space-x-3">
                 <!-- Переключение темы -->
-                <button id="theme-toggle-desktop" class="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                <button id="theme-toggle-desktop" class="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-all duration-300">
                     <svg id="theme-light-icon-desktop" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                     </svg>
@@ -100,7 +100,7 @@
                     <div class="hidden md:flex items-center space-x-4">
                         <!-- Информация о пользователе -->
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-primary dark:bg-primary-dark text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white rounded-full flex items-center justify-center text-sm font-semibold shadow-md">
                                 {{ strtoupper(substr(Auth::user()->email, 0, 1)) }}
                             </div>
                             <div class="hidden lg:flex flex-col">
@@ -116,7 +116,7 @@
 
                         <!-- Кнопки действий -->
                         <div class="flex items-center space-x-2">
-                            <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white font-medium py-2 px-4 rounded-xl transition-all duration-300 shadow-md">
                                 <i class="fas fa-tachometer-alt text-sm"></i>
                                 <span class="hidden sm:inline">Панель управления</span>
                                 <span class="sm:hidden">Панель</span>
@@ -124,7 +124,7 @@
 
                             <form method="POST" action="{{ route('logout') }}" class="hidden xl:block">
                                 @csrf
-                                <button type="submit" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium py-2 px-3 rounded-lg transition-colors">
+                                <button type="submit" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium py-2 px-3 rounded-xl transition-all duration-300">
                                     <i class="fas fa-sign-out-alt text-sm"></i>
                                     <span>Выйти</span>
                                 </button>
@@ -134,7 +134,7 @@
 
                     <!-- Мобильный вариант для авторизованных -->
                     <div class="md:hidden flex items-center space-x-2">
-                        <a href="{{ route('dashboard') }}" class="bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white font-medium py-2 px-3 rounded-lg transition-colors">
+                        <a href="{{ route('dashboard') }}" class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white font-medium py-2 px-3 rounded-xl transition-all duration-300 shadow-md">
                             <i class="fas fa-tachometer-alt"></i>
                         </a>
                     </div>
@@ -142,12 +142,12 @@
                 @else
                     <!-- Для гостей -->
                     <div class="hidden md:flex items-center space-x-3">
-                        <a href="{{ route('login') }}" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                        <a href="{{ route('login') }}" class="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-2 px-4 rounded-xl transition-all duration-300">
                             <i class="fas fa-sign-in-alt text-sm"></i>
                             <span>Войти</span>
                         </a>
 
-                        <a href="{{ route('register') }}" class="flex items-center space-x-2 bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        <a href="{{ route('register') }}" class="flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white font-medium py-2 px-4 rounded-xl transition-all duration-300 shadow-md">
                             <i class="fas fa-user-plus text-sm"></i>
                             <span>Регистрация</span>
                         </a>
@@ -155,14 +155,14 @@
 
                     <!-- Мобильный вариант для гостей -->
                     <div class="md:hidden flex items-center space-x-2">
-                        <a href="{{ route('login') }}" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark font-medium p-2 rounded-lg transition-colors">
+                        <a href="{{ route('login') }}" class="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium p-2 rounded-xl transition-all duration-300">
                             <i class="fas fa-sign-in-alt text-lg"></i>
                         </a>
                     </div>
                 @endauth
 
                 <!-- Кнопка мобильного меню -->
-                <button class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-lg transition-colors" id="mobileMenuButton">
+                <button class="lg:hidden text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-xl transition-all duration-300" id="mobileMenuButton">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
@@ -178,7 +178,7 @@
         <!-- Заголовок меню -->
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center space-x-3">
-                <div class="bg-primary dark:bg-primary-dark text-white p-2 rounded-lg">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white p-2 rounded-xl">
                     <i class="fas fa-users text-xl"></i>
                 </div>
                 <div>
@@ -186,7 +186,7 @@
                     <span class="text-sm text-gray-500 dark:text-gray-400 block">CRM для мастеров</span>
                 </div>
             </div>
-            <button id="mobileMenuClose" class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button id="mobileMenuClose" class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-300">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
@@ -197,22 +197,22 @@
                 Навигация
             </div>
 
-            <a href="#features" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+            <a href="#features" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                 <i class="fas fa-star text-gray-400 w-5 text-center"></i>
                 <span>Возможности</span>
             </a>
 
-            <a href="#how-it-works" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+            <a href="#how-it-works" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                 <i class="fas fa-play-circle text-gray-400 w-5 text-center"></i>
                 <span>Как работает</span>
             </a>
 
-            <a href="#pricing" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+            <a href="#pricing" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                 <i class="fas fa-tag text-gray-400 w-5 text-center"></i>
                 <span>Тарифы</span>
             </a>
 
-            <a href="#faq" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+            <a href="#faq" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                 <i class="fas fa-question-circle text-gray-400 w-5 text-center"></i>
                 <span>Вопросы</span>
             </a>
@@ -227,7 +227,7 @@
             @auth
                 <!-- Информация о пользователе -->
                 <div class="flex items-center space-x-3 mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-                    <div class="w-10 h-10 bg-primary dark:bg-primary-dark text-white rounded-full flex items-center justify-center font-semibold">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white rounded-full flex items-center justify-center font-semibold shadow-md">
                         {{ strtoupper(substr(Auth::user()->email, 0, 1)) }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -242,14 +242,14 @@
 
                 <!-- Действия для авторизованного пользователя -->
                 <div class="space-y-2">
-                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 text-primary dark:text-primary-dark hover:text-secondary dark:hover:text-secondary-dark hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                         <i class="fas fa-tachometer-alt text-current w-5 text-center"></i>
                         <span>Панель управления</span>
                     </a>
 
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
-                        <button type="submit" class="w-full flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium py-3 px-4 rounded-xl transition-colors text-left">
+                        <button type="submit" class="w-full flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-left">
                             <i class="fas fa-sign-out-alt text-current w-5 text-center"></i>
                             <span>Выйти из аккаунта</span>
                         </button>
@@ -258,12 +258,12 @@
             @else
                 <!-- Действия для гостя -->
                 <div class="space-y-3">
-                    <a href="{{ route('login') }}" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary-dark hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link">
+                    <a href="{{ route('login') }}" class="flex items-center space-x-3 text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link">
                         <i class="fas fa-sign-in-alt text-gray-400 w-5 text-center"></i>
                         <span>Войти в аккаунт</span>
                     </a>
 
-                    <a href="{{ route('register') }}" class="flex items-center space-x-3 bg-primary dark:bg-primary-dark text-white hover:bg-secondary dark:hover:bg-secondary-dark font-medium py-3 px-4 rounded-xl transition-colors mobile-nav-link justify-center">
+                    <a href="{{ route('register') }}" class="flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 font-medium py-3 px-4 rounded-xl transition-all duration-300 mobile-nav-link justify-center shadow-md">
                         <i class="fas fa-user-plus text-current w-5 text-center"></i>
                         <span>Создать аккаунт</span>
                     </a>
@@ -274,49 +274,50 @@
 </div>
 
 <!-- Hero Section -->
-<section class="bg-gradient-to-r from-primary to-secondary dark:from-primary-dark dark:to-secondary-dark text-white py-16 md:py-24">
-    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+<section class="bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 dark:from-blue-700 dark:via-purple-800 dark:to-indigo-900 text-white py-16 md:py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-black/10"></div>
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center relative z-10">
         <div class="md:w-1/2 mb-10 md:mb-0">
-            <h1 class="text-4xl md:text-5xl font-bold mb-6">Простая CRM для самозанятых и мастеров</h1>
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Простая CRM для самозанятых и мастеров</h1>
             <p class="text-xl mb-8 opacity-90">Cliently помогает организовать клиентов и записи без сложностей. Начните работать эффективнее уже сегодня.</p>
 
             <div class="mb-8 space-y-4">
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle text-accent dark:text-accent-dark mr-3"></i>
+                    <i class="fas fa-check-circle text-yellow-300 mr-3"></i>
                     <span>Учет клиентов и истории обращений</span>
                 </div>
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle text-accent dark:text-accent-dark mr-3"></i>
+                    <i class="fas fa-check-circle text-yellow-300 mr-3"></i>
                     <span>Онлайн-запись от клиентов</span>
                 </div>
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle text-accent dark:text-accent-dark mr-3"></i>
+                    <i class="fas fa-check-circle text-yellow-300 mr-3"></i>
                     <span>Напоминания о встречах</span>
                 </div>
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle text-accent dark:text-accent-dark mr-3"></i>
+                    <i class="fas fa-check-circle text-yellow-300 mr-3"></i>
                     <span>Простота и удобство</span>
                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="bg-white text-primary dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-bold text-center transition duration-300">
+                    <a href="{{ route('dashboard') }}" class="bg-white text-blue-600 dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-6 py-3 rounded-xl font-bold text-center transition-all duration-300 shadow-lg hover:shadow-xl">
                         Перейти в панель
                     </a>
                 @else
-                    <a href="{{ route('register') }}" class="bg-white text-primary dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-6 py-3 rounded-lg font-bold text-center transition duration-300">
+                    <a href="{{ route('register') }}" class="bg-white text-blue-600 dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-6 py-3 rounded-xl font-bold text-center transition-all duration-300 shadow-lg hover:shadow-xl">
                         Попробовать бесплатно
                     </a>
                 @endauth
-                <a href="#features" class="border-2 border-white text-white hover:bg-white hover:text-primary dark:hover:bg-gray-800 dark:hover:text-white px-6 py-3 rounded-lg font-medium text-center transition duration-300">
+                <a href="#features" class="border-2 border-white text-white hover:bg-white hover:text-blue-600 dark:hover:bg-gray-800 dark:hover:text-white px-6 py-3 rounded-xl font-medium text-center transition-all duration-300">
                     Узнать больше
                 </a>
             </div>
         </div>
 
         <div class="md:w-1/2 flex justify-center">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 transform rotate-1 max-w-md">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-4 transform rotate-1 max-w-md border border-white/20">
                 <div class="bg-gray-800 dark:bg-gray-900 text-white p-3 rounded-t-lg flex justify-between items-center">
                     <div class="flex space-x-2">
                         <div class="w-3 h-3 rounded-full bg-red-500"></div>
@@ -325,46 +326,46 @@
                     </div>
                     <span class="text-sm ml-28">Мои клиенты</span>
                 </div>
-                <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-b-lg">
-                    <div class="bg-white dark:bg-gray-600 p-4 rounded-lg shadow mb-4">
+                <div class="p-4 bg-gray-100/10 backdrop-blur-lg rounded-b-lg">
+                    <div class="bg-white/20 backdrop-blur-lg p-4 rounded-xl shadow mb-4">
                         <div class="flex items-center justify-between mb-3">
-                            <div class="font-bold text-gray-800 dark:text-white">Сегодня</div>
-                            <div class="text-primary dark:text-primary-dark text-sm">3 записи</div>
+                            <div class="font-bold text-white">Сегодня</div>
+                            <div class="text-yellow-300 text-sm">3 записи</div>
                         </div>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-500">
+                            <div class="flex justify-between items-center py-2 border-b border-white/20">
                                 <div>
-                                    <div class="font-medium text-gray-800 dark:text-white">Анна К.</div>
-                                    <div class="text-gray-600 dark:text-gray-300 text-xs">Стрижка • 14:00</div>
+                                    <div class="font-medium text-white">Анна К.</div>
+                                    <div class="text-gray-200 text-xs">Стрижка • 14:00</div>
                                 </div>
                                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                             </div>
-                            <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-500">
+                            <div class="flex justify-between items-center py-2 border-b border-white/20">
                                 <div>
-                                    <div class="font-medium text-gray-800 dark:text-white">Мария С.</div>
-                                    <div class="text-gray-600 dark:text-gray-300 text-xs">Маникюр • 16:30</div>
+                                    <div class="font-medium text-white">Мария С.</div>
+                                    <div class="text-gray-200 text-xs">Маникюр • 16:30</div>
                                 </div>
                                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
                             </div>
                             <div class="flex justify-between items-center py-2">
                                 <div>
-                                    <div class="font-medium text-gray-800 dark:text-white">Ирина П.</div>
-                                    <div class="text-gray-600 dark:text-gray-300 text-xs">Консультация • 18:00</div>
+                                    <div class="font-medium text-white">Ирина П.</div>
+                                    <div class="text-gray-200 text-xs">Консультация • 18:00</div>
                                 </div>
                                 <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-600 p-3 rounded-lg shadow">
+                    <div class="bg-white/20 backdrop-blur-lg p-3 rounded-xl shadow">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="font-bold text-gray-800 dark:text-white">Новые клиенты</div>
-                            <div class="text-primary dark:text-primary-dark text-sm">+2</div>
+                            <div class="font-bold text-white">Новые клиенты</div>
+                            <div class="text-yellow-300 text-sm">+2</div>
                         </div>
                         <div class="flex -space-x-2">
-                            <div class="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full border-2 border-white dark:border-gray-600"></div>
-                            <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white dark:border-gray-600"></div>
-                            <div class="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full border-2 border-white dark:border-gray-600"></div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full border-2 border-white/50"></div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full border-2 border-white/50"></div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full border-2 border-white/50"></div>
                         </div>
                     </div>
                 </div>
@@ -379,24 +380,24 @@
         <h2 class="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">Cliently создан специально для</h2>
 
         <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            <div class="text-center">
-                <div class="bg-primary dark:bg-primary-dark text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                     <i class="fas fa-scissors text-2xl"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Парикмахеры</h3>
                 <p class="text-gray-600 dark:text-gray-300">Управляйте записями клиентов и их предпочтениями</p>
             </div>
 
-            <div class="text-center">
-                <div class="bg-secondary dark:bg-secondary-dark text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-green-500 to-teal-600 dark:from-green-600 dark:to-teal-700 text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                     <i class="fas fa-spa text-2xl"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Косметологи</h3>
                 <p class="text-gray-600 dark:text-gray-300">Отслеживайте процедуры и историю посещений</p>
             </div>
 
-            <div class="text-center">
-                <div class="bg-accent dark:bg-accent-dark text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-purple-500 to-pink-600 dark:from-purple-600 dark:to-pink-700 text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                     <i class="fas fa-hands text-2xl"></i>
                 </div>
                 <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">Мастера маникюра</h3>
@@ -407,16 +408,16 @@
 </section>
 
 <!-- Features Section -->
-<section id="features" class="py-16 bg-gray-50 dark:bg-gray-900">
+<section id="features" class="py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
     <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold text-center mb-4 text-gray-800 dark:text-white">Все необходимое для вашего бизнеса</h2>
         <p class="text-gray-600 dark:text-gray-400 text-center max-w-2xl mx-auto mb-12">Мы сосредоточились на самом важном, чтобы вы могли работать эффективнее</p>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
             <!-- Feature 1 -->
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
                 <div class="flex items-start">
-                    <div class="bg-blue-100 dark:bg-blue-900 text-primary dark:text-primary-dark p-3 rounded-lg mr-5">
+                    <div class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 p-3 rounded-xl mr-5 group-hover:scale-110 transition-all duration-300">
                         <i class="fas fa-address-book text-2xl"></i>
                     </div>
                     <div>
@@ -427,9 +428,9 @@
             </div>
 
             <!-- Feature 2 -->
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
                 <div class="flex items-start">
-                    <div class="bg-green-100 dark:bg-green-900 text-accent dark:text-accent-dark p-3 rounded-lg mr-5">
+                    <div class="bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 p-3 rounded-xl mr-5 group-hover:scale-110 transition-all duration-300">
                         <i class="fas fa-calendar-check text-2xl"></i>
                     </div>
                     <div>
@@ -440,9 +441,9 @@
             </div>
 
             <!-- Feature 3 -->
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
                 <div class="flex items-start">
-                    <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 p-3 rounded-lg mr-5">
+                    <div class="bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 p-3 rounded-xl mr-5 group-hover:scale-110 transition-all duration-300">
                         <i class="fas fa-bell text-2xl"></i>
                     </div>
                     <div>
@@ -453,9 +454,9 @@
             </div>
 
             <!-- Feature 4 -->
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 group">
                 <div class="flex items-start">
-                    <div class="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400 p-3 rounded-lg mr-5">
+                    <div class="bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400 p-3 rounded-xl mr-5 group-hover:scale-110 transition-all duration-300">
                         <i class="fas fa-mobile-alt text-2xl"></i>
                     </div>
                     <div>
@@ -476,22 +477,22 @@
 
         <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <!-- Step 1 -->
-            <div class="text-center">
-                <div class="bg-primary dark:bg-primary-dark text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 group-hover:scale-110 transition-all duration-300 shadow-lg">1</div>
                 <h3 class="text-lg font-bold mb-2 text-gray-800 dark:text-white">Регистрация</h3>
                 <p class="text-gray-600 dark:text-gray-400">Создайте аккаунт за 2 минуты. Никаких сложных настроек.</p>
             </div>
 
             <!-- Step 2 -->
-            <div class="text-center">
-                <div class="bg-primary dark:bg-primary-dark text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 group-hover:scale-110 transition-all duration-300 shadow-lg">2</div>
                 <h3 class="text-lg font-bold mb-2 text-gray-800 dark:text-white">Добавьте клиентов</h3>
                 <p class="text-gray-600 dark:text-gray-400">Перенесите контакты из телефона или добавляйте постепенно.</p>
             </div>
 
             <!-- Step 3 -->
-            <div class="text-center">
-                <div class="bg-primary dark:bg-primary-dark text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
+            <div class="text-center group">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 group-hover:scale-110 transition-all duration-300 shadow-lg">3</div>
                 <h3 class="text-lg font-bold mb-2 text-gray-800 dark:text-white">Работайте</h3>
                 <p class="text-gray-600 dark:text-gray-400">Принимайте записи и управляйте клиентами эффективно.</p>
             </div>
@@ -499,11 +500,11 @@
 
         <div class="text-center mt-12">
             @auth
-                <a href="{{ route('dashboard') }}" class="bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white px-8 py-3 rounded-lg font-bold transition duration-300">
+                <a href="{{ route('dashboard') }}" class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl">
                     Перейти в панель
                 </a>
             @else
-                <a href="{{ route('register') }}" class="bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white px-8 py-3 rounded-lg font-bold transition duration-300">
+                <a href="{{ route('register') }}" class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl">
                     Начать бесплатно
                 </a>
             @endauth
@@ -512,100 +513,173 @@
 </section>
 
 <!-- Pricing Section -->
-<section id="pricing" class="py-16 bg-gray-50 dark:bg-gray-900">
+<section id="pricing" class="py-16 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
     <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold text-center mb-4 text-gray-800 dark:text-white">Простые и понятные тарифы</h2>
-        <p class="text-gray-600 dark:text-gray-400 text-center max-w-2xl mx-auto mb-12">Начните бесплатно, платите только когда бизнес растет</p>
+        <p class="text-gray-600 dark:text-gray-400 text-center max-w-2xl mx-auto mb-12">Начните бесплатно, платите только когда бизнес растет. Все тарифы включают 14 дней бесплатного пробного периода.</p>
 
-        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <!-- Тариф 1 -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-8 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Бесплатный</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6">Идеально для начала</p>
+        <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <!-- Тариф 1: Бесплатный -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                <div class="p-8 border-b border-gray-200 dark:border-gray-700 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Старт</h3>
+                        <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-medium px-3 py-1 rounded-full">БЕСПЛАТНО</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Для начала работы и тестирования</p>
+
                     <div class="mb-6">
                         <span class="text-4xl font-bold text-gray-800 dark:text-white">0</span>
-                        <span class="text-gray-600 dark:text-gray-400">руб/месяц</span>
+                        <span class="text-gray-600 dark:text-gray-400">BYN/месяц</span>
                     </div>
+
                     @auth
-                        <a href="{{ route('dashboard') }}" class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-primary dark:hover:bg-primary-dark hover:text-white text-gray-800 dark:text-gray-200 text-center py-3 rounded-lg font-medium transition duration-300">
+                        <a href="{{ route('dashboard') }}" class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-center py-3 rounded-xl font-medium transition-all duration-300">
                             Использую
                         </a>
                     @else
-                        <a href="{{ route('register') }}" class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-primary dark:hover:bg-primary-dark hover:text-white text-gray-800 dark:text-gray-200 text-center py-3 rounded-lg font-medium transition duration-300">
-                            Начать сейчас
+                        <a href="{{ route('register') }}" class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 text-center py-3 rounded-xl font-medium transition-all duration-300">
+                            Начать бесплатно
                         </a>
                     @endauth
                 </div>
-                <div class="p-8">
-                    <ul class="space-y-4">
+
+                <div class="p-8 pt-0">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-4">Что включено:</h4>
+                    <ul class="space-y-3">
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">До 30 клиентов</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">До 30 клиентов в базе</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">База клиентов</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Онлайн-запись от клиентов</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">Онлайн-запись</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">SMS-напоминания (до 50/мес)</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">Напоминания</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Базовая статистика</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Тариф 2 -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border-2 border-primary dark:border-primary-dark relative overflow-hidden">
-                <div class="bg-primary dark:bg-primary-dark text-white text-center py-2 text-sm font-bold">
-                    ПОПУЛЯРНЫЙ
+            <!-- Тариф 2: Профи (Популярный) -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border-2 border-blue-500 dark:border-blue-600 relative overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
+                <div class="absolute top-0 right-0 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white text-xs font-bold px-4 py-2 rounded-bl-lg">
+                    ВЫГОДНО
                 </div>
-                <div class="p-8 border-b border-gray-200 dark:border-gray-700">
+                <div class="p-8 border-b border-gray-200 dark:border-gray-700 flex-grow">
                     <h3 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white">Профи</h3>
                     <p class="text-gray-600 dark:text-gray-400 mb-6">Для растущего бизнеса</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold text-gray-800 dark:text-white">490</span>
-                        <span class="text-gray-600 dark:text-gray-400">руб/месяц</span>
+
+                    <div class="mb-4">
+                        <span class="text-4xl font-bold text-gray-800 dark:text-white">29</span>
+                        <span class="text-gray-600 dark:text-gray-400">BYN/месяц</span>
                     </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">или 290 BYN за год (экономия 58 BYN)</p>
+
                     @auth
-                        <a href="#" class="block w-full bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white text-center py-3 rounded-lg font-medium transition duration-300">
+                        <a href="#" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white text-center py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg">
                             Перейти на Профи
                         </a>
                     @else
-                        <a href="{{ route('register') }}" class="block w-full bg-primary dark:bg-primary-dark hover:bg-secondary dark:hover:bg-secondary-dark text-white text-center py-3 rounded-lg font-medium transition duration-300">
-                            Попробовать бесплатно
+                        <a href="{{ route('register') }}" class="block w-full bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 hover:from-blue-600 hover:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white text-center py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg">
+                            Попробовать 14 дней бесплатно
                         </a>
                     @endauth
                 </div>
-                <div class="p-8">
-                    <ul class="space-y-4">
+
+                <div class="p-8 pt-0">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-4">Все в тарифе Старт +:</h4>
+                    <ul class="space-y-3">
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">Неограниченные клиенты</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Неограниченное количество клиентов</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">Расширенная база</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Расширенная аналитика и отчеты</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">SMS-напоминания (до 200/мес)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
                             <span class="text-gray-700 dark:text-gray-300">Приоритетная поддержка</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-check text-accent dark:text-accent-dark mr-3 mt-1"></i>
-                            <span class="text-gray-700 dark:text-gray-300">Все бесплатные функции</span>
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Интеграция с телеграм</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Тариф 3: Премиум -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full">
+                <div class="p-8 border-b border-gray-200 dark:border-gray-700 flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800 dark:text-white">Премиум</h3>
+                        <span class="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-medium px-3 py-1 rounded-full">ДЛЯ ПРОФИ</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Максимальные возможности</p>
+
+                    <div class="mb-4">
+                        <span class="text-4xl font-bold text-gray-800 dark:text-white">49</span>
+                        <span class="text-gray-600 dark:text-gray-400">BYN/месяц</span>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">или 490 BYN за год (экономия 98 BYN)</p>
+
+                    @auth
+                        <a href="#" class="block w-full bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white text-center py-3 rounded-xl font-medium transition-all duration-300">
+                            Выбрать Премиум
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" class="block w-full bg-gray-800 dark:bg-gray-700 hover:bg-gray-900 dark:hover:bg-gray-600 text-white text-center py-3 rounded-xl font-medium transition-all duration-300">
+                            Попробовать 14 дней бесплатно
+                        </a>
+                    @endauth
+                </div>
+
+                <div class="p-8 pt-0">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-4">Все в тарифе Профи +:</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Неограниченные SMS-напоминания</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Интеграция с Instagram</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Персональный менеджер</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">Кастомные отчеты</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                            <span class="text-gray-700 dark:text-gray-300">API доступ</span>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <div class="text-center mt-8">
-            <p class="text-gray-600 dark:text-gray-400 text-sm">Оба тарифа включают 14 дней бесплатного пробного периода</p>
+        <div class="text-center mt-12">
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Остались вопросы по тарифам?</p>
+            <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium inline-flex items-center">
+                Свяжитесь с нами
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
     </div>
 </section>
@@ -618,10 +692,10 @@
 
         <div class="max-w-3xl mx-auto">
             <!-- FAQ 1 -->
-            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6">
+            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6 hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center cursor-pointer faq-question">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white">Сложно ли начать пользоваться?</h3>
-                    <i class="fas fa-chevron-down text-primary dark:text-primary-dark transition-transform duration-300"></i>
+                    <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-300"></i>
                 </div>
                 <div class="faq-answer mt-4 text-gray-600 dark:text-gray-300">
                     <p>Нет! Cliently создан специально для простоты. После регистрации вы сразу можете начать добавлять клиентов. Интерфейс интуитивно понятен и не требует обучения.</p>
@@ -629,10 +703,10 @@
             </div>
 
             <!-- FAQ 2 -->
-            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6">
+            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6 hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center cursor-pointer faq-question">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white">Что будет, когда клиентов станет больше 30?</h3>
-                    <i class="fas fa-chevron-down text-primary dark:text-primary-dark transition-transform duration-300"></i>
+                    <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-300"></i>
                 </div>
                 <div class="faq-answer mt-4 text-gray-600 dark:text-gray-300">
                     <p>Вы сможете продолжить работу с существующими клиентами, но для добавления новых потребуется перейти на тариф "Профи". Мы заранее уведомим вас о приближении к лимиту.</p>
@@ -640,10 +714,10 @@
             </div>
 
             <!-- FAQ 3 -->
-            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6">
+            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 mb-6 hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center cursor-pointer faq-question">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white">Можно ли перенести данные при переходе с других сервисов?</h3>
-                    <i class="fas fa-chevron-down text-primary dark:text-primary-dark transition-transform duration-300"></i>
+                    <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-300"></i>
                 </div>
                 <div class="faq-answer mt-4 text-gray-600 dark:text-gray-300">
                     <p>Пока мы не поддерживаем автоматический импорт из других CRM, но вы можете легко добавить клиентов вручную или обратиться в поддержку за помощью с переносом данных.</p>
@@ -651,10 +725,10 @@
             </div>
 
             <!-- FAQ 4 -->
-            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6">
+            <div class="faq-item bg-gray-50 dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-600 p-6 hover:shadow-md transition-all duration-300">
                 <div class="flex justify-between items-center cursor-pointer faq-question">
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white">Есть ли мобильное приложение?</h3>
-                    <i class="fas fa-chevron-down text-primary dark:text-primary-dark transition-transform duration-300"></i>
+                    <i class="fas fa-chevron-down text-blue-500 dark:text-blue-400 transition-transform duration-300"></i>
                 </div>
                 <div class="faq-answer mt-4 text-gray-600 dark:text-gray-300">
                     <p>Пока мы работаем над мобильным приложением. Наш сайт полностью адаптирован для мобильных устройств и работает как приложение. Вы можете добавить его на главный экран вашего смартфона.</p>
@@ -665,16 +739,17 @@
 </section>
 
 <!-- Final CTA Section -->
-<section class="py-16 bg-primary dark:bg-primary-dark text-white">
-    <div class="container mx-auto px-4 text-center">
+<section class="py-16 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-700 dark:from-blue-700 dark:via-purple-800 dark:to-indigo-900 text-white relative overflow-hidden">
+    <div class="absolute inset-0 bg-black/10"></div>
+    <div class="container mx-auto px-4 text-center relative z-10">
         <h2 class="text-3xl font-bold mb-6">Готовы организовать свой бизнес?</h2>
         <p class="text-xl max-w-2xl mx-auto mb-8 opacity-90">Присоединяйтесь к мастерам, которые уже работают эффективнее с Cliently</p>
         @auth
-            <a href="{{ route('dashboard') }}" class="bg-white text-primary dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-8 py-3 rounded-lg font-bold text-lg transition duration-300">
+            <a href="{{ route('dashboard') }}" class="bg-white text-blue-600 dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-8 py-3 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl">
                 Перейти в панель управления
             </a>
         @else
-            <a href="{{ route('register') }}" class="bg-white text-primary dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-8 py-3 rounded-lg font-bold text-lg transition duration-300">
+            <a href="{{ route('register') }}" class="bg-white text-blue-600 dark:bg-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-8 py-3 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl">
                 Начать бесплатно 14 дней
             </a>
             <p class="mt-4 text-sm opacity-80">Никаких платежных данных не требуется</p>
@@ -689,20 +764,20 @@
             <!-- Column 1 -->
             <div>
                 <div class="flex items-center space-x-2 mb-4">
-                    <div class="bg-primary dark:bg-primary-dark text-white p-2 rounded-lg">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 text-white p-2 rounded-xl">
                         <i class="fas fa-users"></i>
                     </div>
                     <span class="text-xl font-bold">Cliently</span>
                 </div>
                 <p class="text-gray-400 mb-4">Простая CRM для самозанятых и мастеров. Организуйте клиентов и записи без сложностей.</p>
                 <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-white">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
                         <i class="fab fa-telegram"></i>
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-white">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
                         <i class="fab fa-instagram"></i>
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-white">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
                         <i class="fab fa-vk"></i>
                     </a>
                 </div>
@@ -712,10 +787,10 @@
             <div>
                 <h3 class="text-lg font-bold mb-4">Сервис</h3>
                 <ul class="space-y-2">
-                    <li><a href="#features" class="text-gray-400 hover:text-white">Возможности</a></li>
-                    <li><a href="#how-it-works" class="text-gray-400 hover:text-white">Как работает</a></li>
-                    <li><a href="#pricing" class="text-gray-400 hover:text-white">Тарифы</a></li>
-                    <li><a href="#faq" class="text-gray-400 hover:text-white">Вопросы</a></li>
+                    <li><a href="#features" class="text-gray-400 hover:text-white transition-colors duration-300">Возможности</a></li>
+                    <li><a href="#how-it-works" class="text-gray-400 hover:text-white transition-colors duration-300">Как работает</a></li>
+                    <li><a href="#pricing" class="text-gray-400 hover:text-white transition-colors duration-300">Тарифы</a></li>
+                    <li><a href="#faq" class="text-gray-400 hover:text-white transition-colors duration-300">Вопросы</a></li>
                 </ul>
             </div>
 
@@ -723,9 +798,9 @@
             <div>
                 <h3 class="text-lg font-bold mb-4">Поддержка</h3>
                 <ul class="space-y-2">
-                    <li><a href="mailto:support@cliently.by" class="text-gray-400 hover:text-white">Помощь</a></li>
-                    <li><a href="#" class="text-gray-400 hover:text-white">Инструкции</a></li>
-                    <li><a href="mailto:hello@cliently.by" class="text-gray-400 hover:text-white">Контакты</a></li>
+                    <li><a href="mailto:support@cliently.by" class="text-gray-400 hover:text-white transition-colors duration-300">Помощь</a></li>
+                    <li><a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">Инструкции</a></li>
+                    <li><a href="mailto:hello@cliently.by" class="text-gray-400 hover:text-white transition-colors duration-300">Контакты</a></li>
                 </ul>
             </div>
 
@@ -734,12 +809,12 @@
                 <h3 class="text-lg font-bold mb-4">Контакты</h3>
                 <ul class="space-y-2">
                     <li class="flex items-start">
-                        <i class="fas fa-envelope text-gray-400 mr-3 mt-1"></i>
-                        <span class="text-gray-400">hello@cliently.by</span>
+                        <i class="fas fa-phone text-gray-400 mr-3 mt-1"></i>
+                        <span class="text-gray-400">+375291234567</span>
                     </li>
                     <li class="flex items-start">
-                        <i class="fas fa-globe text-gray-400 mr-3 mt-1"></i>
-                        <span class="text-gray-400">cliently.by</span>
+                        <i class="fas fa-envelope text-gray-400 mr-3 mt-1"></i>
+                        <span class="text-gray-400">hello@cliently.by</span>
                     </li>
                 </ul>
             </div>
@@ -748,8 +823,8 @@
         <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p class="text-gray-400 mb-4 md:mb-0">© 2024 Cliently.by. Все права защищены.</p>
             <div class="flex space-x-6">
-                <a href="#" class="text-gray-400 hover:text-white text-sm">Оферта</a>
-                <a href="#" class="text-gray-400 hover:text-white text-sm">Конфиденциальность</a>
+                <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Оферта</a>
+                <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300">Конфиденциальность</a>
             </div>
         </div>
     </div>
