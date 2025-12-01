@@ -11,6 +11,8 @@ export default defineConfig({
                 'resources/images/favicons/favicon.svg',
                 'resources/images/favicons/favicon.ico',
                 'resources/images/favicons/apple-touch-icon.png',
+                'resources/images/favicons/web-app-manifest-192x192.png',
+                'resources/images/favicons/web-app-manifest-512x512.png',
                 'resources/images/favicons/site.webmanifest'
 
             ],
