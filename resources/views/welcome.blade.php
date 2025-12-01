@@ -13,7 +13,7 @@
     <link rel="shortcut icon" href="{{ Vite::asset('resources/images/favicons/favicon.ico') }}" />
     <link rel="apple-touch-icon" sizes="180x180" href="{{ Vite::asset('resources/images/favicons/apple-touch-icon.png') }}" />
     <meta name="apple-mobile-web-app-title" content="CLIENTLY" />
-    <link rel="manifest" href="{{ Vite::asset('resources/images/favicons/site.webmanifest') }}" />
+    <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}" />
 
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
