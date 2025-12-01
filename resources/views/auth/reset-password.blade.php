@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Новый пароль - {{ config('app.name', 'Cliently') }}</title>
-    <link rel="icon" href="{{ Vite::asset('resources/images/favicon.svg') }}">
+
+    <!-- Favicons links -->
+    <link rel="icon" type="image/png" href="{{ Vite::asset('resources/images/favicons/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ Vite::asset('resources/images/favicons/favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ Vite::asset('resources/images/favicons/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ Vite::asset('resources/images/favicons/apple-touch-icon.png') }}" />
+    <meta name="apple-mobile-web-app-title" content="CLIENTLY" />
+    <link rel="manifest" href="{{ Vite::asset('resources/images/favicons/site.webmanifest') }}" />
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Assets -->
