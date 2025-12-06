@@ -20,6 +20,7 @@
                 <form id="onboarding-form" method="POST" action="{{ route('onboarding.store') }}">
                     @csrf
                     @method('PUT')
+
                     <!-- Поле 1: Имя/Название -->
                     <div class="mb-8">
                         <label class="block text-sm font-medium text-gray-900 dark:text-white mb-3">
@@ -34,13 +35,19 @@
                                    name="name"
                                    id="name"
                                    value="{{ old('name') }}"
-                                   class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors"
+                                   class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border @error('name') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors"
                                    placeholder="ИП Иванов"
                                    required>
                             <div class="absolute left-3 top-3.5 text-gray-400">
                                 <i class="fas fa-building"></i>
                             </div>
                         </div>
+                        @error('name')
+                        <div class="mt-2 flex items-center text-red-600 dark:text-red-400 text-sm">
+                            <i class="fas fa-exclamation-circle mr-1.5"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                        @enderror
                     </div>
 
                     <!-- Поле 2: Адрес профиля (slug) -->
@@ -68,7 +75,7 @@
                                    id="slug"
                                    value="{{ old('slug') }}"
                                    maxlength="30"
-                                   class="w-full px-4 py-3text-gray-900 pl-5 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                   class="w-full px-4 py-3text-gray-900 pl-5 dark:text-white bg-gray-50 dark:bg-gray-700 border @error('slug') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                    placeholder="ivanov"
                                    pattern="^[a-z0-9\-]+$"
                                    title="Только латинские буквы в нижнем регистре, цифры и дефисы"
@@ -102,6 +109,14 @@
                                 <span></span>
                             </div>
                         </div>
+
+                        <!-- Вывод ошибки валидации -->
+                        @error('slug')
+                        <div class="mt-2 flex items-center text-red-600 dark:text-red-400 text-sm">
+                            <i class="fas fa-exclamation-circle mr-1.5"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                        @enderror
 
                         <!-- Объяснение для пользователя -->
                         <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
@@ -137,17 +152,27 @@
                                    name="short_description"
                                    id="short_description"
                                    maxlength="100"
-                                   class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors"
+                                   class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border @error('short_description') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors"
                                    placeholder="Профессиональный парикмахер с 5-летним опытом"
+                                   value="{{ old('short_description') }}"
                                    required>
                             <div class="absolute left-3 top-3.5 text-gray-400">
                                 <i class="fas fa-align-left"></i>
                             </div>
                         </div>
                         <div class="flex justify-between mt-2">
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                Отображается в карточке профиля
-                            </p>
+                            <div class="flex-1">
+                                @error('short_description')
+                                <div class="flex items-center text-red-600 dark:text-red-400 text-sm">
+                                    <i class="fas fa-exclamation-circle mr-1.5"></i>
+                                    <span>{{ $message }}</span>
+                                </div>
+                                @else
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Отображается в карточке профиля
+                                    </p>
+                                    @enderror
+                            </div>
                             <span id="char-counter" class="text-xs text-gray-400">0/100</span>
                         </div>
                     </div>
@@ -165,12 +190,18 @@
                         <textarea
                             name="full_description"
                             rows="4"
-                            class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors resize-none"
-                            placeholder="Расскажите о своих услугах, подходе к работе и опыте..."></textarea>
+                            class="w-full px-4 py-3 pl-11 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 border @error('full_description') border-red-500 @else border-gray-300 dark:border-gray-600 @enderror rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 transition-colors resize-none"
+                            placeholder="Расскажите о своих услугах, подходе к работе и опыте...">{{ old('full_description') }}</textarea>
                             <div class="absolute left-3 top-3 text-gray-400">
                                 <i class="fas fa-edit"></i>
                             </div>
                         </div>
+                        @error('full_description')
+                        <div class="mt-2 flex items-center text-red-600 dark:text-red-400 text-sm">
+                            <i class="fas fa-exclamation-circle mr-1.5"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                        @enderror
                     </div>
                 </form>
             </div>

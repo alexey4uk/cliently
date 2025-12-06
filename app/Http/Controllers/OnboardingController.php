@@ -18,7 +18,7 @@ class OnboardingController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
             'short_description' => 'required|string|max:100',
-            'full_description' => 'sometimes|string|max:1000',
+            'full_description' => 'nullable|string|max:1000',
         ]);
 
         Business::query()->create([
