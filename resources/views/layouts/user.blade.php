@@ -144,6 +144,8 @@
     </div>
 </div>
 
+@stack('scripts')
+
 <!-- Скрипты для улучшения UX -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
