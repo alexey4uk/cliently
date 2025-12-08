@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Client;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,5 +22,13 @@ class UserSeeder extends Seeder
             'phone' => '+375292909641',
             'password' => Hash::make('lm57iqxz'),
         ]);
+
+        $user->businesses()->create([
+            'name' => 'ИП Иванов',
+            'slug' => fake()->slug(),
+            'short_description' => 'Парикмахер'
+        ]);
+
+        Client::factory(30)->create();
     }
 }

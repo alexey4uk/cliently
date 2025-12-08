@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OnboardingController extends Controller
 {
@@ -24,7 +25,7 @@ class OnboardingController extends Controller
         Business::query()->create([
             'name' => $request->name,
             'slug' => $request->slug,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::user()->id,
             'short_description' => $request->short_description,
             'full_description' => $request->full_description,
         ]);

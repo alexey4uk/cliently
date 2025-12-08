@@ -13,4 +13,9 @@ class Business extends Model
         'short_description',
         'slug',
     ];
+
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
+    }
 }
