@@ -44,9 +44,9 @@ jobs:
         run: php artisan test  # Или vendor/bin/phpunit, если PHPUnit напрямую
 
   deploy:
-    needs: test  # Деплой только после успешных тестов
+    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'  # Деплой только из develop
+    if: github.ref == 'refs/heads/develop'
     steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
@@ -56,28 +56,55 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
-            cd /var/www/cliently/data/www/dev.cliently.by
+            set -e
             
-            rm -rf * .*
-
-            git clone git@github.com:alexey4uk/cliently.git .
-
-            git checkout develop
-
-            cp .env.dev .env
-
+            DEPLOY_DIR="/var/www/cliently/data/www/dev.cliently.by"
+            
+            # Создаем директорию если не существует
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+            
+            # Проверяем наличие git репозитория
+            if [ ! -d .git ]; then
+              echo "🚀 Первый деплой..."
+              # Клонируем с токеном для доступа
+              git clone -b develop git@github.com:alexey4uk/cliently.git .
+            else
+              echo "🔄 Обновление существующего репозитория..."
+              git checkout develop
+              git pull origin develop
+            fi
+            
+            # Проверяем нужно ли обновить .env
+            if [ -f .env.dev ] && [ ! -f .env ]; then
+              cp .env.dev .env
+            fi
+            
+            # HTTP аутентификация (обновляем каждый раз)
             echo 'dev:$apr1$Aa9tQWMu$xc6XDAPJwYfJB49s6CbSr0' > .httpauth
             
-            composer install -q --ignore-platform-req=ext-bcmath
+            # Установка зависимостей
+            composer install -q --ignore-platform-req=ext-bcmath --no-dev
             
-            php artisan migrate:fresh
+            # Миграции
+            php artisan migrate --force
             
-            php artisan db:seed
+            # Сиды
+            php artisan db:seed --force
             
-            npm install  
+            # Frontend
+            npm ci --silent
+            npm run build --silent
             
-            npm run build
-
-            php artisan key:generate
+            # Обновляем ключ если нужно
+            if ! grep -q "APP_KEY=base64" .env 2>/dev/null; then
+              php artisan key:generate --force
+            fi
             
+            # Storage link
             php artisan storage:link
+
+            # Optimize
+            php artisan optimize
+            
+            echo "✅ Готово!"
