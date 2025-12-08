@@ -87,10 +87,10 @@ jobs:
             composer install -q --ignore-platform-req=ext-bcmath --no-dev
             
             # Миграции
-            php artisan migrate --force
+            php artisan migrate:fresh
             
             # Сиды
-            php artisan db:seed --force
+            php artisan db:seed
             
             # Frontend
             npm ci --silent
