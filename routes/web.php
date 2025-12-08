@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['onboarded'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('clients', \App\Http\Controllers\ClientController::class);
+        Route::resource('services', \App\Http\Controllers\ServiceController::class);
     });
 });
 

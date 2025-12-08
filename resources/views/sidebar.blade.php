@@ -28,16 +28,13 @@
                     </a>
 
                     <!-- Клиенты -->
-                    <a href="" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('clients.*') ?
+                    <a href="{{ route('clients.index') }}" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('clients.*') ?
                         'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 text-blue-700 dark:text-blue-200 shadow-sm border border-blue-100 dark:border-blue-800' :
                         'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:text-gray-900 dark:hover:text-white hover:shadow-sm' }}">
                         <div class="flex items-center justify-center w-6 mr-3">
                             <i class="fas fa-users {{ Request::routeIs('clients.*') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300' }} text-sm"></i>
                         </div>
                         Клиенты
-                        <span class="ml-auto bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 text-xs font-semibold px-2 py-1 rounded-full min-w-[2rem] text-center">
-                            24
-                        </span>
                     </a>
 
                     <!-- Записи -->
@@ -54,7 +51,7 @@
                     </a>
 
                     <!-- Услуги -->
-                    <a href="" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('services.*') ?
+                    <a href="{{ route('services.index') }}" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('services.*') ?
                         'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/30 text-blue-700 dark:text-blue-200 shadow-sm border border-blue-100 dark:border-blue-800' :
                         'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/60 hover:text-gray-900 dark:hover:text-white hover:shadow-sm' }}">
                         <div class="flex items-center justify-center w-6 mr-3">

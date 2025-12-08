@@ -9,10 +9,10 @@ class ApiController extends Controller
 {
     public function checkSlug(Request $request)
     {
-        if (!$request->has('slug')) {
+        if (!$request->filled('slug')) {
             return response()->json([
                 'message' => 'slug already exists',
-            ]);
+            ], 404);
         }
 
         $exists = Business::query()->where('slug', $request->slug)->exists();
