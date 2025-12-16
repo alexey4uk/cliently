@@ -8,5 +8,5 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::post('/slug/check', [\App\Http\Controllers\ApiController::class, 'checkSlug'])->name('api.slug.check');
+Route::post('/slug/check', \App\Http\Controllers\Api\SlugCheckController::class)->name('api.slug.check');
 
