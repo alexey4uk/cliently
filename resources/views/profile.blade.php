@@ -3,572 +3,241 @@
 @section('title', 'Профиль пользователя - Cliently')
 
 @section('content')
-    <div class="max-w-3xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-        <!-- Заголовок -->
-        <div class="mb-6 sm:mb-8">
-            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Профиль пользователя</h1>
-            <p class="text-sm sm:text-base text-gray-500 dark:text-gray-400">Управление вашими личными данными</p>
+    <!-- Заголовок страницы -->
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Профиль</h1>
+            <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Управление личными данными</p>
         </div>
-
-        <!-- Основной контент -->
-        <div class="space-y-6">
-            <!-- Карточка профиля -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-
-                <!-- Форма -->
-                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="p-4 sm:p-6">
-                    @csrf
-                    @method('PATCH')
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <!-- Имя -->
-                        <div>
-                            <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                Имя *
-                            </label>
-                            <input
-                                type="text"
-                                id="first_name"
-                                name="first_name"
-                                value="{{ old('first_name', auth()->user()->first_name) }}"
-                                required
-                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('first_name') border-red-500 @enderror"
-                                placeholder="Введите ваше имя"
-                            >
-                            @error('first_name')
-                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Фамилия -->
-                        <div>
-                            <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                Фамилия *
-                            </label>
-                            <input
-                                type="text"
-                                id="last_name"
-                                name="last_name"
-                                value="{{ old('last_name', auth()->user()->last_name) }}"
-                                required
-                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('last_name') border-red-500 @enderror"
-                                placeholder="Введите вашу фамилию"
-                            >
-                            @error('last_name')
-                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Email -->
-                        <div class="md:col-span-2">
-                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                Email адрес *
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value="{{ old('email', auth()->user()->email) }}"
-                                required
-                                class="w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 @error('email') border-red-500 @enderror"
-                                placeholder="your@email.com"
-                            >
-                            @error('email')
-                            <p class="mt-1 text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Телефон -->
-                        <input type="hidden" name="phone_normalized" value="{{ old('phone_normalized', auth()->user()->phone) }}" id="phone_normalized">
-
-                        <div class="md:col-span-2">
-                            <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                                Телефон *
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-phone text-gray-400 text-xs sm:text-sm"></i>
-                                </div>
-                                <input
-                                    id="phone"
-                                    name="phone"
-                                    type="tel"
-                                    autocomplete="tel"
-                                    required
-                                    class="block w-full pl-9 sm:pl-10 pr-3 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 @error('phone') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                    placeholder="+375 (29) 123-45-67"
-                                    value="{{ old('phone', auth()->user()->phone) }}"
-                                >
-                            </div>
-                            @error('phone')
-                            <div class="mt-1 flex items-center space-x-1">
-                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            </div>
-                            @enderror
-                            @error('phone_normalized')
-                            <div class="mt-1 flex items-center space-x-1">
-                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                <p class="text-xs sm:text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            </div>
-                            @enderror
-                        </div>
-
-                        <!-- Аватар -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Аватар
-                            </label>
-
-                            <div class="flex flex-row items-start gap-4 sm:gap-6">
-                                <!-- Предпросмотр аватара -->
-                                <div class="flex-shrink-0 relative">
-                                    <div id="avatar-preview" class="w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                                        @if(auth()->user()->avatar)
-                                            <img src="{{ Storage::url(auth()->user()->avatar) }}" alt="Текущий аватар"
-                                                 class="w-full h-full object-cover" id="current-avatar">
-                                        @else
-                                            <div class="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                        <span class="text-white font-bold text-base sm:text-xl" id="avatar-initials">
-                            {{ Str::substr(auth()->user()->first_name, 0, 1) }}{{ Str::substr(auth()->user()->last_name, 0, 1) }}
-                        </span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div id="avatar-loading" class="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-full flex items-center justify-center hidden">
-                                        <i class="fas fa-spinner fa-spin text-white text-xl"></i>
-                                    </div>
-                                </div>
-
-                                <!-- Поле загрузки -->
-                                <div class="flex-1 space-y-3">
-                                    <div class="flex flex-col xs:flex-row gap-2 sm:gap-3">
-                                        <!-- Кнопка выбора файла -->
-                                        <div class="flex-1">
-                                            <input
-                                                type="file"
-                                                id="avatar"
-                                                name="avatar"
-                                                accept="image/*"
-                                                class="hidden"
-                                            >
-                                            <label for="avatar" class="cursor-pointer bg-blue-600 text-white py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full">
-                                                <i class="fas fa-upload"></i>
-                                                <span class="text-xs sm:text-sm">Выбрать файл</span>
-                                            </label>
-                                        </div>
-
-                                        <!-- Кнопка удаления -->
-                                        @if(auth()->user()->avatar)
-                                            <button type="button" id="remove-avatar-btn" class="bg-red-600 text-white py-2 px-3 sm:py-2.5 sm:px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 flex items-center justify-center space-x-2 w-full xs:w-auto">
-                                                <i class="fas fa-trash"></i>
-                                                <span class="text-xs sm:text-sm">Удалить</span>
-                                            </button>
-                                        @endif
-                                    </div>
-
-                                    <p class="text-xs text-gray-500 dark:text-gray-400" id="file-name">
-                                        PNG, JPG, GIF до 5MB
-                                    </p>
-
-                                    @error('avatar')
-                                    <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Кнопки -->
-                    <div class="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
-                            <i class="fas fa-save mr-2"></i>
-                            Сохранить изменения
-                        </button>
-                        <a href="{{ route('dashboard') }}" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 flex items-center justify-center text-sm sm:text-base">
-                            <i class="fas fa-times mr-2"></i>
-                            Отмена
-                        </a>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Дополнительные настройки -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">Безопасность</h3>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Управление безопасностью аккаунта</p>
-                </div>
-                <div class="px-4 sm:px-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 gap-3 sm:gap-0">
-                        <div class="mb-2 sm:mb-0">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Смена пароля</h4>
-                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Обновите ваш пароль для безопасности</p>
-                        </div>
-                        <a href="{{ route('password.edit') }}" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200 text-center">
-                            Сменить пароль
-                        </a>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-t border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
-                        <div class="mb-2 sm:mb-0">
-                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Двухфакторная аутентификация</h4>
-                            <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Дополнительная защита вашего аккаунта</p>
-                        </div>
-                        <button class="w-full sm:w-auto bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                            Включить
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <a href="{{ route('dashboard') }}"
+            class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors text-sm">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <span>Назад</span>
+        </a>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Функция для форматирования имени/фамилии с большой буквы
-            function capitalizeName(name) {
-                return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-            }
+    <!-- Аватар и основная информация -->
+    <section>
+        <div
+            class="rounded-lg border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div
+                class="flex flex-col md:flex-row items-start md:items-center gap-6 pb-6 border-b border-slate-200 dark:border-slate-800 mb-6">
+                <!-- Аватар -->
+                <div class="relative">
+                    <div
+                        class="h-24 w-24 md:h-20 md:w-20 rounded-full bg-slate-200 flex items-center justify-center text-3xl md:text-2xl font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-4 border-slate-300 dark:border-slate-700">
+                        АМ
+                    </div>
+                    <label for="avatar"
+                        class="absolute bottom-0 right-0 h-8 w-8 md:h-7 md:w-7 rounded-full bg-[#6366F1] flex items-center justify-center text-white cursor-pointer hover:bg-[#4F46E5] transition-colors shadow-sm border-2 border-white dark:border-slate-900">
+                        <i class="fa-solid fa-camera text-xs"></i>
+                        <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" />
+                    </label>
+                </div>
 
-            // Конфигурация телефона
-            const PHONE_CONFIG = {
-                countryCode: '375',
-                validOperatorCodes: ['29', '33', '44', '25'],
-                validFirstDigits: ['2', '3', '4'],
-                template: '+375 (XX) XXX-XX-XX'
-            };
-
-            const phoneInput = document.getElementById('phone');
-            const phoneNormalizedInput = document.getElementById('phone_normalized');
-            const firstNameInput = document.getElementById('first_name');
-            const lastNameInput = document.getElementById('last_name');
-
-            // Общая функция для обработки имен
-            function setupNameInput(input) {
-                input.addEventListener('input', function(e) {
-                    const cursorPosition = e.target.selectionStart;
-                    const originalValue = e.target.value;
-
-                    if (originalValue.length > 0) {
-                        e.target.value = capitalizeName(originalValue);
-                        const newCursorPosition = Math.min(cursorPosition, e.target.value.length);
-                        e.target.setSelectionRange(newCursorPosition, newCursorPosition);
-                    }
-                });
-            }
-
-            // Настройка полей имени и фамилии
-            setupNameInput(firstNameInput);
-            setupNameInput(lastNameInput);
-
-            // Функция форматирования телефона
-            function formatPhoneNumber(digits) {
-                let formattedValue = `+${PHONE_CONFIG.countryCode} `;
-
-                if (digits.length > 0) formattedValue += `(${digits.substring(0, 2)}`;
-                if (digits.length > 2) formattedValue += `) ${digits.substring(2, 5)}`;
-                if (digits.length > 5) formattedValue += `-${digits.substring(5, 7)}`;
-                if (digits.length > 7) formattedValue += `-${digits.substring(7, 9)}`;
-
-                return formattedValue;
-            }
-
-            // Функция проверки оператора
-            function isValidOperatorCode(digits) {
-                if (digits.length === 0) return true;
-
-                const firstDigit = digits.substring(0, 1);
-                if (!PHONE_CONFIG.validFirstDigits.includes(firstDigit)) return false;
-
-                if (digits.length >= 2) {
-                    const operatorCode = digits.substring(0, 2);
-                    return PHONE_CONFIG.validOperatorCodes.includes(operatorCode);
-                }
-
-                return true;
-            }
-
-            // Обработка телефона
-            phoneInput.addEventListener('input', function(e) {
-                let digits = e.target.value.replace(/\D/g, '');
-
-                // Убираем код страны если есть
-                if (digits.startsWith(PHONE_CONFIG.countryCode)) {
-                    digits = digits.substring(PHONE_CONFIG.countryCode.length);
-                }
-
-                // Проверяем валидность оператора
-                if (!isValidOperatorCode(digits)) {
-                    digits = digits.substring(0, digits.length - 1);
-                }
-
-                // Форматируем и устанавливаем значения
-                e.target.value = formatPhoneNumber(digits);
-                phoneNormalizedInput.value = `+${PHONE_CONFIG.countryCode}${digits}`;
-            });
-
-            // Валидация при потере фокуса
-            phoneInput.addEventListener('blur', function(e) {
-                const digits = e.target.value.replace(/\D/g, '').replace(PHONE_CONFIG.countryCode, '');
-
-                if (digits.length >= 2) {
-                    const operatorCode = digits.substring(0, 2);
-                    if (!PHONE_CONFIG.validOperatorCodes.includes(operatorCode)) {
-                        showOperatorError();
-                        resetPhoneField();
-                    }
-                } else if (digits.length === 1) {
-                    const firstDigit = digits.substring(0, 1);
-                    if (!PHONE_CONFIG.validFirstDigits.includes(firstDigit)) {
-                        showOperatorError();
-                        resetPhoneField();
-                    }
-                }
-            });
-
-            function showOperatorError() {
-                alert(`Допустимые коды операторов: ${PHONE_CONFIG.validOperatorCodes.join(', ')}`);
-                phoneInput.focus();
-            }
-
-            function resetPhoneField() {
-                phoneInput.value = `+${PHONE_CONFIG.countryCode} (`;
-                phoneNormalizedInput.value = '';
-            }
-
-            // Автозаполнение при фокусе для телефона
-            phoneInput.addEventListener('focus', function(e) {
-                if (!e.target.value || e.target.value === `+${PHONE_CONFIG.countryCode} (`) {
-                    e.target.value = `+${PHONE_CONFIG.countryCode} (`;
-                }
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const avatarInput = document.getElementById('avatar');
-            const avatarPreview = document.getElementById('avatar-preview');
-            const avatarLoading = document.getElementById('avatar-loading');
-            const fileName = document.getElementById('file-name');
-            const removeAvatarBtn = document.getElementById('remove-avatar-btn');
-
-            // Безопасное получение инициалов
-            function getAvatarInitials() {
-                const initialsElement = document.getElementById('avatar-initials');
-                if (initialsElement) {
-                    return initialsElement.textContent;
-                }
-
-                const userFirstName = '{{ auth()->user()->first_name }}';
-                const userLastName = '{{ auth()->user()->last_name }}';
-
-                if (userFirstName && userLastName) {
-                    return (userFirstName.charAt(0) + userLastName.charAt(0)).toUpperCase();
-                }
-
-                return 'US';
-            }
-
-            // Обработка удаления аватара через AJAX
-            if (removeAvatarBtn) {
-                removeAvatarBtn.addEventListener('click', async function() {
-                    if (!confirm('Вы уверены, что хотите удалить аватар?')) {
-                        return;
-                    }
-
-                    // Показываем индикатор загрузки
-                    if (avatarLoading) {
-                        avatarLoading.classList.remove('hidden');
-                    }
-
-                    // Блокируем кнопку на время запроса
-                    this.disabled = true;
-
-                    try {
-                        console.log('Sending avatar deletion request...');
-
-                        const response = await fetch('{{ route("profile.avatar.delete") }}', {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            credentials: 'same-origin'
-                        });
-
-                        console.log('Response status:', response.status);
-
-                        const result = await response.json();
-                        console.log('Response data:', result);
-
-                        if (response.ok && result.success) {
-                            console.log('Avatar deleted successfully');
-
-                            // Показываем уведомление
-                            showNotification('Аватар успешно удален', 'success');
-
-                            // Обновляем страницу через 1.5 секунды (после показа уведомления)
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-
-                        } else {
-                            console.error('Server returned error:', result);
-                            throw new Error(result.message || `HTTP error! status: ${response.status}`);
-                        }
-                    } catch (error) {
-                        console.error('Error deleting avatar:', error);
-                        showNotification('Ошибка при удалении аватара: ' + error.message, 'error');
-                    } finally {
-                        // Скрываем индикатор загрузки
-                        if (avatarLoading) {
-                            avatarLoading.classList.add('hidden');
-                        }
-                        // Разблокируем кнопку
-                        this.disabled = false;
-                    }
-                });
-            }
-
-            // Функция создания кнопки удаления для новых загруженных файлов
-            function createRemoveButton() {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.id = 'remove-avatar-btn-new';
-                button.className = 'bg-red-600 text-white py-2.5 px-4 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200 flex items-center justify-center sm:justify-start space-x-2';
-                button.innerHTML = '<i class="fas fa-trash"></i><span>Удалить</span>';
-
-                button.addEventListener('click', async function() {
-                    if (!confirm('Вы уверены, что хотите удалить аватар?')) {
-                        return;
-                    }
-
-                    if (avatarLoading) {
-                        avatarLoading.classList.remove('hidden');
-                    }
-
-                    this.disabled = true;
-
-                    try {
-                        const response = await fetch('{{ route("profile.avatar.delete") }}', {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            credentials: 'same-origin'
-                        });
-
-                        const result = await response.json();
-
-                        if (response.ok && result.success) {
-                            // Показываем уведомление
-                            showNotification('Аватар успешно удален', 'success');
-
-                            // Обновляем страницу через 1.5 секунды
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-
-                        } else {
-                            throw new Error(result.message || 'Ошибка при удалении');
-                        }
-                    } catch (error) {
-                        console.error('Error deleting avatar:', error);
-                        showNotification('Ошибка при удалении аватара: ' + error.message, 'error');
-                    } finally {
-                        if (avatarLoading) {
-                            avatarLoading.classList.add('hidden');
-                        }
-                        this.disabled = false;
-                    }
-                });
-
-                const container = avatarInput.closest('.flex-1').querySelector('.flex');
-                container.appendChild(button);
-            }
-
-            // Обработка выбора файла
-            if (avatarInput) {
-                avatarInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-
-                    if (file) {
-                        // Проверка размера файла (5MB)
-                        if (file.size > 5 * 1024 * 1024) {
-                            alert('Файл слишком большой. Максимальный размер: 5MB');
-                            this.value = '';
-                            return;
-                        }
-
-                        // Проверка типа файла
-                        if (!file.type.match('image.*')) {
-                            alert('Пожалуйста, выберите изображение');
-                            this.value = '';
-                            return;
-                        }
-
-                        // Показать имя файла
-                        fileName.textContent = file.name;
-
-                        // Показать превью
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            avatarPreview.innerHTML = '';
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.classList.add('w-full', 'h-full', 'object-cover');
-                            avatarPreview.appendChild(img);
-
-                            // Показываем кнопку удаления
-                            const existingBtn = document.getElementById('remove-avatar-btn') || document.getElementById('remove-avatar-btn-new');
-                            if (!existingBtn) {
-                                createRemoveButton();
-                            } else {
-                                existingBtn.style.display = 'flex';
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-
-            // Функция показа уведомлений
-            function showNotification(message, type = 'success') {
-                // Создаем элемент уведомления
-                const notification = document.createElement('div');
-                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-transform duration-300 ${
-                    type === 'success'
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white'
-                }`;
-                notification.innerHTML = `
-            <div class="flex items-center space-x-2">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                <span class="text-sm">${message}</span>
+                <!-- Информация -->
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white mb-1">Алексей Морозов</h2>
+                    <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400 mb-2">alexey@example.com</p>
+                    <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400">
+                        <i class="fa-solid fa-phone mr-1.5"></i>+375 29 123-45-67
+                    </p>
+                </div>
             </div>
-        `;
 
-                // Добавляем в DOM
-                document.body.appendChild(notification);
+            <form method="POST" action="#" class="space-y-4">
+                <!-- @csrf -->
+                <!-- @method('PUT') -->
 
-                // Для успешных уведомлений удаляем через 1.5 секунды (перед обновлением страницы)
-                // Для ошибок - через 5 секунд
-                const timeout = type === 'success' ? 1500 : 5000;
+                <!-- Имя -->
+                <div>
+                    <label for="name"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Имя
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="text" id="name" name="name" value="Алексей Морозов"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="Ваше имя" />
+                    </div>
+                </div>
 
-                setTimeout(() => {
-                    notification.style.transform = 'translateX(100%)';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            notification.parentNode.removeChild(notification);
-                        }
-                    }, 300);
-                }, timeout);
+                <!-- Email -->
+                <div>
+                    <label for="email"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Email
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-envelope text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="email" id="email" name="email" value="alexey@example.com"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="your@email.com" />
+                    </div>
+                </div>
+
+                <!-- Телефон -->
+                <div>
+                    <label for="phone"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Телефон
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-phone text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="tel" id="phone" name="phone" value="+375291234567"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="+375291234567" />
+                    </div>
+                </div>
+
+                <!-- Кнопка сохранения -->
+                <div class="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <button type="submit"
+                        class="px-4 py-2.5 rounded-lg bg-[#6366F1] text-white text-sm font-medium hover:bg-[#4F46E5] active:bg-[#4338CA] transition-colors shadow-sm shadow-[#6366F1]/40">
+                        Сохранить изменения
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Смена пароля -->
+    <section>
+        <div
+            class="rounded-lg border border-slate-200 bg-white p-4 md:p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 class="text-base md:text-sm font-semibold text-slate-900 dark:text-white mb-4">Безопасность</h2>
+
+            <form method="POST" action="#" class="space-y-4">
+                <!-- @csrf -->
+                <!-- @method('PUT') -->
+
+                <!-- Текущий пароль -->
+                <div>
+                    <label for="current_password"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Текущий пароль
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="password" id="current_password" name="current_password"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="Введите текущий пароль" />
+                    </div>
+                </div>
+
+                <!-- Новый пароль -->
+                <div>
+                    <label for="new_password"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Новый пароль
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="password" id="new_password" name="new_password"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="Введите новый пароль" />
+                    </div>
+                </div>
+
+                <!-- Подтверждение нового пароля -->
+                <div>
+                    <label for="new_password_confirmation"
+                        class="block text-sm md:text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Подтверждение нового пароля
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
+                        </div>
+                        <input type="password" id="new_password_confirmation" name="new_password_confirmation"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            placeholder="Повторите новый пароль" />
+                    </div>
+                </div>
+
+                <!-- Кнопка сохранения -->
+                <div class="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <button type="submit"
+                        class="px-4 py-2.5 rounded-lg bg-[#6366F1] text-white text-sm font-medium hover:bg-[#4F46E5] active:bg-[#4338CA] transition-colors shadow-sm shadow-[#6366F1]/40">
+                        Изменить пароль
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+@endsection
+
+@section('scripts')
+    <script>
+        // Переключение темы
+        const htmlEl = document.documentElement;
+        const toggleBtn = document.getElementById('themeToggle');
+
+        if (toggleBtn) {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+
+            if (shouldBeDark) {
+                htmlEl.classList.add('dark');
+            } else {
+                htmlEl.classList.remove('dark');
             }
+
+            toggleBtn.addEventListener('click', () => {
+                const isDark = htmlEl.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+        }
+
+        // Меню профиля
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuTriggers = document.querySelectorAll('.menu-trigger');
+
+            menuTriggers.forEach(trigger => {
+                const menuPanel = trigger.nextElementSibling;
+                if (!menuPanel || !menuPanel.classList.contains('menu-panel')) return;
+
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+
+                    // Закрываем все другие меню
+                    document.querySelectorAll('.menu-panel').forEach(panel => {
+                        if (panel !== menuPanel) {
+                            panel.classList.add('hidden');
+                        }
+                    });
+
+                    // Переключаем текущее меню
+                    menuPanel.classList.toggle('hidden');
+
+                    // Позиционируем меню
+                    if (!menuPanel.classList.contains('hidden')) {
+                        const rect = trigger.getBoundingClientRect();
+                        menuPanel.style.position = 'fixed';
+                        menuPanel.style.top = (rect.bottom + 4) + 'px';
+                        menuPanel.style.right = (window.innerWidth - rect.right) + 'px';
+                    }
+                });
+            });
+
+            // Закрытие меню при клике вне его
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.menu-panel').forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+            });
         });
     </script>
 @endsection
