@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserOnboarded
@@ -15,7 +16,7 @@ class EnsureUserOnboarded
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->user()->businesses->isNotEmpty()) {
+        if (Auth::user()->businesses->isNotEmpty()) {
             return $next($request);
         }
 
