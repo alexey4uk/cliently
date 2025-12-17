@@ -29,16 +29,19 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms' => ['required', 'accepted'],
         ], [
+            'name.required' => 'Поле имя обязательно для заполнения.',
             'email.required' => 'Поле email обязательно для заполнения.',
             'email.unique' => 'Пользователь с таким email уже существует.',
             'password.required' => 'Поле пароль обязательно для заполнения.',
             'password.confirmed' => 'Пароли не совпадают.',
+            'terms.required' => 'Необходимо принять пользовательское соглашение.',
+            'terms.accepted' => 'Необходимо принять пользовательское соглашение.',
         ]);
 
         $user = User::create([
@@ -46,7 +49,6 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
 
         event(new Registered($user));
 

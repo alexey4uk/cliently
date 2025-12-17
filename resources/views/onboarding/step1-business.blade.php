@@ -1,33 +1,51 @@
 @extends('layouts.user')
 @section('content')
     <!-- Заголовок страницы -->
-    <div class="flex items-baseline justify-between gap-2 mb-6">
+    <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
         <div>
             <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Создание бизнеса</h1>
-            <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400">Шаг 1 из 4</p>
         </div>
         
         <!-- Индикатор прогресса -->
-        <div class="flex items-center gap-2">
-            <div class="flex items-center">
+        <div class="w-full md:w-auto">
+            <div class="flex items-center w-full md:w-auto md:gap-1.5">
+                @php
+                    $steps = [
+                        1 => 'Бизнес',
+                        2 => 'Локация',
+                        3 => 'Услуга',
+                        4 => 'Мастер'
+                    ];
+                @endphp
                 @for($i = 1; $i <= 4; $i++)
-                    <div class="w-2 h-2 rounded-full {{ $i == 1 ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700' }} {{ $i < 4 ? 'mr-1' : '' }}"></div>
+                    <div class="flex items-center {{ $i < 4 ? 'flex-1 md:flex-none' : 'flex-shrink-0' }}">
+                        <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold transition-colors flex-shrink-0 {{ $i == 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400' }}">
+                            {{ $i }}
+                        </div>
+                        @if($i < 4)
+                            <div class="flex-1 md:w-6 md:flex-none h-0.5 mx-1 md:mx-0 {{ $i < 1 ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700' }}"></div>
+                        @endif
+                    </div>
                 @endfor
             </div>
         </div>
     </div>
 
     <!-- Информационная карточка -->
-    <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-900 dark:bg-indigo-900/30 p-4 mb-6">
+    <div class="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 p-4 md:p-5 mb-6">
         <div class="flex items-start gap-3">
             <div class="flex-shrink-0">
-                <i class="fa-solid fa-lightbulb text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                    <i class="fa-solid fa-eye text-slate-600 dark:text-slate-400 text-sm"></i>
+                </div>
             </div>
-            <div>
-                <p class="text-sm text-indigo-800 dark:text-indigo-300">
-                    <span class="font-medium">Ваш бизнес будет доступен по адресу:</span><br>
-                    <span class="font-mono">beautybook.ru/<span id="slugPreview" class="font-semibold">ваш-slug</span></span>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Предпросмотр адреса:
                 </p>
+                <div class="flex items-center bg-slate-100 dark:bg-slate-900/50 px-3 py-2 rounded border border-slate-200 dark:border-slate-700 opacity-75">
+                    <span class="text-sm text-slate-500 dark:text-slate-400 font-mono select-none">https://cliently.by/</span><span id="slugPreview" class="text-sm text-slate-600 dark:text-slate-300 font-mono select-none">ip-ivanov</span>
+                </div>
             </div>
         </div>
     </div>
@@ -36,27 +54,46 @@
     <form method="POST" action="{{ route('onboarding.business.store') }}" class="space-y-6">
         @csrf
         
-        <div class="space-y-4">
+        <div class="space-y-5">
             <div>
-                <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название бизнеса*</label>
+                <label for="name" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                    <span>Название бизнеса*</span>
+                </label>
                 <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                    class="w-full px-3 py-2 text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                    class="w-full px-3 py-2.5 text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                     placeholder="Например: Elite Beauty Salon"
-                    autofocus>
+                    autofocus
+                    data-tooltip="Введите название вашего бизнеса. Это название будет отображаться клиентам.">
+                <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="nameTooltip">
+                    Введите название вашего бизнеса. Это название будет отображаться клиентам.
+                </p>
                 @error('name')
-                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label for="slug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Slug*</label>
-                <div class="flex">
-                    <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm">
-                        beautybook.ru/
+                <label for="slug" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                    <span>Уникальная часть адреса*</span>
+                </label>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                    Введите уникальную часть адреса (после <span class="font-mono text-slate-500">https://cliently.by/</span>). Это будет ваш персональный адрес в системе.
+                </p>
+                <div class="flex items-center bg-white dark:bg-slate-900 rounded-lg border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
+                    <!-- Иконка замка/безопасности (как в браузере) -->
+                    <div class="flex items-center justify-center px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700">
+                        <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-xs"></i>
+                    </div>
+                    <!-- Префикс домена -->
+                    <span class="inline-flex items-center px-2 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">
+                        https://cliently.by/
                     </span>
+                    <!-- Поле ввода -->
                     <div class="flex-1 relative">
                         <input type="text" id="slug" name="slug" required value="{{ old('slug') }}"
-                            class="w-full px-3 py-2 text-sm rounded-r-md border {{ $errors->has('slug') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2 py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none font-mono placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             placeholder="elite-beauty">
                         
                         <!-- Индикаторы проверки -->
@@ -73,50 +110,83 @@
                         </div>
                     </div>
                 </div>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Только латинские буквы в нижнем регистре, цифры и одиночные дефисы
-                </p>
+                <div class="mt-2 space-y-1">
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <i class="fa-solid fa-info-circle text-xs mr-1"></i>
+                        Только латинские буквы в нижнем регистре, цифры и одиночные дефисы
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden" id="slugTooltip">
+                        <i class="fa-solid fa-lightbulb text-xs mr-1 text-amber-500"></i>
+                        Совет: используйте название вашего бизнеса на английском или транслитерацию. Например: "elite-beauty" или "salon-krasoty"
+                    </p>
+                </div>
                 @error('slug')
-                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                 @else
-                    <p id="slugError" class="mt-1 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
+                    <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 @enderror
             </div>
 
             <div>
-                <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
-                <textarea id="description" name="description" rows="3"
-                    class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                    placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
+                <label for="description" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                    <span>Описание</span>
+                </label>
+                <div class="relative">
+                    <textarea id="description" name="description" rows="3" maxlength="500"
+                        class="w-full px-3 py-2.5 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
+                    <div class="absolute bottom-2 right-2 flex items-center gap-1">
+                        <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
+                    </div>
+                </div>
+                <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="descriptionTooltip">
+                    Необязательное поле. Добавьте краткое описание вашего бизнеса для клиентов.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
+                    <label for="phone" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                        <span>Телефон*</span>
+                    </label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                        class="w-full px-3 py-2 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        placeholder="+7 (999) 123-45-67">
+                        class="w-full px-3 py-2.5 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        placeholder="+375 (29) 123-45-67"
+                        data-tooltip="Введите номер телефона в формате +375XXXXXXXXX. Коды операторов: 29, 33, 44, 25.">
+                    <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="phoneTooltip">
+                        Введите номер телефона в формате +375XXXXXXXXX. Коды операторов: 29, 33, 44, 25.
+                    </p>
                     @error('phone')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
+                    <p id="phoneError" class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 </div>
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
+                    <label for="email" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                        <span>Почта</span>
+                    </label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}"
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                        placeholder="info@example.com">
+                        class="w-full px-3 py-2.5 text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        placeholder="info@example.com"
+                        data-tooltip="Необязательное поле. Email для связи с вашим бизнесом.">
+                    <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="emailTooltip">
+                        Необязательное поле. Email для связи с вашим бизнесом.
+                    </p>
+                    @error('email')
+                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
         </div>
 
         <!-- Кнопки действий -->
-        <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-            <a href="{{ route('dashboard') }}"
-                class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Назад в дашборд
-            </a>
-            
+        <div class="flex items-center justify-end pt-6 border-t border-slate-200 dark:border-slate-800">
             <button type="submit" id="submitButton"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 Продолжить <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -195,6 +265,26 @@
                 body: JSON.stringify({ slug: slug })
             });
 
+            // Обработка rate limiting (429 Too Many Requests)
+            if (response.status === 429) {
+                const retryAfter = response.headers.get('Retry-After') || 60;
+                showSlugUnavailable(`Слишком много запросов. Попробуйте через ${retryAfter} секунд.`);
+                isSlugAvailable = false;
+                slugIsChecking = false;
+                updateSubmitButton();
+                return;
+            }
+
+            // Обработка других ошибок сервера
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                showSlugUnavailable(data.message || 'Не удалось проверить доступность slug. Попробуйте позже.');
+                isSlugAvailable = false;
+                slugIsChecking = false;
+                updateSubmitButton();
+                return;
+            }
+
             const data = await response.json();
             
             if (data.available === true) {
@@ -270,7 +360,7 @@
         document.getElementById('slugAvailable').classList.add('hidden');
         document.getElementById('slugUnavailable').classList.add('hidden');
         document.getElementById('slugError').classList.add('hidden');
-        document.getElementById('slugPreview').textContent = 'ваш-slug';
+        document.getElementById('slugPreview').textContent = 'ip-ivanov';
         
         const slugInput = document.getElementById('slug');
         slugInput.classList.remove('border-emerald-500', 'border-rose-500');
@@ -340,7 +430,189 @@
 
     // Проверка других обязательных полей
     document.getElementById('name').addEventListener('input', updateSubmitButton);
-    document.getElementById('phone').addEventListener('input', updateSubmitButton);
+
+    // Автоподстановка +375 при фокусе на поле телефона
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('focus', function(e) {
+        if (!e.target.value || !e.target.value.startsWith('+375')) {
+            e.target.value = '+375';
+            // Устанавливаем курсор после +375
+            setTimeout(() => {
+                e.target.setSelectionRange(4, 4);
+            }, 0);
+        }
+    });
+
+    // Защита от удаления +375
+    phoneInput.addEventListener('keydown', function(e) {
+        const selectionStart = e.target.selectionStart;
+        const selectionEnd = e.target.selectionEnd;
+        
+        // Блокируем удаление, если курсор находится в области +375 (позиции 0-4)
+        if (selectionStart < 5 || selectionEnd < 5) {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                e.preventDefault();
+                // Перемещаем курсор после +375
+                e.target.setSelectionRange(5, 5);
+                return false;
+            }
+        }
+    });
+
+    // Валидные коды операторов Беларуси
+    const validOperatorCodes = ['29', '33', '44', '25'];
+
+    // Проверка кода оператора
+    function isValidOperatorCode(digits) {
+        if (digits.length >= 2) {
+            const operatorCode = digits.substring(0, 2);
+            return validOperatorCodes.includes(operatorCode);
+        }
+        return true; // Если меньше 2 цифр, считаем валидным (еще вводится)
+    }
+
+    // Показать ошибку кода оператора
+    function showPhoneError(message) {
+        const errorElement = document.getElementById('phoneError');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            phoneInput.classList.add('border-rose-500');
+        }
+    }
+
+    // Скрыть ошибку кода оператора
+    function hidePhoneError() {
+        const errorElement = document.getElementById('phoneError');
+        if (errorElement) {
+            errorElement.classList.add('hidden');
+            phoneInput.classList.remove('border-rose-500');
+        }
+    }
+
+    // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        
+        // Если значение не начинается с +375, устанавливаем префикс
+        if (!value.startsWith('+375')) {
+            value = '+375';
+        }
+        
+        // Извлекаем только цифры после +375
+        const digits = value.substring(4).replace(/\D/g, '');
+        
+        // Проверяем код оператора при вводе первых 2 цифр
+        if (digits.length >= 2) {
+            const operatorCode = digits.substring(0, 2);
+            if (!validOperatorCodes.includes(operatorCode)) {
+                // Блокируем ввод неверного кода - оставляем только первую цифру или удаляем неверную
+                const firstDigit = digits.substring(0, 1);
+                // Проверяем, может ли первая цифра быть началом валидного кода
+                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
+                
+                if (!canBeValid) {
+                    // Первая цифра не может быть началом валидного кода - удаляем все
+                    e.target.value = '+375';
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5, 5);
+                    updateSubmitButton();
+                    return;
+                } else {
+                    // Вторая цифра неверная - оставляем только первую
+                    const limitedDigits = firstDigit;
+                    e.target.value = '+375' + limitedDigits;
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
+                    updateSubmitButton();
+                    return;
+                }
+            } else {
+                // Код оператора валиден
+                hidePhoneError();
+            }
+        } else {
+            // Меньше 2 цифр - проверяем, может ли быть валидным
+            if (digits.length === 1) {
+                const firstDigit = digits;
+                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
+                if (!canBeValid) {
+                    // Первая цифра не может быть началом валидного кода
+                    e.target.value = '+375';
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5, 5);
+                    updateSubmitButton();
+                    return;
+                } else {
+                    hidePhoneError();
+                }
+            } else {
+                hidePhoneError();
+            }
+        }
+        
+        // Ограничиваем до 9 цифр (белорусский номер)
+        const limitedDigits = digits.substring(0, 9);
+        
+        // Формируем финальное значение
+        e.target.value = '+375' + limitedDigits;
+        
+        // Устанавливаем курсор в конец, но не раньше позиции 5
+        const cursorPosition = Math.max(5, e.target.value.length);
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+        
+        updateSubmitButton();
+    });
+
+    // Подсказки при фокусе
+    function setupTooltips() {
+        const fields = [
+            { id: 'name', tooltipId: 'nameTooltip' },
+            { id: 'phone', tooltipId: 'phoneTooltip' },
+            { id: 'email', tooltipId: 'emailTooltip' },
+            { id: 'description', tooltipId: 'descriptionTooltip' },
+            { id: 'slug', tooltipId: 'slugTooltip' }
+        ];
+
+        fields.forEach(({ id, tooltipId }) => {
+            const field = document.getElementById(id);
+            const tooltip = document.getElementById(tooltipId);
+            
+            if (field && tooltip) {
+                field.addEventListener('focus', () => {
+                    tooltip.classList.remove('hidden');
+                });
+                
+                field.addEventListener('blur', () => {
+                    tooltip.classList.add('hidden');
+                });
+            }
+        });
+    }
+
+    // Счетчик символов для описания
+    function setupDescriptionCounter() {
+        const descriptionField = document.getElementById('description');
+        const counter = document.getElementById('descriptionCount');
+        
+        if (descriptionField && counter) {
+            function updateCounter() {
+                const length = descriptionField.value.length;
+                counter.textContent = length;
+                
+                if (length > 450) {
+                    counter.classList.add('text-amber-600', 'dark:text-amber-400');
+                    counter.classList.remove('text-slate-400', 'dark:text-slate-500');
+                } else {
+                    counter.classList.remove('text-amber-600', 'dark:text-amber-400');
+                    counter.classList.add('text-slate-400', 'dark:text-slate-500');
+                }
+            }
+            
+            descriptionField.addEventListener('input', updateCounter);
+            updateCounter(); // Инициализация
+        }
+    }
 
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
@@ -350,6 +622,8 @@
             checkSlugAvailability(slugInput.value.trim());
         }
         
+        setupTooltips();
+        setupDescriptionCounter();
         updateSubmitButton();
     });
 </script>

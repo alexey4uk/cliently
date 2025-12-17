@@ -39,9 +39,9 @@ class OnboardingController extends Controller
             $business = Business::create([
                 'name' => $validated['name'],
                 'slug' => $validated['slug'],
-                'description' => $validated['description'],
+                'description' => $validated['description'] ?? null,
                 'phone' => $validated['phone'],
-                'email' => $validated['email'],
+                'email' => $validated['email'] ?? null,
             ]);
 
             $business->users()->attach($request->user(), ['role' => 'owner']);
@@ -78,12 +78,46 @@ class OnboardingController extends Controller
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
             'working_hours' => 'required|array',
-            'working_hours.*.from' => 'nullable|date_format:H:i',
-            'working_hours.*.to' => 'nullable|date_format:H:i',
-            'working_hours.*.day_off' => 'nullable|boolean',
+            'working_hours.from' => 'required_without:working_hours.24_hours|date_format:H:i',
+            'working_hours.to' => 'required_without:working_hours.24_hours|date_format:H:i',
+            'working_hours.24_hours' => 'nullable|boolean',
+        ], [
+            'name.required' => 'Поле "Название локации" обязательно для заполнения.',
+            'address.required' => 'Поле "Адрес" обязательно для заполнения.',
+            'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
+            'working_hours.required' => 'Необходимо указать время работы.',
+            'working_hours.from.required_without' => 'Укажите время начала работы или выберите круглосуточный режим.',
+            'working_hours.to.required_without' => 'Укажите время окончания работы или выберите круглосуточный режим.',
+            'working_hours.from.date_format' => 'Неверный формат времени начала работы.',
+            'working_hours.to.date_format' => 'Неверный формат времени окончания работы.',
+            'email.email' => 'Неверный формат email адреса.',
         ]);
 
         $businessId = session('onboarding.business_id') ?? $request->user()->businesses()->first()->id;
+
+        // Формируем working_hours для всех дней недели
+        $workingHours = [];
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        
+        if (!empty($validated['working_hours']['24_hours'])) {
+            // Круглосуточный режим
+            foreach ($days as $day) {
+                $workingHours[$day] = [
+                    'from' => '00:00',
+                    'to' => '00:00',
+                    'day_off' => false,
+                ];
+            }
+        } else {
+            // Обычный режим - одинаковое время для всех дней
+            foreach ($days as $day) {
+                $workingHours[$day] = [
+                    'from' => $validated['working_hours']['from'] ?? null,
+                    'to' => $validated['working_hours']['to'] ?? null,
+                    'day_off' => false,
+                ];
+            }
+        }
 
         $location = Location::create([
             'business_id' => $businessId,
@@ -92,7 +126,7 @@ class OnboardingController extends Controller
             'description' => $validated['description'] ?? null,
             'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
-            'working_hours' => json_encode($validated['working_hours']),
+            'working_hours' => json_encode($workingHours),
         ]);
 
         return redirect()->route('onboarding.service');
@@ -126,6 +160,14 @@ class OnboardingController extends Controller
             'description' => 'nullable|string',
             'duration' => 'required|integer|min:15|max:480',
             'price' => 'required|numeric|min:0|max:999999',
+        ], [
+            'name.required' => 'Поле "Название услуги" обязательно для заполнения.',
+            'duration.required' => 'Поле "Длительность" обязательно для заполнения.',
+            'duration.min' => 'Минимальная длительность услуги — 15 минут.',
+            'duration.max' => 'Максимальная длительность услуги — 480 минут (8 часов).',
+            'price.required' => 'Поле "Цена" обязательно для заполнения.',
+            'price.min' => 'Цена не может быть отрицательной.',
+            'price.max' => 'Цена не может превышать 999 999.',
         ]);
 
         $businessId = $request->user()->businesses()->first()->id;
@@ -133,7 +175,7 @@ class OnboardingController extends Controller
         $service = Service::create([
             'business_id' => $businessId,
             'name' => $validated['name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'duration' => $validated['duration'],
             'price' => $validated['price'],
             'is_active' => true,
@@ -179,6 +221,11 @@ class OnboardingController extends Controller
             'description' => 'nullable|string',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+        ], [
+            'name.required' => 'Поле "Имя мастера" обязательно для заполнения.',
+            'specialization.required' => 'Поле "Специализация" обязательно для заполнения.',
+            'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
+            'email.email' => 'Неверный формат email адреса.',
         ]);
 
         $business = $request->user()->businesses()->with(['locations', 'services'])->first();
@@ -190,10 +237,10 @@ class OnboardingController extends Controller
         $master = Master::create([
             'business_id' => $business->id,
             'name' => $validated['name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
             'phone' => $validated['phone'],
-            'email' => $validated['email'],
+            'email' => $validated['email'] ?? null,
         ]);
 
         $locationId = $business->locations->first()?->id;
