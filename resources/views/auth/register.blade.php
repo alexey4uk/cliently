@@ -66,74 +66,41 @@
             </div>
 
             <!-- Форма -->
-            <div class="space-y-4"> <!-- Уменьшил отступы -->
-                <form method="POST" action="{{ route('register') }}" class="space-y-4" id="registerForm"> <!-- Уменьшил отступы -->
+            <div class="space-y-4">
+                <form method="POST" action="{{ route('register') }}" class="space-y-4" id="registerForm">
                     @csrf
 
-                    <!-- Скрытое поле для нормализованного номера -->
-                    <input type="hidden" name="phone_normalized" value="{{ old('phone_normalized') }}" id="phone_normalized">
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3"> <!-- Уменьшил gap -->
-                        <!-- Имя -->
-                        <div>
-                            <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
-                                Имя *
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-user text-gray-400 text-sm"></i>
-                                </div>
-                                <input
-                                    id="first_name"
-                                    name="first_name"
-                                    type="text"
-                                    autocomplete="given-name"
-                                    required
-                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('first_name') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                    placeholder="Иван"
-                                    value="{{ old('first_name') }}"
-                                >
+                    <!-- Имя -->
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Имя *
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400 text-sm"></i>
                             </div>
-                            @error('first_name')
-                            <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
-                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            </div>
-                            @enderror
+                            <input
+                                id="name"
+                                name="name"
+                                type="text"
+                                autocomplete="name"
+                                required
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('name') border-red-500 ring-2 ring-red-500/20 @enderror"
+                                placeholder="Иван"
+                                value="{{ old('name') }}"
+                            >
                         </div>
-
-                        <!-- Фамилия -->
-                        <div>
-                            <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
-                                Фамилия *
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-user text-gray-400 text-sm"></i>
-                                </div>
-                                <input
-                                    id="last_name"
-                                    name="last_name"
-                                    type="text"
-                                    autocomplete="family-name"
-                                    required
-                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('last_name') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                    placeholder="Иванов"
-                                    value="{{ old('last_name') }}"
-                                >
-                            </div>
-                            @error('last_name')
-                            <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
-                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            </div>
-                            @enderror
+                        @error('name')
+                        <div class="mt-1 flex items-center space-x-1">
+                            <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         </div>
+                        @enderror
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
+                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Email адрес *
                         </label>
                         <div class="relative">
@@ -152,120 +119,81 @@
                             >
                         </div>
                         @error('email')
-                        <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
+                        <div class="mt-1 flex items-center space-x-1">
                             <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         </div>
                         @enderror
                     </div>
 
-                    <!-- Телефон -->
+                    <!-- Пароль -->
                     <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
-                            Телефон *
+                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Пароль *
                         </label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-phone text-gray-400 text-sm"></i>
+                                <i class="fas fa-lock text-gray-400 text-sm"></i>
                             </div>
                             <input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                autocomplete="tel"
+                                id="password"
+                                name="password"
+                                type="password"
+                                autocomplete="new-password"
                                 required
-                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('phone') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                placeholder="+375 (29) 123-45-67"
-                                value="{{ old('phone') }}"
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('password') border-red-500 ring-2 ring-red-500/20 @enderror"
+                                placeholder="Минимум 8 символов"
                             >
                         </div>
-                        @error('phone')
-                        <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
-                            <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                        </div>
-                        @enderror
-                        @error('phone_normalized')
-                        <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
+                        @error('password')
+                        <div class="mt-1 flex items-center space-x-1">
                             <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         </div>
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3"> <!-- Уменьшил gap -->
-                        <!-- Пароль -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
-                                Пароль *
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-lock text-gray-400 text-sm"></i>
-                                </div>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autocomplete="new-password"
-                                    required
-                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 @error('password') border-red-500 ring-2 ring-red-500/20 @enderror"
-                                    placeholder="Минимум 8 символов"
-                                >
+                    <!-- Подтверждение пароля -->
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Подтверждение пароля *
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400 text-sm"></i>
                             </div>
-                            @error('password')
-                            <div class="mt-1 flex items-center space-x-1"> <!-- Уменьшил отступ -->
-                                <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                                <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            </div>
-                            @enderror
-                        </div>
-
-                        <!-- Подтверждение пароля -->
-                        <div>
-                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"> <!-- Уменьшил отступ -->
-                                Подтверждение *
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-lock text-gray-400 text-sm"></i>
-                                </div>
-                                <input
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    type="password"
-                                    autocomplete="new-password"
-                                    required
-                                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
-                                    placeholder="Повторите пароль"
-                                >
-                            </div>
+                            <input
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                type="password"
+                                autocomplete="new-password"
+                                required
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300"
+                                placeholder="Повторите пароль"
+                            >
                         </div>
                     </div>
 
-                    <!-- Соглашение -->
-                    <div class="flex items-start space-x-2"> <!-- Уменьшил gap -->
+                    <!-- Пользовательское соглашение -->
+                    <div class="flex items-start space-x-2">
                         <input
                             id="terms"
                             name="terms"
                             type="checkbox"
                             required
+                            value="1"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500/20 border-gray-300 dark:border-gray-600 rounded transition-colors duration-300 mt-0.5">
-                        <label for="terms" class="block text-xs text-gray-700 dark:text-gray-300 leading-relaxed"> <!-- Уменьшил размер -->
-                            Я соглашаюсь с
+                        <label for="terms" class="block text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                            Я принимаю
                             <a href="#" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300">
-                                условиями
-                            </a>
-                            и
-                            <a href="#" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300">
-                                политикой конфиденциальности
+                                пользовательское соглашение
                             </a>
                         </label>
                     </div>
                     @error('terms')
                     <div class="flex items-center space-x-1">
                         <i class="fas fa-exclamation-circle text-red-500 text-xs"></i>
-                        <p class="text-sm text-red-600 dark:text-red-400">Необходимо принять условия использования</p>
+                        <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     </div>
                     @enderror
 
@@ -362,7 +290,7 @@
     </div>
 </div>
 
-<!-- Скрипт для маски телефона и улучшения UX -->
+<!-- Скрипт для улучшения UX -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Улучшение UX формы
@@ -384,124 +312,6 @@
                     this.classList.remove('border-red-500', 'ring-2', 'ring-red-500/20');
                 }
             });
-        });
-
-        // Функция для форматирования имени/фамилии с большой буквы
-        function capitalizeName(name) {
-            return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-        }
-
-        // Конфигурация телефона
-        const PHONE_CONFIG = {
-            countryCode: '375',
-            validOperatorCodes: ['29', '33', '44', '25'],
-            validFirstDigits: ['2', '3', '4'],
-            template: '+375 (XX) XXX-XX-XX'
-        };
-
-        const phoneInput = document.getElementById('phone');
-        const phoneNormalizedInput = document.getElementById('phone_normalized');
-        const firstNameInput = document.getElementById('first_name');
-        const lastNameInput = document.getElementById('last_name');
-
-        // Общая функция для обработки имен
-        function setupNameInput(input) {
-            input.addEventListener('input', function(e) {
-                const cursorPosition = e.target.selectionStart;
-                const originalValue = e.target.value;
-
-                if (originalValue.length > 0) {
-                    e.target.value = capitalizeName(originalValue);
-                    const newCursorPosition = Math.min(cursorPosition, e.target.value.length);
-                    e.target.setSelectionRange(newCursorPosition, newCursorPosition);
-                }
-            });
-        }
-
-        // Настройка полей имени и фамилии
-        setupNameInput(firstNameInput);
-        setupNameInput(lastNameInput);
-
-        // Функция форматирования телефона
-        function formatPhoneNumber(digits) {
-            let formattedValue = `+${PHONE_CONFIG.countryCode} `;
-
-            if (digits.length > 0) formattedValue += `(${digits.substring(0, 2)}`;
-            if (digits.length > 2) formattedValue += `) ${digits.substring(2, 5)}`;
-            if (digits.length > 5) formattedValue += `-${digits.substring(5, 7)}`;
-            if (digits.length > 7) formattedValue += `-${digits.substring(7, 9)}`;
-
-            return formattedValue;
-        }
-
-        // Функция проверки оператора
-        function isValidOperatorCode(digits) {
-            if (digits.length === 0) return true;
-
-            const firstDigit = digits.substring(0, 1);
-            if (!PHONE_CONFIG.validFirstDigits.includes(firstDigit)) return false;
-
-            if (digits.length >= 2) {
-                const operatorCode = digits.substring(0, 2);
-                return PHONE_CONFIG.validOperatorCodes.includes(operatorCode);
-            }
-
-            return true;
-        }
-
-        // Обработка телефона
-        phoneInput.addEventListener('input', function(e) {
-            let digits = e.target.value.replace(/\D/g, '');
-
-            // Убираем код страны если есть
-            if (digits.startsWith(PHONE_CONFIG.countryCode)) {
-                digits = digits.substring(PHONE_CONFIG.countryCode.length);
-            }
-
-            // Проверяем валидность оператора
-            if (!isValidOperatorCode(digits)) {
-                digits = digits.substring(0, digits.length - 1);
-            }
-
-            // Форматируем и устанавливаем значения
-            e.target.value = formatPhoneNumber(digits);
-            phoneNormalizedInput.value = `+${PHONE_CONFIG.countryCode}${digits}`;
-        });
-
-        // Валидация при потере фокуса
-        phoneInput.addEventListener('blur', function(e) {
-            const digits = e.target.value.replace(/\D/g, '').replace(PHONE_CONFIG.countryCode, '');
-
-            if (digits.length >= 2) {
-                const operatorCode = digits.substring(0, 2);
-                if (!PHONE_CONFIG.validOperatorCodes.includes(operatorCode)) {
-                    showOperatorError();
-                    resetPhoneField();
-                }
-            } else if (digits.length === 1) {
-                const firstDigit = digits.substring(0, 1);
-                if (!PHONE_CONFIG.validFirstDigits.includes(firstDigit)) {
-                    showOperatorError();
-                    resetPhoneField();
-                }
-            }
-        });
-
-        function showOperatorError() {
-            alert(`Допустимые коды операторов: ${PHONE_CONFIG.validOperatorCodes.join(', ')}`);
-            phoneInput.focus();
-        }
-
-        function resetPhoneField() {
-            phoneInput.value = `+${PHONE_CONFIG.countryCode} (`;
-            phoneNormalizedInput.value = '';
-        }
-
-        // Автозаполнение при фокусе для телефона
-        phoneInput.addEventListener('focus', function(e) {
-            if (!e.target.value || e.target.value === `+${PHONE_CONFIG.countryCode} (`) {
-                e.target.value = `+${PHONE_CONFIG.countryCode} (`;
-            }
         });
     });
 </script>
