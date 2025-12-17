@@ -56,7 +56,7 @@
 
                     <!-- Имя -->
                     <div>
-                        <label for="name" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Имя*</span>
                         </label>
@@ -67,7 +67,7 @@
                             value="{{ old('name') }}"
                             required
                             autocomplete="name"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="Иван Иванов"
                         />
                         @error('name')
@@ -77,7 +77,7 @@
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
@@ -88,7 +88,7 @@
                             value="{{ old('email') }}"
                             required
                             autocomplete="email"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="your@email.com"
                         />
                         @error('email')
@@ -98,7 +98,7 @@
 
                     <!-- Пароль -->
                     <div>
-                        <label for="password" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="password" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Пароль*</span>
                         </label>
@@ -108,7 +108,7 @@
                             name="password"
                             required
                             autocomplete="new-password"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="Минимум 8 символов"
                         />
                         @error('password')
@@ -118,7 +118,7 @@
 
                     <!-- Подтверждение пароля -->
                     <div>
-                        <label for="password_confirmation" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="password_confirmation" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Подтверждение пароля*</span>
                         </label>
@@ -128,14 +128,14 @@
                             name="password_confirmation"
                             required
                             autocomplete="new-password"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="Повторите пароль"
                         />
                     </div>
 
                     <!-- Согласие с пользовательским соглашением -->
                     <div>
-                        <label class="flex items-start gap-2 text-xs md:text-sm">
+                        <label class="flex items-start gap-2 text-base md:text-sm">
                             <input 
                                 type="checkbox" 
                                 name="terms"
@@ -158,7 +158,7 @@
                     <div class="pt-2">
                         <button 
                             type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         >
                             <span>Зарегистрироваться</span>
                             <i class="fa-solid fa-user-plus text-xs"></i>
@@ -168,7 +168,7 @@
 
                 <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <p class="text-center text-xs md:text-sm text-slate-600 dark:text-slate-400">
+                    <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
                         Уже есть аккаунт? 
                         <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium">
                             Войти

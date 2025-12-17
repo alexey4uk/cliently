@@ -50,7 +50,7 @@
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                     Подтверждение пароля
                 </h2>
-                <p class="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-6">
+                <p class="text-base md:text-sm text-slate-600 dark:text-slate-400 mb-6">
                     Это защищенная область приложения. Пожалуйста, подтвердите свой пароль перед продолжением.
                 </p>
 
@@ -59,7 +59,7 @@
 
                     <!-- Password -->
                     <div>
-                        <label for="password" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="password" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Пароль*</span>
                         </label>
@@ -70,7 +70,7 @@
                             required
                             autocomplete="current-password"
                             autofocus
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="Введите пароль"
                         />
                         @error('password')
@@ -82,7 +82,7 @@
                     <div class="pt-2">
                         <button 
                             type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         >
                             <span>Подтвердить</span>
                             <i class="fa-solid fa-check text-xs"></i>

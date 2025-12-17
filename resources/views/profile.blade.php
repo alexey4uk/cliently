@@ -60,7 +60,7 @@
                             <i class="fa-solid fa-user text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="text" id="name" name="name" value="Алексей Морозов"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="Ваше имя" />
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                             <i class="fa-solid fa-envelope text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="email" id="email" name="email" value="alexey@example.com"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="your@email.com" />
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                             <i class="fa-solid fa-phone text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="tel" id="phone" name="phone" value="+375291234567"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="+375291234567" />
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                             <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="password" id="current_password" name="current_password"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="Введите текущий пароль" />
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                             <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="password" id="new_password" name="new_password"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="Введите новый пароль" />
                     </div>
                 </div>
@@ -161,7 +161,7 @@
                             <i class="fa-solid fa-lock text-slate-400 dark:text-slate-500 text-sm"></i>
                         </div>
                         <input type="password" id="new_password_confirmation" name="new_password_confirmation"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
+                            class="block w-full pl-10 pr-3 py-2.5 text-base border border-slate-300 dark:border-slate-700 rounded-md bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent dark:bg-slate-800 dark:text-white dark:placeholder-slate-500 transition-colors"
                             placeholder="Повторите новый пароль" />
                     </div>
                 </div>

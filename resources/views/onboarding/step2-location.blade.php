@@ -32,10 +32,10 @@
                 </div>
             </div>
             <div class="flex-1 min-w-0">
-                <h3 class="text-xs md:text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1 md:mb-2">
+                <h3 class="text-base md:text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1 md:mb-2">
                     Что такое локация?
                 </h3>
-                <p class="text-xs md:text-sm text-indigo-800 dark:text-indigo-300 mb-2 md:mb-3">
+                <p class="text-base md:text-sm text-indigo-800 dark:text-indigo-300 mb-2 md:mb-3">
                     Место оказания услуг
                 </p>
                 <div class="space-y-1.5 md:space-y-2">
@@ -62,12 +62,12 @@
 
         <div class="space-y-5">
             <div>
-                <label for="name" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     <i class="fa-solid fa-map-marker-alt text-indigo-600 dark:text-indigo-400 text-xs"></i>
                     <span>Название локации*</span>
                 </label>
                 <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                        placeholder="Например: Основной салон"
                        autofocus>
                 <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="nameTooltip">
@@ -79,12 +79,12 @@
             </div>
 
             <div>
-                <label for="address" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label for="address" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400 text-xs"></i>
                     <span>Адрес*</span>
                 </label>
                 <input type="text" id="address" name="address" required value="{{ old('address') }}"
-                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('address') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('address') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                        placeholder="ул. Пушкинская, д. 10">
                 <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="addressTooltip">
                     Полный адрес локации
@@ -95,13 +95,13 @@
             </div>
 
             <div>
-                <label for="description" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400 text-xs"></i>
                     <span>Описание</span>
                 </label>
                 <div class="relative">
                     <textarea id="description" name="description" rows="3" maxlength="500"
-                          class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                          class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                           placeholder="Описание локации...">{{ old('description') }}</textarea>
                     <div class="absolute bottom-2 right-2 flex items-center gap-1">
                         <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
@@ -116,12 +116,12 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400 text-xs"></i>
                         <span>Телефон*</span>
                     </label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                            placeholder="+375 (29) 123-45-67">
                     <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="phoneTooltip">
                         Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
@@ -133,12 +133,12 @@
                 </div>
 
                 <div>
-                    <label for="email" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                         <span>Почта</span>
                     </label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                            placeholder="salon@example.com">
                     <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="emailTooltip">
                         Необязательное поле
@@ -151,7 +151,7 @@
 
             <!-- Время работы -->
             <div>
-                <label class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                     <span>Время работы*</span>
                 </label>
@@ -174,7 +174,7 @@
                                 <div class="flex-1">
                             <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">С</label>
                             <select name="working_hours[from]" id="workingHoursFrom" required
-                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                                         <option value="">--:--</option>
                                 @for($i = 6; $i <= 23; $i++)
                                     <option value="{{ sprintf('%02d:00', $i) }}" {{ old('working_hours.from') == sprintf('%02d:00', $i) ? 'selected' : ($i == 9 ? 'selected' : '') }}>
@@ -190,7 +190,7 @@
                                 <div class="flex-1">
                             <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">До</label>
                             <select name="working_hours[to]" id="workingHoursTo" required
-                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                                         <option value="">--:--</option>
                                 @for($i = 8; $i <= 23; $i++)
                                     <option value="{{ sprintf('%02d:00', $i) }}" {{ old('working_hours.to') == sprintf('%02d:00', $i) ? 'selected' : ($i == 18 ? 'selected' : '') }}>
@@ -214,7 +214,7 @@
         <!-- Кнопки действий -->
         <div class="flex items-center justify-end pt-6 border-t border-slate-200 dark:border-slate-800">
             <button type="submit"
-                        class="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Сохранить и продолжить <i class="fa-solid fa-arrow-right ml-1.5 md:ml-2"></i>
                 </button>
         </div>

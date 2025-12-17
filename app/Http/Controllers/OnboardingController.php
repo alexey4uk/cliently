@@ -268,9 +268,6 @@ class OnboardingController extends Controller
 
         return view('onboarding.complete', [
             'business' => $business,
-            'locationsCount' => $business->locations->count(),
-            'servicesCount' => $business->services->count(),
-            'mastersCount' => $business->masters->count(),
         ]);
     }
 }
