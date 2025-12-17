@@ -13,12 +13,24 @@ class EnsureUserNoOnboarded
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next): \Illuminate\Http\RedirectResponse|Response
     {
-        if (auth()->user()->businesses->isEmpty()) {
+        if ($request->routeIs('onboarding.complete')) {
             return $next($request);
         }
 
-        return redirect()->route('dashboard');
+        $user = auth()->user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
+        $business = $user->businesses->first();
+
+        $isComplete = $user->businesses->isNotEmpty() &&
+            $business?->locations->isNotEmpty() &&
+            $business?->services->isNotEmpty() &&
+            $business?->masters->isNotEmpty();
+
+        if ($isComplete) {
+            return redirect()->route('dashboard');
+        }
+
+        return $next($request);
     }
 }

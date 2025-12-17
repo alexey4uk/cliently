@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request)
     {
         return view('profile', [
             'user' => $request->user(),
@@ -27,7 +26,7 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
@@ -95,38 +94,37 @@ class ProfileController extends Controller
 
     public function deleteAvatar(Request $request)
     {
-        \Log::info('Starting avatar deletion for user: ' . auth()->id());
+        Log::info('Starting avatar deletion for user: ' . Auth::id());
 
         try {
-            $user = auth()->user();
-            \Log::info('User current avatar: ' . $user->avatar);
+            $user = Auth::user();
+            Log::info('User current avatar: ' . $user->avatar);
 
             if ($user->avatar) {
-                \Log::info('Deleting avatar file: ' . $user->avatar);
+                Log::info('Deleting avatar file: ' . $user->avatar);
 
                 // Удаляем файл из хранилища
                 $deleted = Storage::disk('public')->delete($user->avatar);
-                \Log::info('File deletion result: ' . ($deleted ? 'success' : 'failed'));
+                Log::info('File deletion result: ' . ($deleted ? 'success' : 'failed'));
 
                 // Обновляем запись в базе данных
                 $user->avatar = null;
                 $user->save();
 
-                \Log::info('Avatar set to null in database');
+                Log::info('Avatar set to null in database');
             } else {
-                \Log::info('User has no avatar to delete');
+                Log::info('User has no avatar to delete');
             }
 
-            \Log::info('Avatar deletion completed successfully');
+            Log::info('Avatar deletion completed successfully');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Аватар успешно удален'
             ]);
-
         } catch (\Exception $e) {
-            \Log::error('Avatar deletion error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Avatar deletion error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
 
             return response()->json([
                 'success' => false,

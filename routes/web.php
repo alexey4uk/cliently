@@ -10,8 +10,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
-
 Route::middleware(['auth'])->group(function () {
 
     Route::prefix('profile')->group(function () {
@@ -22,12 +20,23 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/password/change', [PasswordController::class, 'edit'])->name('password.edit');
     });
 
-    Route::middleware('no.onboarded')->group(function () {
-        Route::get('/onboarding', [OnboardingController::class, 'index'])->name('onboarding.index');
-        Route::put('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+    Route::prefix('onboarding')->name('onboarding.')->middleware(['auth', 'no.onboarded'])->group(function () {
+        Route::get('business', [OnboardingController::class, 'business'])->name('business');
+        Route::post('business', [OnboardingController::class, 'storeBusiness'])->name('business.store');
+
+        Route::get('location', [OnboardingController::class, 'location'])->name('location');
+        Route::post('location', [OnboardingController::class, 'storeLocation'])->name('location.store');
+
+        Route::get('service', [OnboardingController::class, 'service'])->name('service');
+        Route::post('service', [OnboardingController::class, 'storeService'])->name('service.store');
+
+        Route::get('master', [OnboardingController::class, 'master'])->name('master');
+        Route::post('master', [OnboardingController::class, 'storeMaster'])->name('master.store');
+
+        Route::get('complete', [OnboardingController::class, 'complete'])->name('complete');
     });
 
-    Route::middleware(['onboarded'])->group(function () {
+    Route::middleware(['auth', 'onboarded'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
