@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Location extends Model
 {
+    use HasFactory;
     //
     protected $fillable = [
         'business_id',
@@ -18,9 +21,9 @@ class Location extends Model
         'working_hours',
     ];
 
-    public function businesses(): BelongsToMany
+    public function business(): BelongsTo
     {
-        return $this->belongsToMany(Business::class);
+        return $this->belongsTo(Business::class);
     }
 
     public function services(): BelongsToMany

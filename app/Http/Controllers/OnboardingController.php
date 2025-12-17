@@ -133,7 +133,7 @@ class OnboardingController extends Controller
         $service = Service::create([
             'business_id' => $businessId,
             'name' => $validated['name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'duration' => $validated['duration'],
             'price' => $validated['price'],
             'is_active' => true,
@@ -190,10 +190,10 @@ class OnboardingController extends Controller
         $master = Master::create([
             'business_id' => $business->id,
             'name' => $validated['name'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
             'phone' => $validated['phone'],
-            'email' => $validated['email'],
+            'email' => $validated['email'] ?? null,
         ]);
 
         $locationId = $business->locations->first()?->id;
