@@ -15,6 +15,10 @@ class EnsureUserNoOnboarded
      */
     public function handle($request, Closure $next): \Illuminate\Http\RedirectResponse|Response
     {
+        if ($request->routeIs('onboarding.complete')) {
+            return $next($request);
+        }
+
         $user = auth()->user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
         $business = $user->businesses->first();
 
@@ -29,5 +33,4 @@ class EnsureUserNoOnboarded
 
         return $next($request);
     }
-
 }

@@ -95,9 +95,6 @@ class OnboardingController extends Controller
             'working_hours' => json_encode($validated['working_hours']),
         ]);
 
-        session(['onboarding.location_id' => $location->id]);
-        session(['onboarding.location_name' => $location->name]);
-
         return redirect()->route('onboarding.service');
     }
 
@@ -141,9 +138,6 @@ class OnboardingController extends Controller
             'price' => $validated['price'],
             'is_active' => true,
         ]);
-
-        session(['onboarding.service_id' => $service->id]);
-        session(['onboarding.service_name' => $service->name]);
 
         return redirect()->route('onboarding.master');
     }
@@ -218,16 +212,6 @@ class OnboardingController extends Controller
 
     public function complete()
     {
-        session()->forget([
-            'onboarding.business_id',
-            'onboarding.location_id',
-            'onboarding.location_name',
-            'onboarding.service_id',
-            'onboarding.service_name',
-            'onboarding.master_id',
-            'onboarding.master_name',
-        ]);
-
         return view('onboarding.complete');
     }
 }
