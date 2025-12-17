@@ -117,23 +117,16 @@ class OnboardingTest extends TestCase
         $business = Business::factory()->create();
         $business->users()->attach($user, ['role' => 'owner']);
 
-        $workingHours = [
-            ['from' => '09:00', 'to' => '18:00', 'day_off' => false],
-            ['from' => '09:00', 'to' => '18:00', 'day_off' => false],
-            ['from' => '09:00', 'to' => '18:00', 'day_off' => false],
-            ['from' => '09:00', 'to' => '18:00', 'day_off' => false],
-            ['from' => '09:00', 'to' => '18:00', 'day_off' => false],
-            ['from' => null, 'to' => null, 'day_off' => true],
-            ['from' => null, 'to' => null, 'day_off' => true],
-        ];
-
         $response = $this->actingAs($user)->post('/onboarding/location', [
             'name' => 'Test Location',
             'address' => 'Test Address 123',
             'description' => 'Test location description',
             'phone' => '+375291234567',
             'email' => 'location@test.com',
-            'working_hours' => $workingHours,
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+            ],
         ]);
 
         $response->assertRedirect(route('onboarding.service'));
@@ -153,7 +146,10 @@ class OnboardingTest extends TestCase
         $response = $this->actingAs($user)->post('/onboarding/location', [
             'address' => 'Test Address',
             'phone' => '+375291234567',
-            'working_hours' => [],
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+            ],
         ]);
 
         $response->assertSessionHasErrors('name');
@@ -309,13 +305,15 @@ class OnboardingTest extends TestCase
         $response->assertRedirect(route('onboarding.location'));
 
         // Step 2: Create location
-        $workingHours = array_fill(0, 7, ['from' => '09:00', 'to' => '18:00', 'day_off' => false]);
         $response = $this->actingAs($user)->post('/onboarding/location', [
             'name' => 'Full Test Location',
             'address' => 'Full Test Address',
             'description' => 'Full Test Location Description',
             'phone' => '+375291234567',
-            'working_hours' => $workingHours,
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+            ],
         ]);
         $response->assertRedirect(route('onboarding.service'));
 
