@@ -59,14 +59,14 @@
                         <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-check-circle text-emerald-600 dark:text-emerald-400 text-sm"></i>
-                                <p class="text-xs md:text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
+                                <p class="text-base md:text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
                             </div>
                         </div>
                     @endif
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
@@ -78,7 +78,7 @@
                             required
                             autocomplete="email"
                             autofocus
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="your@email.com"
                         />
                         @error('email')
@@ -90,7 +90,7 @@
                     <div class="pt-2">
                         <button 
                             type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         >
                             <span>Отправить ссылку</span>
                             <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -100,7 +100,7 @@
 
                 <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <p class="text-center text-xs md:text-sm text-slate-600 dark:text-slate-400">
+                    <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
                         Вспомнили пароль? 
                         <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium">
                             Войти

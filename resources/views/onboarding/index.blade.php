@@ -4,15 +4,15 @@
     <div class="flex items-baseline justify-between gap-2 mb-6">
         <div>
             <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Настройка бизнеса</h1>
-            <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400">Заполните информацию о вашем бизнесе</p>
+            <p class="text-base md:text-sm md:text-xs text-slate-500 dark:text-slate-400">Заполните информацию о вашем бизнесе</p>
         </div>
     </div>
 
     <!-- Прогресс-бар -->
     <div class="mb-8">
         <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Шаг <span id="currentStep">1</span> из 4</span>
-            <span class="text-sm text-slate-500 dark:text-slate-400">25%</span>
+            <span class="text-base md:text-sm font-medium text-slate-700 dark:text-slate-300">Шаг <span id="currentStep">1</span> из 4</span>
+            <span class="text-base md:text-sm text-slate-500 dark:text-slate-400">25%</span>
         </div>
         <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2">
             <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 25%"></div>
@@ -25,26 +25,26 @@
         <div id="step1" class="step opacity-0 transform translate-y-2 transition-all duration-300">
             <div class="mb-6">
                 <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white mb-2">Создание бизнеса</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Основная информация о вашем бизнесе</p>
+                <p class="text-base md:text-sm text-slate-500 dark:text-slate-400">Основная информация о вашем бизнесе</p>
             </div>
 
             <form id="businessForm" class="space-y-4">
                 <div>
-                    <label for="businessName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
+                    <label for="businessName" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
                     <input type="text" id="businessName" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Например: Elite Beauty Salon">
                 </div>
 
                 <div>
-                    <label for="businessSlug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Slug*</label>
+                    <label for="businessSlug" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Slug*</label>
                     <div class="flex">
-                        <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm">
+                        <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-base md:text-sm">
                             beautybook.ru/
                         </span>
                         <div class="flex-1 relative">
                             <input type="text" id="businessSlug" required
-                                class="w-full px-3 py-2 text-sm rounded-r-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                                class="w-full px-3 py-2 text-base md:text-sm rounded-r-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                                 placeholder="elite-beauty"
                                 pattern="[a-z0-9\-]+"
                                 title="Только латинские буквы в нижнем регистре, цифры и дефисы">
@@ -55,11 +55,11 @@
                             </div>
                             
                             <div id="slugAvailable" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                                <i class="fa-solid fa-check text-sm"></i>
+                                <i class="fa-solid fa-check text-base md:text-sm"></i>
                             </div>
                             
                             <div id="slugUnavailable" class="hidden absolute right-2 top-1/2 transform -translate-y-1/2 text-rose-500">
-                                <i class="fa-solid fa-xmark text-sm"></i>
+                                <i class="fa-solid fa-xmark text-base md:text-sm"></i>
                             </div>
                         </div>
                     </div>
@@ -70,24 +70,24 @@
                 </div>
 
                 <div>
-                    <label for="businessDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
+                    <label for="businessDescription" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
                     <textarea id="businessDescription" rows="3"
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Краткое описание вашего бизнеса..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="businessPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
+                        <label for="businessPhone" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
                         <input type="tel" id="businessPhone" required
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="+7 (999) 123-45-67">
                     </div>
 
                     <div>
-                        <label for="businessEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
+                        <label for="businessEmail" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
                         <input type="email" id="businessEmail"
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="info@example.com">
                     </div>
                 </div>
@@ -98,61 +98,61 @@
         <div id="step2" class="step hidden opacity-0 transform translate-y-2 transition-all duration-300">
             <div class="mb-6">
                 <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white mb-2">Добавление локации</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Информация о вашем салоне или студии</p>
+                <p class="text-base md:text-sm text-slate-500 dark:text-slate-400">Информация о вашем салоне или студии</p>
             </div>
 
             <form id="locationForm" class="space-y-4">
                 <div>
-                    <label for="locationName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
+                    <label for="locationName" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
                     <input type="text" id="locationName" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Например: Основной салон">
                 </div>
 
                 <div>
-                    <label for="locationAddress" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Адрес*</label>
+                    <label for="locationAddress" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Адрес*</label>
                     <input type="text" id="locationAddress" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="ул. Пушкинская, д. 10">
                 </div>
 
                 <div>
-                    <label for="locationDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
+                    <label for="locationDescription" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
                     <textarea id="locationDescription" rows="2"
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Описание локации..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="locationPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
+                        <label for="locationPhone" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
                         <input type="tel" id="locationPhone" required
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="+7 (999) 123-45-67">
                     </div>
 
                     <div>
-                        <label for="locationEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
+                        <label for="locationEmail" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
                         <input type="email" id="locationEmail"
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="salon@example.com">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Время работы*</label>
+                    <label class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Время работы*</label>
                     <div class="space-y-3">
                         @foreach(['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] as $day)
                         <div class="flex items-center gap-3">
-                            <div class="w-10 text-sm text-slate-600 dark:text-slate-400">{{ $day }}</div>
+                            <div class="w-10 text-base md:text-sm text-slate-600 dark:text-slate-400">{{ $day }}</div>
                             <div class="flex-1 flex items-center gap-2">
-                                <select class="flex-1 px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
+                                <select class="flex-1 px-2 py-1 text-base md:text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
                                     @for($i = 8; $i <= 22; $i++)
                                         <option value="{{ $i }}:00">{{ sprintf('%02d:00', $i) }}</option>
                                     @endfor
                                 </select>
                                 <span class="text-slate-400">-</span>
-                                <select class="flex-1 px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
+                                <select class="flex-1 px-2 py-1 text-base md:text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
                                     @for($i = 8; $i <= 22; $i++)
                                         <option value="{{ $i }}:00" {{ $i == 20 ? 'selected' : '' }}>{{ sprintf('%02d:00', $i) }}</option>
                                     @endfor
@@ -173,29 +173,29 @@
         <div id="step3" class="step hidden opacity-0 transform translate-y-2 transition-all duration-300">
             <div class="mb-6">
                 <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white mb-2">Добавление услуги</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Создайте вашу первую услугу</p>
+                <p class="text-base md:text-sm text-slate-500 dark:text-slate-400">Создайте вашу первую услугу</p>
             </div>
 
             <form id="serviceForm" class="space-y-4">
                 <div>
-                    <label for="serviceName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
+                    <label for="serviceName" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Название*</label>
                     <input type="text" id="serviceName" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Например: Стрижка женская">
                 </div>
 
                 <div>
-                    <label for="serviceDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
+                    <label for="serviceDescription" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
                     <textarea id="serviceDescription" rows="3"
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Подробное описание услуги..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="serviceDuration" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Длительность*</label>
+                        <label for="serviceDuration" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Длительность*</label>
                         <select id="serviceDuration" required
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors">
                             <option value="">Выберите длительность</option>
                             <option value="30">30 минут</option>
                             <option value="45">45 минут</option>
@@ -207,10 +207,10 @@
                     </div>
 
                     <div>
-                        <label for="servicePrice" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Цена*</label>
+                        <label for="servicePrice" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Цена*</label>
                         <div class="relative">
                             <input type="number" id="servicePrice" required min="0" step="50"
-                                class="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                                class="w-full pl-8 pr-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                                 placeholder="1000">
                             <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400">₽</span>
                         </div>
@@ -218,7 +218,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4">
-                    <p class="text-sm text-slate-600 dark:text-slate-400">Вы можете добавить больше услуг позже в разделе "Услуги"</p>
+                    <p class="text-base md:text-sm text-slate-600 dark:text-slate-400">Вы можете добавить больше услуг позже в разделе "Услуги"</p>
                 </div>
             </form>
         </div>
@@ -227,49 +227,49 @@
         <div id="step4" class="step hidden opacity-0 transform translate-y-2 transition-all duration-300">
             <div class="mb-6">
                 <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white mb-2">Добавление мастера</h2>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Добавьте информацию о мастере</p>
+                <p class="text-base md:text-sm text-slate-500 dark:text-slate-400">Добавьте информацию о мастере</p>
             </div>
 
             <form id="masterForm" class="space-y-4">
                 <div>
-                    <label for="masterName" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Имя*</label>
+                    <label for="masterName" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Имя*</label>
                     <input type="text" id="masterName" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Например: Анна Иванова">
                 </div>
 
                 <div>
-                    <label for="masterSpecialization" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Специализация*</label>
+                    <label for="masterSpecialization" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Специализация*</label>
                     <input type="text" id="masterSpecialization" required
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Например: Парикмахер, барбер, косметолог">
                 </div>
 
                 <div>
-                    <label for="masterDescription" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
+                    <label for="masterDescription" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Описание</label>
                     <textarea id="masterDescription" rows="3"
-                        class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Опыт работы, образование, достижения..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="masterPhone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
+                        <label for="masterPhone" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
                         <input type="tel" id="masterPhone" required
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="+7 (999) 123-45-67">
                     </div>
 
                     <div>
-                        <label for="masterEmail" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
+                        <label for="masterEmail" class="block text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Почта</label>
                         <input type="email" id="masterEmail"
-                            class="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                            class="w-full px-3 py-2 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="anna@example.com">
                     </div>
                 </div>
 
                 <div class="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-4">
-                    <p class="text-sm text-slate-600 dark:text-slate-400">Вы можете добавить больше мастеров позже в разделе "Мастера"</p>
+                    <p class="text-base md:text-sm text-slate-600 dark:text-slate-400">Вы можете добавить больше мастеров позже в разделе "Мастера"</p>
                 </div>
             </form>
         </div>
@@ -277,16 +277,16 @@
 
     <!-- Кнопки навигации -->
     <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800 mt-8">
-        <button id="prevBtn" onclick="prevStep()" class="hidden px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
+        <button id="prevBtn" onclick="prevStep()" class="hidden px-4 py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
             <i class="fa-solid fa-arrow-left mr-2"></i> Назад
         </button>
         
         <div class="flex items-center gap-3 ml-auto">
-            <button onclick="saveAndExit()" class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
+            <button onclick="saveAndExit()" class="px-4 py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
                 Сохранить и выйти
             </button>
             
-            <button id="nextBtn" onclick="nextStep()" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+            <button id="nextBtn" onclick="nextStep()" class="px-4 py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 Далее <i class="fa-solid fa-arrow-right ml-2"></i>
             </button>
         </div>
@@ -300,7 +300,7 @@
                     <i class="fa-solid fa-check text-2xl text-emerald-600 dark:text-emerald-300"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Настройка завершена!</h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Ваш бизнес успешно настроен. Теперь вы можете принимать записи.</p>
+                <p class="text-base md:text-sm text-slate-500 dark:text-slate-400">Ваш бизнес успешно настроен. Теперь вы можете принимать записи.</p>
             </div>
             <div class="space-y-3">
                 <a href="{{ route('dashboard') }}"
@@ -308,7 +308,7 @@
                     Перейти в дашборд
                 </a>
                 <button onclick="closeCompletionModal()"
-                        class="block w-full text-center px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                        class="block w-full text-center px-4 py-2.5 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                     Продолжить редактирование
                 </button>
             </div>
