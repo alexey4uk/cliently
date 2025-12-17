@@ -1,7 +1,7 @@
 @extends('layouts.user')
 @section('content')
     <!-- Заголовок страницы -->
-    <div class="flex items-baseline justify-between gap-2">
+    <div class="flex items-baseline justify-between gap-2 mb-6">
         <div>
             <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Дашборд</h1>
             <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400">Сегодня, 15 декабря</p>
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Панель статистики (компактная, сверху) -->
-    <section>
+    <section class="mb-6">
         <div class="flex items-center justify-between mb-3">
             <h2 class="text-base md:text-sm font-semibold text-slate-900 dark:text-white">Статистика</h2>
             <div class="flex items-center gap-2">
@@ -67,9 +67,8 @@
         </div>
     </section>
 
-
     <!-- Блок 1: Требуют подтверждения -->
-    <section>
+    <section class="mb-6">
         <div class="flex items-center justify-between gap-2 mb-3">
             <h2 class="text-lg md:text-base font-semibold text-slate-900 dark:text-white">Требуют подтверждения</h2>
             <span
@@ -433,11 +432,8 @@
         </div>
     </section>
 
-
-
-
     <!-- Блок 2: Сегодня -->
-    <section>
+    <section class="mb-6">
         <!-- Список на сегодня -->
         <div>
             <div class="flex items-center justify-between mb-3">

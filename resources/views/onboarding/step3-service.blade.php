@@ -89,23 +89,11 @@
         </div>
 
         <!-- Кнопки действий -->
-        <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-            <a href="{{ route('onboarding.location') }}"
-               class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Назад
-            </a>
-
-            <div class="flex items-center gap-3">
-                <button type="submit" name="action" value="skip"
-                        class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                    Пропустить
-                </button>
-
-                <button type="submit" name="action" value="save"
-                        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Сохранить и продолжить <i class="fa-solid fa-arrow-right ml-2"></i>
-                </button>
-            </div>
+        <div class="flex items-center justify-end pt-6 border-t border-slate-200 dark:border-slate-800">
+            <button type="submit"
+                    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Сохранить и продолжить <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
         </div>
     </form>
 @endsection
