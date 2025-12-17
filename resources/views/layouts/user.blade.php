@@ -100,16 +100,16 @@
                         </div>
                     </div>
                 </div>
-            </header>
+    </header>
 
             <!-- Основной контент -->
             <main class="flex-1 overflow-y-auto">
                 <div class="px-4 py-6 lg:px-8 lg:py-8 pb-20 lg:pb-8">
-                    @include('alerts')
+        @include('alerts')
 
-                    @yield('content')
+        @yield('content')
                 </div>
-            </main>
+    </main>
         </div>
     </div>
 

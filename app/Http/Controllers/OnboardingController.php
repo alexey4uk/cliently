@@ -259,6 +259,18 @@ class OnboardingController extends Controller
 
     public function complete()
     {
-        return view('onboarding.complete');
+        $user = auth()->user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
+        $business = $user->businesses->first();
+
+        if (! $business) {
+            return redirect()->route('onboarding.business');
+        }
+
+        return view('onboarding.complete', [
+            'business' => $business,
+            'locationsCount' => $business->locations->count(),
+            'servicesCount' => $business->services->count(),
+            'mastersCount' => $business->masters->count(),
+        ]);
     }
 }
