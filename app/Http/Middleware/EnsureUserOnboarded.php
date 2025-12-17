@@ -4,8 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserOnboarded
 {
@@ -14,12 +12,21 @@ class EnsureUserOnboarded
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next)
     {
-        if (Auth::user()->businesses->isNotEmpty()) {
-            return $next($request);
+        $user = auth()->user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
+        $business = $user->businesses->first();
+
+        $isComplete = $user->businesses->isNotEmpty() &&
+            $business?->locations->isNotEmpty() &&
+            $business?->services->isNotEmpty() &&
+            $business?->masters->isNotEmpty();
+
+        if (! $isComplete) {
+            // Если чего-то не хватает — на старт онбординга
+            return redirect()->route('onboarding.business');
         }
 
-        return redirect()->route('onboarding.index');
+        return $next($request);
     }
 }
