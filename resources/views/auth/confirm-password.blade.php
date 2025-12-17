@@ -1,27 +1,149 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Подтверждение пароля - {{ config('app.name', 'Cliently') }}</title>
+
+    <!-- Favicons links -->
+    <link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}" />
+    <meta name="apple-mobile-web-app-title" content="CLIENTLY" />
+    <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}" />
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+    <div class="min-h-screen flex items-center justify-center px-4 py-8">
+        <div class="w-full max-w-md">
+            <!-- Логотип и название -->
+            <div class="text-center mb-6">
+                <div class="flex justify-center mb-4">
+                    <!-- Логознак: мастер + клиент -->
+                    <div class="relative flex h-12 w-12 items-center justify-center">
+                        <!-- Левый круг (мастер) -->
+                        <span class="absolute h-9 w-9 rounded-full border-2 border-indigo-600 left-0"></span>
+                        <!-- Правый круг (клиент) -->
+                        <span class="absolute h-9 w-9 rounded-full border-2 border-rose-500 right-0"></span>
+                        <!-- Пересечение -->
+                        <span class="absolute h-8 w-8 rounded-full bg-indigo-600/20"></span>
+                    </div>
+                </div>
+                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+                    cliently
+                </h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    онлайн‑записи и клиенты
+                </p>
+            </div>
+
+            <!-- Форма подтверждения пароля -->
+            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    Подтверждение пароля
+                </h2>
+                <p class="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-6">
+                    Это защищенная область приложения. Пожалуйста, подтвердите свой пароль перед продолжением.
+                </p>
+
+                <form method="POST" action="{{ route('password.confirm') }}" class="space-y-5" id="confirmPasswordForm">
+                    @csrf
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                            <span>Пароль*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                            autofocus
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-xs md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            placeholder="Введите пароль"
+                        />
+                        @error('password')
+                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Кнопка подтверждения -->
+                    <div class="pt-2">
+                        <button 
+                            type="submit"
+                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                        >
+                            <span>Подтвердить</span>
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Переключатель темы -->
+            <div class="mt-6 text-center">
+                <button 
+                    id="themeToggle"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors"
+                    aria-label="Переключить тему"
+                >
+                    <span>🌓</span>
+                    <span>Сменить тему</span>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
-        @csrf
+    <script>
+        // Переключение темы
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
 
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
+        const savedTheme = localStorage.getItem('theme');
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const currentTheme = savedTheme || systemTheme;
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        if (currentTheme === 'dark') {
+            html.classList.add('dark');
+        }
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+        // Улучшение UX формы
+        const form = document.getElementById('confirmPasswordForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function() {
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span> Проверка...</span>';
+            submitBtn.disabled = true;
+        });
+
+        // Валидация в реальном времени
+        const inputs = form.querySelectorAll('input[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/20');
+                } else {
+                    this.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/20');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
