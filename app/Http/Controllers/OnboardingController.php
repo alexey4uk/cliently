@@ -39,9 +39,9 @@ class OnboardingController extends Controller
             $business = Business::create([
                 'name' => $validated['name'],
                 'slug' => $validated['slug'],
-                'description' => $validated['description'],
+                'description' => $validated['description'] ?? null,
                 'phone' => $validated['phone'],
-                'email' => $validated['email'],
+                'email' => $validated['email'] ?? null,
             ]);
 
             $business->users()->attach($request->user(), ['role' => 'owner']);

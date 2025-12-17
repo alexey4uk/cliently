@@ -95,10 +95,11 @@
                     <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Телефон*</label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
                         class="w-full px-3 py-2 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        placeholder="+7 (999) 123-45-67">
+                        placeholder="+375 (29) 123-45-67">
                     @error('phone')
                         <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
+                    <p id="phoneError" class="mt-1 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 </div>
 
                 <div>
@@ -112,10 +113,9 @@
 
         <!-- Кнопки действий -->
         <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
-            <a href="{{ route('dashboard') }}"
-                class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Назад в дашборд
-            </a>
+            <div>
+                <!-- Кнопка "Назад" скрыта, так как это первый шаг онбординга -->
+            </div>
             
             <button type="submit" id="submitButton"
                 class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -194,6 +194,26 @@
                 },
                 body: JSON.stringify({ slug: slug })
             });
+
+            // Обработка rate limiting (429 Too Many Requests)
+            if (response.status === 429) {
+                const retryAfter = response.headers.get('Retry-After') || 60;
+                showSlugUnavailable(`Слишком много запросов. Попробуйте через ${retryAfter} секунд.`);
+                isSlugAvailable = false;
+                slugIsChecking = false;
+                updateSubmitButton();
+                return;
+            }
+
+            // Обработка других ошибок сервера
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                showSlugUnavailable(data.message || 'Не удалось проверить доступность slug. Попробуйте позже.');
+                isSlugAvailable = false;
+                slugIsChecking = false;
+                updateSubmitButton();
+                return;
+            }
 
             const data = await response.json();
             
@@ -340,7 +360,139 @@
 
     // Проверка других обязательных полей
     document.getElementById('name').addEventListener('input', updateSubmitButton);
-    document.getElementById('phone').addEventListener('input', updateSubmitButton);
+
+    // Автоподстановка +375 при фокусе на поле телефона
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('focus', function(e) {
+        if (!e.target.value || !e.target.value.startsWith('+375')) {
+            e.target.value = '+375';
+            // Устанавливаем курсор после +375
+            setTimeout(() => {
+                e.target.setSelectionRange(4, 4);
+            }, 0);
+        }
+    });
+
+    // Защита от удаления +375
+    phoneInput.addEventListener('keydown', function(e) {
+        const selectionStart = e.target.selectionStart;
+        const selectionEnd = e.target.selectionEnd;
+        
+        // Блокируем удаление, если курсор находится в области +375 (позиции 0-4)
+        if (selectionStart < 5 || selectionEnd < 5) {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                e.preventDefault();
+                // Перемещаем курсор после +375
+                e.target.setSelectionRange(5, 5);
+                return false;
+            }
+        }
+    });
+
+    // Валидные коды операторов Беларуси
+    const validOperatorCodes = ['29', '33', '44', '25'];
+
+    // Проверка кода оператора
+    function isValidOperatorCode(digits) {
+        if (digits.length >= 2) {
+            const operatorCode = digits.substring(0, 2);
+            return validOperatorCodes.includes(operatorCode);
+        }
+        return true; // Если меньше 2 цифр, считаем валидным (еще вводится)
+    }
+
+    // Показать ошибку кода оператора
+    function showPhoneError(message) {
+        const errorElement = document.getElementById('phoneError');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            phoneInput.classList.add('border-rose-500');
+        }
+    }
+
+    // Скрыть ошибку кода оператора
+    function hidePhoneError() {
+        const errorElement = document.getElementById('phoneError');
+        if (errorElement) {
+            errorElement.classList.add('hidden');
+            phoneInput.classList.remove('border-rose-500');
+        }
+    }
+
+    // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        
+        // Если значение не начинается с +375, устанавливаем префикс
+        if (!value.startsWith('+375')) {
+            value = '+375';
+        }
+        
+        // Извлекаем только цифры после +375
+        const digits = value.substring(4).replace(/\D/g, '');
+        
+        // Проверяем код оператора при вводе первых 2 цифр
+        if (digits.length >= 2) {
+            const operatorCode = digits.substring(0, 2);
+            if (!validOperatorCodes.includes(operatorCode)) {
+                // Блокируем ввод неверного кода - оставляем только первую цифру или удаляем неверную
+                const firstDigit = digits.substring(0, 1);
+                // Проверяем, может ли первая цифра быть началом валидного кода
+                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
+                
+                if (!canBeValid) {
+                    // Первая цифра не может быть началом валидного кода - удаляем все
+                    e.target.value = '+375';
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5, 5);
+                    updateSubmitButton();
+                    return;
+                } else {
+                    // Вторая цифра неверная - оставляем только первую
+                    const limitedDigits = firstDigit;
+                    e.target.value = '+375' + limitedDigits;
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
+                    updateSubmitButton();
+                    return;
+                }
+            } else {
+                // Код оператора валиден
+                hidePhoneError();
+            }
+        } else {
+            // Меньше 2 цифр - проверяем, может ли быть валидным
+            if (digits.length === 1) {
+                const firstDigit = digits;
+                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
+                if (!canBeValid) {
+                    // Первая цифра не может быть началом валидного кода
+                    e.target.value = '+375';
+                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
+                    e.target.setSelectionRange(5, 5);
+                    updateSubmitButton();
+                    return;
+                } else {
+                    hidePhoneError();
+                }
+            } else {
+                hidePhoneError();
+            }
+        }
+        
+        // Ограничиваем до 9 цифр (белорусский номер)
+        const limitedDigits = digits.substring(0, 9);
+        
+        // Формируем финальное значение
+        e.target.value = '+375' + limitedDigits;
+        
+        // Устанавливаем курсор в конец, но не раньше позиции 5
+        const cursorPosition = Math.max(5, e.target.value.length);
+        e.target.setSelectionRange(cursorPosition, cursorPosition);
+        
+        updateSubmitButton();
+    });
 
     // Инициализация
     document.addEventListener('DOMContentLoaded', function() {
