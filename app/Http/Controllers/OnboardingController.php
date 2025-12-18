@@ -98,8 +98,8 @@ class OnboardingController extends Controller
         // Формируем working_hours для всех дней недели
         $workingHours = [];
         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        
-        if (!empty($validated['working_hours']['24_hours'])) {
+
+        if (! empty($validated['working_hours']['24_hours'])) {
             // Круглосуточный режим
             foreach ($days as $day) {
                 $workingHours[$day] = [

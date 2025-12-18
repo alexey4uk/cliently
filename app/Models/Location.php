@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Location extends Model
 {
     use HasFactory;
+
     //
     protected $fillable = [
         'business_id',
