@@ -207,6 +207,35 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
         
+        /* Scroll to top button */
+        .scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            cursor: pointer;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .scroll-to-top:hover {
+            transform: translateY(-4px);
+        }
+        
         /* Button pulse effect */
         .btn-pulse {
             position: relative;
@@ -532,7 +561,7 @@
                             <div class="flex items-center justify-between mb-4 pb-4 border-b border-white/20 dark:border-gray-700/50">
                                 <div>
                                     <h3 class="font-bold text-gray-900 dark:text-white">Мои клиенты</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Сегодня, 15 декабря</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Сегодня, {{ \Carbon\Carbon::now()->locale('ru')->isoFormat('D MMMM') }}</p>
                                 </div>
                                 <div class="w-3 h-3 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></div>
                             </div>
@@ -1178,6 +1207,11 @@
         </div>
     </footer>
 
+    <!-- Scroll to Top Button -->
+    <button id="scroll-to-top" class="scroll-to-top glass-card shadow-2xl" aria-label="Вернуться наверх">
+        <i class="fas fa-arrow-up text-indigo-600 dark:text-indigo-400 text-lg"></i>
+    </button>
+
     <script>
         // Welcome App JavaScript
         // Apply theme immediately (before DOMContentLoaded)
@@ -1206,6 +1240,7 @@
                         this.initMobileMenu();
                         this.initFAQ();
                         this.initSmoothScroll();
+                        this.initScrollToTop();
                     });
                 } else {
                     // DOM already loaded
@@ -1213,6 +1248,7 @@
                     this.initMobileMenu();
                     this.initFAQ();
                     this.initSmoothScroll();
+                    this.initScrollToTop();
                 }
             }
 
@@ -1339,6 +1375,36 @@
 
                             history.pushState(null, null, targetId);
                         }
+                    });
+                });
+            }
+
+            // Scroll to Top Button
+            initScrollToTop() {
+                const scrollToTopButton = document.getElementById('scroll-to-top');
+                
+                if (!scrollToTopButton) return;
+
+                // Show/hide button based on scroll position
+                const toggleScrollButton = () => {
+                    if (window.pageYOffset > 300) {
+                        scrollToTopButton.classList.add('visible');
+                    } else {
+                        scrollToTopButton.classList.remove('visible');
+                    }
+                };
+
+                // Initial check
+                toggleScrollButton();
+
+                // Listen to scroll events
+                window.addEventListener('scroll', toggleScrollButton, { passive: true });
+
+                // Scroll to top on click
+                scrollToTopButton.addEventListener('click', () => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
                     });
                 });
             }
