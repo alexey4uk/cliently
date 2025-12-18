@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Business;
+use Illuminate\Http\Request;
 
 class SlugCheckController extends Controller
 {
@@ -16,7 +16,7 @@ class SlugCheckController extends Controller
         if (! $request->filled('slug')) {
             return response()->json([
                 'message' => 'Bad request: missing required parameter',
-                'errors' => ['slug' => 'This field is required.']
+                'errors' => ['slug' => 'This field is required.'],
             ], 400);
         }
 

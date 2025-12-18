@@ -35,10 +35,9 @@ class LocationFactory extends Factory
             'name' => fake()->streetName(),
             'address' => fake()->address(),
             'description' => fake()->text(200),
-            'phone' => '+37529' . fake()->numerify('#######'),
+            'phone' => '+37529'.fake()->numerify('#######'),
             'email' => fake()->optional()->safeEmail(),
             'working_hours' => json_encode($workingHours),
         ];
     }
 }
-

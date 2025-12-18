@@ -42,14 +42,14 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => 'New Name',
-            'email' => 'old@example.com',
-            'phone' => '+375291234567',
-        ]);
+                'name' => 'New Name',
+                'email' => 'old@example.com',
+                'phone' => '+375291234567',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
-        
+
         $this->assertEquals('New Name', $user->refresh()->name);
         $this->assertEquals('old@example.com', $user->refresh()->email);
     }
@@ -65,14 +65,14 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => 'new@example.com',
-            'phone' => '+375291234567',
-        ]);
+                'name' => 'Test User',
+                'email' => 'new@example.com',
+                'phone' => '+375291234567',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
-        
+
         $this->assertEquals('new@example.com', $user->refresh()->email);
     }
 
@@ -87,36 +87,36 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '+375299876543',
-        ]);
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'phone' => '+375299876543',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
-        
+
         $this->assertEquals('+375299876543', $user->refresh()->phone);
     }
 
     public function test_user_can_upload_avatar(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
 
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'avatar' => $file,
-        ]);
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'avatar' => $file,
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
-        
+
         $user->refresh();
         $this->assertNotNull($user->avatar);
         Storage::disk('public')->assertExists($user->avatar);
@@ -125,7 +125,7 @@ class ProfileTest extends TestCase
     public function test_user_can_remove_avatar(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg');
         $path = $file->store('avatars', 'public');
@@ -135,15 +135,15 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'remove_avatar' => '1',
-        ]);
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'remove_avatar' => '1',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
-        
+
         $this->assertNull($user->refresh()->avatar);
         Storage::disk('public')->assertMissing($path);
     }
@@ -151,7 +151,7 @@ class ProfileTest extends TestCase
     public function test_avatar_validation_rejects_non_image_files(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('document.pdf', 100);
 
@@ -168,7 +168,7 @@ class ProfileTest extends TestCase
     public function test_avatar_validation_rejects_large_files(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg')->size(6000); // 6MB
 
@@ -254,14 +254,14 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile/password', [
-            'current_password' => 'old-password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
-        ]);
+                'current_password' => 'old-password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('password_success');
-        
+
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
     }
 
@@ -312,7 +312,7 @@ class ProfileTest extends TestCase
     public function test_user_can_delete_avatar_via_api(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg');
         $path = $file->store('avatars', 'public');
@@ -323,14 +323,14 @@ class ProfileTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson(['success' => true]);
-        
+
         $this->assertNull($user->refresh()->avatar);
     }
 
     public function test_old_avatar_is_deleted_when_uploading_new_one(): void
     {
         Storage::fake('public');
-        
+
         $user = User::factory()->create();
         $oldFile = UploadedFile::fake()->image('old-avatar.jpg');
         $oldPath = $oldFile->store('avatars', 'public');
@@ -342,16 +342,15 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'avatar' => $newFile,
-        ]);
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'avatar' => $newFile,
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
-        
+
         Storage::disk('public')->assertMissing($oldPath);
         Storage::disk('public')->assertExists($user->refresh()->avatar);
     }
 }
-

@@ -19,14 +19,16 @@ class OnboardingSeeder extends Seeder
         // Получаем пользователя, созданного в UserSeeder
         $user = User::where('email', 'a@a.ru')->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->command->error('Пользователь с email a@a.ru не найден. Сначала запустите UserSeeder.');
+
             return;
         }
 
         // Проверяем, есть ли у пользователя уже бизнес
         if ($user->businesses()->exists()) {
             $this->command->info('У пользователя уже есть бизнес. Пропускаем создание.');
+
             return;
         }
 
@@ -95,4 +97,3 @@ class OnboardingSeeder extends Seeder
         $this->command->info("Мастер: {$master->name}");
     }
 }
-

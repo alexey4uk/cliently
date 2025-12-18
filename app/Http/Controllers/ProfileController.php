@@ -31,7 +31,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'phone' => 'required|string|max:20',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'remove_avatar' => 'sometimes|boolean',
@@ -112,7 +112,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Аватар успешно удален'
+            'message' => 'Аватар успешно удален',
         ]);
     }
 

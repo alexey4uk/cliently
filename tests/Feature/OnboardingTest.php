@@ -33,7 +33,7 @@ class OnboardingTest extends TestCase
         $user = User::factory()->create();
         $business = Business::factory()->create();
         $business->users()->attach($user, ['role' => 'owner']);
-        
+
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
         $master = Master::factory()->create(['business_id' => $business->id]);
@@ -254,7 +254,7 @@ class OnboardingTest extends TestCase
             'name' => 'Test Master',
             'specialization' => 'Hair Stylist',
         ]);
-        
+
         $master = Master::where('name', 'Test Master')->first();
         $this->assertTrue($master->locations()->where('location_id', $location->id)->exists());
         $this->assertTrue($master->services()->where('service_id', $service->id)->exists());
@@ -367,4 +367,3 @@ class OnboardingTest extends TestCase
         $response->assertRedirect(route('dashboard'));
     }
 }
-

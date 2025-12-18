@@ -25,15 +25,8 @@ class MasterFactory extends Factory
             'name' => fake()->name(),
             'specialization' => fake()->jobTitle(),
             'description' => fake()->optional()->text(200),
-            'phone' => '+37529' . fake()->numerify('#######'),
+            'phone' => '+37529'.fake()->numerify('#######'),
             'email' => fake()->optional()->safeEmail(),
         ];
     }
 }
-
-
-
-
-
-
-
