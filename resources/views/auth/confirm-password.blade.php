@@ -43,7 +43,7 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     онлайн‑записи и клиенты
                 </p>
-            </div>
+    </div>
 
             <!-- Форма подтверждения пароля -->
             <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -55,16 +55,16 @@
                 </p>
 
                 <form method="POST" action="{{ route('password.confirm') }}" class="space-y-5" id="confirmPasswordForm">
-                    @csrf
+        @csrf
 
-                    <!-- Password -->
-                    <div>
+        <!-- Password -->
+        <div>
                         <label for="password" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Пароль*</span>
                         </label>
                         <input 
-                            type="password" 
+                            type="password"
                             id="password" 
                             name="password"
                             required
@@ -89,7 +89,7 @@
                         </button>
                     </div>
                 </form>
-            </div>
+        </div>
 
             <!-- Переключатель темы -->
             <div class="mt-6 text-center">

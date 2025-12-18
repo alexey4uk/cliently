@@ -5,7 +5,7 @@
         <div>
             <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Добавление мастера</h1>
         </div>
-        
+
         <!-- Индикатор прогресса -->
         <div class="w-full md:w-auto">
             <div class="flex items-center w-full md:w-auto md:gap-1.5">

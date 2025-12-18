@@ -183,53 +183,225 @@
 
 @push('scripts')
 <script>
+    // ==================== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ====================
     let isSlugAvailable = false;
     let slugCheckTimeout = null;
     let slugIsChecking = false;
     let slugFormatIsValid = false;
+    let currentAbortController = null;
 
     // Регулярное выражение для проверки формата slug
     const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    const SLUG_MIN_LENGTH = 3;
+    const SLUG_CHECK_DEBOUNCE = 500;
+    const SLUG_CHECK_TIMEOUT = 10000;
 
+    // Таблица транслитерации кириллицы в латиницу
+    const translitMap = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
+        'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+        'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+        'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
+        'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo',
+        'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+        'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+        'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch',
+        'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
+    };
+
+    // Кэширование DOM элементов
+    const slugElements = {
+        input: null,
+        checking: null,
+        available: null,
+        unavailable: null,
+        error: null,
+        preview: null,
+        container: null
+    };
+
+    // ==================== УТИЛИТЫ ====================
+    
+    /**
+     * Оптимизированная функция транслитерации
+     * Использует цикл вместо split/map/join для лучшей производительности
+     */
+    function transliterate(text) {
+        if (!text) return '';
+        let result = '';
+        for (let i = 0; i < text.length; i++) {
+            result += translitMap[text[i]] !== undefined ? translitMap[text[i]] : text[i];
+        }
+        return result;
+    }
+
+    /**
+     * Единая функция санитизации slug
+     * @param {string} input - Входная строка
+     * @param {Object} options - Опции санитизации
+     * @param {boolean} options.removeTrailingDash - Удалять дефис в конце
+     * @param {boolean} options.removeLeadingDash - Удалять дефис в начале
+     * @returns {string} Санитизированная строка
+     */
+    function sanitizeSlug(input, options = {}) {
+        if (!input) return '';
+        
+        const { removeTrailingDash = false, removeLeadingDash = true } = options;
+        
+        // Заменяем пробелы на дефисы
+        let result = input.replace(/\s+/g, '-');
+        
+        // Транслитерация
+        result = transliterate(result);
+        
+        // Нижний регистр
+        result = result.toLowerCase();
+        
+        // Удаляем недопустимые символы
+        result = result.replace(/[^a-z0-9\-]/g, '');
+        
+        // Удаляем множественные дефисы
+        result = result.replace(/-+/g, '-');
+        
+        // Удаление дефисов в начале и конце
+        if (removeLeadingDash) {
+            result = result.replace(/^-+/, '');
+        }
+        if (removeTrailingDash) {
+            result = result.replace(/-+$/, '');
+        }
+        
+        return result;
+    }
+
+    /**
+     * Форматирование slug при потере фокуса (удаляет дефисы в начале и конце)
+     */
+    function formatSlug(input) {
+        return sanitizeSlug(input, { removeTrailingDash: true, removeLeadingDash: true });
+    }
+
+    /**
+     * Санитизация slug во время ввода (не удаляет дефис в конце)
+     */
+    function sanitizeSlugInput(input) {
+        return sanitizeSlug(input, { removeTrailingDash: false, removeLeadingDash: true });
+    }
+
+    /**
+     * Валидация формата slug
+     */
     function validateSlugFormat(slug) {
         return slugRegex.test(slug);
     }
 
-    function formatSlug(input) {
-        let formatted = input.toLowerCase().replace(/[^a-z0-9\-]/g, '');
-        formatted = formatted.replace(/-+/g, '-');
-        formatted = formatted.replace(/^-+/, '').replace(/-+$/, '');
-        return formatted;
-    }
-
-    function sanitizeSlugInput(input, cursorPosition) {
-        let sanitized = input.toLowerCase();
-        
-        // Блокируем дефис в начале
-        if (cursorPosition === 1 && sanitized.charAt(0) === '-') {
-            return input.slice(0, -1);
-        }
-        
-        // Блокируем двойные дефисы
-        if (cursorPosition > 1 && sanitized.charAt(cursorPosition - 1) === '-') {
-            const prevChar = sanitized.charAt(cursorPosition - 2);
-            if (prevChar === '-') {
-                return input.slice(0, -1);
+    /**
+     * Установка позиции курсора с безопасной обработкой ошибок
+     */
+    function setCursorPosition(input, position) {
+        requestAnimationFrame(() => {
+            const safePosition = Math.max(0, Math.min(position, input.value.length));
+            try {
+                input.setSelectionRange(safePosition, safePosition);
+            } catch (e) {
+                console.warn('Не удалось установить позицию курсора:', e);
             }
-        }
-        
-        sanitized = sanitized.replace(/[^a-z0-9\-]/g, '');
-        return sanitized;
+        });
     }
 
+    /**
+     * Обновление стилей border для slug контейнера
+     */
+    function updateSlugBorder(state) {
+        const container = slugElements.container;
+        if (!container) return;
+
+        // Удаляем все возможные классы border
+        container.classList.remove('border-emerald-500', 'border-rose-500', 'border-slate-300', 'dark:border-slate-700', 'focus-within:border-indigo-500');
+        
+        // Добавляем нужный класс в зависимости от состояния
+        switch (state) {
+            case 'available':
+                container.classList.add('border-emerald-500');
+                break;
+            case 'unavailable':
+            case 'formatError':
+                container.classList.add('border-rose-500');
+                break;
+            case 'checking':
+            case 'reset':
+            default:
+                container.classList.add('border-slate-300', 'dark:border-slate-700');
+                break;
+        }
+    }
+
+    /**
+     * Единая функция управления состоянием slug
+     * @param {string} state - Состояние: 'checking', 'available', 'unavailable', 'formatError', 'reset'
+     * @param {string} message - Сообщение об ошибке (опционально)
+     */
+    function setSlugState(state, message = '') {
+        // Скрываем все элементы состояния
+        if (slugElements.checking) slugElements.checking.classList.add('hidden');
+        if (slugElements.available) slugElements.available.classList.add('hidden');
+        if (slugElements.unavailable) slugElements.unavailable.classList.add('hidden');
+        if (slugElements.error) slugElements.error.classList.add('hidden');
+
+        // Показываем нужный элемент состояния
+        switch (state) {
+            case 'checking':
+                if (slugElements.checking) slugElements.checking.classList.remove('hidden');
+                break;
+            case 'available':
+                if (slugElements.available) slugElements.available.classList.remove('hidden');
+                if (slugElements.preview && slugElements.input) {
+                    slugElements.preview.textContent = slugElements.input.value;
+                }
+                break;
+            case 'unavailable':
+                if (slugElements.unavailable) slugElements.unavailable.classList.remove('hidden');
+                if (slugElements.error && message) {
+                    slugElements.error.textContent = message;
+                    slugElements.error.classList.remove('hidden');
+                }
+                break;
+            case 'formatError':
+                if (slugElements.error && message) {
+                    slugElements.error.textContent = message;
+                    slugElements.error.classList.remove('hidden');
+                }
+                break;
+            case 'reset':
+                if (slugElements.preview) {
+                    slugElements.preview.textContent = 'ip-ivanov';
+                }
+                break;
+        }
+
+        // Обновляем border
+        updateSlugBorder(state);
+    }
+
+    // ==================== ПРОВЕРКА ДОСТУПНОСТИ SLUG ====================
+    
+    /**
+     * Проверка доступности slug с отменой предыдущих запросов
+     */
     async function checkSlugAvailability(slug) {
-        if (!slug || slug.length < 3) {
+        // Отменяем предыдущий запрос, если он существует
+        if (currentAbortController) {
+            currentAbortController.abort();
+        }
+
+        if (!slug || slug.length < SLUG_MIN_LENGTH) {
             resetSlugValidation();
             return;
         }
 
         if (!validateSlugFormat(slug)) {
-            showSlugFormatError('Только латинские буквы в нижнем регистре, цифры и одиночные дефисы. Дефисы не могут быть в начале или конце.');
+            setSlugState('formatError', 'Только латинские буквы в нижнем регистре, цифры и одиночные дефисы. Дефисы не могут быть в начале или конце.');
             slugFormatIsValid = false;
             isSlugAvailable = false;
             updateSubmitButton();
@@ -237,13 +409,15 @@
         }
 
         slugFormatIsValid = true;
-        showSlugChecking();
+        setSlugState('checking');
         slugIsChecking = true;
 
+        // Создаем новый AbortController для этого запроса
+        currentAbortController = new AbortController();
         let timeoutId = null;
+
         try {
-            const controller = new AbortController();
-            timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+            timeoutId = setTimeout(() => currentAbortController.abort(), SLUG_CHECK_TIMEOUT);
             
             const response = await fetch('{{ route("api.slug.check") }}', {
                 method: 'POST',
@@ -253,7 +427,7 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ slug: slug }),
-                signal: controller.signal
+                signal: currentAbortController.signal
             });
 
             clearTimeout(timeoutId);
@@ -261,7 +435,7 @@
             // Обработка rate limiting (429 Too Many Requests)
             if (response.status === 429) {
                 const retryAfter = response.headers.get('Retry-After') || 60;
-                showSlugUnavailable(`Слишком много запросов. Попробуйте через ${retryAfter} секунд.`);
+                setSlugState('unavailable', `Слишком много запросов. Попробуйте через ${retryAfter} секунд.`);
                 isSlugAvailable = false;
                 slugIsChecking = false;
                 updateSubmitButton();
@@ -271,7 +445,7 @@
             // Обработка других ошибок сервера
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
-                showSlugUnavailable(data.message || 'Не удалось проверить доступность slug. Попробуйте позже.');
+                setSlugState('unavailable', data.message || 'Не удалось проверить доступность slug. Попробуйте позже.');
                 isSlugAvailable = false;
                 slugIsChecking = false;
                 updateSubmitButton();
@@ -281,129 +455,124 @@
             const data = await response.json();
             
             if (data.available === true) {
-                showSlugAvailable();
+                setSlugState('available');
                 isSlugAvailable = true;
             } else {
-                showSlugUnavailable('Этот slug уже занят. Пожалуйста, выберите другой.');
+                setSlugState('unavailable', 'Этот slug уже занят. Пожалуйста, выберите другой.');
                 isSlugAvailable = false;
             }
         } catch (error) {
             if (timeoutId) clearTimeout(timeoutId);
+            
+            // Игнорируем ошибки отмены запроса
             if (error.name === 'AbortError') {
-                showSlugUnavailable('Превышено время ожидания. Проверьте подключение к интернету.');
+                // Если это не наш таймаут, а отмена предыдущего запроса - просто выходим
+                if (!currentAbortController || currentAbortController.signal.aborted) {
+                    return;
+                }
+                setSlugState('unavailable', 'Превышено время ожидания. Проверьте подключение к интернету.');
             } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                showSlugUnavailable('Ошибка сети. Проверьте подключение к интернету.');
+                setSlugState('unavailable', 'Ошибка сети. Проверьте подключение к интернету.');
             } else {
                 console.error('Ошибка при проверке slug:', error);
-                showSlugUnavailable('Не удалось проверить доступность slug. Попробуйте позже.');
+                setSlugState('unavailable', 'Не удалось проверить доступность slug. Попробуйте позже.');
             }
             isSlugAvailable = false;
         } finally {
             slugIsChecking = false;
+            currentAbortController = null;
             updateSubmitButton();
         }
     }
 
-    function showSlugChecking() {
-        document.getElementById('slugChecking').classList.remove('hidden');
-        document.getElementById('slugAvailable').classList.add('hidden');
-        document.getElementById('slugUnavailable').classList.add('hidden');
-        document.getElementById('slugError').classList.add('hidden');
-        
-        const slugInput = document.getElementById('slug');
-        slugInput.classList.remove('border-emerald-500', 'border-rose-500');
-        slugInput.classList.add('border-slate-300', 'dark:border-slate-700');
-    }
-
-    function showSlugAvailable() {
-        document.getElementById('slugChecking').classList.add('hidden');
-        document.getElementById('slugAvailable').classList.remove('hidden');
-        document.getElementById('slugUnavailable').classList.add('hidden');
-        document.getElementById('slugError').classList.add('hidden');
-        document.getElementById('slugPreview').textContent = document.getElementById('slug').value;
-        
-        const slugInput = document.getElementById('slug');
-        slugInput.classList.remove('border-rose-500', 'border-slate-300', 'dark:border-slate-700');
-        slugInput.classList.add('border-emerald-500');
-    }
-
-    function showSlugUnavailable(message) {
-        document.getElementById('slugChecking').classList.add('hidden');
-        document.getElementById('slugAvailable').classList.add('hidden');
-        document.getElementById('slugUnavailable').classList.remove('hidden');
-        
-        const errorElement = document.getElementById('slugError');
-        errorElement.textContent = message;
-        errorElement.classList.remove('hidden');
-        
-        const slugInput = document.getElementById('slug');
-        slugInput.classList.remove('border-emerald-500', 'border-slate-300', 'dark:border-slate-700');
-        slugInput.classList.add('border-rose-500');
-    }
-
-    function showSlugFormatError(message) {
-        document.getElementById('slugChecking').classList.add('hidden');
-        document.getElementById('slugAvailable').classList.add('hidden');
-        document.getElementById('slugUnavailable').classList.add('hidden');
-        
-        const errorElement = document.getElementById('slugError');
-        errorElement.textContent = message;
-        errorElement.classList.remove('hidden');
-        
-        const slugInput = document.getElementById('slug');
-        slugInput.classList.remove('border-emerald-500', 'border-slate-300', 'dark:border-slate-700');
-        slugInput.classList.add('border-rose-500');
-    }
-
+    /**
+     * Сброс валидации slug
+     */
     function resetSlugValidation() {
-        document.getElementById('slugChecking').classList.add('hidden');
-        document.getElementById('slugAvailable').classList.add('hidden');
-        document.getElementById('slugUnavailable').classList.add('hidden');
-        document.getElementById('slugError').classList.add('hidden');
-        document.getElementById('slugPreview').textContent = 'ip-ivanov';
-        
-        const slugInput = document.getElementById('slug');
-        slugInput.classList.remove('border-emerald-500', 'border-rose-500');
-        slugInput.classList.add('border-slate-300', 'dark:border-slate-700');
-        
+        setSlugState('reset');
         slugFormatIsValid = false;
         isSlugAvailable = false;
         updateSubmitButton();
     }
 
+    // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+    
+    /**
+     * Обновление состояния кнопки отправки
+     */
     function updateSubmitButton() {
         const submitButton = document.getElementById('submitButton');
-        const slugValue = document.getElementById('slug').value.trim();
-        const nameValue = document.getElementById('name').value.trim();
-        const phoneValue = document.getElementById('phone').value.trim();
+        if (!submitButton) return;
+
+        const slugValue = slugElements.input ? slugElements.input.value.trim() : '';
+        const nameValue = document.getElementById('name')?.value.trim() || '';
+        const phoneValue = document.getElementById('phone')?.value.trim() || '';
         
         // Проверяем, все ли обязательные поля заполнены и slug доступен
         submitButton.disabled = slugIsChecking || !slugFormatIsValid || !isSlugAvailable || 
                                !nameValue || !phoneValue || !slugValue;
     }
 
-    // Обработка ввода slug
-    document.getElementById('slug').addEventListener('input', function(e) {
-        const originalValue = e.target.value;
-        const cursorPosition = e.target.selectionStart;
+    /**
+     * Обработка нажатия пробела в slug (заменяем на дефис)
+     */
+    function handleSlugKeydown(e) {
+        if (e.key === ' ' || e.keyCode === 32) {
+            e.preventDefault();
+            
+            const input = e.target;
+            const start = input.selectionStart || 0;
+            const end = input.selectionEnd || start;
+            const value = input.value;
+            
+            // Вставляем дефис вместо пробела
+            const newValue = value.substring(0, start) + '-' + value.substring(end);
+            input.value = newValue;
+            
+            // Устанавливаем курсор после вставленного дефиса
+            const newPosition = start + 1;
+            setCursorPosition(input, newPosition);
+            
+            // Триггерим событие input для обработки санитизации
+            setTimeout(() => {
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }, 0);
+        }
+    }
+
+    /**
+     * Обработка ввода slug
+     */
+    function handleSlugInput(e) {
+        const input = e.target;
+        const originalValue = input.value;
+        const cursorPosition = input.selectionStart || 0;
         
-        const sanitizedValue = sanitizeSlugInput(originalValue, cursorPosition);
+        // Сохраняем текст до курсора для правильного расчета позиции
+        const textBeforeCursor = originalValue.substring(0, cursorPosition);
+        
+        // Санитируем весь текст
+        const sanitizedValue = sanitizeSlugInput(originalValue);
         
         if (originalValue !== sanitizedValue) {
-            e.target.value = sanitizedValue;
-            const newCursorPosition = Math.max(0, cursorPosition - 1);
-            e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+            // Санитируем текст до курсора отдельно для расчета новой позиции
+            const sanitizedBefore = sanitizeSlugInput(textBeforeCursor);
+            
+            // Вычисляем новую позицию курсора
+            const newCursorPosition = sanitizedBefore.length;
+            
+            input.value = sanitizedValue;
+            setCursorPosition(input, newCursorPosition);
         }
         
         const slug = sanitizedValue.trim();
         
         // Обновляем предпросмотр в реальном времени
-        if (slug) {
-            document.getElementById('slugPreview').textContent = slug;
-        } else {
-            document.getElementById('slugPreview').textContent = 'ip-ivanov';
+        if (slugElements.preview) {
+            slugElements.preview.textContent = slug || 'ip-ivanov';
         }
         
+        // Очищаем предыдущий таймаут
         if (slugCheckTimeout) {
             clearTimeout(slugCheckTimeout);
         }
@@ -414,15 +583,18 @@
             return;
         }
         
+        // Debounce проверки доступности
         slugCheckTimeout = setTimeout(() => {
             checkSlugAvailability(slug);
-        }, 500);
+        }, SLUG_CHECK_DEBOUNCE);
         
         updateSubmitButton();
-    });
+    }
 
-    // Форматирование при уходе с поля
-    document.getElementById('slug').addEventListener('blur', function(e) {
+    /**
+     * Форматирование при уходе с поля
+     */
+    function handleSlugBlur(e) {
         const formattedSlug = formatSlug(e.target.value);
         if (e.target.value !== formattedSlug) {
             e.target.value = formattedSlug;
@@ -433,72 +605,84 @@
         } else {
             resetSlugValidation();
         }
-    });
-
-    // Проверка других обязательных полей
-    document.getElementById('name').addEventListener('input', updateSubmitButton);
-
-    // Автоподстановка +375 при фокусе на поле телефона
-    const phoneInput = document.getElementById('phone');
-    phoneInput.addEventListener('focus', function(e) {
-        if (!e.target.value || !e.target.value.startsWith('+375')) {
-            e.target.value = '+375';
-            // Устанавливаем курсор после +375
-            setTimeout(() => {
-                e.target.setSelectionRange(4, 4);
-            }, 0);
-        }
-    });
-
-    // Защита от удаления +375
-    phoneInput.addEventListener('keydown', function(e) {
-        const selectionStart = e.target.selectionStart;
-        const selectionEnd = e.target.selectionEnd;
-        
-        // Блокируем удаление, если курсор находится в области +375 (позиции 0-4)
-        if (selectionStart < 5 || selectionEnd < 5) {
-            if (e.key === 'Backspace' || e.key === 'Delete') {
-                e.preventDefault();
-                // Перемещаем курсор после +375
-                e.target.setSelectionRange(5, 5);
-                return false;
-            }
-        }
-    });
-
-    // Валидные коды операторов Беларуси
-    const validOperatorCodes = ['29', '33', '44', '25'];
-
-    // Проверка кода оператора
-    function isValidOperatorCode(digits) {
-        if (digits.length >= 2) {
-            const operatorCode = digits.substring(0, 2);
-            return validOperatorCodes.includes(operatorCode);
-        }
-        return true; // Если меньше 2 цифр, считаем валидным (еще вводится)
     }
 
-    // Показать ошибку кода оператора
+    /**
+     * Инициализация обработчиков событий для slug
+     */
+    function initSlugHandlers() {
+        if (!slugElements.input) return;
+
+        slugElements.input.addEventListener('keydown', handleSlugKeydown);
+        slugElements.input.addEventListener('input', handleSlugInput);
+        slugElements.input.addEventListener('blur', handleSlugBlur);
+    }
+
+    // ==================== ОБРАБОТКА ТЕЛЕФОНА ====================
+    
+    // Валидные коды операторов Беларуси
+    const validOperatorCodes = ['29', '33', '44', '25'];
+    let phoneInput = null;
+
+    /**
+     * Показать ошибку кода оператора
+     */
     function showPhoneError(message) {
         const errorElement = document.getElementById('phoneError');
-        if (errorElement) {
+        if (errorElement && phoneInput) {
             errorElement.textContent = message;
             errorElement.classList.remove('hidden');
             phoneInput.classList.add('border-rose-500');
         }
     }
 
-    // Скрыть ошибку кода оператора
+    /**
+     * Скрыть ошибку кода оператора
+     */
     function hidePhoneError() {
         const errorElement = document.getElementById('phoneError');
-        if (errorElement) {
+        if (errorElement && phoneInput) {
             errorElement.classList.add('hidden');
             phoneInput.classList.remove('border-rose-500');
         }
     }
 
-    // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
-    phoneInput.addEventListener('input', function(e) {
+    /**
+     * Инициализация обработчиков для поля телефона
+     */
+    function initPhoneHandlers() {
+        phoneInput = document.getElementById('phone');
+        if (!phoneInput) return;
+
+        // Автоподстановка +375 при фокусе на поле телефона
+        phoneInput.addEventListener('focus', function(e) {
+            if (!e.target.value || !e.target.value.startsWith('+375')) {
+                e.target.value = '+375';
+                // Устанавливаем курсор после +375
+                setTimeout(() => {
+                    e.target.setSelectionRange(4, 4);
+                }, 0);
+            }
+        });
+
+        // Защита от удаления +375
+        phoneInput.addEventListener('keydown', function(e) {
+            const selectionStart = e.target.selectionStart;
+            const selectionEnd = e.target.selectionEnd;
+            
+            // Блокируем удаление, если курсор находится в области +375 (позиции 0-4)
+            if (selectionStart < 5 || selectionEnd < 5) {
+                if (e.key === 'Backspace' || e.key === 'Delete') {
+                    e.preventDefault();
+                    // Перемещаем курсор после +375
+                    e.target.setSelectionRange(5, 5);
+                    return false;
+                }
+            }
+        });
+
+        // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
+        phoneInput.addEventListener('input', function(e) {
         let value = e.target.value;
         
         // Если значение не начинается с +375, устанавливаем префикс
@@ -564,14 +748,19 @@
         // Формируем финальное значение
         e.target.value = '+375' + limitedDigits;
         
-        // Устанавливаем курсор в конец, но не раньше позиции 5
-        const cursorPosition = Math.max(5, e.target.value.length);
-        e.target.setSelectionRange(cursorPosition, cursorPosition);
-        
-        updateSubmitButton();
-    });
+            // Устанавливаем курсор в конец, но не раньше позиции 5
+            const cursorPosition = Math.max(5, e.target.value.length);
+            e.target.setSelectionRange(cursorPosition, cursorPosition);
+            
+            updateSubmitButton();
+        });
+    }
 
-    // Подсказки при фокусе
+    // ==================== ПОДСКАЗКИ И СЧЕТЧИКИ ====================
+    
+    /**
+     * Подсказки при фокусе
+     */
     function setupTooltips() {
         const fields = [
             { id: 'name', tooltipId: 'nameTooltip' },
@@ -621,12 +810,55 @@
         }
     }
 
-    // Инициализация
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+    
+    /**
+     * Инициализация кэшированных DOM элементов
+     */
+    function initSlugElements() {
+        slugElements.input = document.getElementById('slug');
+        slugElements.checking = document.getElementById('slugChecking');
+        slugElements.available = document.getElementById('slugAvailable');
+        slugElements.unavailable = document.getElementById('slugUnavailable');
+        slugElements.error = document.getElementById('slugError');
+        slugElements.preview = document.getElementById('slugPreview');
+        // Контейнер - это родительский div с border, который содержит input
+        // Ищем родителя, который имеет класс border (контейнер с border)
+        if (slugElements.input) {
+            slugElements.container = slugElements.input.closest('div.flex.items-center');
+        }
+    }
+
+    /**
+     * Инициализация обработчиков для обязательных полей
+     */
+    function initFormHandlers() {
+        // Обработчик для поля name
+        const nameInput = document.getElementById('name');
+        if (nameInput) {
+            nameInput.addEventListener('input', updateSubmitButton);
+        }
+        
+        // Инициализация обработчиков для телефона
+        initPhoneHandlers();
+    }
+
+    /**
+     * Инициализация при загрузке страницы
+     */
     document.addEventListener('DOMContentLoaded', function() {
+        // Инициализируем кэшированные элементы
+        initSlugElements();
+        
+        // Инициализируем обработчики событий для slug
+        initSlugHandlers();
+        
+        // Инициализируем обработчики для остальных полей формы
+        initFormHandlers();
+        
         // Если есть старое значение slug, проверяем его
-        const slugInput = document.getElementById('slug');
-        if (slugInput.value) {
-            checkSlugAvailability(slugInput.value.trim());
+        if (slugElements.input?.value) {
+            checkSlugAvailability(slugElements.input.value.trim());
         }
         
         setupTooltips();

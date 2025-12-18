@@ -48,8 +48,8 @@
                             @endif
                         </div>
                     </div>
-                </div>
-                
+            </div>
+
                 <!-- Услуга -->
                 <div class="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-4 md:p-5">
                     <div class="flex items-start gap-3">
@@ -81,7 +81,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Не добавлен</p>
                             @endif
                         </div>
-                    </div>
+            </div>
                 </div>
             </div>
         </div>

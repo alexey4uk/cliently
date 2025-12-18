@@ -52,7 +52,7 @@
                 </h2>
 
                 <div class="space-y-5">
-                    <!-- Информационное сообщение -->
+                <!-- Информационное сообщение -->
                     <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-900 dark:bg-indigo-900/30 p-3 md:p-4">
                         <div class="flex items-start gap-2.5">
                             <div class="flex-shrink-0">
@@ -62,62 +62,62 @@
                             </div>
                             <div class="flex-1">
                                 <p class="text-xs md:text-sm text-indigo-900 dark:text-indigo-100 leading-relaxed">
-                                    {{ __('Спасибо за регистрацию! Прежде чем начать, не могли бы вы подтвердить свой адрес электронной почты, перейдя по ссылке, которую мы только что отправили вам по электронной почте? Если вы не получили письмо, мы с радостью отправим вам другое.') }}
+                            {{ __('Спасибо за регистрацию! Прежде чем начать, не могли бы вы подтвердить свой адрес электронной почты, перейдя по ссылке, которую мы только что отправили вам по электронной почте? Если вы не получили письмо, мы с радостью отправим вам другое.') }}
                                 </p>
-                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Уведомление об отправке -->
-                    @if (session('status') == 'verification-link-sent')
+                <!-- Уведомление об отправке -->
+                @if (session('status') == 'verification-link-sent')
                         <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-check-circle text-emerald-600 dark:text-emerald-400 text-sm"></i>
                                 <p class="text-xs md:text-sm text-emerald-700 dark:text-emerald-300">
-                                    {{ __('Новая ссылка для подтверждения была отправлена на указанный вами адрес электронной почты.') }}
-                                </p>
-                            </div>
+                                {{ __('Новая ссылка для подтверждения была отправлена на указанный вами адрес электронной почты.') }}
+                            </p>
                         </div>
-                    @endif
+                    </div>
+                @endif
 
-                    <!-- Кнопки -->
-                    <div class="space-y-3">
-                        <!-- Форма повторной отправки -->
-                        <form method="POST" action="{{ route('verification.send') }}">
-                            @csrf
+                <!-- Кнопки -->
+                <div class="space-y-3">
+                    <!-- Форма повторной отправки -->
+                    <form method="POST" action="{{ route('verification.send') }}">
+                        @csrf
                             <button 
                                 type="submit" 
                                 class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                             >
-                                <span>Отправить письмо повторно</span>
+                            <span>Отправить письмо повторно</span>
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
-                            </button>
-                        </form>
+                        </button>
+                    </form>
 
-                        <!-- Разделитель -->
-                        <div class="relative">
-                            <div class="absolute inset-0 flex items-center">
+                    <!-- Разделитель -->
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
                                 <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                            </div>
-                            <div class="relative flex justify-center text-sm">
-                                <span class="px-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs">
-                                    Или
-                                </span>
-                            </div>
                         </div>
+                        <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs">
+                                Или
+                            </span>
+                        </div>
+                    </div>
 
-                        <!-- Форма выхода -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
+                    <!-- Форма выхода -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
                             <button 
                                 type="submit" 
                                 class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                             >
-                                <span>Выйти из аккаунта</span>
+                            <span>Выйти из аккаунта</span>
                                 <i class="fa-solid fa-right-from-bracket text-xs"></i>
-                            </button>
-                        </form>
-                    </div>
+                        </button>
+                    </form>
+                </div>
                 </div>
             </div>
 
@@ -131,11 +131,11 @@
                     <span>🌓</span>
                     <span>Сменить тему</span>
                 </button>
-            </div>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
         // Переключение темы
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
@@ -152,7 +152,7 @@
             html.classList.toggle('dark');
             const isDark = html.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-    </script>
+    });
+</script>
 </body>
 </html>
