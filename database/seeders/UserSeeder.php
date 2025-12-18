@@ -15,12 +15,15 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::query()->create([
-            'name' => 'Иван',
-            'email' => 'a@a.ru',
-            'phone' => '+375292909641',
-            'password' => Hash::make('lm57iqxz'),
-        ]);
+        // Используем firstOrCreate для безопасного создания (не создаст дубликат)
+        $user = User::firstOrCreate(
+            ['email' => 'a@a.ru'],
+            [
+                'name' => 'Иван',
+                'phone' => '+375292909641',
+                'password' => Hash::make('lm57iqxz'),
+            ]
+        );
 
         // $user->businesses()->create([
         //     'name' => 'ИП Иванов',
