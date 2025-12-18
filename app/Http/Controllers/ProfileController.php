@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -24,25 +25,30 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(Request $request)
+    public function update(Request $request): RedirectResponse
     {
         $user = Auth::user();
 
         $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'phone_normalized' => 'required|string|max:255|unique:users,phone,' . $user->id,
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'phone' => 'required|string|max:20',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'remove_avatar' => 'sometimes|boolean',
         ], [
-            'phone_normalized.unique' => 'Номер уже используется'
+            'name.required' => 'Поле "Имя" обязательно для заполнения.',
+            'email.required' => 'Поле "Email" обязательно для заполнения.',
+            'email.email' => 'Неверный формат email адреса.',
+            'email.unique' => 'Этот email уже используется.',
+            'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
+            'avatar.image' => 'Файл должен быть изображением.',
+            'avatar.mimes' => 'Изображение должно быть в формате: jpeg, png, jpg, gif или webp.',
+            'avatar.max' => 'Размер изображения не должен превышать 5 МБ.',
         ]);
 
         // Обработка удаления аватара
         if ($request->has('remove_avatar') && $request->remove_avatar == '1') {
             if ($user->avatar) {
-                // Удаляем файл из хранилища
                 Storage::disk('public')->delete($user->avatar);
                 $user->avatar = null;
             }
@@ -61,14 +67,53 @@ class ProfileController extends Controller
         }
 
         // Обновляем остальные данные
-        $user->first_name = $validated['first_name'];
-        $user->last_name = $validated['last_name'];
+        $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->phone = $validated['phone_normalized'];
-
+        $user->phone = $validated['phone'];
         $user->save();
 
         return back()->with('success', 'Профиль успешно обновлен');
+    }
+
+    /**
+     * Update the user's password.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ], [
+            'current_password.required' => 'Поле "Текущий пароль" обязательно для заполнения.',
+            'current_password.current_password' => 'Неверный текущий пароль.',
+            'password.required' => 'Поле "Новый пароль" обязательно для заполнения.',
+            'password.confirmed' => 'Пароли не совпадают.',
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('password_success', 'Пароль успешно изменен');
+    }
+
+    /**
+     * Delete the user's avatar.
+     */
+    public function deleteAvatar(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            $user->avatar = null;
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Аватар успешно удален'
+        ]);
     }
 
     /**
@@ -82,6 +127,11 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Удаляем аватар если есть
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
         Auth::logout();
 
         $user->delete();
@@ -90,46 +140,5 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
-    }
-
-    public function deleteAvatar(Request $request)
-    {
-        Log::info('Starting avatar deletion for user: ' . Auth::id());
-
-        try {
-            $user = Auth::user();
-            Log::info('User current avatar: ' . $user->avatar);
-
-            if ($user->avatar) {
-                Log::info('Deleting avatar file: ' . $user->avatar);
-
-                // Удаляем файл из хранилища
-                $deleted = Storage::disk('public')->delete($user->avatar);
-                Log::info('File deletion result: ' . ($deleted ? 'success' : 'failed'));
-
-                // Обновляем запись в базе данных
-                $user->avatar = null;
-                $user->save();
-
-                Log::info('Avatar set to null in database');
-            } else {
-                Log::info('User has no avatar to delete');
-            }
-
-            Log::info('Avatar deletion completed successfully');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Аватар успешно удален'
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Avatar deletion error: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Ошибка при удалении аватара: ' . $e->getMessage()
-            ], 500);
-        }
     }
 }

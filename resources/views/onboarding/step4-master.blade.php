@@ -1,12 +1,12 @@
 @extends('layouts.user')
+
+@section('title', 'Добавление мастера - Cliently')
+@section('page-title', 'Добавление мастера')
+@section('page-description', 'Информация о мастере')
+
 @section('content')
-    <!-- Заголовок страницы -->
+    <!-- Индикатор прогресса -->
     <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Добавление мастера</h1>
-        </div>
-        
-        <!-- Индикатор прогресса -->
         <div class="w-full md:w-auto">
             <div class="flex items-center w-full md:w-auto md:gap-1.5">
                 @for($i = 1; $i <= 4; $i++)

@@ -54,25 +54,25 @@
                 <form method="POST" action="{{ route('register') }}" class="space-y-5" id="registerForm">
                     @csrf
 
-                    <!-- Имя -->
-                    <div>
+                        <!-- Имя -->
+                        <div>
                         <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Имя*</span>
-                        </label>
-                        <input 
-                            type="text" 
+                            </label>
+                                <input
+                                    type="text"
                             id="name" 
                             name="name"
                             value="{{ old('name') }}"
-                            required
+                                    required
                             autocomplete="name"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="Иван Иванов"
                         />
                         @error('name')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
+                            @enderror
                     </div>
 
                     <!-- Email -->
@@ -81,15 +81,15 @@
                             <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
-                        <input 
+                            <input
                             type="email" 
-                            id="email" 
-                            name="email"
+                                id="email"
+                                name="email"
                             value="{{ old('email') }}"
                             required
-                            autocomplete="email"
+                                autocomplete="email"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="your@email.com"
+                                placeholder="your@email.com"
                         />
                         @error('email')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -102,56 +102,56 @@
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Пароль*</span>
                         </label>
-                        <input 
+                            <input
                             type="password" 
                             id="password" 
                             name="password"
-                            required
+                                required
                             autocomplete="new-password"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Минимум 8 символов"
+                                    placeholder="Минимум 8 символов"
                         />
-                        @error('password')
+                            @error('password')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            @enderror
+                        </div>
 
-                    <!-- Подтверждение пароля -->
-                    <div>
+                        <!-- Подтверждение пароля -->
+                        <div>
                         <label for="password_confirmation" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Подтверждение пароля*</span>
-                        </label>
-                        <input 
+                            </label>
+                                <input
                             type="password" 
-                            id="password_confirmation" 
-                            name="password_confirmation"
+                                    id="password_confirmation"
+                                    name="password_confirmation"
                             required
-                            autocomplete="new-password"
+                                    autocomplete="new-password"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                            placeholder="Повторите пароль"
+                                    placeholder="Повторите пароль"
                         />
                     </div>
 
                     <!-- Согласие с пользовательским соглашением -->
                     <div>
                         <label class="flex items-start gap-2 text-base md:text-sm">
-                            <input 
+                        <input
                                 type="checkbox" 
-                                name="terms"
-                                required
+                            name="terms"
+                            required
                                 class="mt-0.5 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 focus:ring-2 dark:border-slate-700 dark:bg-slate-800"
                             />
                             <span class="text-slate-600 dark:text-slate-400">
                                 Я согласен с 
                                 <a href="#" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium underline">
                                     пользовательским соглашением
-                                </a>
+                            </a>
                             </span>
                         </label>
-                        @error('terms')
+                    @error('terms')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
+                    @enderror
                     </div>
 
                     <!-- Кнопка регистрации -->
@@ -166,16 +166,16 @@
                     </div>
                 </form>
 
-                <!-- Разделитель -->
+                    <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                     <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
-                        Уже есть аккаунт? 
+                                Уже есть аккаунт?
                         <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium">
                             Войти
                         </a>
                     </p>
-                </div>
-            </div>
+        </div>
+    </div>
 
             <!-- Переключатель темы -->
             <div class="mt-6 text-center">
@@ -187,11 +187,11 @@
                     <span>🌓</span>
                     <span>Сменить тему</span>
                 </button>
-            </div>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
         // Переключение темы
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
@@ -228,9 +228,9 @@
                     this.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/20');
                 } else {
                     this.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/20');
-                }
-            });
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

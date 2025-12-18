@@ -35,7 +35,7 @@
                         <span class="absolute h-9 w-9 rounded-full border-2 border-rose-500 right-0"></span>
                         <!-- Пересечение -->
                         <span class="absolute h-8 w-8 rounded-full bg-indigo-600/20"></span>
-                    </div>
+        </div>
                 </div>
                 <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
                     cliently
@@ -60,16 +60,16 @@
                             <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
-                        <input 
+                            <input
                             type="email" 
-                            id="email" 
-                            name="email"
+                                id="email"
+                                name="email"
                             value="{{ old('email') }}"
                             required
-                            autocomplete="email"
+                                autocomplete="email"
                             autofocus
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="your@email.com"
+                                placeholder="your@email.com"
                         />
                         @error('email')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -88,13 +88,13 @@
                                     Забыли?
                                 </a>
                             @endif
-                        </div>
-                        <input 
+                            </div>
+                            <input
                             type="password" 
-                            id="password" 
-                            name="password"
+                                id="password"
+                                name="password"
                             required
-                            autocomplete="current-password"
+                                autocomplete="current-password"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="Введите пароль"
                         />
@@ -129,7 +129,7 @@
                     </div>
                 </form>
 
-                <!-- Разделитель -->
+                    <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                     <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
                         Нет аккаунта? 
@@ -137,8 +137,8 @@
                             Зарегистрироваться
                         </a>
                     </p>
-                </div>
-            </div>
+        </div>
+    </div>
 
             <!-- Переключатель темы -->
             <div class="mt-6 text-center">
@@ -150,11 +150,11 @@
                     <span>🌓</span>
                     <span>Сменить тему</span>
                 </button>
-            </div>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
         // Переключение темы
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
@@ -191,8 +191,8 @@
                 } else {
                     this.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/20');
                 }
-            });
         });
-    </script>
+    });
+</script>
 </body>
 </html>

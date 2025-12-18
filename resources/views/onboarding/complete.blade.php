@@ -1,4 +1,9 @@
 @extends('layouts.user')
+
+@section('title', 'Настройка завершена - Cliently')
+@section('page-title', 'Настройка завершена')
+@section('page-description', 'Ваш бизнес готов к работе')
+
 @section('content')
     <!-- Центральный блок -->
     <div class="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center px-4">
@@ -48,8 +53,8 @@
                             @endif
                         </div>
                     </div>
-                </div>
-                
+            </div>
+
                 <!-- Услуга -->
                 <div class="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-4 md:p-5">
                     <div class="flex items-start gap-3">
@@ -81,7 +86,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Не добавлен</p>
                             @endif
                         </div>
-                    </div>
+            </div>
                 </div>
             </div>
         </div>

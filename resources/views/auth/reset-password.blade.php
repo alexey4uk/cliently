@@ -63,14 +63,14 @@
                             <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
-                        <input 
+                            <input
                             type="email" 
-                            id="email" 
-                            name="email"
+                                id="email"
+                                name="email"
                             value="{{ old('email', $request->email) }}"
-                            required
+                                required
                             autocomplete="email"
-                            autofocus
+                                autofocus
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="your@email.com"
                         />
@@ -85,14 +85,14 @@
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Новый пароль*</span>
                         </label>
-                        <input 
+                            <input
                             type="password" 
-                            id="password" 
-                            name="password"
-                            required
-                            autocomplete="new-password"
+                                id="password"
+                                name="password"
+                                required
+                                autocomplete="new-password"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Минимум 8 символов"
+                                placeholder="Минимум 8 символов"
                         />
                         @error('password')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -105,12 +105,12 @@
                             <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             <span>Подтверждение пароля*</span>
                         </label>
-                        <input 
+                            <input
                             type="password" 
-                            id="password_confirmation" 
-                            name="password_confirmation"
-                            required
-                            autocomplete="new-password"
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                required
+                                autocomplete="new-password"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                             placeholder="Повторите пароль"
                         />
@@ -128,15 +128,15 @@
                     </div>
                 </form>
 
-                <!-- Разделитель -->
+                    <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                     <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
                         <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium">
                             Вернуться к входу
                         </a>
                     </p>
-                </div>
-            </div>
+        </div>
+    </div>
 
             <!-- Переключатель темы -->
             <div class="mt-6 text-center">
@@ -148,11 +148,11 @@
                     <span>🌓</span>
                     <span>Сменить тему</span>
                 </button>
-            </div>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
         // Переключение темы
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
@@ -208,6 +208,6 @@
 
         passwordInput.addEventListener('input', validatePasswordMatch);
         confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-    </script>
+</script>
 </body>
 </html>

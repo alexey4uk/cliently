@@ -1,12 +1,12 @@
 @extends('layouts.user')
+
+@section('title', 'Добавление услуги - Cliently')
+@section('page-title', 'Добавление услуги')
+@section('page-description', 'Информация об услуге')
+
 @section('content')
-    <!-- Заголовок страницы -->
+    <!-- Индикатор прогресса -->
     <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Добавление услуги</h1>
-        </div>
-        
-        <!-- Индикатор прогресса -->
         <div class="w-full md:w-auto">
             <div class="flex items-center w-full md:w-auto md:gap-1.5">
                 @for($i = 1; $i <= 4; $i++)
@@ -107,9 +107,9 @@
                         <i class="fa-solid fa-dollar-sign text-indigo-600 dark:text-indigo-400 text-xs"></i>
                         <span>Цена (BYN)*</span>
                     </label>
-                    <input type="number" id="price" name="price" required min="0" step="50" value="{{ old('price') }}"
+                        <input type="number" id="price" name="price" required min="0" step="50" value="{{ old('price') }}"
                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                           placeholder="1000">
+                               placeholder="1000">
                     @error('price')
                     <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
