@@ -1,10 +1,12 @@
 @extends('layouts.user')
+
+@section('title', 'Создание бизнеса - Cliently')
+@section('page-title', 'Создание бизнеса')
+@section('page-description', 'Основная информация о вашем бизнесе')
+
 @section('content')
-    <!-- Заголовок страницы -->
+    <!-- Индикатор прогресса -->
     <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Создание бизнеса</h1>
-        </div>
         
         <!-- Индикатор прогресса -->
         <div class="w-full md:w-auto">

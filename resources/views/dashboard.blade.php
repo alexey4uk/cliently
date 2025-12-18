@@ -1,12 +1,10 @@
 @extends('layouts.user')
+
+@section('title', 'Дашборд - Cliently')
+@section('page-title', 'Дашборд')
+@section('page-description', 'Обзор вашего бизнеса')
+
 @section('content')
-    <!-- Заголовок страницы -->
-    <div class="flex items-baseline justify-between gap-2 mb-6">
-        <div>
-            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Дашборд</h1>
-            <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400">Сегодня, 15 декабря</p>
-        </div>
-    </div>
 
     <!-- Панель статистики (компактная, сверху) -->
     <section class="mb-6">

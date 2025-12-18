@@ -1,4 +1,9 @@
 @extends('layouts.user')
+
+@section('title', 'Настройка завершена - Cliently')
+@section('page-title', 'Настройка завершена')
+@section('page-description', 'Ваш бизнес готов к работе')
+
 @section('content')
     <!-- Центральный блок -->
     <div class="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center px-4">

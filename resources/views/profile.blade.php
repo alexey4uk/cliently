@@ -1,20 +1,10 @@
 @extends('layouts.user')
 
 @section('title', 'Профиль пользователя - Cliently')
+@section('page-title', 'Профиль')
+@section('page-description', 'Управление личными данными')
 
 @section('content')
-    <!-- Заголовок страницы -->
-    <div class="flex items-center justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-xl md:text-lg font-semibold text-slate-900 dark:text-white">Профиль</h1>
-            <p class="text-sm md:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Управление личными данными</p>
-        </div>
-        <a href="{{ route('dashboard') }}"
-            class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors text-sm">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-            <span>Назад</span>
-        </a>
-    </div>
 
     <!-- Сообщения об успехе -->
     @if(session('success'))

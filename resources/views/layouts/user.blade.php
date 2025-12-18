@@ -30,86 +30,149 @@
         <div class="flex flex-col flex-1 overflow-hidden">
             <!-- Верхний header -->
             <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="flex items-center justify-between px-4 py-3 lg:px-6">
-                    <!-- Логотип и заголовок (мобильная версия) -->
-                    <div class="lg:hidden flex items-center gap-3">
-                        <!-- Логознак: мастер + клиент -->
-                        <div class="relative flex h-8 w-8 items-center justify-center flex-shrink-0">
-                            <!-- Левый круг (мастер) -->
-                            <span class="absolute h-6 w-6 rounded-full border-2 border-[#6366F1] left-0"></span>
-                            <!-- Правый круг (клиент) -->
-                            <span class="absolute h-6 w-6 rounded-full border-2 border-[#FF6B6B] right-0"></span>
-                            <!-- Пересечение -->
-                            <span class="absolute h-5 w-5 rounded-full bg-[#6366F1]/20"></span>
+                <div class="max-w-7xl mx-auto px-4 py-3 lg:px-6">
+                    <div class="flex items-center justify-between">
+                        <!-- Левая часть: Логотип/Заголовок -->
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <!-- Логотип (только мобильные) -->
+                            <div class="lg:hidden flex items-center gap-3 flex-shrink-0">
+                                <!-- Логознак: мастер + клиент -->
+                                <div class="relative flex h-8 w-8 items-center justify-center flex-shrink-0">
+                                    <!-- Левый круг (мастер) -->
+                                    <span class="absolute h-6 w-6 rounded-full border-2 border-indigo-600 left-0"></span>
+                                    <!-- Правый круг (клиент) -->
+                                    <span class="absolute h-6 w-6 rounded-full border-2 border-rose-500 right-0"></span>
+                                    <!-- Пересечение -->
+                                    <span class="absolute h-5 w-5 rounded-full bg-indigo-600/20"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Заголовок страницы -->
+                            <div class="min-w-0 flex-1">
+                                <h1 class="text-lg md:text-xl font-semibold text-slate-900 dark:text-white truncate">
+                                    @yield('page-title', 'cliently')
+                                </h1>
+                                @hasSection('page-description')
+                                    <p class="hidden md:block text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                        @yield('page-description')
+                                    </p>
+                                @endif
+                            </div>
                         </div>
-                        <div>
-                            <h1 class="text-lg font-semibold text-slate-900 dark:text-white">
-                                @yield('page-title', 'cliently')
-                            </h1>
-                        </div>
-                    </div>
 
-                    <!-- Действия в header -->
-                    <div class="flex items-center gap-3 ml-auto">
-                        <!-- Кнопка "Новая запись" -->
-                        <button
-                            class="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[#6366F1] px-3.5 py-1.5 text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:bg-[#4F46E5] active:bg-[#4338CA] transition-colors">
-                            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-white/10">
-                                +
-                            </span>
-                            <span>Новая запись</span>
-                        </button>
+                        <!-- Правая часть: Действия -->
+                        <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-4">
+                        <!-- Кнопка "Новая запись" (только на определенных страницах) -->
+                        @hasSection('show-new-button')
+                            <button
+                                class="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                <span>Новая запись</span>
+                            </button>
+                        @endif
 
                         <!-- Переключатель темы -->
                         <button id="themeToggle"
-                            class="h-8 w-8 rounded-full border border-slate-300 bg-white text-xs flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                            class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Переключить тему">
-                            🌓
+                            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
+                            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
                         </button>
+
+                        <!-- Уведомления -->
+                        <div class="relative">
+                            <button
+                                class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+                                aria-label="Уведомления">
+                                <i class="fa-solid fa-bell text-sm"></i>
+                                <!-- Индикатор новых уведомлений -->
+                                <span class="absolute top-1 right-1 h-2 w-2 bg-rose-500 rounded-full"></span>
+                            </button>
+                        </div>
 
                         <!-- Профиль пользователя -->
                         <div class="relative">
-                            <button
-                                class="menu-trigger h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
-                                aria-label="Профиль">
-                                АМ
-                            </button>
-                            <div
-                                class="menu-panel z-[100] hidden w-48 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900">
-                                <a href="{{ route('profile.edit') }}"
-                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
-                                    <span class="w-4 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-user"></i></span>
-                                    <span>Профиль</span>
-                                </a>
+                            @auth
                                 <button
-                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
-                                    <span class="w-4 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-cog"></i></span>
-                                    <span>Настройки</span>
+                                    class="menu-trigger h-9 w-9 rounded-md flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden"
+                                    aria-label="Профиль">
+                                    @if(Auth::user()->avatar)
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                             alt="{{ Auth::user()->name }}" 
+                                             class="w-full h-full object-cover rounded-md">
+                                    @else
+                                        <span class="h-full w-full rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                                            {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                                        </span>
+                                    @endif
                                 </button>
-                                <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button
-                                        class="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
-                                        <span class="w-4 text-indigo-500 dark:text-indigo-300"><i
-                                                class="fa-solid fa-right-from-bracket"></i></span>
-                                        <span>Выйти</span>
-                                    </button>
-                                </form>
+                            @else
+                                <button
+                                    class="menu-trigger h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                                    aria-label="Профиль">
+                                    АМ
+                                </button>
+                            @endauth
+                            <div
+                                class="menu-panel z-[100] hidden w-56 rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-lg">
+                                <!-- Информация о пользователе -->
+                                @auth
+                                    <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-semibold text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 overflow-hidden flex-shrink-0">
+                                                @if(Auth::user()->avatar)
+                                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                                         alt="{{ Auth::user()->name }}" 
+                                                         class="w-full h-full object-cover">
+                                                @else
+                                                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                                                @endif
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                                    {{ Auth::user()->name }}
+                                                </p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                                    {{ Auth::user()->email }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endauth
+                                
+                                <!-- Действия -->
+                                <div class="py-1">
+                                    <a href="{{ route('profile.edit') }}"
+                                        class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                        <i class="fa-solid fa-user w-4 text-indigo-500 dark:text-indigo-400 text-xs"></i>
+                                        <span>Профиль</span>
+                                    </a>
+                                    <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit"
+                                            class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                            <i class="fa-solid fa-right-from-bracket w-4 text-indigo-500 dark:text-indigo-400 text-xs"></i>
+                                            <span>Выйти</span>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-    </header>
+            </header>
 
             <!-- Основной контент -->
             <main class="flex-1 overflow-y-auto">
-                <div class="px-4 py-6 lg:px-8 lg:py-8 pb-20 lg:pb-8">
-        @include('alerts')
+                <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 pb-20 lg:pb-10">
+                    @include('alerts')
 
-        @yield('content')
+                    <div class="max-w-4xl mx-auto">
+                        @yield('content')
+                    </div>
                 </div>
-    </main>
+            </main>
         </div>
     </div>
 
@@ -120,25 +183,24 @@
         const htmlEl = document.documentElement;
         const toggleBtn = document.getElementById('themeToggle');
 
+        if (toggleBtn) {
+            const prefersDark = window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        const prefersDark = window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+            const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
 
+            if (shouldBeDark) {
+                htmlEl.classList.add('dark');
+            } else {
+                htmlEl.classList.remove('dark');
+            }
 
-        const savedTheme = localStorage.getItem('theme');
-
-
-        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-            htmlEl.classList.add('dark');
-        } else {
-            htmlEl.classList.remove('dark');
+            toggleBtn.addEventListener('click', () => {
+                const isDark = htmlEl.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
         }
-
-
-        toggleBtn.addEventListener('click', () => {
-            const isDark = htmlEl.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
     </script>
     
     <script>
