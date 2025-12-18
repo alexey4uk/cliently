@@ -5,7 +5,7 @@
 @section('page-description', 'Информация о мастере')
 
 @section('content')
-    <!-- Индикатор прогресса -->
+        <!-- Индикатор прогресса -->
     <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
         <div class="w-full md:w-auto">
             <div class="flex items-center w-full md:w-auto md:gap-1.5">
