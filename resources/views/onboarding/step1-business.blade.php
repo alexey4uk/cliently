@@ -367,7 +367,7 @@
                 if (slugElements.error && message) {
                     slugElements.error.textContent = message;
                     slugElements.error.classList.remove('hidden');
-                }
+            }
                 break;
             case 'formatError':
                 if (slugElements.error && message) {
@@ -476,7 +476,7 @@
             } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
                 setSlugState('unavailable', 'Ошибка сети. Проверьте подключение к интернету.');
             } else {
-                console.error('Ошибка при проверке slug:', error);
+            console.error('Ошибка при проверке slug:', error);
                 setSlugState('unavailable', 'Не удалось проверить доступность slug. Попробуйте позже.');
             }
             isSlugAvailable = false;
@@ -840,7 +840,7 @@
         if (nameInput) {
             nameInput.addEventListener('input', updateSubmitButton);
         }
-        
+
         // Инициализация обработчиков для телефона
         initPhoneHandlers();
     }
