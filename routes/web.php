@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
-use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +14,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
         Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
         Route::delete('/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
-        Route::get('/password/change', [PasswordController::class, 'edit'])->name('password.edit');
     });
 
     Route::prefix('onboarding')->name('onboarding.')->middleware(['auth', 'no.onboarded'])->group(function () {
