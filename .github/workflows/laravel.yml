@@ -134,19 +134,27 @@ jobs:
               echo ".env file exists. Skipping copy."
             fi
             
-            # Generate application key if not set
+            # Set permissions for .env file
+            chmod 644 "$DEPLOY_PATH/.env"
+            
+            # Install dependencies first (before artisan commands)
+            composer install --no-dev --optimize-autoloader
+            
+            # Generate application key if not set (after composer install)
             if ! grep -q "APP_KEY=base64:" "$DEPLOY_PATH/.env" 2>/dev/null; then
               echo "APP_KEY not found. Generating..."
               php artisan key:generate --force
+              php artisan config:clear
             else
               echo "APP_KEY already exists. Skipping generation."
             fi
             
-            composer install --no-dev --optimize-autoloader
             npm ci
             npm run build
+            php artisan config:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
             php artisan migrate:fresh --force
             php artisan db:seed --force
+
