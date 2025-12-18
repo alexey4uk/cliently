@@ -19,8 +19,6 @@
 /storage/*.key
 /storage/pail
 /vendor
-composer.lock
-package-lock.json
 .httpauth
 Homestead.json
 Homestead.yaml
