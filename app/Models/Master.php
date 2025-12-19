@@ -21,6 +21,8 @@ class Master extends Model
         'email',
         'working_hours',
         'is_active',
+        'last_name',
+        'first_name',
     ];
 
     public function locations(): BelongsToMany

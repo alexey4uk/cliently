@@ -4,7 +4,7 @@
     {{-- <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-3">Уведомления</h2> --}}
 
     <div class="space-y-3">
-        @if(session('sucсess'))
+        @if(session('success'))
             <!-- Уведомление об успехе -->
             <div
                 class="toast-notification flex items-start mt-6 mb-6 gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 shadow-sm dark:border-emerald-800 dark:bg-emerald-900/30">
@@ -65,4 +65,26 @@
         @endif
     </div>
 </section>
+
+@push('scripts')
+    <script>
+        // Автоматическое скрытие уведомлений
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.toast-notification');
+
+            notifications.forEach(function(notification) {
+                // Скрываем через 5 секунд
+                setTimeout(function() {
+                    notification.style.transition = 'opacity 0.3s ease-out';
+                    notification.style.opacity = '0';
+
+                    // Удаляем из DOM после анимации
+                    setTimeout(function() {
+                        notification.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+@endpush
 @endif
