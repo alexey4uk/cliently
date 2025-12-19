@@ -36,7 +36,7 @@ class OnboardingTest extends TestCase
 
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
-        $master = Master::factory()->create(['business_id' => $business->id]);
+        $master = Master::factory()->create(['business_id' => $business->id, 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get('/onboarding/business');
 
@@ -52,7 +52,8 @@ class OnboardingTest extends TestCase
             'slug' => 'test-business',
             'description' => 'Test description',
             'phone' => '+375291234567',
-            'email' => 'business@test.com',
+            'first_name' => 'Иван',
+            'last_name' => 'Иванов',
         ]);
 
         $response->assertRedirect(route('onboarding.location'));
@@ -119,13 +120,18 @@ class OnboardingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/onboarding/location', [
             'name' => 'Test Location',
-            'address' => 'Test Address 123',
+            'city' => 'Минск',
+            'street' => 'Независимости',
+            'house' => '50',
+            'building' => null,
+            'apartment' => null,
             'description' => 'Test location description',
             'phone' => '+375291234567',
-            'email' => 'location@test.com',
             'working_hours' => [
                 'from' => '09:00',
                 'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
             ],
         ]);
 
@@ -133,7 +139,9 @@ class OnboardingTest extends TestCase
         $this->assertDatabaseHas('locations', [
             'business_id' => $business->id,
             'name' => 'Test Location',
-            'address' => 'Test Address 123',
+            'city' => 'Минск',
+            'street' => 'Независимости',
+            'house' => '50',
         ]);
     }
 
@@ -144,11 +152,15 @@ class OnboardingTest extends TestCase
         $business->users()->attach($user, ['role' => 'owner']);
 
         $response = $this->actingAs($user)->post('/onboarding/location', [
-            'address' => 'Test Address',
+            'city' => 'Минск',
+            'street' => 'Независимости',
+            'house' => '50',
             'phone' => '+375291234567',
             'working_hours' => [
                 'from' => '09:00',
                 'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
             ],
         ]);
 
@@ -241,21 +253,31 @@ class OnboardingTest extends TestCase
         $service = Service::factory()->create(['business_id' => $business->id]);
 
         $response = $this->actingAs($user)->post('/onboarding/master', [
-            'name' => 'Test Master',
+            'first_name' => 'Анна',
+            'last_name' => 'Иванова',
             'specialization' => 'Hair Stylist',
             'description' => 'Test master description',
             'phone' => '+375291234567',
             'email' => 'master@test.com',
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
+            ],
         ]);
 
         $response->assertRedirect(route('onboarding.complete'));
         $this->assertDatabaseHas('masters', [
             'business_id' => $business->id,
-            'name' => 'Test Master',
+            'user_id' => $user->id,
+            'first_name' => 'Анна',
+            'last_name' => 'Иванова',
             'specialization' => 'Hair Stylist',
         ]);
 
-        $master = Master::where('name', 'Test Master')->first();
+        $master = Master::where('first_name', 'Анна')->where('last_name', 'Иванова')->first();
+        $this->assertNotNull($master);
         $this->assertTrue($master->locations()->where('location_id', $location->id)->exists());
         $this->assertTrue($master->services()->where('service_id', $service->id)->exists());
     }
@@ -271,9 +293,15 @@ class OnboardingTest extends TestCase
         $response = $this->actingAs($user)->post('/onboarding/master', [
             'specialization' => 'Hair Stylist',
             'phone' => '+375291234567',
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
+            ],
         ]);
 
-        $response->assertSessionHasErrors('name');
+        $response->assertSessionHasErrors('first_name');
     }
 
     public function test_complete_screen_can_be_rendered(): void
@@ -283,7 +311,7 @@ class OnboardingTest extends TestCase
         $business->users()->attach($user, ['role' => 'owner']);
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
-        $master = Master::factory()->create(['business_id' => $business->id]);
+        $master = Master::factory()->create(['business_id' => $business->id, 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get('/onboarding/complete');
 
@@ -300,19 +328,24 @@ class OnboardingTest extends TestCase
             'slug' => 'full-test-business',
             'description' => 'Full test description',
             'phone' => '+375291234567',
-            'email' => 'business@test.com',
+            'first_name' => 'Иван',
+            'last_name' => 'Иванов',
         ]);
         $response->assertRedirect(route('onboarding.location'));
 
         // Step 2: Create location
         $response = $this->actingAs($user)->post('/onboarding/location', [
             'name' => 'Full Test Location',
-            'address' => 'Full Test Address',
+            'city' => 'Минск',
+            'street' => 'Независимости',
+            'house' => '50',
             'description' => 'Full Test Location Description',
             'phone' => '+375291234567',
             'working_hours' => [
                 'from' => '09:00',
                 'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
             ],
         ]);
         $response->assertRedirect(route('onboarding.service'));
@@ -327,9 +360,16 @@ class OnboardingTest extends TestCase
 
         // Step 4: Create master
         $response = $this->actingAs($user)->post('/onboarding/master', [
-            'name' => 'Full Test Master',
+            'first_name' => 'Анна',
+            'last_name' => 'Иванова',
             'specialization' => 'Full Test Specialization',
             'phone' => '+375291234567',
+            'working_hours' => [
+                'from' => '09:00',
+                'to' => '18:00',
+                '24_hours' => false,
+                'days_off' => [],
+            ],
         ]);
         $response->assertRedirect(route('onboarding.complete'));
 
@@ -362,7 +402,7 @@ class OnboardingTest extends TestCase
         $response->assertRedirect(route('onboarding.master'));
 
         // User already has master, should be redirected to dashboard (middleware redirects completed users)
-        $master = Master::factory()->create(['business_id' => $business->id]);
+        $master = Master::factory()->create(['business_id' => $business->id, 'user_id' => $user->id]);
         $response = $this->actingAs($user)->get('/onboarding/master');
         $response->assertRedirect(route('dashboard'));
     }

@@ -20,13 +20,23 @@ class MasterFactory extends Factory
      */
     public function definition(): array
     {
+        $workingHours = [
+            'from' => '09:00',
+            'to' => '18:00',
+            '24_hours' => false,
+            'days_off' => [],
+        ];
+
         return [
             'business_id' => Business::factory(),
-            'name' => fake()->name(),
+            'user_id' => \App\Models\User::factory(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
             'specialization' => fake()->jobTitle(),
             'description' => fake()->optional()->text(200),
             'phone' => '+37529'.fake()->numerify('#######'),
             'email' => fake()->optional()->safeEmail(),
+            'working_hours' => json_encode($workingHours),
         ];
     }
 }
