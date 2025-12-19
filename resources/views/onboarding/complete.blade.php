@@ -47,13 +47,13 @@
                         <div class="flex-1 min-w-0 text-left">
                             @if($business->locations->first())
                                 <p class="text-sm md:text-base font-medium text-slate-900 dark:text-white mb-1">{{ $business->locations->first()->name }}</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $business->locations->first()->address }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $business->locations->first()->full_address }}</p>
                             @else
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Не добавлена</p>
                             @endif
                         </div>
                     </div>
-            </div>
+                </div>
 
                 <!-- Услуга -->
                 <div class="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-4 md:p-5">
@@ -80,44 +80,27 @@
                         </div>
                         <div class="flex-1 min-w-0 text-left">
                             @if($business->masters->first())
-                                <p class="text-sm md:text-base font-medium text-slate-900 dark:text-white mb-1">{{ $business->masters->first()->name }}</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $business->masters->first()->specialization }}</p>
+                                @php
+                                    $master = $business->masters->first();
+                                    $masterName = trim(($master->first_name ?? '') . ' ' . ($master->last_name ?? ''));
+                                @endphp
+                                <p class="text-sm md:text-base font-medium text-slate-900 dark:text-white mb-1">{{ $masterName ?: 'Мастер' }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $master->specialization }}</p>
                             @else
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Не добавлен</p>
                             @endif
                         </div>
-            </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Кнопки действий -->
-        <div class="space-y-4 w-full max-w-sm">
+        <div class="w-full max-w-sm">
             <a href="{{ route('dashboard') }}"
                class="block w-full px-4 md:px-6 py-2.5 md:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm md:text-base font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Перейти в дашборд
             </a>
-
-            <div class="flex items-center gap-2 md:gap-3">
-                <a href="{{ route('services.index') }}"
-                   class="flex-1 px-3 md:px-4 py-2 text-center text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                    Услуги
-                </a>
-
-                <a href=""
-                   class="flex-1 px-3 md:px-4 py-2 text-center text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                    Мастера
-                </a>
-
-                <a href=""
-                   class="flex-1 px-3 md:px-4 py-2 text-center text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors">
-                    Расписание
-                </a>
-            </div>
-
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-4 md:mt-6">
-                Вы всегда можете изменить настройки в разделе "Настройки бизнеса"
-            </p>
         </div>
     </div>
 @endsection

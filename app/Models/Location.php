@@ -11,16 +11,34 @@ class Location extends Model
 {
     use HasFactory;
 
-    //
     protected $fillable = [
         'business_id',
         'name',
-        'address',
+        'city',
+        'street',
+        'house',
+        'building',
+        'apartment',
         'description',
         'phone',
-        'email',
         'working_hours',
     ];
+
+    /**
+     * Get the full address attribute.
+     */
+    public function getFullAddressAttribute(): string
+    {
+        $parts = array_filter([
+            $this->city,
+            $this->street ? "ул. {$this->street}" : null,
+            $this->house ? "д. {$this->house}" : null,
+            $this->building ? "корп. {$this->building}" : null,
+            $this->apartment ? "кв. {$this->apartment}" : null,
+        ]);
+
+        return implode(', ', $parts);
+    }
 
     public function business(): BelongsTo
     {

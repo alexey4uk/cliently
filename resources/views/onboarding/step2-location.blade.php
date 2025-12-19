@@ -23,186 +23,225 @@
         </div>
     </div>
 
-    <!-- Информационная карточка -->
-    <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-900 dark:bg-indigo-900/30 p-3 md:p-4 mb-6">
-        <div class="flex items-start gap-2 md:gap-3">
-            <div class="hidden md:flex flex-shrink-0">
-                <div class="w-10 h-10 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center">
-                    <i class="fa-solid fa-store text-white text-sm"></i>
-                </div>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="text-base md:text-sm font-semibold text-indigo-900 dark:text-indigo-100 mb-1 md:mb-2">
-                    Что такое локация?
-                </h3>
-                <p class="text-base md:text-sm text-indigo-800 dark:text-indigo-300 mb-2 md:mb-3">
-                    Место оказания услуг
-                </p>
-                <div class="space-y-1.5 md:space-y-2">
-                    <div class="flex items-start gap-1.5 md:gap-2">
-                        <i class="fa-solid fa-check-circle text-indigo-600 dark:text-indigo-400 text-xs mt-0.5 flex-shrink-0"></i>
-                        <p class="text-xs text-indigo-700 dark:text-indigo-300">
-                            Добавьте хотя бы одну локацию
-                        </p>
-                    </div>
-                    <div class="flex items-start gap-1.5 md:gap-2">
-                        <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400 text-xs mt-0.5 flex-shrink-0"></i>
-                        <p class="text-xs text-indigo-700 dark:text-indigo-300">
-                            Остальные — позже
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Форма -->
     <form method="POST" action="{{ route('onboarding.location.store') }}" class="space-y-6">
         @csrf
 
-        <div class="space-y-5">
-            <div>
-                <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-map-marker-alt text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Название локации*</span>
-                </label>
-                <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                       placeholder="Например: Основной салон"
-                       autofocus>
-                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="nameTooltip">
-                    Название локации
-                </p>
-                @error('name')
-                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="address" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Адрес*</span>
-                </label>
-                <input type="text" id="address" name="address" required value="{{ old('address') }}"
-                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('address') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                       placeholder="ул. Пушкинская, д. 10">
-                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="addressTooltip">
-                    Полный адрес локации
-                </p>
-                @error('address')
-                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Описание</span>
-                </label>
-                <div class="relative">
-                    <textarea id="description" name="description" rows="3" maxlength="500"
-                          class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                          placeholder="Описание локации...">{{ old('description') }}</textarea>
-                    <div class="absolute bottom-2 right-2 flex items-center gap-1">
-                        <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
-                    </div>
+        <div class="space-y-6">
+            <!-- Основная информация -->
+            <div class="space-y-5">
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-base md:text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
+                        Основная информация
+                    </h3>
                 </div>
-                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="descriptionTooltip">
-                    Необязательное поле
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
                 <div>
-                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                        <span>Телефон*</span>
+                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Название локации*</span>
                     </label>
-                    <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                           placeholder="+375 (29) 123-45-67">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="phoneTooltip">
-                        Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
-                    </p>
-                    @error('phone')
+                    <input type="text" id="name" name="name" required value="{{ old('name') }}"
+                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                           autofocus>
+                    @error('name')
                     <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
-                    <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 </div>
 
+                <!-- Адрес -->
                 <div>
-                    <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                        <span>Почта</span>
+                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Адрес*</span>
                     </label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                           placeholder="salon@example.com">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="emailTooltip">
-                        Необязательное поле
-                    </p>
-                    @error('email')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @enderror
+                <div class="space-y-4">
+                    <!-- Город, улица, дом -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="city" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Город*</label>
+                            <input type="text" id="city" name="city" required value="{{ old('city') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('city') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('city')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="street" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Улица*</label>
+                            <input type="text" id="street" name="street" required value="{{ old('street') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('street') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('street')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="house" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Дом*</label>
+                            <input type="text" id="house" name="house" required value="{{ old('house') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('house') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('house')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    <!-- Корпус, квартира -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="building" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Корпус</label>
+                            <input type="text" id="building" name="building" value="{{ old('building') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('building')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="apartment" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">Квартира/Офис</label>
+                            <input type="text" id="apartment" name="apartment" value="{{ old('apartment') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('apartment')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контактная информация -->
+            <div class="space-y-5">
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-base md:text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
+                        Контактная информация
+                    </h3>
+                </div>
+                
+                <div>
+                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Телефон*</span>
+                    </label>
+                <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
+                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                       placeholder="+375 (29) 123-45-67">
+                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
+                    Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
+                </p>
+                @error('phone')
+                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                @enderror
+                    <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
+                </div>
+            </div>
+
+            <!-- Дополнительная информация -->
+            <div class="space-y-5">
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-base md:text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
+                        Дополнительная информация
+                    </h3>
+                </div>
+                
+                <div>
+                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Описание</span>
+                    </label>
+                    <div class="relative">
+                        <textarea id="description" name="description" rows="3" maxlength="500"
+                              class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none">{{ old('description') }}</textarea>
+                        <div class="absolute bottom-2 right-2 flex items-center gap-1">
+                            <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Время работы -->
-            <div>
-                <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Время работы*</span>
-                </label>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                    Укажите время работы для всех дней недели. Разные часы для разных дней можно настроить позже.
-                </p>
+            <div class="space-y-5">
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-base md:text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400"></i>
+                        Время работы
+                    </h3>
+                </div>
+                
+                <div>
+                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>График работы*</span>
+                    </label>
                 <div class="space-y-3">
                     <!-- Чекбокс круглосуточно -->
-                    <div class="flex items-center gap-2 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                        <label class="flex items-center gap-2 cursor-pointer flex-1">
-                            <input type="checkbox" id="workingHours24" name="working_hours[24_hours]" value="1"
-                                   class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
-                                   {{ old('working_hours.24_hours') ? 'checked' : '' }}>
-                            <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">Круглосуточно</span>
-                        </label>
-                            </div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="workingHours24" name="working_hours[24_hours]" value="1"
+                               class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
+                               {{ old('working_hours.24_hours') ? 'checked' : '' }}>
+                        <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">Круглосуточно</span>
+                    </label>
 
                     <!-- Поля времени работы -->
-                    <div id="workingHoursFields" class="flex items-start gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                                <div class="flex-1">
-                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">С</label>
-                            <select name="working_hours[from]" id="workingHoursFrom" required
-                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                                        <option value="">--:--</option>
-                                @for($i = 6; $i <= 23; $i++)
-                                    <option value="{{ sprintf('%02d:00', $i) }}" {{ old('working_hours.from') == sprintf('%02d:00', $i) ? 'selected' : ($i == 9 ? 'selected' : '') }}>
-                                                {{ sprintf('%02d:00', $i) }}
-                                            </option>
-                                        @endfor
-                                    </select>
+                    <div id="workingHoursFields" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="workingHoursFrom" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">С</label>
+                            <input type="time" name="working_hours[from]" id="workingHoursFrom" required
+                                   value="{{ old('working_hours.from', '09:00') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                             @error('working_hours.from')
-                            <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                            @enderror
-                                </div>
-
-                                <div class="flex-1">
-                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">До</label>
-                            <select name="working_hours[to]" id="workingHoursTo" required
-                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                                        <option value="">--:--</option>
-                                @for($i = 8; $i <= 23; $i++)
-                                    <option value="{{ sprintf('%02d:00', $i) }}" {{ old('working_hours.to') == sprintf('%02d:00', $i) ? 'selected' : ($i == 18 ? 'selected' : '') }}>
-                                                {{ sprintf('%02d:00', $i) }}
-                                            </option>
-                                        @endfor
-                                <option value="00:00" {{ old('working_hours.to') == '00:00' ? 'selected' : '' }}>00:00</option>
-                                    </select>
-                            @error('working_hours.to')
-                            <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label for="workingHoursTo" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">До</label>
+                            <input type="time" name="working_hours[to]" id="workingHoursTo" required
+                                   value="{{ old('working_hours.to', '18:00') }}"
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('working_hours.to')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Выходные дни -->
+                    <div>
+                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Выходные дни</label>
+                        @php
+                            $days = [
+                                'monday' => 'Понедельник',
+                                'tuesday' => 'Вторник',
+                                'wednesday' => 'Среда',
+                                'thursday' => 'Четверг',
+                                'friday' => 'Пятница',
+                                'saturday' => 'Суббота',
+                                'sunday' => 'Воскресенье'
+                            ];
+                            $oldDaysOff = old('working_hours.days_off', []);
+                        @endphp
+                        
+                        <!-- Кнопка для раскрытия блока -->
+                        <button type="button" id="daysOffToggle" class="w-full md:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-plus text-xs text-indigo-600 dark:text-indigo-400" id="daysOffIcon"></i>
+                            <span>Добавить выходные дни</span>
+                        </button>
+                        
+                        <!-- Раскрывающийся блок с чекбоксами -->
+                        <div id="daysOffDropdown" class="hidden mt-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                @foreach($days as $dayKey => $dayName)
+                                    <label class="flex items-center gap-2 cursor-pointer p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors days-off-checkbox-label" data-day="{{ $dayKey }}">
+                                        <input type="checkbox" class="days-off-checkbox rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
+                                               data-day="{{ $dayKey }}"
+                                               {{ in_array($dayKey, $oldDaysOff) ? 'checked' : '' }}>
+                                        <span class="text-sm text-slate-700 dark:text-slate-300">{{ $dayName }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                        
+                        <!-- Скрытые input'ы для отправки данных -->
+                        <div id="daysOffHiddenInputs"></div>
+                        
+                        <!-- Теги выбранных дней -->
+                        <div id="daysOffTags" class="flex flex-wrap gap-2 mt-3"></div>
                     </div>
                 </div>
                 @error('working_hours')
@@ -224,41 +263,15 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Подсказки при фокусе
-            setupTooltips();
             // Счетчик символов для описания
             setupDescriptionCounter();
             // Обработка телефона
             setupPhoneInput();
             // Обработка круглосуточного режима
             setupWorkingHours();
+            // Обработка выходных дней
+            setupDaysOff();
         });
-
-        // Подсказки при фокусе
-        function setupTooltips() {
-            const fields = [
-                { id: 'name', tooltipId: 'nameTooltip' },
-                { id: 'address', tooltipId: 'addressTooltip' },
-                { id: 'phone', tooltipId: 'phoneTooltip' },
-                { id: 'email', tooltipId: 'emailTooltip' },
-                { id: 'description', tooltipId: 'descriptionTooltip' }
-            ];
-
-            fields.forEach(({ id, tooltipId }) => {
-                const field = document.getElementById(id);
-                const tooltip = document.getElementById(tooltipId);
-                
-                if (field && tooltip) {
-                    field.addEventListener('focus', () => {
-                        tooltip.classList.remove('hidden');
-                    });
-                    
-                    field.addEventListener('blur', () => {
-                        tooltip.classList.add('hidden');
-                    });
-                }
-            });
-        }
 
         // Счетчик символов для описания
         function setupDescriptionCounter() {
@@ -291,14 +304,107 @@
 
             // Валидные коды операторов Беларуси
             const validOperatorCodes = ['29', '33', '44', '25'];
+            const PHONE_OPERATOR_ERROR = 'Неверный код оператора. Допустимые: 29, 33, 44, 25';
+            const PHONE_INCOMPLETE_ERROR = 'Введите полный номер телефона (9 цифр после +375)';
+            const PHONE_REQUIRED_DIGITS = 9;
+
+            /**
+             * Извлечение цифр из номера телефона (после +375)
+             */
+            function extractPhoneDigits(value) {
+                return value.substring(4).replace(/\D/g, '');
+            }
+
+            /**
+             * Сброс телефона к префиксу +375 с установкой курсора и показом ошибки
+             */
+            function resetPhoneToPrefix(input) {
+                input.value = '+375';
+                setCursorPosition(input, 5);
+                showPhoneError(PHONE_OPERATOR_ERROR);
+            }
+
+            /**
+             * Установка позиции курсора с безопасной обработкой ошибок
+             */
+            function setCursorPosition(input, position) {
+                requestAnimationFrame(() => {
+                    const safePosition = Math.max(0, Math.min(position, input.value.length));
+                    try {
+                        input.setSelectionRange(safePosition, safePosition);
+                    } catch (e) {
+                        console.warn('Не удалось установить позицию курсора:', e);
+                    }
+                });
+            }
+
+            /**
+             * Проверка валидности кода оператора
+             */
+            function canBeValidOperatorCode(firstDigit) {
+                return validOperatorCodes.some(code => code.startsWith(firstDigit));
+            }
+
+            /**
+             * Валидация и обработка кода оператора
+             */
+            function validateOperatorCode(digits, input) {
+                if (digits.length < 2) {
+                    if (digits.length === 1) {
+                        const firstDigit = digits;
+                        if (!canBeValidOperatorCode(firstDigit)) {
+                            resetPhoneToPrefix(input);
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
+                const operatorCode = digits.substring(0, 2);
+                if (!validOperatorCodes.includes(operatorCode)) {
+                    const firstDigit = digits.substring(0, 1);
+                    if (!canBeValidOperatorCode(firstDigit)) {
+                        resetPhoneToPrefix(input);
+                        return false;
+                    } else {
+                        input.value = '+375' + firstDigit;
+                        showPhoneError(PHONE_OPERATOR_ERROR);
+                        setCursorPosition(input, 5 + firstDigit.length);
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            /**
+             * Показать ошибку
+             */
+            function showPhoneError(message) {
+                const errorElement = document.getElementById('phoneError');
+                if (errorElement && phoneInput) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                    phoneInput.classList.add('border-rose-500');
+                }
+            }
+
+            /**
+             * Скрыть ошибку
+             */
+            function hidePhoneError() {
+                const errorElement = document.getElementById('phoneError');
+                if (errorElement && phoneInput) {
+                    errorElement.classList.add('hidden');
+                    phoneInput.classList.remove('border-rose-500');
+                }
+            }
 
             // Автоподстановка +375 при фокусе
             phoneInput.addEventListener('focus', function(e) {
                 if (!e.target.value || !e.target.value.startsWith('+375')) {
                     e.target.value = '+375';
-                    setTimeout(() => {
-                        e.target.setSelectionRange(4, 4);
-                    }, 0);
+                    setCursorPosition(e.target, 4);
                 }
             });
 
@@ -310,30 +416,11 @@
                 if (selectionStart < 5 || selectionEnd < 5) {
                     if (e.key === 'Backspace' || e.key === 'Delete') {
                         e.preventDefault();
-                        e.target.setSelectionRange(5, 5);
+                        setCursorPosition(e.target, 5);
                         return false;
                     }
-                    }
-                });
-
-            // Показать ошибку
-            function showPhoneError(message) {
-                const errorElement = document.getElementById('phoneError');
-                if (errorElement) {
-                    errorElement.textContent = message;
-                    errorElement.classList.remove('hidden');
-                    phoneInput.classList.add('border-rose-500');
                 }
-            }
-
-            // Скрыть ошибку
-            function hidePhoneError() {
-                const errorElement = document.getElementById('phoneError');
-                if (errorElement) {
-                    errorElement.classList.add('hidden');
-                    phoneInput.classList.remove('border-rose-500');
-                }
-            }
+            });
 
             // Обработка ввода
             phoneInput.addEventListener('input', function(e) {
@@ -343,53 +430,37 @@
                     value = '+375';
                 }
                 
-                const digits = value.substring(4).replace(/\D/g, '');
+                const digits = extractPhoneDigits(value);
                 
-                // Проверка кода оператора
-                if (digits.length >= 2) {
-                    const operatorCode = digits.substring(0, 2);
-                    if (!validOperatorCodes.includes(operatorCode)) {
-                        const firstDigit = digits.substring(0, 1);
-                        const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                        
-                        if (!canBeValid) {
-                            e.target.value = '+375';
-                            showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                            e.target.setSelectionRange(5, 5);
-                            return;
-                        } else {
-                            const limitedDigits = firstDigit;
-                            e.target.value = '+375' + limitedDigits;
-                            showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                            e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
-                            return;
-                        }
-                    } else {
-                        hidePhoneError();
-                    }
-                } else {
-                    if (digits.length === 1) {
-                        const firstDigit = digits;
-                        const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                        if (!canBeValid) {
-                            e.target.value = '+375';
-                            showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                            e.target.setSelectionRange(5, 5);
-                            return;
-                        } else {
-                            hidePhoneError();
-                        }
-                    } else {
-                        hidePhoneError();
-                    }
+                // Валидация кода оператора
+                if (!validateOperatorCode(digits, e.target)) {
+                    return;
                 }
                 
                 // Ограничиваем до 9 цифр
-                const limitedDigits = digits.substring(0, 9);
+                const limitedDigits = digits.substring(0, PHONE_REQUIRED_DIGITS);
                 e.target.value = '+375' + limitedDigits;
                 
+                // Если номер полный, скрываем ошибку
+                if (limitedDigits.length === PHONE_REQUIRED_DIGITS) {
+                    hidePhoneError();
+                }
+                
+                // Устанавливаем курсор в конец
                 const cursorPosition = Math.max(5, e.target.value.length);
-                e.target.setSelectionRange(cursorPosition, cursorPosition);
+                setCursorPosition(e.target, cursorPosition);
+            });
+
+            // Проверка при потере фокуса
+            phoneInput.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                const digits = extractPhoneDigits(value);
+                
+                if (value.startsWith('+375') && digits.length < PHONE_REQUIRED_DIGITS) {
+                    showPhoneError(PHONE_INCOMPLETE_ERROR);
+                } else if (digits.length === PHONE_REQUIRED_DIGITS) {
+                    hidePhoneError();
+                }
             });
         }
 
@@ -397,26 +468,26 @@
         function setupWorkingHours() {
             const checkbox24 = document.getElementById('workingHours24');
             const fieldsContainer = document.getElementById('workingHoursFields');
-            const fromSelect = document.getElementById('workingHoursFrom');
-            const toSelect = document.getElementById('workingHoursTo');
+            const fromInput = document.getElementById('workingHoursFrom');
+            const toInput = document.getElementById('workingHoursTo');
 
-            if (!checkbox24 || !fieldsContainer || !fromSelect || !toSelect) return;
+            if (!checkbox24 || !fieldsContainer || !fromInput || !toInput) return;
 
             function toggleFields() {
                 if (checkbox24.checked) {
                     fieldsContainer.classList.add('opacity-50', 'pointer-events-none');
-                    fromSelect.disabled = true;
-                    toSelect.disabled = true;
-                    fromSelect.removeAttribute('required');
-                    toSelect.removeAttribute('required');
-                    fromSelect.value = '00:00';
-                    toSelect.value = '00:00';
+                    fromInput.disabled = true;
+                    toInput.disabled = true;
+                    fromInput.removeAttribute('required');
+                    toInput.removeAttribute('required');
+                    fromInput.value = '00:00';
+                    toInput.value = '00:00';
                 } else {
                     fieldsContainer.classList.remove('opacity-50', 'pointer-events-none');
-                    fromSelect.disabled = false;
-                    toSelect.disabled = false;
-                    fromSelect.setAttribute('required', 'required');
-                    toSelect.setAttribute('required', 'required');
+                    fromInput.disabled = false;
+                    toInput.disabled = false;
+                    fromInput.setAttribute('required', 'required');
+                    toInput.setAttribute('required', 'required');
                 }
             }
 
@@ -424,6 +495,116 @@
             
             // Инициализация при загрузке
             toggleFields();
+        }
+
+        // Обработка выходных дней
+        function setupDaysOff() {
+            const toggleButton = document.getElementById('daysOffToggle');
+            const dropdown = document.getElementById('daysOffDropdown');
+            const icon = document.getElementById('daysOffIcon');
+            const checkboxes = document.querySelectorAll('.days-off-checkbox');
+            const tagsContainer = document.getElementById('daysOffTags');
+            const hiddenInputsContainer = document.getElementById('daysOffHiddenInputs');
+
+            if (!toggleButton || !dropdown || !icon || !tagsContainer || !hiddenInputsContainer) return;
+
+            const daysMap = {
+                'monday': 'Понедельник',
+                'tuesday': 'Вторник',
+                'wednesday': 'Среда',
+                'thursday': 'Четверг',
+                'friday': 'Пятница',
+                'saturday': 'Суббота',
+                'sunday': 'Воскресенье'
+            };
+
+            let isExpanded = false;
+            const selectedDays = new Set();
+
+            // Инициализация: собираем уже выбранные дни
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedDays.add(checkbox.dataset.day);
+                }
+            });
+            updateTags();
+            updateHiddenInputs();
+
+            // Переключение раскрытия блока
+            toggleButton.addEventListener('click', function() {
+                isExpanded = !isExpanded;
+                if (isExpanded) {
+                    dropdown.classList.remove('hidden');
+                    icon.classList.remove('fa-plus');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    dropdown.classList.add('hidden');
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-plus');
+                }
+            });
+
+            // Обработка изменения чекбоксов
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const day = this.dataset.day;
+                    if (this.checked) {
+                        selectedDays.add(day);
+                    } else {
+                        selectedDays.delete(day);
+                    }
+                    updateTags();
+                    updateHiddenInputs();
+                });
+            });
+
+            // Обновление тегов
+            function updateTags() {
+                tagsContainer.innerHTML = '';
+                if (selectedDays.size === 0) {
+                    tagsContainer.classList.add('hidden');
+                    return;
+                }
+                tagsContainer.classList.remove('hidden');
+                
+                selectedDays.forEach(day => {
+                    const tag = document.createElement('div');
+                    tag.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-md text-xs font-medium';
+                    tag.innerHTML = `
+                        <span>${daysMap[day]}</span>
+                        <button type="button" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors" data-day="${day}">
+                            <i class="fa-solid fa-times text-xs"></i>
+                        </button>
+                    `;
+                    tagsContainer.appendChild(tag);
+                    
+                    // Обработка удаления тега
+                    const removeButton = tag.querySelector('button');
+                    removeButton.addEventListener('click', function() {
+                        const dayToRemove = this.dataset.day;
+                        selectedDays.delete(dayToRemove);
+                        // Снимаем чекбокс
+                        const checkbox = document.querySelector(`.days-off-checkbox[data-day="${dayToRemove}"]`);
+                        if (checkbox) {
+                            checkbox.checked = false;
+                        }
+                        updateTags();
+                        updateHiddenInputs();
+                    });
+                });
+            }
+
+            // Обновление скрытых input'ов для отправки данных
+            function updateHiddenInputs() {
+                hiddenInputsContainer.innerHTML = '';
+                selectedDays.forEach(day => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'working_hours[days_off][]';
+                    input.value = day;
+                    hiddenInputsContainer.appendChild(input);
+                });
+            }
         }
     </script>
 @endpush
