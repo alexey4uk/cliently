@@ -24,7 +24,6 @@ class BusinessFactory extends Factory
             'slug' => fake()->unique()->slug(),
             'description' => fake()->text(200),
             'phone' => '+37529'.fake()->numerify('#######'),
-            'email' => fake()->optional()->safeEmail(),
         ];
     }
 }
