@@ -34,7 +34,7 @@ class Master extends Model
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class, 'service_master')
-        ->withPivot('price')
-        ->withTimestamps();
+            ->withPivot('price')
+            ->withTimestamps();
     }
 }
