@@ -33,119 +33,129 @@
         </div>
     </div>
 
-    <!-- Информационная карточка -->
-    <div class="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 p-3 md:p-4 mb-6">
-        <div class="flex items-start gap-2.5">
-            <div class="flex-shrink-0">
-                <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                    <i class="fa-solid fa-eye text-slate-600 dark:text-slate-400 text-xs"></i>
-                </div>
-            </div>
-            <div class="flex-1">
-                <p class="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Предпросмотр адреса:
-                </p>
-                <div class="flex items-center bg-slate-100 dark:bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-200 dark:border-slate-700 opacity-75">
-                    <span class="text-xs text-slate-500 dark:text-slate-400 font-mono select-none">https://cliently.by/</span><span id="slugPreview" class="text-xs text-slate-600 dark:text-slate-300 font-mono select-none">ip-ivanov</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Форма -->
     <form method="POST" action="{{ route('onboarding.business.store') }}" class="space-y-6">
         @csrf
         
-        <div class="space-y-5">
-            <div>
-                <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Название бизнеса*</span>
-                </label>
-                <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                    placeholder="Например: Elite Beauty Salon"
-                    autofocus
-                    data-tooltip="Название будет отображаться клиентам">
-                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 hidden" id="nameTooltip">
-                    Название будет отображаться клиентам
-                </p>
-                @error('name')
-                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                @enderror
-            </div>
+        <div class="space-y-6">
+            <!-- Основная информация -->
+            <div class="space-y-5">
+                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
+                        Основная информация
+                    </h3>
+                </div>
+                
+                <div>
+                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Название бизнеса*</span>
+                    </label>
+                    <input type="text" id="name" name="name" required value="{{ old('name') }}"
+                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        autofocus>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Название будет отображаться клиентам
+                    </p>
+                    @error('name')
+                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
+                </div>
 
-            <div>
-                <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Персональная ссылка*</span>
-                </label>
-                <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all">
-                    <!-- Префикс домена -->
-                    <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-base md:text-sm font-mono select-none">
-                        cliently.by/
-                    </span>
-                    <!-- Поле ввода -->
-                    <div class="flex-1 relative">
-                        <input type="text" id="slug" name="slug" required value="{{ old('slug') }}"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                            placeholder="elite-beauty">
-                        
-                        <!-- Индикаторы проверки -->
-                        <div id="slugChecking" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2">
-                            <div class="animate-spin h-3.5 w-3.5 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
-                        </div>
-                        
-                        <div id="slugAvailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                            <i class="fa-solid fa-check text-xs"></i>
-                        </div>
-                        
-                        <div id="slugUnavailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-rose-500">
-                            <i class="fa-solid fa-xmark text-xs"></i>
+                <div>
+                    <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Персональная ссылка*</span>
+                    </label>
+                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                        <!-- Префикс -->
+                        <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-base md:text-sm font-mono select-none">
+                            /
+                        </span>
+                        <!-- Поле ввода -->
+                        <div class="flex-1 relative">
+                            <input type="text" id="slug" name="slug" required value="{{ old('slug') }}"
+                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                            
+                            <!-- Индикаторы проверки -->
+                            <div id="slugChecking" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2">
+                                <div class="animate-spin h-3.5 w-3.5 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+                            </div>
+                            
+                            <div id="slugAvailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-emerald-500">
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </div>
+                            
+                            <div id="slugUnavailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-rose-500">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </div>
                         </div>
                     </div>
+                    <!-- Предпросмотр адреса -->
+                    <div id="slugPreviewCard" class="hidden mt-2 transition-opacity duration-200">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center">
+                            <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs mr-1.5"></i>
+                            <span class="select-none">https://cliently.by/</span><span id="slugPreview" class="font-semibold text-indigo-600 dark:text-indigo-400">ip-ivanov</span>
+                        </p>
+                    </div>
+                    @error('slug')
+                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @else
+                        <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
+                    @enderror
                 </div>
-                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="slugTooltip">
-                    Только латинские буквы, цифры и дефисы
-                </p>
-                @error('slug')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                @else
-                    <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
-                @enderror
             </div>
 
-            <div>
-                <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    <span>Описание</span>
-                </label>
-                <div class="relative">
-                    <textarea id="description" name="description" rows="3" maxlength="500"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                    placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
-                    <div class="absolute bottom-2 right-2 flex items-center gap-1">
-                        <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
+            <!-- Информация о владельце -->
+            <div class="space-y-5">
+                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
+                        Информация о владельце
+                    </h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <span>Имя*</span>
+                        </label>
+                        <input type="text" id="first_name" name="first_name" required value="{{ old('first_name') }}"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                        @error('first_name')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="last_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <span>Фамилия*</span>
+                        </label>
+                        <input type="text" id="last_name" name="last_name" required value="{{ old('last_name') }}"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                        @error('last_name')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
-                <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="descriptionTooltip">
-                    Необязательное поле
-                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Контактная информация -->
+            <div class="space-y-5">
+                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
+                        Контактная информация
+                    </h3>
+                </div>
+                
                 <div>
                     <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400 text-xs"></i>
                         <span>Телефон*</span>
                     </label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
                         class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        placeholder="+375 (29) 123-45-67"
-                        data-tooltip="Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="phoneTooltip">
+                        placeholder="+375 (29) 123-45-67">
+                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
                         Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
                     </p>
                     @error('phone')
@@ -153,22 +163,32 @@
                     @enderror
                     <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 </div>
+            </div>
 
+            <!-- Дополнительная информация -->
+            <div class="space-y-5">
+                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
+                        Дополнительная информация
+                    </h3>
+                </div>
+                
                 <div>
-                    <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                        <span>Почта</span>
+                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <span>Описание</span>
+                        <span class="text-xs text-slate-400 dark:text-slate-500">(необязательно)</span>
                     </label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        placeholder="info@example.com"
-                        data-tooltip="Необязательное поле">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400 hidden" id="emailTooltip">
-                        Необязательное поле
-                    </p>
-                    @error('email')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @enderror
+                    <div class="relative">
+                        <textarea id="description" name="description" rows="3" maxlength="500"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                            placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
+                        <div class="absolute bottom-2 right-2 flex items-center gap-1">
+                            <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -186,10 +206,9 @@
 @push('scripts')
 <script>
     // ==================== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ====================
-    let isSlugAvailable = false;
-    let slugCheckTimeout = null;
+    // Переменные для отслеживания состояния slug (для визуальной индикации)
     let slugIsChecking = false;
-    let slugFormatIsValid = false;
+    let slugCheckTimeout = null;
     let currentAbortController = null;
 
     // Регулярное выражение для проверки формата slug
@@ -220,8 +239,10 @@
         unavailable: null,
         error: null,
         preview: null,
+        previewCard: null,
         container: null
     };
+
 
     // ==================== УТИЛИТЫ ====================
     
@@ -359,7 +380,7 @@
             case 'available':
                 if (slugElements.available) slugElements.available.classList.remove('hidden');
                 if (slugElements.preview && slugElements.input) {
-                    slugElements.preview.textContent = slugElements.input.value;
+                    slugElements.preview.textContent = slugElements.input.value || 'ip-ivanov';
                 }
                 break;
             case 'unavailable':
@@ -379,12 +400,16 @@
                 if (slugElements.preview) {
                     slugElements.preview.textContent = 'ip-ivanov';
                 }
+                if (slugElements.previewCard) {
+                    slugElements.previewCard.classList.add('hidden');
+                }
                 break;
         }
 
         // Обновляем border
         updateSlugBorder(state);
     }
+
 
     // ==================== ПРОВЕРКА ДОСТУПНОСТИ SLUG ====================
     
@@ -404,13 +429,8 @@
 
         if (!validateSlugFormat(slug)) {
             setSlugState('formatError', 'Только латинские буквы в нижнем регистре, цифры и одиночные дефисы. Дефисы не могут быть в начале или конце.');
-            slugFormatIsValid = false;
-            isSlugAvailable = false;
-            updateSubmitButton();
             return;
         }
-
-        slugFormatIsValid = true;
         setSlugState('checking');
         slugIsChecking = true;
 
@@ -438,9 +458,7 @@
             if (response.status === 429) {
                 const retryAfter = response.headers.get('Retry-After') || 60;
                 setSlugState('unavailable', `Слишком много запросов. Попробуйте через ${retryAfter} секунд.`);
-                isSlugAvailable = false;
                 slugIsChecking = false;
-                updateSubmitButton();
                 return;
             }
 
@@ -448,9 +466,7 @@
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
                 setSlugState('unavailable', data.message || 'Не удалось проверить доступность slug. Попробуйте позже.');
-                isSlugAvailable = false;
                 slugIsChecking = false;
-                updateSubmitButton();
                 return;
             }
 
@@ -458,10 +474,8 @@
             
             if (data.available === true) {
                 setSlugState('available');
-                isSlugAvailable = true;
             } else {
                 setSlugState('unavailable', 'Этот slug уже занят. Пожалуйста, выберите другой.');
-                isSlugAvailable = false;
             }
         } catch (error) {
             if (timeoutId) clearTimeout(timeoutId);
@@ -479,11 +493,9 @@
             console.error('Ошибка при проверке slug:', error);
                 setSlugState('unavailable', 'Не удалось проверить доступность slug. Попробуйте позже.');
             }
-            isSlugAvailable = false;
         } finally {
             slugIsChecking = false;
             currentAbortController = null;
-            updateSubmitButton();
         }
     }
 
@@ -492,28 +504,19 @@
      */
     function resetSlugValidation() {
         setSlugState('reset');
-        slugFormatIsValid = false;
-        isSlugAvailable = false;
-        updateSubmitButton();
+        // Скрываем карточку предпросмотра при сбросе
+        if (slugElements.previewCard) {
+            slugElements.previewCard.classList.add('opacity-0');
+            setTimeout(() => {
+                if (slugElements.previewCard) {
+                    slugElements.previewCard.classList.add('hidden');
+                }
+            }, 200);
+        }
     }
 
     // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
     
-    /**
-     * Обновление состояния кнопки отправки
-     */
-    function updateSubmitButton() {
-        const submitButton = document.getElementById('submitButton');
-        if (!submitButton) return;
-
-        const slugValue = slugElements.input ? slugElements.input.value.trim() : '';
-        const nameValue = document.getElementById('name')?.value.trim() || '';
-        const phoneValue = document.getElementById('phone')?.value.trim() || '';
-        
-        // Проверяем, все ли обязательные поля заполнены и slug доступен
-        submitButton.disabled = slugIsChecking || !slugFormatIsValid || !isSlugAvailable || 
-                               !nameValue || !phoneValue || !slugValue;
-    }
 
     /**
      * Обработка нажатия пробела в slug (заменяем на дефис)
@@ -569,6 +572,21 @@
         
         const slug = sanitizedValue.trim();
         
+        // Показываем/скрываем карточку предпросмотра в зависимости от наличия текста
+        if (slugElements.previewCard) {
+            if (slug) {
+                slugElements.previewCard.classList.remove('hidden', 'opacity-0');
+                slugElements.previewCard.classList.add('opacity-100');
+            } else {
+                slugElements.previewCard.classList.add('opacity-0');
+                setTimeout(() => {
+                    if (slugElements.previewCard) {
+                        slugElements.previewCard.classList.add('hidden');
+                    }
+                }, 200);
+            }
+        }
+        
         // Обновляем предпросмотр в реальном времени
         if (slugElements.preview) {
             slugElements.preview.textContent = slug || 'ip-ivanov';
@@ -581,7 +599,6 @@
         
         if (!slug) {
             resetSlugValidation();
-            updateSubmitButton();
             return;
         }
         
@@ -589,8 +606,6 @@
         slugCheckTimeout = setTimeout(() => {
             checkSlugAvailability(slug);
         }, SLUG_CHECK_DEBOUNCE);
-        
-        updateSubmitButton();
     }
 
     /**
@@ -600,6 +615,16 @@
         const formattedSlug = formatSlug(e.target.value);
         if (e.target.value !== formattedSlug) {
             e.target.value = formattedSlug;
+        }
+        
+        // Скрываем предпросмотр при потере фокуса
+        if (slugElements.previewCard) {
+            slugElements.previewCard.classList.add('opacity-0');
+            setTimeout(() => {
+                if (slugElements.previewCard) {
+                    slugElements.previewCard.classList.add('hidden');
+                }
+            }, 200);
         }
         
         if (formattedSlug.trim()) {
@@ -624,6 +649,9 @@
     
     // Валидные коды операторов Беларуси
     const validOperatorCodes = ['29', '33', '44', '25'];
+    const PHONE_OPERATOR_ERROR = 'Неверный код оператора. Допустимые: 29, 33, 44, 25';
+    const PHONE_INCOMPLETE_ERROR = 'Введите полный номер телефона (9 цифр после +375)';
+    const PHONE_REQUIRED_DIGITS = 9;
     let phoneInput = null;
 
     /**
@@ -650,6 +678,73 @@
     }
 
     /**
+     * Извлечение цифр из номера телефона (после +375)
+     * @param {string} value - Полное значение поля телефона
+     * @returns {string} - Только цифры после +375
+     */
+    function extractPhoneDigits(value) {
+        return value.substring(4).replace(/\D/g, '');
+    }
+
+    /**
+     * Сброс телефона к префиксу +375 с установкой курсора и показом ошибки
+     * @param {HTMLInputElement} input - Элемент input
+     */
+    function resetPhoneToPrefix(input) {
+        input.value = '+375';
+        setCursorPosition(input, 5);
+        showPhoneError(PHONE_OPERATOR_ERROR);
+    }
+
+    /**
+     * Проверка валидности кода оператора
+     * @param {string} firstDigit - Первая цифра кода
+     * @returns {boolean} - Может ли быть началом валидного кода
+     */
+    function canBeValidOperatorCode(firstDigit) {
+        return validOperatorCodes.some(code => code.startsWith(firstDigit));
+    }
+
+    /**
+     * Валидация и обработка кода оператора
+     * @param {string} digits - Цифры после +375
+     * @param {HTMLInputElement} input - Элемент input
+     * @returns {boolean} - true если код валиден, false если нужно прервать обработку
+     */
+    function validateOperatorCode(digits, input) {
+        if (digits.length < 2) {
+            // Меньше 2 цифр - проверяем первую цифру
+            if (digits.length === 1) {
+                const firstDigit = digits;
+                if (!canBeValidOperatorCode(firstDigit)) {
+                    resetPhoneToPrefix(input);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Проверяем код оператора (первые 2 цифры)
+        const operatorCode = digits.substring(0, 2);
+        if (!validOperatorCodes.includes(operatorCode)) {
+            const firstDigit = digits.substring(0, 1);
+            if (!canBeValidOperatorCode(firstDigit)) {
+                // Первая цифра не может быть началом валидного кода - удаляем все
+                resetPhoneToPrefix(input);
+                return false;
+            } else {
+                // Вторая цифра неверная - оставляем только первую
+                input.value = '+375' + firstDigit;
+                showPhoneError(PHONE_OPERATOR_ERROR);
+                setCursorPosition(input, 5 + firstDigit.length);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Инициализация обработчиков для поля телефона
      */
     function initPhoneHandlers() {
@@ -661,9 +756,7 @@
             if (!e.target.value || !e.target.value.startsWith('+375')) {
                 e.target.value = '+375';
                 // Устанавливаем курсор после +375
-                setTimeout(() => {
-                    e.target.setSelectionRange(4, 4);
-                }, 0);
+                setCursorPosition(e.target, 4);
             }
         });
 
@@ -677,7 +770,7 @@
                 if (e.key === 'Backspace' || e.key === 'Delete') {
                     e.preventDefault();
                     // Перемещаем курсор после +375
-                    e.target.setSelectionRange(5, 5);
+                    setCursorPosition(e.target, 5);
                     return false;
                 }
             }
@@ -685,108 +778,53 @@
 
         // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
         phoneInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        
-        // Если значение не начинается с +375, устанавливаем префикс
-        if (!value.startsWith('+375')) {
-            value = '+375';
-        }
-        
-        // Извлекаем только цифры после +375
-        const digits = value.substring(4).replace(/\D/g, '');
-        
-        // Проверяем код оператора при вводе первых 2 цифр
-        if (digits.length >= 2) {
-            const operatorCode = digits.substring(0, 2);
-            if (!validOperatorCodes.includes(operatorCode)) {
-                // Блокируем ввод неверного кода - оставляем только первую цифру или удаляем неверную
-                const firstDigit = digits.substring(0, 1);
-                // Проверяем, может ли первая цифра быть началом валидного кода
-                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                
-                if (!canBeValid) {
-                    // Первая цифра не может быть началом валидного кода - удаляем все
-                    e.target.value = '+375';
-                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                    e.target.setSelectionRange(5, 5);
-                    updateSubmitButton();
-                    return;
-                } else {
-                    // Вторая цифра неверная - оставляем только первую
-                    const limitedDigits = firstDigit;
-                    e.target.value = '+375' + limitedDigits;
-                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                    e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
-                    updateSubmitButton();
-                    return;
-                }
-            } else {
-                // Код оператора валиден
+            let value = e.target.value;
+            
+            // Если значение не начинается с +375, устанавливаем префикс
+            if (!value.startsWith('+375')) {
+                value = '+375';
+            }
+            
+            // Извлекаем только цифры после +375
+            const digits = extractPhoneDigits(value);
+            
+            // Валидация кода оператора
+            if (!validateOperatorCode(digits, e.target)) {
+                return;
+            }
+            
+            // Ограничиваем до 9 цифр (белорусский номер)
+            const limitedDigits = digits.substring(0, PHONE_REQUIRED_DIGITS);
+            
+            // Формируем финальное значение
+            e.target.value = '+375' + limitedDigits;
+            
+            // Если номер полный, скрываем ошибку
+            if (limitedDigits.length === PHONE_REQUIRED_DIGITS) {
                 hidePhoneError();
             }
-        } else {
-            // Меньше 2 цифр - проверяем, может ли быть валидным
-            if (digits.length === 1) {
-                const firstDigit = digits;
-                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                if (!canBeValid) {
-                    // Первая цифра не может быть началом валидного кода
-                    e.target.value = '+375';
-                    showPhoneError('Неверный код оператора. Допустимые: 29, 33, 44, 25');
-                    e.target.setSelectionRange(5, 5);
-                    updateSubmitButton();
-                    return;
-                } else {
-                    hidePhoneError();
-                }
-            } else {
-                hidePhoneError();
-            }
-        }
-        
-        // Ограничиваем до 9 цифр (белорусский номер)
-        const limitedDigits = digits.substring(0, 9);
-        
-        // Формируем финальное значение
-        e.target.value = '+375' + limitedDigits;
-        
+            
             // Устанавливаем курсор в конец, но не раньше позиции 5
             const cursorPosition = Math.max(5, e.target.value.length);
-            e.target.setSelectionRange(cursorPosition, cursorPosition);
+            setCursorPosition(e.target, cursorPosition);
+        });
+
+        // Проверка при потере фокуса - если номер неполный, показываем ошибку
+        phoneInput.addEventListener('blur', function(e) {
+            const value = e.target.value;
+            const digits = extractPhoneDigits(value);
             
-            updateSubmitButton();
+            // Если есть только +375 без цифр или меньше 9 цифр
+            if (value.startsWith('+375') && digits.length < PHONE_REQUIRED_DIGITS) {
+                showPhoneError(PHONE_INCOMPLETE_ERROR);
+            } else if (digits.length === PHONE_REQUIRED_DIGITS) {
+                hidePhoneError();
+            }
         });
     }
 
     // ==================== ПОДСКАЗКИ И СЧЕТЧИКИ ====================
     
-    /**
-     * Подсказки при фокусе
-     */
-    function setupTooltips() {
-        const fields = [
-            { id: 'name', tooltipId: 'nameTooltip' },
-            { id: 'phone', tooltipId: 'phoneTooltip' },
-            { id: 'email', tooltipId: 'emailTooltip' },
-            { id: 'description', tooltipId: 'descriptionTooltip' },
-            { id: 'slug', tooltipId: 'slugTooltip' }
-        ];
-
-        fields.forEach(({ id, tooltipId }) => {
-            const field = document.getElementById(id);
-            const tooltip = document.getElementById(tooltipId);
-            
-            if (field && tooltip) {
-                field.addEventListener('focus', () => {
-                    tooltip.classList.remove('hidden');
-                });
-                
-                field.addEventListener('blur', () => {
-                    tooltip.classList.add('hidden');
-                });
-            }
-        });
-    }
 
     // Счетчик символов для описания
     function setupDescriptionCounter() {
@@ -824,6 +862,7 @@
         slugElements.unavailable = document.getElementById('slugUnavailable');
         slugElements.error = document.getElementById('slugError');
         slugElements.preview = document.getElementById('slugPreview');
+        slugElements.previewCard = document.getElementById('slugPreviewCard');
         // Контейнер - это родительский div с border, который содержит input
         // Ищем родителя, который имеет класс border (контейнер с border)
         if (slugElements.input) {
@@ -835,12 +874,6 @@
      * Инициализация обработчиков для обязательных полей
      */
     function initFormHandlers() {
-        // Обработчик для поля name
-        const nameInput = document.getElementById('name');
-        if (nameInput) {
-            nameInput.addEventListener('input', updateSubmitButton);
-        }
-
         // Инициализация обработчиков для телефона
         initPhoneHandlers();
     }
@@ -863,9 +896,7 @@
             checkSlugAvailability(slugElements.input.value.trim());
         }
         
-        setupTooltips();
         setupDescriptionCounter();
-        updateSubmitButton();
     });
 </script>
 @endpush

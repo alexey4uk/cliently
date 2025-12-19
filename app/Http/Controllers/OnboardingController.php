@@ -31,8 +31,21 @@ class OnboardingController extends Controller
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:businesses,slug|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             'description' => 'nullable|string',
-            'phone' => 'required|string|max:20',
-            'email' => 'nullable|email|max:255',
+            'phone' => [
+                'required',
+                'string',
+                'max:20',
+                'regex:/^\+375\d{9}$/',
+            ],
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+        ], [
+            'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
+            'phone.regex' => 'Телефон должен быть в формате +375XXXXXXXXX (9 цифр после +375).',
+            'first_name.required' => 'Поле "Имя" обязательно для заполнения.',
+            'first_name.max' => 'Поле "Имя" не может быть длиннее 255 символов.',
+            'last_name.required' => 'Поле "Фамилия" обязательно для заполнения.',
+            'last_name.max' => 'Поле "Фамилия" не может быть длиннее 255 символов.',
         ]);
 
         DB::transaction(function () use ($validated, $request) {
@@ -41,10 +54,13 @@ class OnboardingController extends Controller
                 'slug' => $validated['slug'],
                 'description' => $validated['description'] ?? null,
                 'phone' => $validated['phone'],
-                'email' => $validated['email'] ?? null,
             ]);
 
-            $business->users()->attach($request->user(), ['role' => 'owner']);
+            $business->users()->attach($request->user(), [
+                'role' => 'owner',
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+            ]);
 
             session(['onboarding.business_id' => $business->id]);
         });
