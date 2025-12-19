@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('masters', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('photo')->nullable();
-            $table->string('specialization')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('specialization');
+            $table->string('phone');
             $table->string('email')->nullable();
             $table->json('working_hours')->nullable();
             $table->boolean('is_active')->default(true);

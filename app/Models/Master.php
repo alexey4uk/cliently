@@ -12,11 +12,15 @@ class Master extends Model
 
     protected $fillable = [
         'business_id',
+        'user_id',
         'name',
         'description',
+        'photo',
         'specialization',
-        'email',
         'phone',
+        'email',
+        'working_hours',
+        'is_active',
     ];
 
     public function locations(): BelongsToMany
@@ -28,6 +32,7 @@ class Master extends Model
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(Service::class, 'service_master')
-            ->withTimestamps();
+        ->withPivot('price')
+        ->withTimestamps();
     }
 }
