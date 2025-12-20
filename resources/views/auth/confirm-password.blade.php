@@ -31,15 +31,7 @@
         <div class="w-full max-w-md">
             <!-- Логотип и название -->
             <div class="flex items-center justify-center gap-3 mb-6">
-                <!-- Логознак: мастер + клиент -->
-                <div class="relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center flex-shrink-0">
-                    <!-- Левый круг (мастер) -->
-                    <span class="absolute h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-[#6366F1] left-0"></span>
-                    <!-- Правый круг (клиент) -->
-                    <span class="absolute h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-[#FF6B6B] right-0"></span>
-                    <!-- Пересечение -->
-                    <span class="absolute h-7 w-7 md:h-8 md:w-8 rounded-full bg-[#6366F1]/20"></span>
-                </div>
+                <x-logo size="lg" />
                 <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight uppercase font-display">
                     CLIENTLY
                 </h1>

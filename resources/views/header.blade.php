@@ -1,15 +1,7 @@
 <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
     <!-- Бренд -->
     <div class="flex items-center gap-2">
-        <!-- Логознак: мастер + клиент -->
-        <div class="relative flex h-8 w-8 items-center justify-center">
-            <!-- Левый круг (мастер) -->
-            <span class="absolute h-6 w-6 rounded-full border-2 border-[#6366F1] left-0"></span>
-            <!-- Правый круг (клиент) -->
-            <span class="absolute h-6 w-6 rounded-full border-2 border-[#FF6B6B] right-0"></span>
-            <!-- Пересечение -->
-            <span class="absolute h-5 w-5 rounded-full bg-[#6366F1]/20"></span>
-        </div>
+        <x-logo size="sm" />
 
 
         <span class="text-sm font-semibold text-slate-950 dark:text-white tracking-tight uppercase font-display">

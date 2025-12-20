@@ -41,15 +41,7 @@
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <!-- Логотип (только мобильные) -->
                             <div class="lg:hidden flex items-center gap-3 flex-shrink-0">
-                                <!-- Логознак: мастер + клиент -->
-                                <div class="relative flex h-8 w-8 items-center justify-center flex-shrink-0">
-                                    <!-- Левый круг (мастер) -->
-                                    <span class="absolute h-6 w-6 rounded-full border-2 border-indigo-600 left-0"></span>
-                                    <!-- Правый круг (клиент) -->
-                                    <span class="absolute h-6 w-6 rounded-full border-2 border-rose-500 right-0"></span>
-                                    <!-- Пересечение -->
-                                    <span class="absolute h-5 w-5 rounded-full bg-indigo-600/20"></span>
-                                </div>
+                                <x-logo size="sm" />
                             </div>
                             
                             <!-- Заголовок страницы -->
