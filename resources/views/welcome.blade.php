@@ -12,6 +12,8 @@
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap&subset=cyrillic" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Favicons -->
@@ -341,18 +343,10 @@
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <a href="/" class="flex items-center space-x-3 group">
-                    <!-- Логознак: мастер + клиент -->
-                    <div class="relative flex h-10 w-10 items-center justify-center flex-shrink-0">
-                        <!-- Левый круг (мастер) -->
-                        <span class="absolute h-7 w-7 rounded-full border-2 border-indigo-600 left-0"></span>
-                        <!-- Правый круг (клиент) -->
-                        <span class="absolute h-7 w-7 rounded-full border-2 border-rose-500 right-0"></span>
-                        <!-- Пересечение -->
-                        <span class="absolute h-6 w-6 rounded-full bg-indigo-600/20"></span>
-                    </div>
-                    <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-white">CLIENTLY</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">CRM для мастеров</div>
+                    <x-logo size="md" />
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-bold text-gray-900 dark:text-white uppercase font-display">CLIENTLY</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline-block pl-2 border-l border-gray-300 dark:border-gray-600">CRM для мастеров</span>
                     </div>
                 </a>
 
@@ -414,19 +408,8 @@
         <div class="p-4 sm:p-6">
             <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center space-x-3">
-                    <!-- Логознак: мастер + клиент -->
-                    <div class="relative flex h-10 w-10 items-center justify-center flex-shrink-0">
-                        <!-- Левый круг (мастер) -->
-                        <span class="absolute h-7 w-7 rounded-full border-2 border-indigo-600 left-0"></span>
-                        <!-- Правый круг (клиент) -->
-                        <span class="absolute h-7 w-7 rounded-full border-2 border-rose-500 right-0"></span>
-                        <!-- Пересечение -->
-                        <span class="absolute h-6 w-6 rounded-full bg-indigo-600/20"></span>
-                    </div>
-                    <div>
-                        <div class="text-lg font-bold text-gray-900 dark:text-white">CLIENTLY</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">CRM для мастеров</div>
-                    </div>
+                    <x-logo size="md" />
+                    <span class="text-lg font-bold text-gray-900 dark:text-white uppercase font-display">CLIENTLY</span>
                 </div>
                 <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                     <i class="fas fa-times text-lg"></i>
@@ -1136,16 +1119,8 @@
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div class="sm:col-span-2 md:col-span-1">
                     <div class="flex items-center space-x-2 mb-3 sm:mb-4">
-                        <!-- Логознак: мастер + клиент -->
-                        <div class="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center flex-shrink-0">
-                            <!-- Левый круг (мастер) -->
-                            <span class="absolute h-6 w-6 sm:h-7 sm:w-7 rounded-full border-2 border-indigo-400 left-0"></span>
-                            <!-- Правый круг (клиент) -->
-                            <span class="absolute h-6 w-6 sm:h-7 sm:w-7 rounded-full border-2 border-rose-400 right-0"></span>
-                            <!-- Пересечение -->
-                            <span class="absolute h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-indigo-400/20"></span>
-                        </div>
-                        <span class="text-lg sm:text-xl font-bold text-white">CLIENTLY</span>
+                        <x-logo size="footer" />
+                        <span class="text-lg sm:text-xl font-bold text-white uppercase font-display">CLIENTLY</span>
                     </div>
                     <p class="text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
                         Простая CRM для самозанятых и мастеров. Организуйте клиентов и записи без сложностей.

@@ -4,15 +4,7 @@
             <!-- Логотип -->
             <div class="flex items-center flex-shrink-0 px-6 mb-8">
                 <div class="flex items-center space-x-3 group cursor-pointer">
-                    <!-- Логознак: мастер + клиент -->
-                    <div class="relative flex h-10 w-10 items-center justify-center">
-                        <!-- Левый круг (мастер) -->
-                        <span class="absolute h-8 w-8 rounded-full border-2 border-[#6366F1] left-0"></span>
-                        <!-- Правый круг (клиент) -->
-                        <span class="absolute h-8 w-8 rounded-full border-2 border-[#FF6B6B] right-0"></span>
-                        <!-- Пересечение -->
-                        <span class="absolute h-7 w-7 rounded-full bg-[#6366F1]/20"></span>
-                    </div>
+                    <x-logo size="sidebar" />
                     <div>
                         <span class="text-xl font-bold text-slate-900 dark:text-white block tracking-tight">cliently</span>
                         <span class="text-xs text-slate-500 dark:text-slate-400 block mt-0.5">онлайн‑записи и клиенты</span>

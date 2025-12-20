@@ -17,6 +17,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -36,15 +41,7 @@
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <!-- Логотип (только мобильные) -->
                             <div class="lg:hidden flex items-center gap-3 flex-shrink-0">
-                                <!-- Логознак: мастер + клиент -->
-                                <div class="relative flex h-8 w-8 items-center justify-center flex-shrink-0">
-                                    <!-- Левый круг (мастер) -->
-                                    <span class="absolute h-6 w-6 rounded-full border-2 border-indigo-600 left-0"></span>
-                                    <!-- Правый круг (клиент) -->
-                                    <span class="absolute h-6 w-6 rounded-full border-2 border-rose-500 right-0"></span>
-                                    <!-- Пересечение -->
-                                    <span class="absolute h-5 w-5 rounded-full bg-indigo-600/20"></span>
-                                </div>
+                                <x-logo size="sm" />
                             </div>
                             
                             <!-- Заголовок страницы -->

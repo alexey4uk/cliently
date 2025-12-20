@@ -17,6 +17,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -25,43 +30,26 @@
     <div class="min-h-screen flex items-center justify-center px-4 py-8">
         <div class="w-full max-w-md">
             <!-- Логотип и название -->
-            <div class="text-center mb-6">
-                <div class="flex justify-center mb-4">
-                    <!-- Логознак: мастер + клиент -->
-                    <div class="relative flex h-12 w-12 items-center justify-center">
-                        <!-- Левый круг (мастер) -->
-                        <span class="absolute h-9 w-9 rounded-full border-2 border-indigo-600 left-0"></span>
-                        <!-- Правый круг (клиент) -->
-                        <span class="absolute h-9 w-9 rounded-full border-2 border-rose-500 right-0"></span>
-                        <!-- Пересечение -->
-                        <span class="absolute h-8 w-8 rounded-full bg-indigo-600/20"></span>
-                    </div>
-                </div>
-                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
-                    cliently
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <x-logo size="lg" />
+                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight uppercase font-display">
+                    CLIENTLY
                 </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    онлайн‑записи и клиенты
-                </p>
             </div>
 
             <!-- Форма подтверждения email -->
-            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">
-                    Подтверждение email
-                </h2>
-
+            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in-up">
                 <div class="space-y-5">
                 <!-- Информационное сообщение -->
-                    <div class="rounded-lg border border-indigo-200 bg-indigo-50 dark:border-indigo-900 dark:bg-indigo-900/30 p-3 md:p-4">
+                    <div class="rounded-lg border border-[#6366F1]/20 bg-[#6366F1]/10 dark:border-[#6366F1]/30 dark:bg-[#6366F1]/20 p-3 md:p-4">
                         <div class="flex items-start gap-2.5">
                             <div class="flex-shrink-0">
-                                <div class="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-[#6366F1] dark:bg-[#6366F1] flex items-center justify-center">
                                     <i class="fa-solid fa-envelope text-white text-xs"></i>
                                 </div>
                             </div>
                             <div class="flex-1">
-                                <p class="text-xs md:text-sm text-indigo-900 dark:text-indigo-100 leading-relaxed">
+                                <p class="text-xs md:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                             {{ __('Спасибо за регистрацию! Прежде чем начать, не могли бы вы подтвердить свой адрес электронной почты, перейдя по ссылке, которую мы только что отправили вам по электронной почте? Если вы не получили письмо, мы с радостью отправим вам другое.') }}
                                 </p>
                         </div>
@@ -87,7 +75,7 @@
                         @csrf
                             <button 
                                 type="submit" 
-                                class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-xs md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                             >
                             <span>Отправить письмо повторно</span>
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
@@ -111,7 +99,7 @@
                         @csrf
                             <button 
                                 type="submit" 
-                                class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                class="w-full inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                             >
                             <span>Выйти из аккаунта</span>
                                 <i class="fa-solid fa-right-from-bracket text-xs"></i>
@@ -120,18 +108,20 @@
                 </div>
                 </div>
             </div>
-
-            <!-- Переключатель темы -->
-            <div class="mt-6 text-center">
-                <button 
-                    id="themeToggle"
-                    class="inline-flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors"
-                    aria-label="Переключить тему"
-                >
-                    <span>🌓</span>
-                    <span>Сменить тему</span>
-                </button>
         </div>
+    </div>
+</div>
+
+    <!-- Переключатель темы в правом верхнем углу -->
+    <div class="fixed top-4 right-4 z-10">
+        <button 
+            id="themeToggle"
+            class="h-10 w-10 rounded-full text-sm flex items-center justify-center text-slate-700 hover:bg-white/80 hover:shadow-sm transition-colors dark:text-slate-300 dark:hover:bg-slate-800/80"
+            aria-label="Переключить тему"
+        >
+            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
+            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
+        </button>
     </div>
 </div>
 

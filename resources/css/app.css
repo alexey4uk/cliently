@@ -81,4 +81,20 @@
     .dark *::-webkit-scrollbar-thumb:hover {
         background: rgb(71 85 105 / 0.7);
     }
+
+    /* Анимация появления формы */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.4s ease-out;
+    }
 }
