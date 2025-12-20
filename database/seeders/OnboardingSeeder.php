@@ -38,7 +38,6 @@ class OnboardingSeeder extends Seeder
             'slug' => 'elite-beauty-salon',
             'description' => 'Премиальный салон красоты с многолетним опытом работы. Мы предлагаем полный спектр услуг по уходу за волосами, ногтями и кожей.',
             'phone' => '+375291234567',
-            'email' => 'info@elitebeauty.by',
         ]);
 
         // Привязываем пользователя к бизнесу как владельца
@@ -58,10 +57,12 @@ class OnboardingSeeder extends Seeder
         $location = Location::create([
             'business_id' => $business->id,
             'name' => 'Главный салон',
-            'address' => 'г. Минск, ул. Независимости, д. 50, офис 201',
+            'city' => 'Минск',
+            'street' => 'Независимости',
+            'house' => '50',
+            'apartment' => '201',
             'description' => 'Наш главный салон расположен в центре города. Удобная парковка и доступность общественным транспортом.',
             'phone' => '+375291234567',
-            'email' => 'salon@elitebeauty.by',
             'working_hours' => json_encode($workingHours, JSON_UNESCAPED_UNICODE),
         ]);
 
