@@ -166,8 +166,6 @@
             <!-- Основной контент -->
             <main class="flex-1 overflow-y-auto">
                 <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 pb-20 lg:pb-10">
-                    @include('alerts')
-
                     <div class="max-w-4xl mx-auto">
                         @yield('content')
                     </div>
@@ -178,6 +176,9 @@
 
     <!-- Мобильное меню (только на мобильных) -->
     @include('mobile-menu')
+
+    <!-- Toast уведомления -->
+    @include('alerts')
 
     <script>
         const htmlEl = document.documentElement;
