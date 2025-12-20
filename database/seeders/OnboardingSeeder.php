@@ -79,7 +79,9 @@ class OnboardingSeeder extends Seeder
         // Создаем мастера
         $master = Master::create([
             'business_id' => $business->id,
-            'name' => 'Анна Петрова',
+            'user_id' => $user->id,
+            'first_name' => 'Анна',
+            'last_name' => 'Петрова',
             'specialization' => 'Мастер-стилист',
             'description' => 'Опытный мастер-стилист с 10-летним стажем. Специализация: стрижки, окрашивание, укладки.',
             'phone' => '+375291111111',
@@ -95,6 +97,6 @@ class OnboardingSeeder extends Seeder
         $this->command->info("Бизнес: {$business->name} (slug: {$business->slug})");
         $this->command->info("Локация: {$location->name}");
         $this->command->info("Услуга: {$service->name}");
-        $this->command->info("Мастер: {$master->name}");
+        $this->command->info("Мастер: {$master->first_name} {$master->last_name}");
     }
 }
