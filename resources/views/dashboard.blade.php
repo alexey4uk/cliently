@@ -4,6 +4,10 @@
 @section('page-title', 'Дашборд')
 @section('page-description', 'Обзор вашего бизнеса')
 
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[]" />
+@endpush
+
 @section('content')
 
     <!-- Панель статистики (компактная, сверху) -->

@@ -62,7 +62,7 @@
                         <!-- Кнопка "Новая запись" (только на определенных страницах) -->
                         @hasSection('show-new-button')
                             <button
-                                class="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+                                class="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-[#6366F1] px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:bg-[#4F46E5] active:bg-[#4338CA] transition-colors">
                                 <i class="fa-solid fa-plus text-xs"></i>
                                 <span>Новая запись</span>
                             </button>
@@ -141,7 +141,7 @@
                                 <div class="py-1">
                                     <a href="{{ route('profile.edit') }}"
                                         class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                        <i class="fa-solid fa-user w-4 text-indigo-500 dark:text-indigo-400 text-xs"></i>
+                                        <i class="fa-solid fa-user w-4 text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
                                         <span>Профиль</span>
                                     </a>
                                     <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
@@ -149,7 +149,7 @@
                                         @csrf
                                         <button type="submit"
                                             class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                            <i class="fa-solid fa-right-from-bracket w-4 text-indigo-500 dark:text-indigo-400 text-xs"></i>
+                                            <i class="fa-solid fa-right-from-bracket w-4 text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
                                             <span>Выйти</span>
                                         </button>
                                     </form>

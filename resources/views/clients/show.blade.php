@@ -1,39 +1,17 @@
 @extends('layouts.user')
 
 @section('title', 'Анна Ковалева - Cliently')
+@section('page-title', 'Анна Ковалева')
+
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[
+        ['title' => 'Клиенты', 'url' => route('clients.index')],
+        ['title' => 'Анна Ковалева']
+    ]" />
+@endpush
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Хлебные крошки -->
-        <div class="mb-6">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    <li class="inline-flex items-center">
-                        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
-                            <i class="fas fa-home mr-2"></i>
-                            Главная
-                        </a>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <a href="{{ route('clients.index') }}" class="ml-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white md:ml-2">
-                                Клиенты
-                            </a>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <span class="ml-1 text-sm text-gray-700 dark:text-gray-300 font-medium md:ml-2">
-                                Анна Ковалева
-                            </span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-
         <!-- Заголовок и действия -->
         <div class="mb-6 lg:mb-8">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -50,10 +28,7 @@
 
                     <!-- Информация о клиенте -->
                     <div>
-                        <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                            Анна Ковалева
-                        </h1>
-                        <div class="flex flex-wrap items-center gap-3 mt-2">
+                        <div class="flex flex-wrap items-center gap-3">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
                                 <i class="fas fa-circle text-xs mr-2"></i>
                                 Активный клиент
