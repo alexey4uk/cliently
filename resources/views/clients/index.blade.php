@@ -1,21 +1,18 @@
 @extends('layouts.user')
 
 @section('title', 'Клиенты - Cliently')
+@section('page-title', 'Клиенты')
+@section('page-description', 'Ваша клиентская база')
+
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[['title' => 'Клиенты']]" />
+@endpush
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Заголовок и управление -->
         <div class="mb-6 lg:mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Клиенты
-                    </h1>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm">
-                        Ваша клиентская база
-                    </p>
-                </div>
-
+            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
                 <!-- Кнопка добавления -->
                 <button
                     class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2.5 lg:py-3 px-4 lg:px-6 rounded-lg lg:rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2 w-full sm:w-auto text-sm lg:text-base shadow-md hover:shadow-lg">

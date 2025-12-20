@@ -1,58 +1,22 @@
 @extends('layouts.user')
 
 @section('title', 'Редактирование клиента - Cliently')
+@section('page-title', 'Редактирование клиента')
+@section('page-description', 'Обновите информацию о клиенте')
+
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[
+        ['title' => 'Клиенты', 'url' => route('clients.index')],
+        ['title' => 'Анна Ковалева', 'url' => route('clients.show', 1)],
+        ['title' => 'Редактирование']
+    ]" />
+@endpush
 
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Хлебные крошки -->
-        <div class="mb-6">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    <li class="inline-flex items-center">
-                        <a href="{{ route('dashboard') }}" class="inline-flex items-center text-base md:text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
-                            <i class="fas fa-home mr-2"></i>
-                            Главная
-                        </a>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <a href="{{ route('clients.index') }}" class="ml-1 text-base md:text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white md:ml-2">
-                                Клиенты
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <a href="{{ route('clients.show', 1) }}" class="ml-1 text-base md:text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white md:ml-2">
-                                Анна Ковалева
-                            </a>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 mx-2 text-xs"></i>
-                            <span class="ml-1 text-base md:text-sm text-gray-700 dark:text-gray-300 font-medium md:ml-2">
-                                Редактирование
-                            </span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-
         <!-- Заголовок и действия -->
         <div class="mb-6 lg:mb-8">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        Редактирование клиента
-                    </h1>
-                    <p class="text-gray-500 dark:text-gray-400 text-base md:text-sm">
-                        Обновите информацию о клиенте
-                    </p>
-                </div>
+            <div class="flex flex-col lg:flex-row lg:items-center justify-end gap-4">
 
                 <!-- Кнопки действий -->
                 <div class="flex items-center gap-3">
