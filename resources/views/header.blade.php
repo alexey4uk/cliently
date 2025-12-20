@@ -12,8 +12,8 @@
         </div>
 
 
-        <span class="text-sm font-semibold text-slate-950 dark:text-white tracking-tight">
-            cliently
+        <span class="text-sm font-semibold text-slate-950 dark:text-white tracking-tight uppercase font-display">
+            CLIENTLY
         </span>
         <span
             class="hidden sm:inline-block text-[11px] text-slate-500 dark:text-slate-400 pl-2 border-l border-slate-200 dark:border-slate-700">

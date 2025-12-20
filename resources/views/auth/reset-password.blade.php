@@ -17,6 +17,11 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -25,32 +30,23 @@
     <div class="min-h-screen flex items-center justify-center px-4 py-8">
         <div class="w-full max-w-md">
             <!-- Логотип и название -->
-            <div class="text-center mb-6">
-                <div class="flex justify-center mb-4">
-                    <!-- Логознак: мастер + клиент -->
-                    <div class="relative flex h-12 w-12 items-center justify-center">
-                        <!-- Левый круг (мастер) -->
-                        <span class="absolute h-9 w-9 rounded-full border-2 border-indigo-600 left-0"></span>
-                        <!-- Правый круг (клиент) -->
-                        <span class="absolute h-9 w-9 rounded-full border-2 border-rose-500 right-0"></span>
-                        <!-- Пересечение -->
-                        <span class="absolute h-8 w-8 rounded-full bg-indigo-600/20"></span>
-                    </div>
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <!-- Логознак: мастер + клиент -->
+                <div class="relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center flex-shrink-0">
+                    <!-- Левый круг (мастер) -->
+                    <span class="absolute h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-[#6366F1] left-0"></span>
+                    <!-- Правый круг (клиент) -->
+                    <span class="absolute h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-[#FF6B6B] right-0"></span>
+                    <!-- Пересечение -->
+                    <span class="absolute h-7 w-7 md:h-8 md:w-8 rounded-full bg-[#6366F1]/20"></span>
                 </div>
-                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
-                    cliently
+                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight uppercase font-display">
+                    CLIENTLY
                 </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    онлайн‑записи и клиенты
-                </p>
             </div>
 
             <!-- Форма нового пароля -->
-            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-6">
-                    Новый пароль
-                </h2>
-
+            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in-up">
                 <form method="POST" action="{{ route('password.store') }}" class="space-y-5" id="resetPasswordForm">
                     @csrf
 
@@ -60,7 +56,7 @@
                     <!-- Email Address -->
                     <div>
                         <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-envelope text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                            <i class="fa-solid fa-envelope text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
                             <span>Email адрес*</span>
                         </label>
                             <input
@@ -71,8 +67,7 @@
                                 required
                             autocomplete="email"
                                 autofocus
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="your@email.com"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-[#6366F1]' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                         />
                         @error('email')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -82,7 +77,7 @@
                     <!-- Password -->
                     <div>
                         <label for="password" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                            <i class="fa-solid fa-lock text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
                             <span>Новый пароль*</span>
                         </label>
                             <input
@@ -91,8 +86,7 @@
                                 name="password"
                                 required
                                 autocomplete="new-password"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                                placeholder="Минимум 8 символов"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-[#6366F1]' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                         />
                         @error('password')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -102,7 +96,7 @@
                     <!-- Confirm Password -->
                     <div>
                         <label for="password_confirmation" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-lock text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                            <i class="fa-solid fa-lock text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
                             <span>Подтверждение пароля*</span>
                         </label>
                             <input
@@ -111,8 +105,7 @@
                                 name="password_confirmation"
                                 required
                                 autocomplete="new-password"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                            placeholder="Повторите пароль"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent transition-colors"
                         />
                     </div>
 
@@ -120,7 +113,7 @@
                     <div class="pt-2">
                         <button 
                             type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-indigo-600/40 hover:bg-indigo-700 active:bg-indigo-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                             <span>Установить пароль</span>
                             <i class="fa-solid fa-key text-xs"></i>
@@ -131,24 +124,24 @@
                     <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                     <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
-                        <a href="{{ route('login') }}" class="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium">
+                        <a href="{{ route('login') }}" class="text-[#6366F1] hover:text-[#4F46E5] dark:text-[#818CF8] dark:hover:text-[#6366F1] transition-colors font-medium">
                             Вернуться к входу
                         </a>
                     </p>
         </div>
     </div>
+</div>
 
-            <!-- Переключатель темы -->
-            <div class="mt-6 text-center">
-                <button 
-                    id="themeToggle"
-                    class="inline-flex items-center gap-2 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors"
-                    aria-label="Переключить тему"
-                >
-                    <span>🌓</span>
-                    <span>Сменить тему</span>
-                </button>
-        </div>
+    <!-- Переключатель темы в правом верхнем углу -->
+    <div class="fixed top-4 right-4 z-10">
+        <button 
+            id="themeToggle"
+            class="h-10 w-10 rounded-full text-sm flex items-center justify-center text-slate-700 hover:bg-white/80 hover:shadow-sm transition-colors dark:text-slate-300 dark:hover:bg-slate-800/80"
+            aria-label="Переключить тему"
+        >
+            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
+            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
+        </button>
     </div>
 </div>
 
