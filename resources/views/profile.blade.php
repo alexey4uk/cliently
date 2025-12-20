@@ -6,25 +6,6 @@
 
 @section('content')
 
-    <!-- Сообщения об успехе -->
-    @if(session('success'))
-        <div class="mb-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-check-circle text-emerald-500 text-sm"></i>
-                <p class="text-emerald-700 dark:text-emerald-300 text-sm font-medium">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
-
-    @if(session('password_success'))
-        <div class="mb-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-check-circle text-emerald-500 text-sm"></i>
-                <p class="text-emerald-700 dark:text-emerald-300 text-sm font-medium">{{ session('password_success') }}</p>
-            </div>
-        </div>
-    @endif
-
     <!-- Основная информация -->
     <section class="mb-6">
         <div class="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm p-4 md:p-6">
