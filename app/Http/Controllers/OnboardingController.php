@@ -70,7 +70,7 @@ class OnboardingController extends Controller
 
     public function location(Request $request)
     {
-        $user = auth()->user()->load(['businesses.locations']);
+        $user = $request->user()->load(['businesses.locations']);
         $business = $user->businesses->first();
 
         if (! $business) {
@@ -157,7 +157,7 @@ class OnboardingController extends Controller
 
     public function service()
     {
-        $user = auth()->user()->load(['businesses.locations', 'businesses.services']);
+        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
 
         $business = $user->businesses->first();
 
@@ -209,7 +209,7 @@ class OnboardingController extends Controller
 
     public function master()
     {
-        $user = auth()->user()->load([
+        $user = Auth::user()->load([
             'businesses.locations',
             'businesses.services',
             'businesses.masters',
@@ -317,7 +317,7 @@ class OnboardingController extends Controller
 
     public function complete()
     {
-        $user = auth()->user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
+        $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
         $business = $user->businesses->first();
 
         if (! $business) {
