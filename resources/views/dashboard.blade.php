@@ -1,7 +1,7 @@
 @extends('layouts.user')
 
-@section('title', 'Дашборд - Cliently')
-@section('page-title', 'Дашборд')
+@section('title', 'Главная - Cliently')
+@section('page-title', 'Главная')
 @section('page-description', 'Обзор вашего бизнеса')
 
 @push('breadcrumbs')
@@ -11,12 +11,6 @@
 @section('content')
 
 @php
-    // Статистика
-    $stats = [
-        'revenueToday' => 12500,
-        'newClientsWeek' => 8,
-    ];
-
     // Записи на сегодня
     $todayAppointments = [
         [
@@ -58,14 +52,6 @@
             'client' => 'Дмитрий Козлов',
             'clientPhone' => '+79995678901',
             'clientPhoneDisplay' => '+7 (999) 567-89-01',
-        ],
-        [
-            'id' => 6,
-            'time' => '15:30',
-            'service' => 'Укладка',
-            'client' => 'Елена Петрова',
-            'clientPhone' => '+79996789012',
-            'clientPhoneDisplay' => '+7 (999) 678-90-12',
         ]
     ];
     // Записи, требующие внимания
@@ -101,6 +87,28 @@
 
     // Форматирование даты
     $todayDate = \Carbon\Carbon::now()->locale('ru')->isoFormat('D MMMM');
+
+    // Находим следующую запись
+    $nextAppointment = null;
+    $currentTime = \Carbon\Carbon::now()->format('H:i');
+    foreach ($todayAppointments as $appointment) {
+        if ($appointment['time'] >= $currentTime) {
+            $nextAppointment = $appointment;
+            break;
+        }
+    }
+    // Если все записи прошли, берем первую запись завтра или null
+    if (!$nextAppointment && count($todayAppointments) > 0) {
+        $nextAppointment = null; // Все записи прошли
+    }
+
+    // Статистика
+    $totalAppointments = count($todayAppointments);
+    $stats = [
+        'completedToday' => 4,
+        'remainingToday' => max(0, $totalAppointments - 4),
+        'nextAppointmentTime' => $nextAppointment ? $nextAppointment['time'] : null,
+    ];
 @endphp
 
 <div x-data="{ 
@@ -162,22 +170,35 @@
 @open-confirm.window="openConfirmModal($event.detail.action, $event.detail.message, $event.detail.appointmentId, $event.detail.noteId)">
     <!-- Статистика -->
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 md:mb-6">
+        <!-- Заголовок -->
+        <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
+                <span>Сегодня<span class="hidden sm:inline">, {{ $todayDate }}</span></span>
+            </h2>
+        </div>
         <div class="p-3 md:p-4">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <!-- Выручка сегодня -->
+                <!-- Следующая запись -->
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-coins text-emerald-600 dark:text-emerald-400 text-sm"></i>
+                    <div class="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-clock text-emerald-600 dark:text-emerald-400 text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Выручка</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ number_format($stats['revenueToday'], 0, ',', ' ') }} Br</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Следующая</p>
+                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">
+                            @if($stats['nextAppointmentTime'])
+                                {{ $stats['nextAppointmentTime'] }}
+                            @else
+                                <span class="text-slate-400 dark:text-slate-500">Нет</span>
+                            @endif
+                        </p>
                     </div>
                 </div>
 
                 <!-- Записей сегодня -->
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                    <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-sm"></i>
                     </div>
                     <div class="min-w-0">
@@ -186,25 +207,25 @@
                     </div>
                 </div>
 
-                <!-- Ожидают подтверждения -->
+                <!-- Выполнено сегодня -->
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-clock text-amber-600 dark:text-amber-400 text-sm"></i>
+                    <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-check-circle text-blue-600 dark:text-blue-400 text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Ожидают</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ count($pendingAppointments) }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Выполнено</p>
+                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ $stats['completedToday'] }}</p>
                     </div>
                 </div>
 
-                <!-- Новых клиентов -->
+                <!-- Осталось -->
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-user-plus text-blue-600 dark:text-blue-400 text-sm"></i>
+                    <div class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-500/20 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-clock text-slate-600 dark:text-slate-400 text-sm"></i>
                     </div>
                     <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Клиентов</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ $stats['newClientsWeek'] }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Осталось</p>
+                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ $stats['remainingToday'] }}</p>
                     </div>
                 </div>
             </div>
@@ -221,8 +242,8 @@
                     <!-- Заголовок внутри карточки -->
                     <div class="flex items-center justify-between px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
                         <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
-                            <span>Сегодня<span class="hidden sm:inline">, {{ $todayDate }}</span></span>
+                            <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
+                            <span>Записи</span>
                         </h2>
                         <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                             Все
@@ -304,7 +325,8 @@
                     </div>
                     
                     <!-- Контент -->
-                    <div class="p-3 md:p-4">
+                    <div class="p-3 md:p-4 space-y-4">
+                        <!-- Кнопки действий -->
                         <div class="flex flex-row gap-2">
                             <a href="#" class="flex-1 inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                 <i class="fa-solid fa-plus text-xs"></i>
@@ -315,91 +337,100 @@
                                 <span>Клиент</span>
                             </a>
                         </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- 4. Заметки -->
-            <section>
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <!-- Заголовок внутри карточки -->
-                    <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-note-sticky text-indigo-600 dark:text-indigo-400"></i>
-                            <span>Заметки</span>
-                        </h3>
-                    </div>
-                    
-                    <!-- Контент -->
-                    <div class="p-3 md:p-4">
-                        <!-- Форма добавления заметки -->
-                        <form method="POST" action="#" class="mb-3">
-                            @csrf
-                            <div class="flex gap-2">
-                                <input
-                                    type="text"
-                                    name="text"
-                                    required
-                                    class="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                                <button
-                                    type="submit"
-                                    class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                </button>
-                            </div>
-                        </form>
-
-                        <!-- Список заметок -->
-                        @php
-                            $notes = [
-                                ['id' => 1, 'text' => 'Позвонить клиенту Иванову', 'completed' => false],
-                                ['id' => 2, 'text' => 'Заказать краску для волос', 'completed' => false],
-                                ['id' => 3, 'text' => 'Обновить прайс-лист', 'completed' => true],
-                            ];
-                        @endphp
-
-                        <div class="space-y-2">
-                            <!-- На мобильных показываем только первые 3 заметки, на десктопе все -->
-                            @forelse($notes as $index => $note)
-                                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group {{ $index >= 3 ? 'hidden md:flex' : '' }}">
-                                    <!-- Форма для обновления статуса (PATCH) -->
-                                    <form method="POST" action="#" class="flex-shrink-0 flex items-center">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input 
-                                            type="checkbox" 
-                                            {{ $note['completed'] ? 'checked' : '' }}
-                                            onchange="this.form.submit()"
-                                            class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 cursor-pointer">
-                                    </form>
-                                    <span 
-                                        class="flex-1 text-sm leading-5 {{ $note['completed'] ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300' }}">
-                                        {{ $note['text'] }}
-                                    </span>
-                                    <!-- Форма для удаления (DELETE) -->
-                                    <form method="POST" action="#" class="flex-shrink-0 flex items-center" id="delete-form-{{ $note['id'] }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button 
-                                            type="button"
-                                            @click="$dispatch('open-confirm', { action: 'delete-note', message: 'Удалить заметку?', noteId: {{ $note['id'] }} })"
-                                            class="opacity-0 group-hover:opacity-100 h-5 w-5 rounded flex items-center justify-center text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-all">
-                                            <i class="fa-solid fa-xmark text-xs"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            @empty
-                                <div class="text-center py-4">
-                                    <p class="text-xs text-slate-400 dark:text-slate-500">Нет заметок</p>
-                                </div>
-                            @endforelse
-                            @if(count($notes) > 3)
-                                <div class="md:hidden pt-2">
-                                    <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline text-center block">
-                                        Показать все заметки ({{ count($notes) }})
+                            <!-- Разделитель -->
+                        <div class="border-t border-slate-100 dark:border-slate-800 pt-4" x-data="{ showInput: false }">
+                            <!-- Подзаголовок для заметок -->
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-note-sticky text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                    <span>Заметки</span>
+                                </h4>
+                                <div class="flex items-center gap-2">
+                                    <button 
+                                        @click="showInput = !showInput"
+                                        x-show="!showInput"
+                                        class="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                    <a href="#" class="h-6 w-6 rounded-md flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Все заметки">
+                                        <i class="fa-solid fa-list text-xs"></i>
                                     </a>
                                 </div>
-                            @endif
+                            </div>
+
+                            <!-- Форма добавления заметки -->
+                            <form method="POST" action="#" class="mb-3" x-show="showInput" @submit="showInput = false" x-transition>
+                                @csrf
+                                <div class="relative">
+                                    <input
+                                        type="text"
+                                        name="text"
+                                        required
+                                        x-ref="noteInput"
+                                        @click.away="showInput = false"
+                                        x-on:show-input.window="showInput = true; $nextTick(() => $refs.noteInput.focus())"
+                                        class="w-full px-3 py-2 pr-10 text-base rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <button
+                                        type="submit"
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-all flex items-center justify-center">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Список заметок -->
+                            @php
+                                $notes = [
+                                    ['id' => 1, 'text' => 'Позвонить клиенту Иванову', 'completed' => false],
+                                    ['id' => 2, 'text' => 'Заказать краску для волос', 'completed' => false],
+                                    ['id' => 3, 'text' => 'Обновить прайс-лист', 'completed' => true],
+                                ];
+                            @endphp
+
+                            <div class="space-y-2">
+                                <!-- На мобильных показываем только первые 3 заметки, на десктопе все -->
+                                @forelse($notes as $index => $note)
+                                    <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group {{ $index >= 3 ? 'hidden md:flex' : '' }}">
+                                        <!-- Форма для обновления статуса (PATCH) -->
+                                        <form method="POST" action="#" class="flex-shrink-0 flex items-center">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input 
+                                                type="checkbox" 
+                                                {{ $note['completed'] ? 'checked' : '' }}
+                                                onchange="this.form.submit()"
+                                                class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 cursor-pointer">
+                                        </form>
+                                        <span 
+                                            class="flex-1 text-sm leading-5 {{ $note['completed'] ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300' }}">
+                                            {{ $note['text'] }}
+                                        </span>
+                                        <!-- Форма для удаления (DELETE) -->
+                                        <form method="POST" action="#" class="flex-shrink-0 flex items-center" id="delete-form-{{ $note['id'] }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button 
+                                                type="button"
+                                                @click="$dispatch('open-confirm', { action: 'delete-note', message: 'Удалить заметку?', noteId: {{ $note['id'] }} })"
+                                                class="opacity-0 group-hover:opacity-100 h-5 w-5 rounded flex items-center justify-center text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-all">
+                                                <i class="fa-solid fa-xmark text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @empty
+                                    <div class="text-center py-4">
+                                        <p class="text-xs text-slate-400 dark:text-slate-500">Нет заметок</p>
+                                    </div>
+                                @endforelse
+                                @if(count($notes) > 3)
+                                    <div class="md:hidden pt-2">
+                                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline text-center block">
+                                            Показать все заметки ({{ count($notes) }})
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

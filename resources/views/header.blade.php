@@ -19,7 +19,7 @@
         <a href="{{ route('dashboard') }}"
             class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-900 dark:text-white font-medium {{ request()->routeIs('dashboard') ?  'bg-[#6366F1]/10 dark:bg-[#6366F1]/20' : ''}} transition-colors">
             <i class="fa-solid fa-chart-line text-xs"></i>
-            <span>Дашборд</span>
+            <span>Главная</span>
         </a>
         <a href="#"
             class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors">
