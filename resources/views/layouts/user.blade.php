@@ -199,6 +199,18 @@
     @include('alerts')
 
     @stack('scripts')
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.toast-notification').forEach((notification) => {
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 
 </html>

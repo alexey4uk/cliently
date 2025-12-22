@@ -139,8 +139,10 @@
             <!-- Нижняя часть: Профиль -->
             <div class="border-t border-slate-200 dark:border-slate-800 p-4 flex-shrink-0">
                 @auth
-                    <!-- Информация о пользователе -->
-                    <div class="mb-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <!-- Информация о пользователе (кликабельная, ведет на профиль) -->
+                    <a href="{{ route('profile.edit') }}" 
+                       @click="open = false"
+                       class="block mb-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <div class="flex items-center gap-3">
                             <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm overflow-hidden flex-shrink-0">
                                 @if(Auth::user()->avatar)
@@ -159,17 +161,10 @@
                                     {{ Auth::user()->email }}
                                 </p>
                             </div>
+                            <div class="flex-shrink-0">
+                                <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Ссылка на профиль -->
-                    <a href="{{ route('profile.edit') }}" 
-                       @click="open = false"
-                       class="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-all duration-200 mb-2">
-                        <div class="flex items-center justify-center w-6">
-                            <i class="fa-solid fa-user text-[#6366F1] dark:text-[#818CF8] text-sm"></i>
-                        </div>
-                        Профиль
                     </a>
                 @endauth
 
