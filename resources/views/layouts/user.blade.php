@@ -17,16 +17,16 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts - Poppins -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
+<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar (скрыт на мобильных, виден на lg+) -->
         @include('sidebar')
@@ -40,17 +40,17 @@
                         <!-- Левая часть: Логотип/Заголовок -->
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <!-- Логотип (только мобильные) -->
-                            <div class="lg:hidden flex items-center gap-3 flex-shrink-0">
+                            <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-3 flex-shrink-0 hover:opacity-80 transition-opacity">
                                 <x-logo size="sm" />
-                            </div>
+                            </a>
                             
                             <!-- Заголовок страницы -->
                             <div class="min-w-0 flex-1">
-                                <h1 class="text-lg md:text-xl font-semibold text-slate-900 dark:text-white truncate">
+                                <h1 class="text-xl font-semibold text-slate-900 dark:text-white truncate">
                                     @yield('page-title', 'cliently')
                                 </h1>
                                 @hasSection('page-description')
-                                    <p class="hidden md:block text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                    <p class="hidden md:block text-sm text-slate-500 dark:text-slate-400 mt-1 truncate">
                                         @yield('page-description')
                                     </p>
                                 @endif
@@ -69,12 +69,24 @@
                         @endif
 
                         <!-- Переключатель темы -->
-                        <button id="themeToggle"
-                            class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            aria-label="Переключить тему">
-                            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
-                            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
-                        </button>
+                        <div x-data="{
+                            theme: localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+                            init() {
+                                this.$watch('theme', value => {
+                                    document.documentElement.classList.toggle('dark', value === 'dark');
+                                    localStorage.setItem('theme', value);
+                                });
+                                // Применить тему при загрузке
+                                document.documentElement.classList.toggle('dark', this.theme === 'dark');
+                            }
+                        }">
+                            <button @click="theme = theme === 'dark' ? 'light' : 'dark'"
+                                class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                aria-label="Переключить тему">
+                                <i class="fa-solid fa-sun text-sm dark:hidden"></i>
+                                <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
+                            </button>
+                        </div>
 
                         <!-- Уведомления -->
                         <div class="relative">
@@ -87,31 +99,42 @@
                             </button>
                         </div>
 
-                        <!-- Профиль пользователя -->
-                        <div class="relative">
+                        <!-- Профиль пользователя (только десктоп) -->
+                        <div x-data="{ open: false }" class="relative hidden lg:block">
                             @auth
                                 <button
-                                    class="menu-trigger h-9 w-9 rounded-md flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden"
+                                    @click="open = !open"
+                                    class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden"
                                     aria-label="Профиль">
                                     @if(Auth::user()->avatar)
                                         <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
                                              alt="{{ Auth::user()->name }}" 
-                                             class="w-full h-full object-cover rounded-md">
+                                             class="w-full h-full object-cover rounded-full">
                                     @else
-                                        <span class="h-full w-full rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                                        <span class="h-full w-full rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
                                             {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
                                         </span>
                                     @endif
                                 </button>
                             @else
                                 <button
-                                    class="menu-trigger h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                                    @click="open = !open"
+                                    class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
                                     aria-label="Профиль">
                                     АМ
                                 </button>
                             @endauth
                             <div
-                                class="menu-panel z-[100] hidden w-56 rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-lg">
+                                x-show="open"
+                                @click.away="open = false"
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute right-0 mt-2 z-[100] w-56 rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-lg"
+                                style="display: none;">
                                 <!-- Информация о пользователе -->
                                 @auth
                                     <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
@@ -156,13 +179,16 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Кнопка меню (только мобильные) -->
+                        @include('mobile-menu')
                     </div>
                 </div>
             </header>
 
             <!-- Основной контент -->
             <main class="flex-1 overflow-y-auto">
-                <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 pb-20 lg:pb-10">
+                <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
                     <div class="max-w-4xl mx-auto">
                         @yield('content')
                     </div>
@@ -170,103 +196,7 @@
             </main>
         </div>
     </div>
-
-    <!-- Мобильное меню (только на мобильных) -->
-    @include('mobile-menu')
-
-    <!-- Toast уведомления -->
     @include('alerts')
-
-    <script>
-        const htmlEl = document.documentElement;
-        const toggleBtn = document.getElementById('themeToggle');
-
-        if (toggleBtn) {
-            const prefersDark = window.matchMedia &&
-                window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            const savedTheme = localStorage.getItem('theme');
-            const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
-
-            if (shouldBeDark) {
-                htmlEl.classList.add('dark');
-            } else {
-                htmlEl.classList.remove('dark');
-            }
-
-            toggleBtn.addEventListener('click', () => {
-                const isDark = htmlEl.classList.toggle('dark');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            });
-        }
-    </script>
-    
-    <script>
-        // dropdown для кнопок "⋯"
-        document.addEventListener('click', (event) => {
-            const triggers = document.querySelectorAll('.menu-trigger');
-            const panels = document.querySelectorAll('.menu-panel');
-
-            const trigger = event.target.closest('.menu-trigger');
-            const panel = event.target.closest('.menu-panel');
-
-            // клик по триггеру: переключаем только его меню
-            if (trigger) {
-                const container = trigger.closest('.relative');
-                const currentPanel = container ? container.querySelector('.menu-panel') : null;
-
-                if (currentPanel) {
-                    const isOpen = !currentPanel.classList.contains('hidden');
-
-                    // закрыть все
-                    panels.forEach(p => {
-                        p.classList.add('hidden');
-                        p.style.position = '';
-                        p.style.top = '';
-                        p.style.right = '';
-                        p.style.bottom = '';
-                    });
-
-                    // открыть / закрыть текущее
-                    if (!isOpen) {
-                        // Используем fixed позиционирование для выхода за границы overflow
-                        const rect = trigger.getBoundingClientRect();
-                        const panelHeight = 150; // примерная высота меню
-                        const spaceBelow = window.innerHeight - rect.bottom;
-                        const spaceAbove = rect.top;
-
-                        currentPanel.style.position = 'fixed';
-                        currentPanel.style.right = `${window.innerWidth - rect.right}px`;
-
-                        // Если не хватает места снизу, открываем сверху
-                        if (spaceBelow < panelHeight && spaceAbove > spaceBelow) {
-                            currentPanel.style.bottom = `${window.innerHeight - rect.top + 4}px`;
-                            currentPanel.style.top = 'auto';
-                        } else {
-                            currentPanel.style.top = `${rect.bottom + 4}px`;
-                            currentPanel.style.bottom = 'auto';
-                        }
-
-                        currentPanel.classList.remove('hidden');
-                    }
-                }
-
-                return;
-            }
-
-            // клик внутри меню — оставить открытым (здесь потом повесишь логику по кнопкам)
-            //if (panel) return;
-
-            // клик вне — закрыть все меню
-            panels.forEach(p => {
-                p.classList.add('hidden');
-                p.style.position = '';
-                p.style.top = '';
-                p.style.right = '';
-                p.style.bottom = '';
-            });
-        });
-    </script>
 
     @stack('scripts')
 </body>

@@ -3,12 +3,12 @@
         <div class="flex flex-col flex-grow bg-white dark:bg-slate-900 pt-6 pb-4 overflow-y-auto border-r border-slate-200 dark:border-slate-800 transition-all duration-300">
             <!-- Логотип -->
             <div class="flex items-center flex-shrink-0 px-6 mb-8">
-                <div class="flex items-center space-x-3 group cursor-pointer">
+                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group cursor-pointer hover:opacity-80 transition-opacity">
                     <x-logo size="sidebar" />
                     <div>
                         <span class="text-xl font-bold text-slate-900 dark:text-white block tracking-tight uppercase font-display">CLIENTLY</span>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Основная навигация -->
