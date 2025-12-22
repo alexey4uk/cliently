@@ -34,8 +34,8 @@
         <!-- Основной контент -->
         <div class="flex flex-col flex-1 overflow-hidden">
             <!-- Верхний header -->
-            <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div class="max-w-7xl mx-auto px-4 py-3 lg:px-6">
+            <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 w-full">
+                <div class="w-full px-4 md:px-6 py-3">
                     <div class="flex items-center justify-between">
                         <!-- Левая часть: Логотип/Заголовок -->
                         <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -81,11 +81,11 @@
                             }
                         }">
                             <button @click="theme = theme === 'dark' ? 'light' : 'dark'"
-                                class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                aria-label="Переключить тему">
-                                <i class="fa-solid fa-sun text-sm dark:hidden"></i>
-                                <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
-                            </button>
+                            class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            aria-label="Переключить тему">
+                            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
+                            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
+                        </button>
                         </div>
 
                         <!-- Уведомления -->
