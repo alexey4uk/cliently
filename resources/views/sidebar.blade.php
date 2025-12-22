@@ -65,6 +65,24 @@
                         </nav>
                     </div>
 
+                    <!-- Настройки -->
+                    <div>
+                        <h3 class="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            Настройки
+                        </h3>
+                        <nav class="space-y-1">
+                            <!-- Настройки бизнеса -->
+                            <a href="{{ route('settings.index') }}" class="group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.*') ?
+                                'bg-gradient-to-r from-[#6366F1]/10 to-[#6366F1]/15 dark:from-[#6366F1]/20 dark:to-[#6366F1]/30 text-[#6366F1] dark:text-[#818CF8] shadow-sm border border-[#6366F1]/20 dark:border-[#6366F1]/40' :
+                                'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white hover:shadow-sm' }}">
+                                <div class="flex items-center justify-center w-6 mr-3">
+                                    <i class="fas fa-cog {{ Request::routeIs('settings.*') ? 'text-[#6366F1] dark:text-[#818CF8]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300' }} text-sm"></i>
+                                </div>
+                                Настройки бизнеса
+                            </a>
+                        </nav>
+                    </div>
+
                     <!-- Аналитика -->
                     <div>
                         <h3 class="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">

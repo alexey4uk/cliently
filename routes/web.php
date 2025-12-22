@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BusinessSettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
@@ -39,6 +40,31 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
+
+        // Настройки бизнеса
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
+            
+            // Настройки бизнеса
+            Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');
+            Route::patch('/business', [BusinessSettingsController::class, 'update'])->name('business.update');
+            
+            // Локации
+            Route::get('/locations', [BusinessSettingsController::class, 'locations'])->name('locations');
+            Route::get('/locations/create', [BusinessSettingsController::class, 'createLocation'])->name('locations.create');
+            Route::post('/locations', [BusinessSettingsController::class, 'storeLocation'])->name('locations.store');
+            Route::get('/locations/{location}/edit', [BusinessSettingsController::class, 'editLocation'])->name('locations.edit');
+            Route::patch('/locations/{location}', [BusinessSettingsController::class, 'updateLocation'])->name('locations.update');
+            Route::delete('/locations/{location}', [BusinessSettingsController::class, 'destroyLocation'])->name('locations.destroy');
+            
+            // Мастера
+            Route::get('/masters', [BusinessSettingsController::class, 'masters'])->name('masters');
+            Route::get('/masters/create', [BusinessSettingsController::class, 'createMaster'])->name('masters.create');
+            Route::post('/masters', [BusinessSettingsController::class, 'storeMaster'])->name('masters.store');
+            Route::get('/masters/{master}/edit', [BusinessSettingsController::class, 'editMaster'])->name('masters.edit');
+            Route::patch('/masters/{master}', [BusinessSettingsController::class, 'updateMaster'])->name('masters.update');
+            Route::delete('/masters/{master}', [BusinessSettingsController::class, 'destroyMaster'])->name('masters.destroy');
+        });
     });
 });
 

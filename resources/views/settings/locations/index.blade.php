@@ -1,13 +1,13 @@
 @extends('layouts.user')
 
-@section('title', 'Услуги - Cliently')
-@section('page-title', 'Услуги')
-@section('page-description', 'Управление услугами вашего бизнеса')
+@section('title', 'Локации - Cliently')
+@section('page-title', 'Локации')
+@section('page-description', 'Управление локациями вашего бизнеса')
 
 @push('breadcrumbs')
     <x-breadcrumbs :items="[
         ['title' => 'Настройки', 'url' => route('settings.index')],
-        ['title' => 'Услуги', 'url' => null]
+        ['title' => 'Локации', 'url' => null]
     ]" />
 @endpush
 
@@ -18,21 +18,21 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
-                Услуги
+                Локации
             </h2>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Управляйте услугами вашего бизнеса
+                Управляйте адресами и рабочими часами ваших локаций
             </p>
         </div>
-        <a href="{{ route('services.create') }}"
+        <a href="{{ route('settings.locations.create') }}"
            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
             <i class="fa-solid fa-plus text-xs"></i>
-            <span>Добавить услугу</span>
+            <span>Добавить локацию</span>
         </a>
     </div>
 
-    <!-- Таблица услуг -->
-    @if($services->count() > 0)
+    <!-- Таблица локаций -->
+    @if($locations->count() > 0)
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full table-auto">
@@ -42,13 +42,13 @@
                                 Название
                             </th>
                             <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell max-w-[200px]">
-                                Описание
+                                Адрес
                             </th>
                             <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
-                                Цена
+                                Телефон
                             </th>
                             <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
-                                Длительность
+                                Время работы
                             </th>
                             <th class="px-3 py-2.5 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-20">
                                 Действия
@@ -56,43 +56,59 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                        @foreach($services as $service)
+                        @foreach($locations as $location)
+                            @php
+                                $workingHours = json_decode($location->working_hours, true);
+                            @endphp
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <td class="px-3 py-3">
                                     <div class="min-w-0">
                                         <div class="text-sm font-medium text-slate-900 dark:text-white truncate">
-                                            {{ $service->name }}
+                                            {{ $location->name }}
                                         </div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 md:hidden mt-0.5 line-clamp-1">
-                                            {{ number_format($service->price, 0, ',', ' ') }} Br • {{ $service->duration }} мин
+                                            {{ $location->full_address }}
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-3 py-3 hidden md:table-cell max-w-[200px]">
                                     <div class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 break-words">
-                                        {{ $service->description ?? '—' }}
+                                        {{ $location->full_address }}
                                     </div>
                                 </td>
                                 <td class="px-3 py-3 hidden lg:table-cell">
-                                    <div class="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                                        {{ number_format($service->price, 0, ',', ' ') }} Br
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                        {{ $location->phone }}
                                     </div>
                                 </td>
                                 <td class="px-3 py-3 hidden xl:table-cell">
-                                    <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1 whitespace-nowrap">
-                                        <i class="fa-solid fa-clock text-xs text-slate-400"></i>
-                                        <span>{{ $service->duration }} мин</span>
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                        @if($workingHours)
+                                            @if($workingHours['24_hours'] ?? false)
+                                                <span class="inline-flex items-center gap-1">
+                                                    <i class="fa-solid fa-clock text-xs"></i>
+                                                    <span>Круглосуточно</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1">
+                                                    <i class="fa-solid fa-clock text-xs"></i>
+                                                    <span>{{ $workingHours['from'] ?? '—' }} - {{ $workingHours['to'] ?? '—' }}</span>
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span class="text-slate-400 dark:text-slate-500">—</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-3 py-3">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <a href="{{ route('services.edit', $service) }}"
+                                        <a href="{{ route('settings.locations.edit', $location) }}"
                                            class="h-7 w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                            title="Редактировать">
                                             <i class="fa-solid fa-pencil text-xs"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('services.destroy', $service) }}" 
-                                              onsubmit="return confirm('Вы уверены, что хотите удалить эту услугу?');"
+                                        <form method="POST" action="{{ route('settings.locations.destroy', $location) }}" 
+                                              onsubmit="return confirm('Вы уверены, что хотите удалить эту локацию?');"
                                               class="inline">
                                             @csrf
                                             @method('DELETE')
@@ -114,18 +130,18 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
             <div class="max-w-md mx-auto">
                 <div class="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-scissors text-slate-400 dark:text-slate-500 text-2xl"></i>
+                    <i class="fa-solid fa-location-dot text-slate-400 dark:text-slate-500 text-2xl"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                    Нет услуг
+                    Нет локаций
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
-                    Добавьте первую услугу для вашего бизнеса
+                    Добавьте первую локацию для вашего бизнеса
                 </p>
-                <a href="{{ route('services.create') }}"
+                <a href="{{ route('settings.locations.create') }}"
                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
                     <i class="fa-solid fa-plus text-xs"></i>
-                    <span>Добавить услугу</span>
+                    <span>Добавить локацию</span>
                 </a>
             </div>
         </div>

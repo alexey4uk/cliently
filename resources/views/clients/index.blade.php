@@ -5,7 +5,9 @@
 @section('page-description', 'Ваша клиентская база')
 
 @push('breadcrumbs')
-    <x-breadcrumbs :items="[['title' => 'Клиенты']]" />
+    <x-breadcrumbs :items="[
+        ['title' => 'Клиенты', 'url' => null]
+    ]" />
 @endpush
 
 @section('content')

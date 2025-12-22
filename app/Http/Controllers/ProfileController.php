@@ -32,7 +32,7 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'required|string|max:20',
+            'phone' => 'nullable|string|max:20|regex:/^\+375\d{9}$/|unique:users,phone,'.$user->id,
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'remove_avatar' => 'sometimes|boolean',
         ], [
@@ -40,7 +40,8 @@ class ProfileController extends Controller
             'email.required' => 'Поле "Email" обязательно для заполнения.',
             'email.email' => 'Неверный формат email адреса.',
             'email.unique' => 'Этот email уже используется.',
-            'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
+            'phone.unique' => 'Этот телефон уже используется',
+            'phone.regex' => 'Телефон должен быть в формате +375XXXXXXXXX (9 цифр после +375).',
             'avatar.image' => 'Файл должен быть изображением.',
             'avatar.mimes' => 'Изображение должно быть в формате: jpeg, png, jpg, gif или webp.',
             'avatar.max' => 'Размер изображения не должен превышать 5 МБ.',
@@ -94,7 +95,7 @@ class ProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('password_success', 'Пароль успешно изменен');
+        return back()->with('success', 'Пароль успешно изменен');
     }
 
     /**

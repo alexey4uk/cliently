@@ -39,13 +39,14 @@
         
         <div class="space-y-6">
             <!-- Основная информация -->
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
-                        Основная информация
-                    </h3>
-                </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
+                            Основная информация
+                        </h3>
+                    </div>
                 
                 <div>
                     <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -66,7 +67,7 @@
                     <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <span>Персональная ссылка*</span>
                     </label>
-                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
                         <!-- Префикс -->
                         <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-base md:text-sm font-mono select-none">
                             /
@@ -103,18 +104,20 @@
                         <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                     @enderror
                 </div>
+                </div>
             </div>
 
             <!-- Информация о владельце -->
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
-                        Информация о владельце
-                    </h3>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
+                            Информация о владельце
+                        </h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <span>Имя*</span>
@@ -137,16 +140,18 @@
                         @enderror
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Контактная информация -->
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
-                        Контактная информация
-                    </h3>
-                </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
+                            Контактная информация
+                        </h3>
+                    </div>
                 
                 <div>
                     <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -163,16 +168,18 @@
                     @enderror
                     <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                 </div>
+                </div>
             </div>
 
             <!-- Дополнительная информация -->
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
-                        Дополнительная информация
-                    </h3>
-                </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
+                            Дополнительная информация
+                        </h3>
+                    </div>
                 
                 <div>
                     <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -189,6 +196,7 @@
                             <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -334,33 +342,6 @@
     }
 
     /**
-     * Обновление стилей border для slug контейнера
-     */
-    function updateSlugBorder(state) {
-        const container = slugElements.container;
-        if (!container) return;
-
-        // Удаляем все возможные классы border
-        container.classList.remove('border-emerald-500', 'border-rose-500', 'border-slate-300', 'dark:border-slate-700', 'focus-within:border-indigo-500');
-        
-        // Добавляем нужный класс в зависимости от состояния
-        switch (state) {
-            case 'available':
-                container.classList.add('border-emerald-500');
-                break;
-            case 'unavailable':
-            case 'formatError':
-                container.classList.add('border-rose-500');
-                break;
-            case 'checking':
-            case 'reset':
-            default:
-                container.classList.add('border-slate-300', 'dark:border-slate-700');
-                break;
-        }
-    }
-
-    /**
      * Единая функция управления состоянием slug
      * @param {string} state - Состояние: 'checking', 'available', 'unavailable', 'formatError', 'reset'
      * @param {string} message - Сообщение об ошибке (опционально)
@@ -405,9 +386,6 @@
                 }
                 break;
         }
-
-        // Обновляем border
-        updateSlugBorder(state);
     }
 
 
