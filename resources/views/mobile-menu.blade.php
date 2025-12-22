@@ -63,7 +63,7 @@
                             <div class="flex items-center justify-center w-6 mr-3">
                                 <i class="fas fa-chart-line {{ Request::routeIs('dashboard') ? 'text-[#6366F1] dark:text-[#818CF8]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300' }} text-sm"></i>
                             </div>
-                            Дашборд
+                            Главная
                         </a>
 
                         <a href="{{ route('clients.index') }}" 
