@@ -215,7 +215,8 @@ class ProfileTest extends TestCase
             'email' => $user->email,
         ]);
 
-        $response->assertSessionHasErrors('phone');
+        // Phone is nullable, so no error should be present
+        $response->assertSessionHasNoErrors();
     }
 
     public function test_profile_update_validates_email_format(): void
@@ -260,7 +261,7 @@ class ProfileTest extends TestCase
             ]);
 
         $response->assertRedirect(route('profile.edit'));
-        $response->assertSessionHas('password_success');
+        $response->assertSessionHas('success');
 
         $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
     }

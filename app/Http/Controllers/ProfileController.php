@@ -70,7 +70,7 @@ class ProfileController extends Controller
         // Обновляем остальные данные
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->phone = $validated['phone'];
+        $user->phone = $validated['phone'] ?? null;
         $user->save();
 
         return back()->with('success', 'Профиль успешно обновлен');
