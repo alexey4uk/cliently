@@ -40,6 +40,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
+        Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
+        Route::patch('appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
+        Route::patch('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
+        Route::patch('appointments/{appointment}/complete', [\App\Http\Controllers\AppointmentsController::class, 'complete'])->name('appointments.complete');
 
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {

@@ -15,10 +15,10 @@
 
 <div class="space-y-6">
     <!-- Заголовок и кнопка добавления -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
             <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
-                Услуги
+                        Услуги
             </h2>
             <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Управляйте услугами вашего бизнеса
@@ -29,7 +29,7 @@
             <i class="fa-solid fa-plus text-xs"></i>
             <span>Добавить услугу</span>
         </a>
-    </div>
+                </div>
 
     <!-- Таблица услуг -->
     @if($services->count() > 0)
@@ -56,13 +56,13 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                        @foreach($services as $service)
+                @foreach($services as $service)
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <td class="px-3 py-3">
                                     <div class="min-w-0">
                                         <div class="text-sm font-medium text-slate-900 dark:text-white truncate">
                                             {{ $service->name }}
-                                        </div>
+                                </div>
                                         <div class="text-xs text-slate-500 dark:text-slate-400 md:hidden mt-0.5 line-clamp-1">
                                             {{ number_format($service->price, 0, ',', ' ') }} Br • {{ $service->duration }} мин
                                         </div>
@@ -71,18 +71,18 @@
                                 <td class="px-3 py-3 hidden md:table-cell max-w-[200px]">
                                     <div class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 break-words">
                                         {{ $service->description ?? '—' }}
-                                    </div>
+                                </div>
                                 </td>
                                 <td class="px-3 py-3 hidden lg:table-cell">
                                     <div class="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
                                         {{ number_format($service->price, 0, ',', ' ') }} Br
-                                    </div>
+                            </div>
                                 </td>
                                 <td class="px-3 py-3 hidden xl:table-cell">
                                     <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1 whitespace-nowrap">
                                         <i class="fa-solid fa-clock text-xs text-slate-400"></i>
                                         <span>{{ $service->duration }} мин</span>
-                                    </div>
+                                            </div>
                                 </td>
                                 <td class="px-3 py-3">
                                     <div class="flex items-center justify-end gap-1.5">
@@ -100,12 +100,12 @@
                                                     class="h-7 w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                     title="Удалить">
                                                 <i class="fa-solid fa-trash text-xs"></i>
-                                            </button>
+                                        </button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                @endforeach
                     </tbody>
                 </table>
             </div>
@@ -130,6 +130,6 @@
             </div>
         </div>
     @endif
-</div>
+    </div>
 
 @endsection

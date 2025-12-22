@@ -176,12 +176,12 @@
             <section>
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <!-- Заголовок внутри карточки -->
-                    <div class="flex items-center justify-between px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-slate-200 dark:border-slate-700">
                         <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                             <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
                             <span>Записи</span>
                         </h2>
-                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                        <a href="{{ route('appointments.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                             Все
                         </a>
                     </div>
@@ -189,7 +189,7 @@
                     <!-- Временная шкала -->
                     <div>
                         @forelse($todayAppointments as $appointment)
-                            <div class="p-3 md:p-4 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                            <div class="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                 <div class="flex items-center justify-between gap-3">
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2">
@@ -237,7 +237,7 @@
                             <div class="p-8 text-center">
                                 <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
                                 <p class="text-slate-500 dark:text-slate-400">Нет записей на сегодня</p>
-                                <a href="#" class="mt-3 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+                                <a href="{{ route('appointments.create') }}" class="mt-3 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                                     Создать запись
                                 </a>
                     </div>
@@ -253,13 +253,13 @@
             <section>
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <!-- Заголовок -->
-                    <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-slate-200 dark:border-slate-700">
                         <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                             <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
                             <span>Сегодня<span class="hidden sm:inline">, {{ $todayDate }}</span></span>
                         </h2>
                     </div>
-                    <div class="p-3 md:p-4">
+                    <div class="p-4 md:p-6">
                         <div class="grid grid-cols-2 gap-3 md:gap-4">
                             <!-- Следующая запись -->
                             <div class="flex items-center gap-2">
@@ -319,7 +319,7 @@
             <section>
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <!-- Заголовок внутри карточки -->
-                    <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-slate-200 dark:border-slate-700">
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                             <i class="fa-solid fa-bolt text-indigo-600 dark:text-indigo-400"></i>
                             <span>Быстрые действия</span>
@@ -327,10 +327,10 @@
                     </div>
                     
                     <!-- Контент -->
-                    <div class="p-3 md:p-4 space-y-4">
+                    <div class="p-4 md:p-6 space-y-4">
                         <!-- Кнопки действий -->
                         <div class="flex flex-row gap-2">
-                            <a href="#" class="flex-1 inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            <a href="{{ route('appointments.create') }}" class="flex-1 inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                 <i class="fa-solid fa-plus text-xs"></i>
                                 <span>Запись</span>
                             </a>
@@ -341,7 +341,7 @@
                         </div>
 
                             <!-- Разделитель -->
-                        <div class="border-t border-slate-100 dark:border-slate-800 pt-4" x-data="{ showInput: false }">
+                        <div class="border-t border-slate-200 dark:border-slate-700 pt-4" x-data="{ showInput: false }">
                             <!-- Подзаголовок для заметок -->
                             <div class="flex items-center justify-between mb-3">
                                 <h4 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">

@@ -30,13 +30,13 @@
         <div class="space-y-6">
             <!-- Основная информация -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-                <div class="space-y-5">
+            <div class="space-y-5">
                     <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
                         <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400"></i>
-                            Основная информация
-                        </h3>
-                    </div>
+                        <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400"></i>
+                        Основная информация
+                    </h3>
+                </div>
                 
                 <div>
                     <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -62,13 +62,13 @@
 
             <!-- Параметры услуги -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-                <div class="space-y-5">
+            <div class="space-y-5">
                     <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
                         <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <i class="fa-solid fa-cog text-indigo-600 dark:text-indigo-400"></i>
-                            Параметры услуги
-                        </h3>
-                    </div>
+                        <i class="fa-solid fa-cog text-indigo-600 dark:text-indigo-400"></i>
+                        Параметры услуги
+                    </h3>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
@@ -95,7 +95,7 @@
                         <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -41,14 +41,11 @@
                             </a>
 
                             <!-- Записи -->
-                            <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ Request::routeIs('appointments.*') ?
+                            <a href="{{ route('appointments.index') }}" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ Request::routeIs('appointments.*') ?
                                 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' :
                                 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                                 <i class="fa-solid fa-calendar-check w-5 text-center mr-3"></i>
                                 Записи
-                                <span class="ml-auto bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full">
-                                    5
-                                </span>
                             </a>
                         </nav>
                     </div>
