@@ -4,6 +4,12 @@
 @section('page-title', 'Профиль')
 @section('page-description', 'Управление личными данными')
 
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[
+        ['title' => 'Профиль', 'url' => null]
+    ]" />
+@endpush
+
 @section('content')
 
     <!-- Основная информация -->

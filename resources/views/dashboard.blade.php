@@ -168,70 +168,6 @@
     }
 }" 
 @open-confirm.window="openConfirmModal($event.detail.action, $event.detail.message, $event.detail.appointmentId, $event.detail.noteId)">
-    <!-- Статистика -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 md:mb-6">
-        <!-- Заголовок -->
-        <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
-                <span>Сегодня<span class="hidden sm:inline">, {{ $todayDate }}</span></span>
-            </h2>
-        </div>
-        <div class="p-3 md:p-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                <!-- Следующая запись -->
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-clock text-emerald-600 dark:text-emerald-400 text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Следующая</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">
-                            @if($stats['nextAppointmentTime'])
-                                {{ $stats['nextAppointmentTime'] }}
-                            @else
-                                <span class="text-slate-400 dark:text-slate-500">Нет</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Записей сегодня -->
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Записей</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ count($todayAppointments) }}</p>
-                    </div>
-                </div>
-
-                <!-- Выполнено сегодня -->
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-check-circle text-blue-600 dark:text-blue-400 text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Выполнено</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ $stats['completedToday'] }}</p>
-                    </div>
-                </div>
-
-                <!-- Осталось -->
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-clock text-slate-600 dark:text-slate-400 text-sm"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Осталось</p>
-                        <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white">{{ $stats['remainingToday'] }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Основной контент: 2 колонки на десктопе, вертикально на мобильных -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6">
         <!-- Левая колонка: Записи (основной контент) -->
@@ -267,12 +203,12 @@
                                         <button @click="openModal('{{ $appointment['clientPhone'] }}', '{{ $appointment['clientPhoneDisplay'] }}', '{{ $appointment['client'] }}')"
                                             class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors flex items-center justify-center">
                                             <i class="fa-solid fa-phone text-xs"></i>
-                                        </button>
+                    </button>
                                         <div x-data="{ open: false }" class="relative">
                                             <button @click="open = !open"
                                                 class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center">
                                                 <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
-                                            </button>
+                    </button>
                                             <div x-show="open" 
                                                 @click.away="open = false" 
                                                 x-transition:enter="transition ease-out duration-100"
@@ -288,15 +224,15 @@
                                                 </a>
                                                 <button @click="open = false; $dispatch('open-confirm', { action: 'complete', message: 'Отметить запись как выполненную?', appointmentId: {{ $appointment['id'] }} })" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
                                                     <i class="fa-solid fa-check w-4 inline-block"></i> Выполнено
-                                                </button>
+                        </button>
                                                 <button @click="open = false; $dispatch('open-confirm', { action: 'cancel', message: 'Вы уверены, что хотите отменить запись?', appointmentId: {{ $appointment['id'] }} })" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
                                                     <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        </button>
+                    </div>
+                </div>
+                    </div>
+                    </div>
+                </div>
                         @empty
                             <div class="p-8 text-center">
                                 <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
@@ -304,15 +240,81 @@
                                 <a href="#" class="mt-3 inline-block text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                                     Создать запись
                                 </a>
-                            </div>
+                    </div>
                         @endforelse
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- Правая колонка: Быстрые действия и To-Do (сайдбар) - на мобильных показывается после записей -->
+        <!-- Правая колонка: Статистика, Быстрые действия и To-Do (сайдбар) - на мобильных показывается после записей -->
         <div class="md:col-span-2 space-y-4 md:space-y-6 order-2 md:order-2">
+            <!-- Статистика -->
+            <section>
+                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <!-- Заголовок -->
+                    <div class="px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
+                            <span>Сегодня<span class="hidden sm:inline">, {{ $todayDate }}</span></span>
+                        </h2>
+                    </div>
+                    <div class="p-3 md:p-4">
+                        <div class="grid grid-cols-2 gap-3 md:gap-4">
+                            <!-- Следующая запись -->
+                            <div class="flex items-center gap-2">
+                                <div class="h-9 w-9 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-clock text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Следующая</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                                        @if($stats['nextAppointmentTime'])
+                                            {{ $stats['nextAppointmentTime'] }}
+                                        @else
+                                            <span class="text-slate-400 dark:text-slate-500">Нет</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Записей сегодня -->
+                            <div class="flex items-center gap-2">
+                                <div class="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Записей</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ count($todayAppointments) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Выполнено сегодня -->
+                            <div class="flex items-center gap-2">
+                                <div class="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-check-circle text-blue-600 dark:text-blue-400 text-xs"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Выполнено</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $stats['completedToday'] }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Осталось -->
+                            <div class="flex items-center gap-2">
+                                <div class="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-500/20 flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-clock text-slate-600 dark:text-slate-400 text-xs"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Осталось</p>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $stats['remainingToday'] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 3. Быстрые действия -->
             <section>
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -347,7 +349,7 @@
                                     <span>Заметки</span>
                                 </h4>
                                 <div class="flex items-center gap-2">
-                                    <button 
+                                    <button
                                         @click="showInput = !showInput"
                                         x-show="!showInput"
                                         class="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all flex items-center justify-center">
@@ -357,7 +359,7 @@
                                         <i class="fa-solid fa-list text-xs"></i>
                                     </a>
                                 </div>
-                            </div>
+                                </div>
 
                             <!-- Форма добавления заметки -->
                             <form method="POST" action="#" class="mb-3" x-show="showInput" @submit="showInput = false" x-transition>
@@ -402,20 +404,20 @@
                                                 onchange="this.form.submit()"
                                                 class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 cursor-pointer">
                                         </form>
-                                        <span 
+                                    <span
                                             class="flex-1 text-sm leading-5 {{ $note['completed'] ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300' }}">
                                             {{ $note['text'] }}
-                                        </span>
+                                    </span>
                                         <!-- Форма для удаления (DELETE) -->
                                         <form method="POST" action="#" class="flex-shrink-0 flex items-center" id="delete-form-{{ $note['id'] }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button 
+                                    <button
                                                 type="button"
                                                 @click="$dispatch('open-confirm', { action: 'delete-note', message: 'Удалить заметку?', noteId: {{ $note['id'] }} })"
                                                 class="opacity-0 group-hover:opacity-100 h-5 w-5 rounded flex items-center justify-center text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-all">
                                                 <i class="fa-solid fa-xmark text-xs"></i>
-                                            </button>
+                                    </button>
                                         </form>
                                     </div>
                                 @empty
@@ -430,11 +432,11 @@
                                         </a>
                                     </div>
                                 @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                                    </div>
+                                </div>
+            </div>
+        </div>
+    </section>
         </div>
     </div>
 
@@ -478,7 +480,7 @@
                         </div>
                         <p class="text-base font-semibold text-slate-900 dark:text-white" x-text="client"></p>
                     </div>
-                </div>
+                        </div>
 
                 <!-- Телефон -->
                 <div class="mb-6">
@@ -489,20 +491,20 @@
                         </div>
                         <p class="text-xl font-bold text-slate-900 dark:text-white" x-text="phoneDisplay"></p>
                     </div>
-                </div>
+                        </div>
 
                 <!-- Действия -->
                 <div class="space-y-2">
                     <a :href="`tel:${phone}`"
                         class="md:hidden w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
                         <i class="fa-solid fa-phone text-sm"></i>
-                        <span>Позвонить</span>
+                                                <span>Позвонить</span>
                     </a>
                     <button @click="navigator.clipboard.writeText(phone); closeModal();"
                         class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 md:bg-slate-100 md:dark:bg-slate-800 px-4 py-3 text-sm font-medium text-white md:text-slate-700 md:dark:text-slate-300 hover:bg-indigo-700 md:hover:bg-slate-200 md:dark:hover:bg-slate-700 active:bg-indigo-800 transition-colors">
                         <i class="fa-regular fa-copy text-sm"></i>
                         <span>Копировать номер</span>
-                    </button>
+                                            </button>
                 </div>
             </div>
         </div>
@@ -556,7 +558,7 @@
                     </button>
                 </div>
             </div>
+            </div>
         </div>
     </div>
-</div>
 @endsection

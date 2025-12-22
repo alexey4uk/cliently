@@ -189,7 +189,8 @@
             <!-- Основной контент -->
             <main class="flex-1 overflow-y-auto">
                 <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
-                    <div class="max-w-4xl mx-auto">
+                    <div class="max-w-7xl mx-auto">
+                        @stack('breadcrumbs')
                         @yield('content')
                     </div>
                 </div>

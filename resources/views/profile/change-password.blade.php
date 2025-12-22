@@ -1,6 +1,15 @@
 @extends('layouts.user')
 
 @section('title', 'Смена пароля - Cliently')
+@section('page-title', 'Смена пароля')
+@section('page-description', 'Обновите ваш пароль для безопасности аккаунта')
+
+@push('breadcrumbs')
+    <x-breadcrumbs :items="[
+        ['title' => 'Профиль', 'url' => route('profile.edit')],
+        ['title' => 'Смена пароля', 'url' => null]
+    ]" />
+@endpush
 
 @section('content')
     <div class="max-w-2xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">

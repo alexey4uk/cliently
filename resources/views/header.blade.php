@@ -108,11 +108,11 @@
                     <span class="w-4 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-user"></i></span>
                     <span>Профиль</span>
                 </a>
-                <button
+                <a href="{{ route('settings.index') }}"
                     class="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
                     <span class="w-4 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-cog"></i></span>
                     <span>Настройки</span>
-                </button>
+                </a>
                 <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

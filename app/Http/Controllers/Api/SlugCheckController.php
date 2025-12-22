@@ -20,7 +20,14 @@ class SlugCheckController extends Controller
             ], 400);
         }
 
-        $available = Business::query()->where('slug', $request->slug)->doesntExist();
+        $query = Business::query()->where('slug', $request->slug);
+        
+        // Игнорируем текущий бизнес при редактировании
+        if ($request->filled('business_id')) {
+            $query->where('id', '!=', $request->business_id);
+        }
+
+        $available = $query->doesntExist();
 
         return response()->json([
             'available' => $available,
