@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class="h-full">
+<html lang="ru" class="h-full overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,9 +17,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans">
-    <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-3xl mx-auto">
+<body class="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-x-hidden">
+    <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <div class="max-w-3xl mx-auto w-full">
             <!-- Header -->
             <div class="text-center mb-8">
                 <h1 class="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white mb-2">
@@ -30,9 +30,9 @@
             </div>
 
             <!-- Progress Bar -->
-            <div class="mb-6">
+            <div class="mb-6 overflow-x-hidden">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="flex-1 flex items-center">
+                    <div class="flex-1 flex items-center min-w-0">
                         <div class="step-indicator active" data-step="1">
                             <div class="step-number">1</div>
                             <div class="step-label hidden sm:block">Локация</div>
@@ -62,8 +62,8 @@
             </div>
 
             <!-- Form -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-                <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" id="appointment-form" class="space-y-6">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6 overflow-x-hidden">
+                <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" id="appointment-form" class="space-y-6 w-full">
                     @csrf
 
                     <!-- Step 1: Локация -->
@@ -79,11 +79,11 @@
                             @if($locations->count() > 0)
                                 @foreach($locations as $location)
                                     <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors location-option">
-                                        <input type="radio" name="location_id" value="{{ $location->id }}" required class="mt-1 mr-3 location-radio" {{ old('location_id') == $location->id ? 'checked' : '' }}>
-                                        <div class="flex-1">
-                                            <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm">{{ $location->name }}</div>
+                                        <input type="radio" name="location_id" value="{{ $location->id }}" required class="mt-1 mr-3 location-radio flex-shrink-0" {{ old('location_id') == $location->id ? 'checked' : '' }}>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $location->name }}</div>
                                             @if($location->full_address)
-                                                <div class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ $location->full_address }}</div>
+                                                <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 break-words">{{ $location->full_address }}</div>
                                             @endif
                                         </div>
                                     </label>
@@ -112,16 +112,16 @@
                         <div class="space-y-3">
                             @foreach($services as $service)
                                 <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors service-option">
-                                    <input type="radio" name="service_id" value="{{ $service->id }}" required class="mt-1 mr-3 service-radio" {{ old('service_id') == $service->id ? 'checked' : '' }}>
-                                    <div class="flex-1">
-                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm">{{ $service->name }}</div>
+                                    <input type="radio" name="service_id" value="{{ $service->id }}" required class="mt-1 mr-3 service-radio flex-shrink-0" {{ old('service_id') == $service->id ? 'checked' : '' }}>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $service->name }}</div>
                                         <div class="text-sm text-slate-600 dark:text-slate-400 mt-1">
                                             <span class="font-medium">{{ number_format($service->price, 0, ',', ' ') }} Br</span>
                                             <span class="mx-2">•</span>
                                             <span>{{ $service->duration }} мин</span>
                                         </div>
                                         @if($service->description)
-                                            <div class="text-sm text-slate-500 dark:text-slate-500 mt-2">{{ $service->description }}</div>
+                                            <div class="text-sm text-slate-500 dark:text-slate-500 mt-2 break-words">{{ $service->description }}</div>
                                         @endif
                                     </div>
                                 </label>
@@ -144,11 +144,11 @@
                         <div class="space-y-3" id="masters-container">
                             @foreach($masters as $master)
                                 <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors master-option hidden" data-master-id="{{ $master->id }}" data-master-services="{{ $master->services->pluck('id')->implode(',') }}">
-                                    <input type="radio" name="master_id" value="{{ $master->id }}" required class="mt-1 mr-3 master-radio" {{ old('master_id') == $master->id ? 'checked' : '' }}>
-                                    <div class="flex-1">
-                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm">{{ $master->first_name }} {{ $master->last_name }}</div>
+                                    <input type="radio" name="master_id" value="{{ $master->id }}" required class="mt-1 mr-3 master-radio flex-shrink-0" {{ old('master_id') == $master->id ? 'checked' : '' }}>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $master->first_name }} {{ $master->last_name }}</div>
                                         @if($master->specialization)
-                                            <div class="text-sm text-slate-600 dark:text-slate-400 mt-1">{{ $master->specialization }}</div>
+                                            <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 break-words">{{ $master->specialization }}</div>
                                         @endif
                                     </div>
                                 </label>
@@ -649,6 +649,16 @@
     </script>
 
     <style>
+        /* Prevent horizontal scroll */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         /* Step Indicator Styles */
         .step-indicator {
             display: flex;
@@ -657,6 +667,7 @@
             gap: 0.5rem;
             flex: 1;
             min-width: 0;
+            flex-shrink: 1;
         }
 
         .step-number {
@@ -715,6 +726,8 @@
             background-color: #e2e8f0;
             margin: 0 0.5rem;
             margin-top: -1rem;
+            min-width: 0;
+            flex-shrink: 1;
         }
 
         .dark .step-line {
@@ -731,6 +744,10 @@
             }
             .step-line {
                 margin: 0 0.25rem;
+            }
+            .step-indicator {
+                flex-shrink: 1;
+                min-width: 0;
             }
         }
     </style>

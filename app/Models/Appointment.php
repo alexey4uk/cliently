@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class Appointment extends Model
@@ -23,11 +24,23 @@ class Appointment extends Model
         'notes',
         'duration',
         'price',
+        'token',
     ];
 
     protected $casts = [
         'date' => 'date',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($appointment) {
+            if (empty($appointment->token)) {
+                $appointment->token = Str::random(64);
+            }
+        });
+    }
 
     public function business(): BelongsTo
     {

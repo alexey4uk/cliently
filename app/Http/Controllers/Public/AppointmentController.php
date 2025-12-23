@@ -181,7 +181,7 @@ class AppointmentController extends Controller
         ]);
 
         // Создаем запись
-        Appointment::create([
+        $appointment = Appointment::create([
             'business_id' => $business->id,
             'client_id' => $client->id,
             'service_id' => $validated['service_id'],
@@ -195,15 +195,66 @@ class AppointmentController extends Controller
 
         return redirect()
             ->route('public.appointments.success', $business->slug)
-            ->with('success', 'Ваша запись успешно создана! Мы свяжемся с вами для подтверждения.');
+            ->with('success', 'Ваша запись успешно создана! Мы свяжемся с вами для подтверждения.')
+            ->with('appointment_token', $appointment->token);
     }
 
     /**
      * Страница успешной записи
      */
-    public function success(string $slug)
+    public function success(string $slug, Request $request)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
-        return view('appointments.public.success', compact('business'));
+        
+        // Получаем запись по токену из сессии или параметра
+        $token = $request->session()->get('appointment_token') ?? $request->get('token');
+        $appointment = null;
+        
+        if ($token) {
+            $appointment = Appointment::where('token', $token)
+                ->where('business_id', $business->id)
+                ->with(['service', 'master', 'location', 'client'])
+                ->first();
+        }
+        
+        return view('appointments.public.success', compact('business', 'appointment', 'token'));
+    }
+
+    /**
+     * Просмотр записи по токену
+     */
+    public function view(string $slug, string $token)
+    {
+        $business = Business::where('slug', $slug)->firstOrFail();
+        $appointment = Appointment::where('token', $token)
+            ->where('business_id', $business->id)
+            ->with(['service', 'master', 'location', 'client'])
+            ->firstOrFail();
+
+        return view('appointments.public.view', compact('business', 'appointment'));
+    }
+
+    /**
+     * Отмена записи по токену
+     */
+    public function cancel(Request $request, string $slug, string $token)
+    {
+        $business = Business::where('slug', $slug)->firstOrFail();
+        $appointment = Appointment::where('token', $token)
+            ->where('business_id', $business->id)
+            ->firstOrFail();
+
+        // Проверяем, можно ли отменить запись
+        if (in_array($appointment->status, ['completed', 'cancelled'])) {
+            return redirect()
+                ->route('public.appointments.view', ['slug' => $slug, 'token' => $token])
+                ->with('error', 'Эту запись нельзя отменить.');
+        }
+
+        $appointment->update(['status' => 'cancelled']);
+
+        return redirect()
+            ->route('public.appointments.view', ['slug' => $slug, 'token' => $token])
+            ->with('success', 'Запись успешно отменена.');
     }
 }

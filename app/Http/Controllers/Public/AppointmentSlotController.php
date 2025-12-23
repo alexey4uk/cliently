@@ -145,9 +145,14 @@ class AppointmentSlotController extends Controller
             $debugInfo['slots_count'] = count($slots);
             $debugInfo['slots'] = $slots;
 
+            // Получаем информацию об услуге для передачи времени подготовки
+            $service = \App\Models\Service::find($serviceId);
+            $preparationTime = $service ? ($service->preparation_time ?? null) : null;
+
             return response()->json([
                 'success' => true,
                 'slots' => $slots,
+                'preparation_time' => $preparationTime, // Время подготовки для показа уведомления
                 'debug' => $debugInfo,
             ]);
         } catch (\Exception $e) {

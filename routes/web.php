@@ -29,6 +29,10 @@ Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
     
     // Страница успеха
     Route::get('/success', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
+    
+    // Просмотр и отмена записи по токену
+    Route::get('/appointment/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'view'])->name('view-appointment');
+    Route::post('/appointment/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancel'])->name('cancel-appointment');
 });
 
 Route::middleware(['auth'])->group(function () {

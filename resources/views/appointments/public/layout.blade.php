@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class="h-full scroll-smooth">
+<html lang="ru" class="h-full scroll-smooth overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,129 +14,219 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
-        /* Glass card effect - минималистичный */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.12);
+        /* Минимальные стили для функциональности, которую нельзя реализовать только через Tailwind */
+        html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw;
+            width: 100%;
         }
         
-        .dark .glass-card {
-            background: rgba(17, 24, 39, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Простой hover эффект - только цвет */
-        .hover-border {
-            transition: border-color 0.2s ease;
-        }
-        
-        .hover-border:hover {
-            border-color: rgb(99, 102, 241);
-        }
-        
-        .dark .hover-border:hover {
-            border-color: rgb(129, 140, 248);
-        }
-        
-        /* Индикатор прогресса - простой */
-        .progress-step {
-            transition: color 0.2s ease;
-        }
-        
-        .progress-step.active {
-            color: rgb(99, 102, 241);
-            font-weight: 600;
-        }
-        
-        .dark .progress-step.active {
-            color: rgb(129, 140, 248);
-        }
-        
-        /* Горизонтальный скролл - скрыть scrollbar на мобильных */
-        .scroll-hide::-webkit-scrollbar {
+        /* Скрытие scrollbar для горизонтального скролла */
+        .scrollbar-hide::-webkit-scrollbar {
             display: none;
+            width: 0;
+            height: 0;
         }
-        
-        .scroll-hide {
+        .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
         
-        /* Touch-friendly скроллинг */
-        .scroll-smooth-x {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
+        /* Ограничение ширины для скроллируемых контейнеров */
+        #week-dates-wrapper,
+        #time-slots-wrapper {
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
         }
         
-        /* Модальное окно - backdrop */
-        .modal-backdrop {
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+        /* Внутренние элементы скролла могут быть шире контейнера */
+        #week-dates,
+        #time-slots-container {
+            box-sizing: border-box;
+            display: flex;
         }
         
-        /* Улучшение для модального окна на мобильных */
-        @media (max-width: 768px) {
-            #calendar-content {
-                max-height: 92vh;
+        /* Стили для drag скролла */
+        #week-dates-wrapper.dragging,
+        #time-slots-wrapper.dragging {
+            scroll-behavior: auto !important;
+            scroll-snap-type: none !important;
+        }
+        #week-dates-wrapper.dragging *,
+        #time-slots-wrapper.dragging * {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* Предотвращение скролла body при открытом модальном окне */
+        body.modal-open {
+            overflow: hidden !important;
+            position: fixed !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Анимации для модального окна */
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0.8;
             }
-            
-            /* Улучшение touch-интерфейса для календаря */
-            .calendar-day {
-                -webkit-tap-highlight-color: transparent;
-                touch-action: manipulation;
-            }
-            
-            /* Предотвращение выделения текста при тапе */
-            #calendar-content {
-                -webkit-user-select: none;
-                user-select: none;
+            to {
+                transform: translateY(0);
+                opacity: 1;
             }
         }
         
-        /* Touch-friendly стили */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            #calendar-modal:not(.hidden) .calendar-dialog {
+                animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+        }
+        
+        @media (min-width: 641px) {
+            #calendar-modal:not(.hidden) .calendar-dialog {
+                animation: fadeInScale 0.3s ease-out;
+            }
+        }
+        
+        /* Улучшение для touch-интерфейса */
         .touch-manipulation {
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-slate-900 dark:text-slate-50 font-sans">
-    <div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-3xl mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-2xl md:text-3xl font-semibold text-slate-900 dark:text-white mb-2">
-                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 mr-2"></i>
-                    Онлайн запись
-                </h1>
-                <p class="text-slate-600 dark:text-slate-400 text-base md:text-sm">{{ $business->name }}</p>
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-x-hidden">
+    <!-- Header секция с градиентом -->
+    <header class="bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-900 dark:to-slate-800 border-b border-slate-200 dark:border-slate-800 overflow-x-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
+            <!-- Логотип и переключатель темы -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <x-logo size="md" />
+                    <span class="text-xl font-bold text-slate-900 dark:text-white uppercase font-display">{{ $business->name }}</span>
+                </div>
+                <!-- Переключатель темы -->
+                <button id="theme-toggle" 
+                        class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        aria-label="Переключить тему">
+                    <i class="fa-solid fa-sun text-base dark:hidden"></i>
+                    <i class="fa-solid fa-moon text-base hidden dark:inline"></i>
+                </button>
             </div>
 
             <!-- Индикатор прогресса -->
             @if(isset($currentStep))
-            <div class="mb-6">
-                <div class="flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <span class="progress-step {{ $currentStep >= 1 ? 'active' : '' }}">Локация</span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                    <span class="progress-step {{ $currentStep >= 2 ? 'active' : '' }}">Услуга</span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                    <span class="progress-step {{ $currentStep >= 3 ? 'active' : '' }}">Мастер</span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                    <span class="progress-step {{ $currentStep >= 4 ? 'active' : '' }}">Время</span>
-                </div>
+            <div class="flex items-center justify-between w-full mb-2 min-w-0">
+                @php
+                    $steps = [
+                        1 => ['label' => 'Локация', 'icon' => 'fa-map-marker-alt'],
+                        2 => ['label' => 'Услуга', 'icon' => 'fa-spa'],
+                        3 => ['label' => 'Мастер', 'icon' => 'fa-user-tie'],
+                        4 => ['label' => 'Время', 'icon' => 'fa-clock'],
+                    ];
+                @endphp
+                @foreach($steps as $stepNum => $step)
+                    <div class="flex flex-col items-center flex-1 relative">
+                        <div class="relative flex items-center justify-center w-full">
+                            <!-- Номер шага -->
+                            <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200
+                                @if($currentStep > $stepNum)
+                                    bg-green-500 text-white ring-4 ring-green-200 dark:ring-green-800
+                                @elseif($currentStep == $stepNum)
+                                    bg-indigo-600 text-white ring-4 ring-indigo-200 dark:ring-indigo-800 shadow-lg
+                                @else
+                                    bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400
+                                @endif">
+                                @if($currentStep > $stepNum)
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                @else
+                                    {{ $stepNum }}
+                                @endif
+                            </div>
+                            <!-- Линия между шагами -->
+                            @if($stepNum < count($steps))
+                                <div class="absolute left-1/2 top-1/2 h-0.5 -translate-y-1/2 transition-all duration-200
+                                    @if($currentStep > $stepNum)
+                                        bg-green-500
+                                    @else
+                                        bg-slate-200 dark:bg-slate-700
+                                    @endif" style="width: calc(100% - 2.5rem);"></div>
+                            @endif
+                        </div>
+                        <!-- Название шага -->
+                        <span class="mt-2 text-xs font-medium text-center transition-colors duration-200
+                            @if($currentStep >= $stepNum)
+                                text-indigo-600 dark:text-indigo-400 font-semibold
+                            @else
+                                text-slate-500 dark:text-slate-400
+                            @endif">
+                            <i class="fa-solid {{ $step['icon'] }} mr-1"></i>
+                            <span class="hidden sm:inline">{{ $step['label'] }}</span>
+                        </span>
+                    </div>
+                @endforeach
             </div>
             @endif
+        </div>
+    </header>
 
-            <!-- Контент -->
+    <!-- Контентная область -->
+    <main class="min-h-screen py-4 sm:py-6 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <div class="max-w-4xl mx-auto w-full min-w-0">
             @yield('content')
         </div>
-    </div>
+    </main>
     
     @stack('scripts')
+    
+    <script>
+        // Переключение темы
+        (function() {
+            // Применить тему сразу при загрузке (до DOMContentLoaded)
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Обработчик переключения темы
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const html = document.documentElement;
+                    const isDark = html.classList.contains('dark');
+                    const newTheme = isDark ? 'light' : 'dark';
+                    
+                    if (newTheme === 'dark') {
+                        html.classList.add('dark');
+                    } else {
+                        html.classList.remove('dark');
+                    }
+                    
+                    localStorage.setItem('theme', newTheme);
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
-

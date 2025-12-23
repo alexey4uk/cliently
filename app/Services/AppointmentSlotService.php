@@ -86,9 +86,11 @@ class AppointmentSlotService
             return [];
         }
 
-        // Генерируем слоты с учетом интервала (интервал = длительность услуги)
+        // Генерируем слоты с интервалом равным длительности услуги
+        // Время подготовки не учитывается в генерации слотов, но будет показано пользователю как уведомление
         $allSlots = $this->generateSlots($availableTimeWindows, $duration, $selectedDate);
-        $debug['slot_interval'] = $duration; // Используем длительность услуги как интервал
+        $debug['slot_interval'] = $duration;
+        $debug['preparation_time'] = $service->preparation_time;
         $debug['is_today'] = $selectedDate->isToday();
         $debug['current_time'] = Carbon::now()->format('H:i');
         $debug['all_slots_count'] = count($allSlots);
@@ -114,6 +116,7 @@ class AppointmentSlotService
         }
 
         // Исключаем занятые слоты
+        // Время подготовки уже учтено при генерации слотов, поэтому проверяем только прямое пересечение
         $availableSlots = $this->excludeBookedSlots($slotsFittingDuration, $serviceId, $selectedDate, $duration, $masterId);
         $debug['final_slots_count'] = count($availableSlots);
         $debug['slots_lost_to_bookings'] = count($slotsFittingDuration) - count($availableSlots);
@@ -370,7 +373,7 @@ class AppointmentSlotService
     /**
      * Исключить занятые слоты
      */
-    protected function excludeBookedSlots(array $slots, int $serviceId, Carbon $date, int $duration, ?int $masterId = null): array
+    protected function excludeBookedSlots(array $slots, int $serviceId, Carbon $date, int $duration, ?int $masterId = null, ?int $preparationTime = null): array
     {
         // Получаем существующие записи на эту дату
         $query = Appointment::where('date', $date->format('Y-m-d'))
@@ -403,15 +406,21 @@ class AppointmentSlotService
                 }
 
                 $appointmentTime = Carbon::parse($appointment->time);
-                $appointmentDuration = $appointment->final_duration;
+                $appointmentDuration = $appointment->final_duration ?? $duration; // Используем длительность услуги если final_duration не задан
                 $appointmentEndTime = $appointmentTime->copy()->addMinutes($appointmentDuration);
 
-                // Проверяем пересечение с учетом минимального интервала
-                $appointmentStartWithInterval = $appointmentTime->copy()->subMinutes($this->minIntervalBetweenAppointments);
-                $appointmentEndWithInterval = $appointmentEndTime->copy()->addMinutes($this->minIntervalBetweenAppointments);
-
                 // Проверяем пересечение временных интервалов
-                if ($slotTime->lt($appointmentEndWithInterval) && $slotEndTime->gt($appointmentStartWithInterval)) {
+                // 
+                // Время подготовки уже учтено при генерации слотов (интервал между слотами = длительность + подготовка)
+                // Поэтому здесь проверяем только прямое пересечение с существующими записями
+                //
+                // Слот блокируется если он пересекается с записью:
+                // slotTime < appointmentEndTime AND slotEndTime > appointmentTime
+                
+                $hasOverlap = $slotTime->lt($appointmentEndTime) && $slotEndTime->gt($appointmentTime);
+                
+                if ($hasOverlap) {
+                    // Есть пересечение - слот занят
                     $isAvailable = false;
                     break;
                 }
