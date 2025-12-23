@@ -11,388 +11,385 @@
 @endpush
 
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Заголовок и управление -->
-        <div class="mb-6 lg:mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
-                <!-- Кнопка добавления -->
-                <button
-                    class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2.5 lg:py-3 px-4 lg:px-6 rounded-lg lg:rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center space-x-2 w-full sm:w-auto text-sm lg:text-base shadow-md hover:shadow-lg">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Добавить клиента</span>
-                </button>
+
+<div class="space-y-6" 
+     x-data="{ 
+         showPhoneModal: false, 
+         phone: '', 
+         phoneDisplay: '', 
+         client: '',
+         openPhoneModal(phone, phoneDisplay, client) {
+             this.phone = phone;
+             this.phoneDisplay = phoneDisplay;
+             this.client = client;
+             this.showPhoneModal = true;
+         },
+         closePhoneModal() {
+             this.showPhoneModal = false;
+         }
+     }">
+    <!-- Заголовок страницы -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <div class="space-y-1">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Клиенты
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Управление клиентской базой вашего бизнеса
+            </p>
+        </div>
+        <a href="{{ route('clients.create') }}"
+           class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Добавить клиента</span>
+        </a>
+    </div>
+
+    <!-- Поиск и сортировка -->
+    <form method="GET" action="{{ route('clients.index') }}" class="flex flex-col sm:flex-row items-end gap-3">
+        <!-- Поиск -->
+        <div class="flex-1">
+            <label for="client-search" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Поиск
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-search text-slate-400 text-sm"></i>
+                </div>
+                <input
+                    id="client-search"
+                    type="text"
+                    name="search"
+                    value="{{ $search }}"
+                    placeholder="Поиск по имени, телефону или email..."
+                    class="pl-10 pr-4 py-2 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+                >
             </div>
         </div>
 
-        <!-- Поиск и сортировка -->
-        <div class="mb-6 lg:mb-8">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <!-- Поиск -->
-                <div class="flex-1 relative">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Поиск по имени или телефону..."
-                            class="pl-10 pr-4 py-3 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm lg:text-base"
-                        >
-                    </div>
+        <!-- Сортировка -->
+        <div class="w-56">
+            <label for="client-sort" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Сортировка
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-sort text-slate-400 text-sm"></i>
                 </div>
-
-                <!-- Сортировка -->
-                <div class="sm:w-48">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-sort text-gray-400"></i>
-                        </div>
-                        <select
-                            class="pl-10 w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg lg:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-600 dark:focus:border-blue-600 transition-all duration-200 text-gray-900 dark:text-white text-sm lg:text-base appearance-none"
-                        >
-                            <option>По имени (А-Я)</option>
-                            <option>По имени (Я-А)</option>
-                            <option>По дате добавления</option>
-                            <option>По последней записи</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </div>
-                    </div>
+                <select id="client-sort" name="sort" onchange="updateSortDirection(this); this.form.submit()"
+                    class="pl-10 pr-10 w-full py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white text-sm appearance-none cursor-pointer">
+                    <option value="name" data-direction="asc" {{ $sort === 'name' && $direction === 'asc' ? 'selected' : '' }}>По имени (А-Я)</option>
+                    <option value="name" data-direction="desc" {{ $sort === 'name' && $direction === 'desc' ? 'selected' : '' }}>По имени (Я-А)</option>
+                    <option value="created_at" data-direction="desc" {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате добавления</option>
+                </select>
+                <input type="hidden" name="direction" value="{{ $direction }}" id="sort-direction">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
                 </div>
             </div>
         </div>
+    </form>
 
-        <!-- Список клиентов -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl lg:rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <!-- Список клиентов -->
-            <div class="divide-y divide-gray-200 dark:divide-gray-700">
-                @php
-                    // Моки данных для клиентов
-                    $clients = [
-                        [
-                            'name' => 'Анна Ковалева',
-                            'phone' => '+7 (999) 123-45-67',
-                            'initials' => 'АК',
-                            'color' => 'from-blue-500 to-purple-600'
-                        ],
-                        [
-                            'name' => 'Мария Смирнова',
-                            'phone' => '+7 (999) 234-56-78',
-                            'initials' => 'МС',
-                            'color' => 'from-green-500 to-blue-600'
-                        ],
-                        [
-                            'name' => 'Ирина Петрова',
-                            'phone' => '+7 (999) 345-67-89',
-                            'initials' => 'ИП',
-                            'color' => 'from-purple-500 to-pink-600'
-                        ],
-                        [
-                            'name' => 'Елена Волкова',
-                            'phone' => '+7 (999) 456-78-90',
-                            'initials' => 'ЕВ',
-                            'color' => 'from-orange-500 to-red-600'
-                        ],
-                        [
-                            'name' => 'Светлана Иванова',
-                            'phone' => '+7 (999) 567-89-01',
-                            'initials' => 'СИ',
-                            'color' => 'from-teal-500 to-green-600'
-                        ],
-                        [
-                            'name' => 'Ольга Лебедева',
-                            'phone' => '+7 (999) 678-90-12',
-                            'initials' => 'ОЛ',
-                            'color' => 'from-indigo-500 to-blue-600'
-                        ],
-                        [
-                            'name' => 'Наталья Козлова',
-                            'phone' => '+7 (999) 789-01-23',
-                            'initials' => 'НК',
-                            'color' => 'from-pink-500 to-rose-600'
-                        ],
-                        [
-                            'name' => 'Александра Новикова',
-                            'phone' => '+7 (999) 890-12-34',
-                            'initials' => 'АН',
-                            'color' => 'from-yellow-500 to-orange-600'
-                        ]
-                    ];
-                @endphp
-
+    <!-- Таблица клиентов -->
+    @if($clients->count() > 0)
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                Клиент
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell">
+                                Телефон
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
+                                Email
+                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
+                                Дата добавления
+                            </th>
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-24">
+                                Действия
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
                 @foreach($clients as $client)
-                    <!-- Карточка клиента -->
-                    <div class="p-4 lg:p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3 lg:space-x-4">
-                                <!-- Аватар -->
-                                <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r {{ $client['color'] }} rounded-lg lg:rounded-xl flex items-center justify-center text-white font-semibold text-sm">
-                                    {{ $client['initials'] }}
-                                </div>
-
-                                <!-- Информация -->
-                                <div>
-                                    <h4 class="font-semibold text-gray-900 dark:text-white text-base lg:text-lg">
-                                        {{ $client['name'] }}
-                                    </h4>
-                                    <p class="text-sm lg:text-base text-gray-600 dark:text-gray-400">
-                                        {{ $client['phone'] }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Кнопки действий (десктоп) -->
-                            <div class="hidden lg:flex items-center space-x-2">
-                                <!-- Кнопка быстрой записи -->
-                                <button
-                                    class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors duration-200 text-sm flex items-center space-x-2">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span>Записать</span>
-                                </button>
-
-                                <!-- Кнопка просмотра -->
-                                <button
-                                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 text-sm flex items-center space-x-2">
-                                    <i class="fas fa-eye"></i>
-                                    <span>Просмотр</span>
-                                </button>
-
-                                <!-- Кнопка редактирования -->
-                                <button
-                                    class="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors duration-200 text-sm flex items-center space-x-2">
-                                    <i class="fas fa-edit"></i>
-                                    <span>Изменить</span>
-                                </button>
-                            </div>
-
-                            <!-- Кнопки действий (планшет) -->
-                            <div class="hidden sm:flex lg:hidden items-center space-x-2">
-                                <!-- Кнопка быстрой записи -->
-                                <button
-                                    class="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors duration-200 text-sm flex items-center space-x-1">
-                                    <i class="fas fa-calendar-plus"></i>
-                                    <span class="hidden xs:inline">Записать</span>
-                                </button>
-
-                                <!-- Кнопка просмотра -->
-                                <button
-                                    class="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 text-sm flex items-center space-x-1">
-                                    <i class="fas fa-eye"></i>
-                                    <span class="hidden xs:inline">Просмотр</span>
-                                </button>
-
-                                <!-- Выпадающее меню -->
-                                <div class="relative">
-                                    <button
-                                        onclick="toggleDropdown('menu-{{ $loop->index }}')"
-                                        class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                                        title="Еще">
-                                        <i class="fas fa-ellipsis-v"></i>
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                <td class="px-4 py-3.5">
+                                    <div class="space-y-0.5">
+                                        <a href="{{ route('clients.show', $client) }}" class="block group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                            <div class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                                                {{ $client->full_name }}
+                                            </div>
+                                        </a>
+                                        <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
+                                                class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:hidden">
+                                            {{ $client->phone }}
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3.5 hidden md:table-cell">
+                                    <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
+                                            class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5 whitespace-nowrap group/phone">
+                                        <i class="fa-solid fa-phone text-xs text-slate-400 group-hover/phone:text-indigo-500 transition-colors"></i>
+                                        <span>{{ $client->phone }}</span>
                                     </button>
-
-                                    <!-- Выпадающее меню -->
-                                    <div id="menu-{{ $loop->index }}" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-                                        <div class="py-1">
-                                            <button
-                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                                <i class="fas fa-edit text-gray-400"></i>
-                                                <span>Изменить</span>
+                                </td>
+                                <td class="px-4 py-3.5 hidden lg:table-cell">
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                                        @if($client->email)
+                                            <i class="fa-solid fa-envelope text-xs text-slate-400"></i>
+                                            <span class="truncate max-w-[200px]">{{ $client->email }}</span>
+                                        @else
+                                            <span class="text-slate-400 dark:text-slate-500 italic">Не указан</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3.5 hidden xl:table-cell">
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                        {{ $client->created_at->format('d.m.Y') }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3.5">
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
+                                                class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-all duration-150 flex items-center justify-center group/phone"
+                                                title="Позвонить клиенту">
+                                            <i class="fa-solid fa-phone text-xs group-hover/phone:scale-110 transition-transform"></i>
+                                        </button>
+                                        <div x-data="{ 
+                                            open: false,
+                                            updatePosition() {
+                                                if (!this.open) return;
+                                                $nextTick(() => {
+                                                    const button = this.$el.querySelector('button');
+                                                    const menu = this.$el.querySelector('[x-show]');
+                                                    if (!button || !menu) return;
+                                                    const rect = button.getBoundingClientRect();
+                                                    menu.style.position = 'fixed';
+                                                    menu.style.top = (rect.bottom + 8) + 'px';
+                                                    menu.style.right = (window.innerWidth - rect.right) + 'px';
+                                                });
+                                            }
+                                        }" 
+                                        x-init="$watch('open', () => updatePosition())"
+                                        @resize.window="updatePosition()"
+                                        @scroll.window="updatePosition()"
+                                        class="relative">
+                                            <button @click="open = !open"
+                                                class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-150 flex items-center justify-center"
+                                                title="Дополнительные действия">
+                                                <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                                             </button>
-                                            <button
-                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                                <i class="fas fa-trash text-gray-400"></i>
-                                                <span>Удалить</span>
-                                            </button>
-                                            <button
-                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                                <i class="fas fa-phone text-gray-400"></i>
-                                                <span>Позвонить</span>
-                                            </button>
-                                            <button
-                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                                <i class="fas fa-comment-alt text-gray-400"></i>
-                                                <span>Написать</span>
-                                            </button>
-                                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                                            <button
-                                                class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                                <i class="fas fa-file-export text-gray-400"></i>
-                                                <span>Экспорт данных</span>
-                                            </button>
+                                            <div x-show="open" 
+                                                @click.away="open = false" 
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="transform opacity-0 scale-95"
+                                                x-transition:enter-end="transform opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="transform opacity-100 scale-100"
+                                                x-transition:leave-end="transform opacity-0 scale-95"
+                                                class="w-52 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100] py-1"
+                                                style="display: none; position: fixed;">
+                                                <a href="{{ route('clients.show', $client) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                    <i class="fa-regular fa-eye w-4 text-center"></i> 
+                                                    <span>Просмотр</span>
+                                                </a>
+                                                <a href="{{ route('clients.edit', $client) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                    <i class="fa-solid fa-pencil w-4 text-center"></i> 
+                                                    <span>Редактировать</span>
+                                                </a>
+                                                <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+                                                <form method="POST" action="{{ route('clients.destroy', $client) }}" 
+                                                      onsubmit="return confirm('Вы уверены, что хотите удалить этого клиента?');"
+                                                      class="w-full">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 transition-colors">
+                                                        <i class="fa-solid fa-trash w-4 text-center"></i> 
+                                                        <span>Удалить</span>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- Мобильное выпадающее меню -->
-                            <div class="sm:hidden relative">
-                                <button
-                                    onclick="toggleDropdown('mobile-menu-{{ $loop->index }}')"
-                                    class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                                    title="Действия">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-
-                                <!-- Выпадающее меню для мобильных -->
-                                <div id="mobile-menu-{{ $loop->index }}" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-                                    <div class="py-1">
-                                        <button
-                                            class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-3">
-                                            <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-calendar-plus text-green-600 dark:text-green-400"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">Записать клиента</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">Быстрая запись на услугу</div>
-                                            </div>
-                                        </button>
-
-                                        <button
-                                            class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-3">
-                                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-eye text-blue-600 dark:text-blue-400"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">Просмотр профиля</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">Полная информация о клиенте</div>
-                                            </div>
-                                        </button>
-
-                                        <button
-                                            class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-3">
-                                            <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-edit text-gray-600 dark:text-gray-400"></i>
-                                            </div>
-                                            <div>
-                                                <div class="font-medium">Изменить данные</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">Редактировать информацию</div>
-                                            </div>
-                                        </button>
-
-                                        <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-
-                                        <button
-                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                            <i class="fas fa-phone text-gray-400"></i>
-                                            <span>Позвонить</span>
-                                        </button>
-
-                                        <button
-                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                            <i class="fas fa-comment-alt text-gray-400"></i>
-                                            <span>Написать сообщение</span>
-                                        </button>
-
-                                        <button
-                                            class="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2">
-                                            <i class="fas fa-trash text-gray-400"></i>
-                                            <span>Удалить клиента</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                </td>
+                            </tr>
                 @endforeach
+                    </tbody>
+                </table>
             </div>
 
             <!-- Пагинация -->
-            <div class="px-4 lg:px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            @if($clients->hasPages())
+                <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                        Показано <span class="font-medium text-gray-900 dark:text-white">1-8</span> из <span class="font-medium text-gray-900 dark:text-white">24</span> клиентов
+                        <div class="text-sm text-slate-500 dark:text-slate-400">
+                            Показано <span class="font-medium text-slate-900 dark:text-white">{{ $clients->firstItem() }}</span> - 
+                            <span class="font-medium text-slate-900 dark:text-white">{{ $clients->lastItem() }}</span> из 
+                            <span class="font-medium text-slate-900 dark:text-white">{{ $clients->total() }}</span> клиентов
                     </div>
 
                     <div class="flex items-center space-x-1">
-                        <button
-                            class="w-9 h-9 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fas fa-chevron-left text-xs"></i>
+                            @if($clients->onFirstPage())
+                                <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
                         </button>
+                            @else
+                                <a href="{{ $clients->previousPageUrl() }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                                </a>
+                            @endif
 
-                        <button
-                            class="w-9 h-9 flex items-center justify-center bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 font-medium">
-                            1
+                            @foreach($clients->getUrlRange(1, min(5, $clients->lastPage())) as $page => $url)
+                                @if($page == $clients->currentPage())
+                                    <button disabled
+                                        class="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-medium cursor-default text-sm">
+                                        {{ $page }}
                         </button>
+                                @else
+                                    <a href="{{ $url }}"
+                                        class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-sm">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
 
-                        <button
-                            class="w-9 h-9 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300">
-                            2
+                            @if($clients->hasMorePages())
+                                <a href="{{ $clients->nextPageUrl() }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </a>
+                            @else
+                                <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
-
-                        <span class="px-2 text-gray-400">...</span>
-
-                        <button
-                            class="w-9 h-9 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300">
-                            3
-                        </button>
-
-                        <button
-                            class="w-9 h-9 flex items-center justify-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-300">
-                            <i class="fas fa-chevron-right text-xs"></i>
-                        </button>
+                            @endif
+                        </div>
                     </div>
+                </div>
+            @endif
+        </div>
+    @else
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-16 text-center">
+            <div class="max-w-sm mx-auto">
+                <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-800/20 flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-solid fa-users text-indigo-600 dark:text-indigo-400 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                    @if($search)
+                        Клиенты не найдены
+                    @else
+                        База клиентов пуста
+                    @endif
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+                    @if($search)
+                        Попробуйте изменить параметры поиска или очистить фильтры для получения других результатов
+                    @else
+                        Начните работу с системой, добавив первого клиента в вашу базу данных
+                    @endif
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    @if($search)
+                        <a href="{{ route('clients.index') }}"
+                           class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                            <span>Очистить поиск</span>
+                        </a>
+                    @endif
+                    <a href="{{ route('clients.create') }}"
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        <span>Добавить клиента</span>
+                    </a>
                 </div>
             </div>
         </div>
+    @endif
 
-        <!-- Плавающая кнопка для мобильных -->
-        <div class="fixed bottom-6 right-6 md:hidden">
-            <button
-                class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300">
-                <i class="fas fa-user-plus text-xl"></i>
-            </button>
+    <!-- Модальное окно для номера телефона -->
+    <div x-show="showPhoneModal" 
+         @click.away="closePhoneModal()"
+         @keydown.escape.window="closePhoneModal()"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+         style="display: none;">
+        <div @click.stop
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="transform opacity-0 scale-95"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-95"
+            class="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-sm w-full">
+            <!-- Заголовок -->
+            <div class="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Контакт</h3>
+                <button @click="closePhoneModal()" 
+                    class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Контент -->
+            <div class="px-4 md:px-6 py-4 md:py-5">
+                <!-- Клиент -->
+                <div class="mb-4">
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Клиент</p>
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <p class="text-base font-semibold text-slate-900 dark:text-white" x-text="client"></p>
+                    </div>
+                </div>
+
+                <!-- Телефон -->
+                <div class="mb-6">
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Телефон</p>
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-phone text-emerald-600 dark:text-emerald-300"></i>
+                        </div>
+                        <p class="text-xl font-bold text-slate-900 dark:text-white" x-text="phoneDisplay"></p>
+                    </div>
+                </div>
+
+                <!-- Действия -->
+                <div class="space-y-2">
+                    <a :href="`tel:${phone}`"
+                        class="md:hidden w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+                        <i class="fa-solid fa-phone text-sm"></i>
+                        <span>Позвонить</span>
+                    </a>
+                    <button @click="navigator.clipboard.writeText(phone); closePhoneModal();"
+                        class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 md:bg-slate-100 md:dark:bg-slate-800 px-4 py-3 text-sm font-medium text-white md:text-slate-700 md:dark:text-slate-300 hover:bg-indigo-700 md:hover:bg-slate-200 md:dark:hover:bg-slate-700 active:bg-indigo-800 transition-colors">
+                        <i class="fa-regular fa-copy text-sm"></i>
+                        <span>Копировать номер</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+    </div>
 
-    <!-- Скрипт для выпадающих меню -->
     <script>
-        function toggleDropdown(menuId) {
-            const menu = document.getElementById(menuId);
-            menu.classList.toggle('hidden');
-
-            // Закрываем другие открытые меню
-            document.querySelectorAll('.absolute.bg-white, .absolute.bg-gray-800').forEach(otherMenu => {
-                if (otherMenu.id !== menuId && !otherMenu.classList.contains('hidden')) {
-                    otherMenu.classList.add('hidden');
-                }
-            });
-        }
-
-        // Закрытие меню при клике вне его
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.relative')) {
-                document.querySelectorAll('.absolute.bg-white, .absolute.bg-gray-800').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
-            }
-        });
-
-        // Закрытие меню при нажатии Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                document.querySelectorAll('.absolute.bg-white, .absolute.bg-gray-800').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
-            }
-        });
+    function updateSortDirection(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        const direction = selectedOption.getAttribute('data-direction');
+        document.getElementById('sort-direction').value = direction;
+    }
     </script>
+
 @endsection
-
-<style>
-    /* Анимация для выпадающего меню */
-    .absolute.bg-white, .absolute.bg-gray-800 {
-        animation: fadeIn 0.2s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>

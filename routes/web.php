@@ -10,6 +10,35 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Короткая ссылка для просмотра записи (упрощенная)
+Route::get('/a/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'viewByToken'])->name('public.appointment.view');
+Route::post('/a/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancelByToken'])->name('public.appointment.cancel');
+
+// Публичные роуты для онлайн-записи
+Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
+    // Шаг 1: Выбор локации
+    Route::get('/', [\App\Http\Controllers\Public\AppointmentController::class, 'show'])->name('show');
+    
+    // Шаг 2: Выбор услуги
+    Route::get('/location/{locationId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectLocation'])->name('select-location');
+    
+    // Шаг 3: Выбор мастера
+    Route::get('/location/{locationId}/service/{serviceId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectService'])->name('select-service');
+    
+    // Шаг 4: Выбор даты и времени
+    Route::get('/location/{locationId}/service/{serviceId}/master/{masterId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectTime'])->name('select-time');
+    
+    // Сохранение записи
+    Route::post('/store', [\App\Http\Controllers\Public\AppointmentController::class, 'store'])->name('store');
+    
+    // Страница успеха
+    Route::get('/success', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
+    
+    // Просмотр и отмена записи по токену (старый маршрут для обратной совместимости)
+    Route::get('/appointment/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'view'])->name('view-appointment');
+    Route::post('/appointment/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancel'])->name('cancel-appointment');
+});
+
 Route::middleware(['auth'])->group(function () {
 
     Route::prefix('profile')->group(function () {
@@ -40,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
+        Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
+        Route::patch('appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
+        Route::patch('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
+        Route::patch('appointments/{appointment}/complete', [\App\Http\Controllers\AppointmentsController::class, 'complete'])->name('appointments.complete');
 
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {

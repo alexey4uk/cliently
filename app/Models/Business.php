@@ -44,4 +44,9 @@ class Business extends Model
     {
         return $this->hasMany(Master::class);
     }
+
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }
