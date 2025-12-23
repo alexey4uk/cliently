@@ -94,4 +94,62 @@ class Appointment extends Model
     {
         return $this->dateTime->isPast();
     }
+
+    /**
+     * Проверить, пересекается ли запись с другим временным интервалом
+     *
+     * @param Carbon $startTime Время начала
+     * @param int $duration Длительность в минутах
+     * @param int|null $excludeAppointmentId ID записи для исключения (при обновлении)
+     * @return bool
+     */
+    public function overlapsWith(Carbon $startTime, int $duration, ?int $excludeAppointmentId = null): bool
+    {
+        // Исключаем отмененные записи
+        if ($this->status === 'cancelled') {
+            return false;
+        }
+
+        // Исключаем текущую запись при обновлении
+        if ($excludeAppointmentId && $this->id === $excludeAppointmentId) {
+            return false;
+        }
+
+        $appointmentStart = $this->dateTime;
+        $appointmentDuration = $this->final_duration;
+        $appointmentEnd = $appointmentStart->copy()->addMinutes($appointmentDuration);
+
+        $checkEnd = $startTime->copy()->addMinutes($duration);
+
+        // Проверяем пересечение временных интервалов
+        return $startTime->lt($appointmentEnd) && $checkEnd->gt($appointmentStart);
+    }
+
+    /**
+     * Проверить, есть ли конфликтующие записи для мастера
+     *
+     * @param int $masterId ID мастера
+     * @param Carbon $date Дата
+     * @param string $time Время в формате H:i
+     * @param int $duration Длительность в минутах
+     * @param int|null $excludeAppointmentId ID записи для исключения
+     * @return bool
+     */
+    public static function hasConflictForMaster(int $masterId, Carbon $date, string $time, int $duration, ?int $excludeAppointmentId = null): bool
+    {
+        $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $time);
+
+        $appointments = self::where('master_id', $masterId)
+            ->where('date', $date->format('Y-m-d'))
+            ->where('status', '!=', 'cancelled')
+            ->get();
+
+        foreach ($appointments as $appointment) {
+            if ($appointment->overlapsWith($startTime, $duration, $excludeAppointmentId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

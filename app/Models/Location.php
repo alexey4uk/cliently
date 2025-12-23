@@ -47,6 +47,13 @@ class Location extends Model
 
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class);
+        return $this->belongsToMany(Service::class, 'location_service')
+            ->withTimestamps();
+    }
+
+    public function masters(): BelongsToMany
+    {
+        return $this->belongsToMany(Master::class, 'master_location')
+            ->withTimestamps();
     }
 }

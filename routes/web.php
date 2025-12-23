@@ -10,6 +10,27 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Публичные роуты для онлайн-записи
+Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
+    // Шаг 1: Выбор локации
+    Route::get('/', [\App\Http\Controllers\Public\AppointmentController::class, 'show'])->name('show');
+    
+    // Шаг 2: Выбор услуги
+    Route::get('/location/{locationId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectLocation'])->name('select-location');
+    
+    // Шаг 3: Выбор мастера
+    Route::get('/location/{locationId}/service/{serviceId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectService'])->name('select-service');
+    
+    // Шаг 4: Выбор даты и времени
+    Route::get('/location/{locationId}/service/{serviceId}/master/{masterId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectTime'])->name('select-time');
+    
+    // Сохранение записи
+    Route::post('/store', [\App\Http\Controllers\Public\AppointmentController::class, 'store'])->name('store');
+    
+    // Страница успеха
+    Route::get('/success', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
+});
+
 Route::middleware(['auth'])->group(function () {
 
     Route::prefix('profile')->group(function () {

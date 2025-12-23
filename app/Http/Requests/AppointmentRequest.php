@@ -2,8 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Appointment;
+use App\Models\Service;
+use App\Models\Master;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Carbon\Carbon;
 
 class AppointmentRequest extends FormRequest
 {
@@ -27,13 +32,76 @@ class AppointmentRequest extends FormRequest
             'service_id' => ['required', 'exists:services,id'],
             'master_id' => ['nullable', 'exists:masters,id'],
             'location_id' => ['nullable', 'exists:locations,id'],
-            'date' => ['required', 'date'],
+            'date' => ['required', 'date', 'after_or_equal:today'],
             'time' => ['required', 'date_format:H:i'],
             'status' => ['nullable', Rule::in(['pending', 'confirmed', 'completed', 'cancelled'])],
             'notes' => ['nullable', 'string', 'max:1000'],
             'duration' => ['nullable', 'integer', 'min:15'],
             'price' => ['nullable', 'numeric', 'min:0'],
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($validator->errors()->any()) {
+                return;
+            }
+
+            $serviceId = $this->input('service_id');
+            $masterId = $this->input('master_id');
+            $date = $this->input('date');
+            $time = $this->input('time');
+            $duration = $this->input('duration');
+
+            // Получаем длительность услуги
+            $service = Service::find($serviceId);
+            if (!$service) {
+                return;
+            }
+
+            $appointmentDuration = $duration ?? $service->duration;
+
+            // Проверяем, что мастер предоставляет эту услугу
+            if ($masterId) {
+                $master = Master::find($masterId);
+                if ($master && !$master->services()->where('services.id', $serviceId)->exists()) {
+                    $validator->errors()->add('master_id', 'Выбранный мастер не предоставляет эту услугу.');
+                    return;
+                }
+
+                // Проверяем рабочее время мастера
+                if ($master) {
+                    $selectedDate = Carbon::parse($date);
+                    if ($master->isDayOff($selectedDate)) {
+                        $validator->errors()->add('date', 'Выбранная дата является выходным днем для мастера.');
+                        return;
+                    }
+
+                    $workingTime = $master->getWorkingTimeForDate($selectedDate);
+                    if ($workingTime) {
+                        $startTime = Carbon::parse($time);
+                        $endTime = $startTime->copy()->addMinutes($appointmentDuration);
+                        $workStart = Carbon::parse($workingTime['from']);
+                        $workEnd = Carbon::parse($workingTime['to']);
+
+                        if ($startTime->lt($workStart) || $endTime->gt($workEnd)) {
+                            $validator->errors()->add('time', 'Выбранное время выходит за рамки рабочего времени мастера.');
+                            return;
+                        }
+                    }
+                }
+
+                // Проверяем пересечения с существующими записями
+                $appointmentId = $this->route('appointment')?->id ?? null;
+                if (Appointment::hasConflictForMaster($masterId, Carbon::parse($date), $time, $appointmentDuration, $appointmentId)) {
+                    $validator->errors()->add('time', 'Выбранное время уже занято. Пожалуйста, выберите другое время.');
+                }
+            }
+        });
     }
 
     /**
