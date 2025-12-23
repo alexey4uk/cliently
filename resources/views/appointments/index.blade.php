@@ -40,34 +40,34 @@
              this.showDayModal = false;
          }
      }">
-    <!-- Заголовок и кнопка добавления -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
+    <!-- Заголовок страницы -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <div class="space-y-1">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Записи
-            </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Управляйте записями клиентов
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Управление записями и расписанием клиентов
             </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
             <!-- Переключатель вида -->
-            <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1">
+            <div class="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5 shadow-sm">
                 <button @click="view = 'table'; window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'table'])) }}'"
-                        :class="view === 'table' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-                        class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors">
+                        :class="view === 'table' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150">
                     <i class="fa-solid fa-table"></i>
                     <span class="hidden sm:inline ml-1.5">Таблица</span>
                 </button>
                 <button @click="view = 'calendar'; window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'calendar'])) }}'"
-                        :class="view === 'calendar' ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'"
-                        class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors">
+                        :class="view === 'calendar' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50'"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150">
                     <i class="fa-solid fa-calendar"></i>
                     <span class="hidden sm:inline ml-1.5">Календарь</span>
                 </button>
             </div>
             <a href="{{ route('appointments.create') }}"
-               class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+               class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>Создать запись</span>
             </a>
@@ -275,45 +275,61 @@
             </div>
 
             <!-- Десктопная версия фильтров -->
-            <form method="GET" action="{{ route('appointments.index') }}" class="hidden md:flex flex-col sm:flex-row gap-3">
+            <form method="GET" action="{{ route('appointments.index') }}" class="hidden md:flex items-end gap-3">
                 <input type="hidden" name="view" value="table">
                 <!-- Поиск -->
-                <div class="flex-1 relative">
+                <div class="flex-1">
+                    <label for="search-input" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Поиск
+                    </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-search text-slate-400"></i>
+                            <i class="fa-solid fa-search text-slate-400 text-sm"></i>
                         </div>
                         <input
+                            id="search-input"
                             type="text"
                             name="search"
                             value="{{ $search }}"
                             placeholder="Поиск по клиенту или услуге..."
-                            class="pl-10 pr-4 py-2.5 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 text-sm"
+                            class="pl-10 pr-4 py-2 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm"
                         >
                     </div>
                 </div>
 
                 <!-- Фильтр по дате -->
-                <div class="sm:w-48">
+                <div class="w-48">
+                    <label for="date-filter" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Дата
+                    </label>
                     <input
+                        id="date-filter"
                         type="date"
                         name="date"
                         value="{{ $date }}"
-                        class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-slate-900 dark:text-white text-sm"
+                        class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white text-sm"
                         onchange="this.form.submit()"
                     >
                 </div>
 
                 <!-- Фильтр по статусу -->
-                <div class="sm:w-48">
-                    <select name="status" onchange="this.form.submit()"
-                        class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-slate-900 dark:text-white text-sm appearance-none">
-                        <option value="">Все статусы</option>
-                        <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидает</option>
-                        <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтверждена</option>
-                        <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершена</option>
-                        <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отменена</option>
-                    </select>
+                <div class="w-48">
+                    <label for="status-filter" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Статус
+                    </label>
+                    <div class="relative">
+                        <select id="status-filter" name="status" onchange="this.form.submit()"
+                            class="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white text-sm appearance-none cursor-pointer">
+                            <option value="">Все статусы</option>
+                            <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидает</option>
+                            <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтверждена</option>
+                            <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершена</option>
+                            <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отменена</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -395,6 +411,7 @@
                                             <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
                                         </a>
                                         @if($appointment->status === 'pending')
+                                            <!-- Ожидает подтверждения: можно подтвердить или отменить -->
                                             <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="w-full">
                                                 @csrf
                                                 @method('PATCH')
@@ -402,17 +419,24 @@
                                                     <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
                                                 </button>
                                             </form>
-                                        @endif
-                                        @if($appointment->status === 'confirmed')
+                                            <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                                                  onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
+                                                  class="w-full">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" @click="open = false" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
+                                                    <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
+                                                </button>
+                                            </form>
+                                        @elseif($appointment->status === 'confirmed')
+                                            <!-- Подтверждена: можно выполнить или отменить -->
                                             <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="w-full">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" @click="open = false" class="w-full text-left px-4 py-2.5 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
-                                                    <i class="fa-solid fa-check w-4 inline-block"></i> Выполнено
+                                                    <i class="fa-solid fa-check w-4 inline-block"></i> Выполнить
                                                 </button>
                                             </form>
-                                        @endif
-                                        @if($appointment->status !== 'cancelled')
                                             <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
                                                   onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
                                                   class="w-full">
@@ -434,76 +458,69 @@
             <!-- Десктопная версия: таблица -->
             <div class="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full table-auto">
+                    <table class="w-full">
                         <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Дата и время
                                 </th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                     Клиент
                                 </th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell">
                                     Услуга
                                 </th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
                                     Мастер
                                 </th>
-                                <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
                                     Статус
                                 </th>
-                                <th class="px-3 py-2.5 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-20">
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-24">
                                     Действия
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
                             @foreach($appointments as $appointment)
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td class="px-3 py-3">
-                                        <div class="min-w-0">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap">
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                    <td class="px-4 py-3.5">
+                                        <div class="space-y-0.5">
+                                            <div class="text-sm font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                                                 {{ $appointment->date->format('d.m.Y') }}
                                             </div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400 md:hidden mt-0.5">
-                                                {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
-                                            </div>
-                                            <div class="text-sm text-slate-600 dark:text-slate-400 hidden md:block">
+                                            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">
                                                 {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-3">
-                                        <div class="min-w-0">
-                                            <a href="{{ route('appointments.show', $appointment) }}" class="block">
-                                                <div class="text-sm font-medium text-slate-900 dark:text-white truncate">
+                                    <td class="px-4 py-3.5">
+                                        <div class="space-y-0.5">
+                                            <a href="{{ route('appointments.show', $appointment) }}" class="block group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                <div class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                                                     {{ $appointment->client->full_name }}
                                                 </div>
                                             </a>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400 md:hidden mt-0.5 line-clamp-1">
-                                                {{ $appointment->service->name }}
-                                            </div>
-                                            <button @click="openPhoneModal('{{ $appointment->client->phone }}', '{{ $appointment->client->phone }}', '{{ $appointment->client->full_name }}')"
-                                                    class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:hidden mt-0.5">
+                                            <div class="text-xs text-slate-500 dark:text-slate-400 truncate">
                                                 {{ $appointment->client->phone }}
-                                            </button>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-3 hidden md:table-cell">
-                                        <div class="text-sm text-slate-600 dark:text-slate-400 truncate">
+                                    <td class="px-4 py-3.5 hidden md:table-cell">
+                                        <div class="text-sm text-slate-700 dark:text-slate-300 truncate font-medium">
                                             {{ $appointment->service->name }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-3 hidden lg:table-cell">
+                                    <td class="px-4 py-3.5 hidden lg:table-cell">
                                         <div class="text-sm text-slate-600 dark:text-slate-400 truncate">
                                             @if($appointment->master)
                                                 {{ $appointment->master->first_name }} {{ $appointment->master->last_name }}
                                             @else
-                                                <span class="text-slate-400 dark:text-slate-500">—</span>
+                                                <span class="text-slate-400 dark:text-slate-500 italic">Не назначен</span>
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-3 py-3 hidden xl:table-cell">
+                                    <td class="px-4 py-3.5 hidden xl:table-cell">
                                         @php
                                             $statusColors = [
                                                 'pending' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300',
@@ -522,11 +539,12 @@
                                             {{ $statusLabels[$appointment->status] ?? $appointment->status }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-3">
+                                    <td class="px-4 py-3.5">
                                         <div class="flex items-center justify-end gap-1.5">
                                             <button @click="openPhoneModal('{{ $appointment->client->phone }}', '{{ $appointment->client->phone }}', '{{ $appointment->client->full_name }}')"
-                                                    class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors flex items-center justify-center">
-                                                <i class="fa-solid fa-phone text-xs"></i>
+                                                    class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-all duration-150 flex items-center justify-center group/phone"
+                                                    title="Позвонить клиенту">
+                                                <i class="fa-solid fa-phone text-xs group-hover/phone:scale-110 transition-transform"></i>
                                             </button>
                                             <div x-data="{ 
                                                 open: false,
@@ -548,7 +566,8 @@
                                             @scroll.window="updatePosition()"
                                             class="relative">
                                                 <button @click="open = !open"
-                                                    class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center">
+                                                    class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-150 flex items-center justify-center"
+                                                    title="Дополнительные действия">
                                                     <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                                                 </button>
                                                 <div x-show="open" 
@@ -559,37 +578,50 @@
                                                     x-transition:leave="transition ease-in duration-75"
                                                     x-transition:leave-start="transform opacity-100 scale-100"
                                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                                    class="w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100]"
+                                                    class="w-52 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100] py-1"
                                                     style="display: none; position: fixed;">
-                                                    <a href="{{ route('appointments.show', $appointment) }}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                                        <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
+                                                    <a href="{{ route('appointments.show', $appointment) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                        <i class="fa-regular fa-eye w-4 text-center"></i> 
+                                                        <span>Просмотр</span>
                                                     </a>
                                                     @if($appointment->status === 'pending')
+                                                        <!-- Ожидает подтверждения: можно подтвердить или отменить -->
                                                         <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="w-full">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" @click="open = false" class="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20">
-                                                                <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
+                                                            <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20 transition-colors">
+                                                                <i class="fa-solid fa-check-circle w-4 text-center"></i> 
+                                                                <span>Подтвердить</span>
                                                             </button>
                                                         </form>
-                                                    @endif
-                                                    @if($appointment->status === 'confirmed')
-                                                        <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="w-full">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" @click="open = false" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
-                                                                <i class="fa-solid fa-check w-4 inline-block"></i> Выполнено
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                    @if($appointment->status !== 'cancelled')
                                                         <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
                                                               onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
                                                               class="w-full">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" @click="open = false" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                                <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
+                                                            <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 transition-colors">
+                                                                <i class="fa-solid fa-xmark w-4 text-center"></i> 
+                                                                <span>Отменить</span>
+                                                            </button>
+                                                        </form>
+                                                    @elseif($appointment->status === 'confirmed')
+                                                        <!-- Подтверждена: можно выполнить или отменить -->
+                                                        <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="w-full">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition-colors">
+                                                                <i class="fa-solid fa-check w-4 text-center"></i> 
+                                                                <span>Выполнить</span>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                                                              onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
+                                                              class="w-full">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 transition-colors">
+                                                                <i class="fa-solid fa-xmark w-4 text-center"></i> 
+                                                                <span>Отменить</span>
                                                             </button>
                                                         </form>
                                                     @endif
@@ -690,30 +722,41 @@
                 </div>
             @endif
         @else
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
-                <div class="max-w-md mx-auto">
-                    <div class="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-calendar-check text-slate-400 dark:text-slate-500 text-2xl"></i>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-16 text-center">
+                <div class="max-w-sm mx-auto">
+                    <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-800/20 flex items-center justify-center mx-auto mb-6">
+                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-3xl"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
                         @if($view === 'calendar')
                             Нет записей в этом месяце
                         @else
-                            Нет записей
+                            Записи не найдены
                         @endif
                     </h3>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
                         @if($view === 'calendar')
-                            Выберите другой месяц или создайте новую запись
+                            Выберите другой месяц или создайте новую запись для отображения в календаре
+                        @elseif($search || $date || $status)
+                            Попробуйте изменить параметры поиска или фильтры для получения других результатов
                         @else
-                            Создайте первую запись для вашего бизнеса
+                            Начните работу с системой, создав первую запись для вашего клиента
                         @endif
                     </p>
-                    <a href="{{ route('appointments.create') }}"
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        <span>Создать запись</span>
-                    </a>
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        @if($search || $date || $status)
+                            <a href="{{ route('appointments.index', ['view' => $view]) }}"
+                               class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                                <span>Сбросить фильтры</span>
+                            </a>
+                        @endif
+                        <a href="{{ route('appointments.create') }}"
+                           class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Создать запись</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         @endif
@@ -880,33 +923,44 @@
                                                 <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
                                             </a>
                                             <template x-if="appointment.status === 'pending'">
-                                                <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/confirm`" class="w-full">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20">
-                                                        <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
-                                                    </button>
-                                                </form>
+                                                <div>
+                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/confirm`" class="w-full">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20">
+                                                            <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
+                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
+                                                          class="w-full">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
+                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </template>
                                             <template x-if="appointment.status === 'confirmed'">
-                                                <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/complete`" class="w-full">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
-                                                        <i class="fa-solid fa-check w-4 inline-block"></i> Выполнено
-                                                    </button>
-                                                </form>
-                                            </template>
-                                            <template x-if="appointment.status !== 'cancelled'">
-                                                <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
-                                                      onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
-                                                      class="w-full">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                        <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                    </button>
-                                                </form>
+                                                <div>
+                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/complete`" class="w-full">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
+                                                            <i class="fa-solid fa-check w-4 inline-block"></i> Выполнить
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
+                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
+                                                          class="w-full">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
+                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </template>
                                         </div>
                                     </div>

@@ -19,73 +19,91 @@
 
     <div class="space-y-6">
         <!-- Основная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400"></i>
-                        Основная информация
-                    </h3>
-                </div>
-            
-                <div>
-                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Название услуги*</span>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                    </div>
+                    <span>Основная информация</span>
+                </h2>
+            </div>
+            <div class="p-4 md:p-6 space-y-5">
+                <div class="space-y-1.5">
+                    <label for="name" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Название услуги <span class="text-rose-500">*</span>
                     </label>
                     <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                           autofocus>
+                           class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150"
+                           autofocus placeholder="Введите название услуги">
                     @error('name')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                     @enderror
                 </div>
 
-                <div>
-                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Описание</span>
+                <div class="space-y-1.5">
+                    <label for="description" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Описание
                     </label>
-                    <textarea id="description" name="description" rows="3"
-                              class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none">{{ old('description') }}</textarea>
+                    <textarea id="description" name="description" rows="4"
+                              class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-150 resize-none"
+                              placeholder="Опишите услугу...">{{ old('description') }}</textarea>
                     @error('description')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                     @enderror
                 </div>
             </div>
         </div>
 
         <!-- Параметры услуги -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-cog text-indigo-600 dark:text-indigo-400"></i>
-                        Параметры услуги
-                    </h3>
-                </div>
-            
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-cog text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                    </div>
+                    <span>Параметры услуги</span>
+                </h2>
+            </div>
+            <div class="p-4 md:p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label for="duration" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Длительность (минуты)*</span>
+                    <div class="space-y-1.5">
+                        <label for="duration" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Длительность <span class="text-rose-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="number" id="duration" name="duration" required min="15" step="15" value="{{ old('duration', 60) }}"
-                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('duration') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <span class="absolute right-2.5 md:right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 text-base md:text-sm">мин</span>
+                                   class="w-full px-3 py-2.5 pr-12 text-sm rounded-lg border {{ $errors->has('duration') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150">
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm font-medium">мин</span>
                         </div>
                         @error('duration')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="price" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Цена (Br)*</span>
+                    <div class="space-y-1.5">
+                        <label for="price" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Цена <span class="text-rose-500">*</span>
                         </label>
-                        <input type="number" id="price" name="price" required min="0" step="0.01" value="{{ old('price') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                        <div class="relative">
+                            <input type="number" id="price" name="price" required min="0" step="0.01" value="{{ old('price') }}"
+                                   class="w-full px-3 py-2.5 pr-12 text-sm rounded-lg border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150">
+                            <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm font-medium">Br</span>
+                        </div>
                         @error('price')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
                 </div>
@@ -94,14 +112,14 @@
     </div>
 
     <!-- Кнопки действий -->
-    <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
         <a href="{{ route('services.index') }}"
-           class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+           class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-150">
             Отмена
         </a>
         <button type="submit"
-                class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Сохранить
+                class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+            Создать услугу
         </button>
     </div>
 </form>

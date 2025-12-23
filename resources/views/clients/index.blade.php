@@ -28,56 +28,63 @@
              this.showPhoneModal = false;
          }
      }">
-    <!-- Заголовок и кнопка добавления -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
+    <!-- Заголовок страницы -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <div class="space-y-1">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Клиенты
-            </h2>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Управляйте клиентской базой вашего бизнеса
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Управление клиентской базой вашего бизнеса
             </p>
         </div>
         <a href="{{ route('clients.create') }}"
-           class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+           class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
             <i class="fa-solid fa-plus text-xs"></i>
-                    <span>Добавить клиента</span>
+            <span>Добавить клиента</span>
         </a>
-        </div>
+    </div>
 
-        <!-- Поиск и сортировка -->
-    <form method="GET" action="{{ route('clients.index') }}" class="flex flex-col sm:flex-row gap-3">
-                <!-- Поиск -->
-                <div class="flex-1 relative">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fa-solid fa-search text-slate-400"></i>
-                        </div>
-                        <input
-                            type="text"
+    <!-- Поиск и сортировка -->
+    <form method="GET" action="{{ route('clients.index') }}" class="flex flex-col sm:flex-row items-end gap-3">
+        <!-- Поиск -->
+        <div class="flex-1">
+            <label for="client-search" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Поиск
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-search text-slate-400 text-sm"></i>
+                </div>
+                <input
+                    id="client-search"
+                    type="text"
                     name="search"
                     value="{{ $search }}"
                     placeholder="Поиск по имени, телефону или email..."
-                    class="pl-10 pr-4 py-2.5 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 text-sm"
-                        >
-                    </div>
-                </div>
+                    class="pl-10 pr-4 py-2 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm"
+                >
+            </div>
+        </div>
 
-                <!-- Сортировка -->
-                <div class="sm:w-48">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fa-solid fa-sort text-slate-400"></i>
-                        </div>
-                <select name="sort" onchange="updateSortDirection(this); this.form.submit()"
-                    class="pl-10 w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-slate-900 dark:text-white text-sm appearance-none">
+        <!-- Сортировка -->
+        <div class="w-56">
+            <label for="client-sort" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Сортировка
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-sort text-slate-400 text-sm"></i>
+                </div>
+                <select id="client-sort" name="sort" onchange="updateSortDirection(this); this.form.submit()"
+                    class="pl-10 pr-10 w-full py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white text-sm appearance-none cursor-pointer">
                     <option value="name" data-direction="asc" {{ $sort === 'name' && $direction === 'asc' ? 'selected' : '' }}>По имени (А-Я)</option>
                     <option value="name" data-direction="desc" {{ $sort === 'name' && $direction === 'desc' ? 'selected' : '' }}>По имени (Я-А)</option>
-                    <option value="created_at" data-direction="desc" {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате</option>
-                        </select>
+                    <option value="created_at" data-direction="desc" {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате добавления</option>
+                </select>
                 <input type="hidden" name="direction" value="{{ $direction }}" id="sort-direction">
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
                 </div>
             </div>
         </div>
@@ -87,69 +94,70 @@
     @if($clients->count() > 0)
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full table-auto">
+                <table class="w-full">
                     <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                         <tr>
-                            <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                 Клиент
                             </th>
-                            <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden md:table-cell">
                                 Телефон
                             </th>
-                            <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden lg:table-cell">
                                 Email
                             </th>
-                            <th class="px-3 py-2.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider hidden xl:table-cell">
                                 Дата добавления
                             </th>
-                            <th class="px-3 py-2.5 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-20">
+                            <th class="px-4 py-3 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider w-24">
                                 Действия
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
                 @foreach($clients as $client)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-3 py-3">
-                                    <div class="min-w-0">
-                                        <a href="{{ route('clients.show', $client) }}" class="block">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate">
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                <td class="px-4 py-3.5">
+                                    <div class="space-y-0.5">
+                                        <a href="{{ route('clients.show', $client) }}" class="block group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                            <div class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                                                 {{ $client->full_name }}
                                             </div>
                                         </a>
                                         <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
-                                                class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:hidden mt-0.5 line-clamp-1">
+                                                class="text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors md:hidden">
                                             {{ $client->phone }}
                                         </button>
                                     </div>
                                 </td>
-                                <td class="px-3 py-3 hidden md:table-cell">
+                                <td class="px-4 py-3.5 hidden md:table-cell">
                                     <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
-                                            class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1 whitespace-nowrap">
-                                        <i class="fa-solid fa-phone text-xs text-slate-400"></i>
+                                            class="text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5 whitespace-nowrap group/phone">
+                                        <i class="fa-solid fa-phone text-xs text-slate-400 group-hover/phone:text-indigo-500 transition-colors"></i>
                                         <span>{{ $client->phone }}</span>
                                     </button>
                                 </td>
-                                <td class="px-3 py-3 hidden lg:table-cell">
-                                    <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                                <td class="px-4 py-3.5 hidden lg:table-cell">
+                                    <div class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                                         @if($client->email)
                                             <i class="fa-solid fa-envelope text-xs text-slate-400"></i>
                                             <span class="truncate max-w-[200px]">{{ $client->email }}</span>
                                         @else
-                                            <span class="text-slate-400 dark:text-slate-500">—</span>
+                                            <span class="text-slate-400 dark:text-slate-500 italic">Не указан</span>
                                         @endif
-                            </div>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-3 hidden xl:table-cell">
+                                <td class="px-4 py-3.5 hidden xl:table-cell">
                                     <div class="text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
                                         {{ $client->created_at->format('d.m.Y') }}
-                                            </div>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-3">
+                                <td class="px-4 py-3.5">
                                     <div class="flex items-center justify-end gap-1.5">
                                         <button @click="openPhoneModal(@js($client->phone), @js($client->phone), @js($client->full_name))"
-                                                class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors flex items-center justify-center">
-                                            <i class="fa-solid fa-phone text-xs"></i>
+                                                class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-all duration-150 flex items-center justify-center group/phone"
+                                                title="Позвонить клиенту">
+                                            <i class="fa-solid fa-phone text-xs group-hover/phone:scale-110 transition-transform"></i>
                                         </button>
                                         <div x-data="{ 
                                             open: false,
@@ -171,7 +179,8 @@
                                         @scroll.window="updatePosition()"
                                         class="relative">
                                             <button @click="open = !open"
-                                                class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center">
+                                                class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-150 flex items-center justify-center"
+                                                title="Дополнительные действия">
                                                 <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
                                             </button>
                                             <div x-show="open" 
@@ -182,21 +191,25 @@
                                                 x-transition:leave="transition ease-in duration-75"
                                                 x-transition:leave-start="transform opacity-100 scale-100"
                                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                                class="w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100]"
+                                                class="w-52 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100] py-1"
                                                 style="display: none; position: fixed;">
-                                                <a href="{{ route('clients.show', $client) }}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                                    <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
+                                                <a href="{{ route('clients.show', $client) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                    <i class="fa-regular fa-eye w-4 text-center"></i> 
+                                                    <span>Просмотр</span>
                                                 </a>
-                                                <a href="{{ route('clients.edit', $client) }}" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                                    <i class="fa-solid fa-pencil w-4 inline-block"></i> Редактировать
+                                                <a href="{{ route('clients.edit', $client) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                                    <i class="fa-solid fa-pencil w-4 text-center"></i> 
+                                                    <span>Редактировать</span>
                                                 </a>
+                                                <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
                                                 <form method="POST" action="{{ route('clients.destroy', $client) }}" 
                                                       onsubmit="return confirm('Вы уверены, что хотите удалить этого клиента?');"
                                                       class="w-full">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" @click="open = false" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                        <i class="fa-solid fa-trash w-4 inline-block"></i> Удалить
+                                                    <button type="submit" @click="open = false" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 transition-colors">
+                                                        <i class="fa-solid fa-trash w-4 text-center"></i> 
+                                                        <span>Удалить</span>
                                                     </button>
                                                 </form>
                                             </div>
@@ -263,32 +276,39 @@
             @endif
         </div>
     @else
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
-            <div class="max-w-md mx-auto">
-                <div class="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-users text-slate-400 dark:text-slate-500 text-2xl"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-16 text-center">
+            <div class="max-w-sm mx-auto">
+                <div class="h-20 w-20 rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/30 dark:to-indigo-800/20 flex items-center justify-center mx-auto mb-6">
+                    <i class="fa-solid fa-users text-indigo-600 dark:text-indigo-400 text-3xl"></i>
                 </div>
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">
                     @if($search)
                         Клиенты не найдены
                     @else
-                        Нет клиентов
+                        База клиентов пуста
                     @endif
                 </h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
                     @if($search)
-                        Попробуйте изменить параметры поиска
+                        Попробуйте изменить параметры поиска или очистить фильтры для получения других результатов
                     @else
-                        Добавьте первого клиента для вашего бизнеса
+                        Начните работу с системой, добавив первого клиента в вашу базу данных
                     @endif
                 </p>
-                @if(!$search)
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    @if($search)
+                        <a href="{{ route('clients.index') }}"
+                           class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                            <span>Очистить поиск</span>
+                        </a>
+                    @endif
                     <a href="{{ route('clients.create') }}"
-                       class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                       class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150">
                         <i class="fa-solid fa-plus text-xs"></i>
                         <span>Добавить клиента</span>
                     </a>
-                @endif
+                </div>
             </div>
         </div>
     @endif

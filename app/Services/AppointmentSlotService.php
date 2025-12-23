@@ -27,9 +27,10 @@ class AppointmentSlotService
      * @param string $date Дата в формате Y-m-d
      * @param int|null $masterId ID мастера (опционально)
      * @param int|null $locationId ID локации (опционально, не используется в расчете)
+     * @param int|null $excludeAppointmentId ID записи для исключения из расчета (при редактировании)
      * @return array Массив доступных слотов в формате ['HH:MM', ...]
      */
-    public function getAvailableSlots(int $serviceId, string $date, ?int $masterId = null, ?int $locationId = null, &$debugInfo = null): array
+    public function getAvailableSlots(int $serviceId, string $date, ?int $masterId = null, ?int $locationId = null, &$debugInfo = null, ?int $excludeAppointmentId = null): array
     {
         $service = Service::findOrFail($serviceId);
         $selectedDate = Carbon::parse($date);
@@ -117,9 +118,10 @@ class AppointmentSlotService
 
         // Исключаем занятые слоты
         // Время подготовки уже учтено при генерации слотов, поэтому проверяем только прямое пересечение
-        $availableSlots = $this->excludeBookedSlots($slotsFittingDuration, $serviceId, $selectedDate, $duration, $masterId);
+        $availableSlots = $this->excludeBookedSlots($slotsFittingDuration, $serviceId, $selectedDate, $duration, $masterId, null, $excludeAppointmentId);
         $debug['final_slots_count'] = count($availableSlots);
         $debug['slots_lost_to_bookings'] = count($slotsFittingDuration) - count($availableSlots);
+        $debug['excluded_appointment_id'] = $excludeAppointmentId;
 
         // Сортируем и возвращаем
         sort($availableSlots);
@@ -373,12 +375,17 @@ class AppointmentSlotService
     /**
      * Исключить занятые слоты
      */
-    protected function excludeBookedSlots(array $slots, int $serviceId, Carbon $date, int $duration, ?int $masterId = null, ?int $preparationTime = null): array
+    protected function excludeBookedSlots(array $slots, int $serviceId, Carbon $date, int $duration, ?int $masterId = null, ?int $preparationTime = null, ?int $excludeAppointmentId = null): array
     {
         // Получаем существующие записи на эту дату
         $query = Appointment::where('date', $date->format('Y-m-d'))
             ->where('status', '!=', 'cancelled')
             ->where('service_id', $serviceId);
+        
+        // Исключаем текущую запись при редактировании
+        if ($excludeAppointmentId) {
+            $query->where('id', '!=', $excludeAppointmentId);
+        }
 
         // Если мастер указан, проверяем только его записи
         if ($masterId) {

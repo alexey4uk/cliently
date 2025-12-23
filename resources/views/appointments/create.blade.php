@@ -18,87 +18,121 @@
 
     <div class="space-y-6">
         <!-- Основная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400"></i>
-                        Основная информация
-                    </h3>
-                </div>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                    </div>
+                    <span>Основная информация</span>
+                </h2>
+            </div>
+            <div class="p-4 md:p-6 space-y-5">
             
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label for="client_id" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Клиент*</span>
+                    <div class="space-y-1.5">
+                        <label for="client_id" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Клиент <span class="text-rose-500">*</span>
                         </label>
-                        <select id="client_id" name="client_id" required
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('client_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <option value="">Выберите клиента</option>
-                            @foreach($clients as $client)
-                                <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                    {{ $client->full_name }} ({{ $client->phone }})
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select id="client_id" name="client_id" required
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('client_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150 appearance-none cursor-pointer">
+                                <option value="">Выберите клиента</option>
+                                @foreach($clients as $client)
+                                    <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
+                                        {{ $client->full_name }} ({{ $client->phone }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
+                        </div>
                         @error('client_id')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="service_id" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Услуга*</span>
+                    <div class="space-y-1.5">
+                        <label for="service_id" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Услуга <span class="text-rose-500">*</span>
                         </label>
-                        <select id="service_id" name="service_id" required
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('service_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <option value="">Выберите услугу</option>
-                            @foreach($services as $service)
-                                <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                    {{ $service->name }} ({{ number_format($service->price, 0, ',', ' ') }} Br, {{ $service->duration }} мин)
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select id="service_id" name="service_id" required
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('service_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150 appearance-none cursor-pointer">
+                                <option value="">Выберите услугу</option>
+                                @foreach($services as $service)
+                                    <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                        {{ $service->name }} ({{ number_format($service->price, 0, ',', ' ') }} Br, {{ $service->duration }} мин)
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
+                        </div>
                         @error('service_id')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label for="master_id" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Мастер</span>
+                    <div class="space-y-1.5">
+                        <label for="master_id" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Мастер
                         </label>
-                        <select id="master_id" name="master_id"
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('master_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <option value="">Не выбран</option>
-                            @foreach($masters as $master)
-                                <option value="{{ $master->id }}" {{ old('master_id') == $master->id ? 'selected' : '' }}>
-                                    {{ $master->first_name }} {{ $master->last_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select id="master_id" name="master_id"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('master_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150 appearance-none cursor-pointer">
+                                <option value="">Не выбран</option>
+                                @foreach($masters as $master)
+                                    <option value="{{ $master->id }}" {{ old('master_id') == $master->id ? 'selected' : '' }}>
+                                        {{ $master->first_name }} {{ $master->last_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
+                        </div>
                         @error('master_id')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="location_id" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Локация</span>
+                    <div class="space-y-1.5">
+                        <label for="location_id" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Локация
                         </label>
-                        <select id="location_id" name="location_id"
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('location_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <option value="">Не выбрана</option>
-                            @foreach($locations as $location)
-                                <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
-                                    {{ $location->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select id="location_id" name="location_id"
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150 appearance-none cursor-pointer">
+                                <option value="">Не выбрана</option>
+                                @foreach($locations as $location)
+                                    <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
+                                        {{ $location->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
+                        </div>
                         @error('location_id')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
                 </div>
@@ -106,42 +140,58 @@
         </div>
 
         <!-- Дата и время -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400"></i>
-                        Дата и время
-                    </h3>
-                </div>
-            
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                    </div>
+                    <span>Дата и время</span>
+                </h2>
+            </div>
+            <div class="p-4 md:p-6 space-y-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label for="date" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Дата*</span>
+                    <div class="space-y-1.5">
+                        <label for="date" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Дата <span class="text-rose-500">*</span>
                         </label>
                         <input type="date" id="date" name="date" required value="{{ old('date', date('Y-m-d')) }}"
                                min="{{ date('Y-m-d') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('date') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                               class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('date') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150">
                         @error('date')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="time" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Время*</span>
+                    <div class="space-y-1.5">
+                        <label for="time" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Время <span class="text-rose-500">*</span>
                         </label>
-                        <select id="time" name="time" required
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('time') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                            <option value="">{{ old('time') ? old('time') : 'Сначала выберите услугу и дату' }}</option>
-                        </select>
-                        <div id="time-loading" class="hidden mt-2 text-xs text-slate-500 dark:text-slate-400">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Загрузка доступных слотов...
+                        <div class="relative">
+                            <select id="time" name="time" required
+                                    class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('time') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-150 appearance-none cursor-pointer">
+                                <option value="">{{ old('time') ? old('time') : 'Сначала выберите услугу и дату' }}</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
                         </div>
-                        <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400"></div>
+                        <div id="time-loading" class="hidden mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin text-xs"></i>
+                            <span>Загрузка доступных слотов...</span>
+                        </div>
+                        <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span></span>
+                        </div>
                         @error('time')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                         @enderror
                     </div>
                 </div>
@@ -149,23 +199,28 @@
         </div>
 
         <!-- Дополнительная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400"></i>
-                        Дополнительная информация
-                    </h3>
-                </div>
-            
-                <div>
-                    <label for="notes" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Заметки</span>
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                    </div>
+                    <span>Дополнительная информация</span>
+                </h2>
+            </div>
+            <div class="p-4 md:p-6">
+                <div class="space-y-1.5">
+                    <label for="notes" class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Заметки
                     </label>
-                    <textarea id="notes" name="notes" rows="3"
-                              class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none">{{ old('notes') }}</textarea>
+                    <textarea id="notes" name="notes" rows="4"
+                              class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-150 resize-none"
+                              placeholder="Дополнительная информация о записи...">{{ old('notes') }}</textarea>
                     @error('notes')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                     @enderror
                 </div>
             </div>
@@ -173,14 +228,14 @@
     </div>
 
     <!-- Кнопки действий -->
-    <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
         <a href="{{ route('appointments.index') }}"
-           class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+           class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-150">
             Отмена
         </a>
         <button type="submit"
-                class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Сохранить
+                class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+            Создать запись
         </button>
     </div>
 </form>
@@ -241,7 +296,16 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             credentials: 'same-origin',
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errData => {
+                    throw new Error(errData.message || `Ошибка ${response.status}: ${response.statusText}`);
+                }).catch(() => {
+                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             timeLoading.classList.add('hidden');
             timeSelect.disabled = false;
@@ -262,16 +326,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 timeSelect.innerHTML = '<option value="">Нет доступных слотов</option>';
                 
                 // Более информативное сообщение об ошибке
-                let errorMessage = 'На выбранную дату нет доступных временных слотов.';
+                let errorMessage = data.message || 'На выбранную дату нет доступных временных слотов.';
                 
                 // Проверяем, сегодня ли это
                 const today = new Date().toISOString().split('T')[0];
                 const isToday = date === today;
                 
-                if (isToday) {
-                    errorMessage = 'На сегодня нет доступных слотов. Пожалуйста, выберите другую дату.';
-                } else {
-                    errorMessage = 'На выбранную дату нет доступных временных слотов. Пожалуйста, выберите другую дату или мастера.';
+                if (!data.message) {
+                    if (isToday) {
+                        errorMessage = 'На сегодня нет доступных слотов. Пожалуйста, выберите другую дату.';
+                    } else {
+                        errorMessage = 'На выбранную дату нет доступных временных слотов. Пожалуйста, выберите другую дату или мастера.';
+                    }
                 }
                 
                 timeError.textContent = errorMessage;
@@ -283,7 +349,8 @@ document.addEventListener('DOMContentLoaded', function() {
             timeLoading.classList.add('hidden');
             timeSelect.disabled = false;
             timeSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
-            timeError.textContent = 'Произошла ошибка при загрузке доступных слотов. Пожалуйста, обновите страницу.';
+            const errorMessage = error.message || 'Произошла ошибка при загрузке доступных слотов. Пожалуйста, обновите страницу.';
+            timeError.textContent = errorMessage;
             timeError.classList.remove('hidden');
         });
     }

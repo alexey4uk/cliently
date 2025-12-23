@@ -34,6 +34,7 @@ class AppointmentSlotController extends Controller
             'date' => ['required', 'date', 'date_format:Y-m-d'],
             'master_id' => ['nullable', 'integer', 'exists:masters,id'],
             'location_id' => ['nullable', 'integer', 'exists:locations,id'],
+            'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'], // Для исключения текущей записи при редактировании
         ]);
 
         // Дополнительная проверка, что услуга и мастер принадлежат бизнесу
@@ -71,6 +72,8 @@ class AppointmentSlotController extends Controller
 
             $serviceId = (int) $request->input('service_id');
             $date = $request->input('date');
+            $appointmentId = $request->input('appointment_id');
+            $appointmentId = ($appointmentId === '' || $appointmentId === null) ? null : (int) $appointmentId;
 
             // Получаем дополнительную информацию для отладки
             $debugInfo = [
@@ -78,6 +81,7 @@ class AppointmentSlotController extends Controller
                 'date' => $date,
                 'master_id' => $masterId,
                 'location_id' => $locationId,
+                'appointment_id' => $appointmentId,
             ];
 
             if ($masterId) {
@@ -138,7 +142,8 @@ class AppointmentSlotController extends Controller
                 $date,
                 $masterId,
                 $locationId,
-                $debugInfoFromService
+                $debugInfoFromService,
+                $appointmentId
             );
 
             $debugInfo = array_merge($debugInfo, $debugInfoFromService);
