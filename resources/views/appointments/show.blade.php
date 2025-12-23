@@ -96,25 +96,12 @@
                     <!-- Отменена: ничего нельзя делать со статусом -->
                 @endif
 
-                <!-- Редактирование и удаление доступны всегда, кроме pending (удаление) -->
+                <!-- Редактирование доступно всегда -->
                 <a href="{{ route('appointments.edit', $appointment) }}"
                    class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-150 flex items-center gap-1.5">
                     <i class="fa-solid fa-edit text-xs"></i>
                     <span>Редактировать</span>
                 </a>
-                @if($appointment->status !== 'pending')
-                    <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" 
-                          onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"
-                          class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                                class="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 flex items-center gap-1.5">
-                            <i class="fa-solid fa-trash text-xs"></i>
-                            <span>Удалить</span>
-                        </button>
-                    </form>
-                @endif
             </div>
         </div>
     </div>

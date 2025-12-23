@@ -137,7 +137,7 @@
     <!-- Действия -->
     @if(!in_array($appointment->status, ['completed', 'cancelled']))
     <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-        <form method="POST" action="{{ route('public.appointments.cancel-appointment', ['slug' => $business->slug, 'token' => $appointment->token]) }}" 
+        <form method="POST" action="{{ route('public.appointment.cancel', ['token' => $appointment->token]) }}" 
               onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
             @csrf
             <button type="submit" class="w-full px-4 py-2.5 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors flex items-center justify-center gap-2">

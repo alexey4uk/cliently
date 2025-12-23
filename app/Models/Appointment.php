@@ -37,9 +37,72 @@ class Appointment extends Model
 
         static::creating(function ($appointment) {
             if (empty($appointment->token)) {
-                $appointment->token = Str::random(64);
+                $appointment->token = self::generateToken();
             }
         });
+    }
+
+    /**
+     * Генерация красивого читаемого токена
+     * Формат: abc-123-def-456 (чередование букв и цифр, 2 группы)
+     * 
+     * Математика безопасности:
+     * - Буквы: 26 символов (a-z)
+     * - Цифры: 10 символов (0-9)
+     * - Комбинаций: (26^3 × 10^3) × (26^3 × 10^3) ≈ 1.2 × 10^12 (более триллиона)
+     * - Вероятность коллизии при 1 млн записей: ~0.00004% (практически нулевая)
+     * - Вероятность коллизии при 10 млн записей: ~0.004% (все еще крайне низкая)
+     */
+    protected static function generateToken(): string
+    {
+        $maxAttempts = 100; // Защита от бесконечного цикла
+        $attempts = 0;
+        
+        do {
+            // Генерируем формат: abc-123-def-456
+            // Группа 1: 3 буквы + 3 цифры
+            $letters1 = self::generateTokenPart(3, 'letters');
+            $digits1 = self::generateTokenPart(3, 'digits');
+            
+            // Группа 2: 3 буквы + 3 цифры
+            $letters2 = self::generateTokenPart(3, 'letters');
+            $digits2 = self::generateTokenPart(3, 'digits');
+            
+            $token = strtolower($letters1 . '-' . $digits1 . '-' . $letters2 . '-' . $digits2);
+            $attempts++;
+            
+            // Если превысили лимит попыток, добавляем случайный суффикс
+            if ($attempts >= $maxAttempts) {
+                $token .= '-' . self::generateTokenPart(4, 'mixed');
+                break;
+            }
+        } while (self::where('token', $token)->exists());
+
+        return $token;
+    }
+
+    /**
+     * Генерация части токена
+     * 
+     * @param int $length Длина части
+     * @param string $type Тип: 'letters' (только буквы), 'digits' (только цифры), 'mixed' (буквы и цифры)
+     */
+    protected static function generateTokenPart(int $length, string $type = 'mixed'): string
+    {
+        $characters = match($type) {
+            'letters' => 'abcdefghijklmnopqrstuvwxyz',
+            'digits' => '0123456789',
+            'mixed' => 'abcdefghijklmnopqrstuvwxyz0123456789',
+            default => 'abcdefghijklmnopqrstuvwxyz0123456789',
+        };
+        
+        $part = '';
+        
+        for ($i = 0; $i < $length; $i++) {
+            $part .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        
+        return $part;
     }
 
     public function business(): BelongsTo

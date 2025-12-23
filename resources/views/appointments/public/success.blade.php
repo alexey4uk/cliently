@@ -66,7 +66,7 @@
         <!-- Кнопки действий -->
         <div class="space-y-4">
             @if($token && $appointment)
-            <a href="{{ route('public.appointments.view-appointment', ['slug' => $business->slug, 'token' => $token]) }}"
+            <a href="{{ route('public.appointment.view', ['token' => $token]) }}"
                class="block w-full px-6 py-4 text-base font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2">
                 <i class="fa-solid fa-eye"></i>
                 <span>Просмотреть запись</span>

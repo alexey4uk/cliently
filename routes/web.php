@@ -10,6 +10,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Короткая ссылка для просмотра записи (упрощенная)
+Route::get('/a/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'viewByToken'])->name('public.appointment.view');
+Route::post('/a/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancelByToken'])->name('public.appointment.cancel');
+
 // Публичные роуты для онлайн-записи
 Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
     // Шаг 1: Выбор локации
@@ -30,7 +34,7 @@ Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
     // Страница успеха
     Route::get('/success', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
     
-    // Просмотр и отмена записи по токену
+    // Просмотр и отмена записи по токену (старый маршрут для обратной совместимости)
     Route::get('/appointment/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'view'])->name('view-appointment');
     Route::post('/appointment/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancel'])->name('cancel-appointment');
 });

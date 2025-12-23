@@ -221,7 +221,44 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Просмотр записи по токену
+     * Просмотр записи по токену (упрощенная ссылка)
+     */
+    public function viewByToken(string $token)
+    {
+        $appointment = Appointment::where('token', $token)
+            ->with(['service', 'master', 'location', 'client', 'business'])
+            ->firstOrFail();
+
+        $business = $appointment->business;
+
+        return view('appointments.public.view', compact('business', 'appointment'));
+    }
+
+    /**
+     * Отмена записи по токену (упрощенная ссылка)
+     */
+    public function cancelByToken(Request $request, string $token)
+    {
+        $appointment = Appointment::where('token', $token)
+            ->with('business')
+            ->firstOrFail();
+
+        // Проверяем, можно ли отменить запись
+        if (in_array($appointment->status, ['completed', 'cancelled'])) {
+            return redirect()
+                ->route('public.appointment.view', ['token' => $token])
+                ->with('error', 'Эту запись нельзя отменить.');
+        }
+
+        $appointment->update(['status' => 'cancelled']);
+
+        return redirect()
+            ->route('public.appointment.view', ['token' => $token])
+            ->with('success', 'Запись успешно отменена.');
+    }
+
+    /**
+     * Просмотр записи по токену (старый маршрут для обратной совместимости)
      */
     public function view(string $slug, string $token)
     {
@@ -235,7 +272,7 @@ class AppointmentController extends Controller
     }
 
     /**
-     * Отмена записи по токену
+     * Отмена записи по токену (старый маршрут для обратной совместимости)
      */
     public function cancel(Request $request, string $slug, string $token)
     {
