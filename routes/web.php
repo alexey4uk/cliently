@@ -18,22 +18,22 @@ Route::post('/a/{token}/cancel', [\App\Http\Controllers\Public\AppointmentContro
 Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
     // Шаг 1: Выбор локации
     Route::get('/', [\App\Http\Controllers\Public\AppointmentController::class, 'show'])->name('show');
-    
+
     // Шаг 2: Выбор услуги
     Route::get('/location/{locationId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectLocation'])->name('select-location');
-    
+
     // Шаг 3: Выбор мастера
     Route::get('/location/{locationId}/service/{serviceId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectService'])->name('select-service');
-    
+
     // Шаг 4: Выбор даты и времени
     Route::get('/location/{locationId}/service/{serviceId}/master/{masterId}', [\App\Http\Controllers\Public\AppointmentController::class, 'selectTime'])->name('select-time');
-    
+
     // Сохранение записи
     Route::post('/store', [\App\Http\Controllers\Public\AppointmentController::class, 'store'])->name('store');
-    
+
     // Страница успеха
     Route::get('/success', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
-    
+
     // Просмотр и отмена записи по токену (старый маршрут для обратной совместимости)
     Route::get('/appointment/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'view'])->name('view-appointment');
     Route::post('/appointment/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancel'])->name('cancel-appointment');
@@ -77,11 +77,11 @@ Route::middleware(['auth'])->group(function () {
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
-            
+
             // Настройки бизнеса
             Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');
             Route::patch('/business', [BusinessSettingsController::class, 'update'])->name('business.update');
-            
+
             // Локации
             Route::get('/locations', [BusinessSettingsController::class, 'locations'])->name('locations');
             Route::get('/locations/create', [BusinessSettingsController::class, 'createLocation'])->name('locations.create');
@@ -89,7 +89,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/locations/{location}/edit', [BusinessSettingsController::class, 'editLocation'])->name('locations.edit');
             Route::patch('/locations/{location}', [BusinessSettingsController::class, 'updateLocation'])->name('locations.update');
             Route::delete('/locations/{location}', [BusinessSettingsController::class, 'destroyLocation'])->name('locations.destroy');
-            
+
             // Мастера
             Route::get('/masters', [BusinessSettingsController::class, 'masters'])->name('masters');
             Route::get('/masters/create', [BusinessSettingsController::class, 'createMaster'])->name('masters.create');

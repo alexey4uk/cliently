@@ -17,7 +17,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -40,7 +40,7 @@ class ClientController extends Controller
 
         if ($sort === 'name') {
             $query->orderBy('first_name', $direction)
-                  ->orderBy('last_name', $direction);
+                ->orderBy('last_name', $direction);
         } else {
             $query->orderBy($sort, $direction);
         }
@@ -64,7 +64,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -81,7 +81,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -106,7 +106,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $client->business_id !== $business->id) {
+        if (! $business || $client->business_id !== $business->id) {
             return redirect()->route('clients.index');
         }
 
@@ -124,7 +124,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $client->business_id !== $business->id) {
+        if (! $business || $client->business_id !== $business->id) {
             return redirect()->route('clients.index');
         }
 
@@ -142,7 +142,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $client->business_id !== $business->id) {
+        if (! $business || $client->business_id !== $business->id) {
             return redirect()->route('clients.index');
         }
 
@@ -166,7 +166,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $client->business_id !== $business->id) {
+        if (! $business || $client->business_id !== $business->id) {
             return redirect()->route('clients.index');
         }
 

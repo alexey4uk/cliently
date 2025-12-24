@@ -30,8 +30,8 @@
                         </div>
                         <div class="flex-1 min-w-0 text-left">
                             <p class="text-sm md:text-base font-medium text-slate-900 dark:text-white mb-1">{{ $business->name }}</p>
-                            <a href="https://cliently.by/{{ $business->slug }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                                <span>https://cliently.by/{{ $business->slug }}</span>
+                            <a href="{{ url('/book/' . $business->slug) }}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                                <span>{{ url('/') }}/book/{{ $business->slug }}</span>
                                 <i class="fa-solid fa-external-link-alt text-[10px]"></i>
                             </a>
                         </div>

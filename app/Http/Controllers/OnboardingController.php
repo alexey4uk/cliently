@@ -32,7 +32,7 @@ class OnboardingController extends Controller
     public function storeBusiness(BusinessRequest $request)
     {
         $businessData = $request->validated();
-        
+
         // Дополнительная валидация для онбординга (first_name, last_name)
         $ownerData = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],

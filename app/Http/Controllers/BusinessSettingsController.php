@@ -5,11 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BusinessRequest;
 use App\Http\Requests\LocationRequest;
 use App\Http\Requests\MasterRequest;
-use App\Models\Business;
 use App\Models\Location;
 use App\Models\Master;
 use App\Services\WorkingHoursService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BusinessSettingsController extends Controller
@@ -22,7 +20,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -39,7 +37,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -56,7 +54,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -73,7 +71,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses.locations');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -91,7 +89,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -108,7 +106,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -138,7 +136,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $location->business_id !== $business->id) {
+        if (! $business || $location->business_id !== $business->id) {
             return redirect()->route('settings.locations');
         }
 
@@ -156,7 +154,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $location->business_id !== $business->id) {
+        if (! $business || $location->business_id !== $business->id) {
             return redirect()->route('settings.locations');
         }
 
@@ -185,7 +183,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $location->business_id !== $business->id) {
+        if (! $business || $location->business_id !== $business->id) {
             return redirect()->route('settings.locations');
         }
 
@@ -202,7 +200,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses.masters');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -220,7 +218,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -239,7 +237,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -257,11 +255,11 @@ class BusinessSettingsController extends Controller
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
         ]);
 
-        if (!empty($validated['location_ids'])) {
+        if (! empty($validated['location_ids'])) {
             $master->locations()->attach($validated['location_ids']);
         }
 
-        if (!empty($validated['service_ids'])) {
+        if (! empty($validated['service_ids'])) {
             $master->services()->attach($validated['service_ids']);
         }
 
@@ -276,7 +274,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (!$business || $master->business_id !== $business->id) {
+        if (! $business || $master->business_id !== $business->id) {
             return redirect()->route('settings.masters');
         }
 
@@ -298,7 +296,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (!$business || $master->business_id !== $business->id) {
+        if (! $business || $master->business_id !== $business->id) {
             return redirect()->route('settings.masters');
         }
 
@@ -334,7 +332,7 @@ class BusinessSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $master->business_id !== $business->id) {
+        if (! $business || $master->business_id !== $business->id) {
             return redirect()->route('settings.masters');
         }
 
@@ -343,4 +341,3 @@ class BusinessSettingsController extends Controller
         return redirect()->route('settings.masters')->with('success', 'Мастер удален');
     }
 }
-

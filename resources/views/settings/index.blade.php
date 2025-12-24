@@ -33,14 +33,11 @@
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
         <div class="space-y-3">
             <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Публичная ссылка
+                Ссылка на запись
             </h3>
             <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
                 <div class="flex-1 min-w-0 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 px-3 py-2.5 overflow-hidden">
-                    <div class="flex items-center gap-1 min-w-0">
-                        <span class="text-xs text-slate-500 dark:text-slate-400 font-mono select-none flex-shrink-0">https://cliently.by/</span>
-                        <span id="publicUrl" class="text-xs sm:text-sm text-slate-900 dark:text-white font-mono font-medium break-all min-w-0">{{ $business->slug }}</span>
-                    </div>
+                    <span id="publicUrl" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-mono break-all min-w-0 block">{{ url('/') }}/book/{{ $business->slug }}</span>
                 </div>
                 <button type="button" 
                         id="copyUrlBtn"
@@ -158,7 +155,7 @@
         
         if (!copyBtn || !publicUrl) return;
         
-        const fullUrl = 'https://cliently.by/' + publicUrl.textContent;
+        const fullUrl = publicUrl.textContent.trim();
         
         copyBtn.addEventListener('click', async function() {
             try {

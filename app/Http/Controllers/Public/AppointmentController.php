@@ -8,8 +8,8 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
 use App\Services\AppointmentSlotService;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
@@ -32,7 +32,7 @@ class AppointmentController extends Controller
         if ($locations->count() === 1) {
             return redirect()->route('public.appointments.select-location', [
                 'slug' => $business->slug,
-                'locationId' => $locations->first()->id
+                'locationId' => $locations->first()->id,
             ]);
         }
 
@@ -46,7 +46,7 @@ class AppointmentController extends Controller
     {
         $business = Business::where('slug', $slug)->firstOrFail();
         $location = $business->locations()->findOrFail($locationId);
-        
+
         // Получаем услуги, которые:
         // 1. Привязаны к этой локации через связь location->services
         // 2. ИЛИ все активные услуги бизнеса (если связь не используется)
@@ -54,7 +54,7 @@ class AppointmentController extends Controller
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-        
+
         // Если нет услуг, привязанных к локации, показываем все услуги бизнеса
         if ($services->isEmpty()) {
             $services = $business->services()
@@ -74,18 +74,18 @@ class AppointmentController extends Controller
         $business = Business::where('slug', $slug)->firstOrFail();
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
-        
+
         // Получаем мастеров, которые:
         // 1. Работают в выбранной локации
         // 2. Предоставляют выбранную услугу
         $masters = $location->masters()
             ->where('is_active', true)
-            ->whereHas('services', function($q) use ($serviceId) {
+            ->whereHas('services', function ($q) use ($serviceId) {
                 $q->where('services.id', $serviceId);
             })
             ->orderBy('first_name')
             ->get();
-        
+
         // Если нет мастеров с услугой в локации, показываем всех мастеров локации
         if ($masters->isEmpty()) {
             $masters = $location->masters()
@@ -93,12 +93,12 @@ class AppointmentController extends Controller
                 ->orderBy('first_name')
                 ->get();
         }
-        
+
         // Если все еще нет мастеров, показываем всех мастеров бизнеса, которые предоставляют услугу
         if ($masters->isEmpty()) {
             $masters = $business->masters()
                 ->where('is_active', true)
-                ->whereHas('services', function($q) use ($serviceId) {
+                ->whereHas('services', function ($q) use ($serviceId) {
                     $q->where('services.id', $serviceId);
                 })
                 ->orderBy('first_name')
@@ -117,14 +117,14 @@ class AppointmentController extends Controller
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
         $master = $business->masters()->findOrFail($masterId);
-        
+
         // Проверяем, что мастер работает в выбранной локации
-        if (!$master->locations()->where('locations.id', $locationId)->exists()) {
+        if (! $master->locations()->where('locations.id', $locationId)->exists()) {
             abort(404, 'Мастер не работает в выбранной локации');
         }
 
         // Проверяем, что мастер предоставляет услугу
-        if (!$master->services()->where('services.id', $serviceId)->exists()) {
+        if (! $master->services()->where('services.id', $serviceId)->exists()) {
             abort(404, 'Мастер не предоставляет эту услугу');
         }
 
@@ -205,18 +205,18 @@ class AppointmentController extends Controller
     public function success(string $slug, Request $request)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
-        
+
         // Получаем запись по токену из сессии или параметра
         $token = $request->session()->get('appointment_token') ?? $request->get('token');
         $appointment = null;
-        
+
         if ($token) {
             $appointment = Appointment::where('token', $token)
                 ->where('business_id', $business->id)
                 ->with(['service', 'master', 'location', 'client'])
                 ->first();
         }
-        
+
         return view('appointments.public.success', compact('business', 'appointment', 'token'));
     }
 

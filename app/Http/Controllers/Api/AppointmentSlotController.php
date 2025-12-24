@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AppointmentSlotService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AppointmentSlotController extends Controller
@@ -19,9 +19,6 @@ class AppointmentSlotController extends Controller
 
     /**
      * Получить доступные временные слоты
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function getAvailableSlots(Request $request): JsonResponse
     {
@@ -43,7 +40,7 @@ class AppointmentSlotController extends Controller
             // Нормализуем пустые значения в null
             $masterId = $request->input('master_id');
             $locationId = $request->input('location_id');
-            
+
             $masterId = ($masterId === '' || $masterId === null) ? null : (int) $masterId;
             $locationId = ($locationId === '' || $locationId === null) ? null : (int) $locationId;
 
@@ -67,9 +64,8 @@ class AppointmentSlotController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при получении доступных слотов: ' . $e->getMessage(),
+                'message' => 'Ошибка при получении доступных слотов: '.$e->getMessage(),
             ], 500);
         }
     }
 }
-

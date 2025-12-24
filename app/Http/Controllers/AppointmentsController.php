@@ -6,11 +6,9 @@ use App\Http\Requests\AppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Service;
-use App\Models\Master;
-use App\Models\Location;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class AppointmentsController extends Controller
 {
@@ -22,15 +20,15 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
         $view = $request->get('view', 'table'); // table или calendar
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
-        
+
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -43,25 +41,25 @@ class AppointmentsController extends Controller
             $startOfMonth = $selectedDate->copy()->startOfMonth();
             $endOfMonth = $selectedDate->copy()->endOfMonth();
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
-                  ->orderBy('date', 'asc')
-                  ->orderBy('time', 'asc');
-            
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc');
+
             $allAppointments = $query->get();
-            
+
             // Группируем по датам
             $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
                 return $appointment->date->format('Y-m-d');
             });
-            
+
             // Для календаря используем коллекцию без пагинации
             $appointments = $allAppointments;
-            
+
             // Для календаря пагинация не нужна
             $appointments = $appointments;
         } else {
             // Для таблицы используем фильтры
             $query->orderBy('date', 'desc')
-                  ->orderBy('time', 'desc');
+                ->orderBy('time', 'desc');
 
             // Фильтр по дате
             if ($request->has('date') && $request->date) {
@@ -113,7 +111,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -134,7 +132,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -174,7 +172,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -194,7 +192,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -218,7 +216,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -257,7 +255,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -274,7 +272,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -291,7 +289,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 
@@ -308,7 +306,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $appointment->business_id !== $business->id) {
+        if (! $business || $appointment->business_id !== $business->id) {
             return redirect()->route('appointments.index');
         }
 

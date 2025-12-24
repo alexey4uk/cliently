@@ -50,4 +50,3 @@ class ServiceRequest extends FormRequest
         ];
     }
 }
-
