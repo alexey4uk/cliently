@@ -69,22 +69,26 @@
                     <!-- Step 1: Локация -->
                     <div class="step-content" data-step="1">
                         <div class="pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
-                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-map-marker-alt text-indigo-600 dark:text-indigo-400"></i>
+                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Выберите локацию
                             </h3>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-1">
                             @if($locations->count() > 0)
                                 @foreach($locations as $location)
-                                    <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors location-option">
-                                        <input type="radio" name="location_id" value="{{ $location->id }}" required class="mt-1 mr-3 location-radio flex-shrink-0" {{ old('location_id') == $location->id ? 'checked' : '' }}>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $location->name }}</div>
-                                            @if($location->full_address)
-                                                <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 break-words">{{ $location->full_address }}</div>
-                                            @endif
+                                    <label class="flex items-center justify-between p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors location-option">
+                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            <input type="radio" name="location_id" value="{{ $location->id }}" required class="mt-0 mr-0 location-radio flex-shrink-0" {{ old('location_id') == $location->id ? 'checked' : '' }}>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="font-semibold text-slate-900 dark:text-white text-sm break-words">{{ $location->name }}</div>
+                                                @if($location->full_address)
+                                                    <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 break-words">{{ $location->full_address }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 ml-3">
+                                            <i class="fa-solid fa-chevron-right text-slate-400 location-option:not(.active) && text-indigo-600 text-sm"></i>
                                         </div>
                                     </label>
                                 @endforeach
@@ -103,26 +107,30 @@
                     <!-- Step 2: Услуга -->
                     <div class="step-content hidden" data-step="2">
                         <div class="pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
-                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-spa text-indigo-600 dark:text-indigo-400"></i>
+                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Выберите услугу
                             </h3>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-1">
                             @foreach($services as $service)
-                                <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors service-option">
-                                    <input type="radio" name="service_id" value="{{ $service->id }}" required class="mt-1 mr-3 service-radio flex-shrink-0" {{ old('service_id') == $service->id ? 'checked' : '' }}>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $service->name }}</div>
-                                        <div class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                            <span class="font-medium">{{ number_format($service->price, 0, ',', ' ') }} Br</span>
-                                            <span class="mx-2">•</span>
-                                            <span>{{ $service->duration }} мин</span>
+                                <label class="flex items-center justify-between p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors service-option">
+                                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                                        <input type="radio" name="service_id" value="{{ $service->id }}" required class="mt-0 mr-0 service-radio flex-shrink-0" {{ old('service_id') == $service->id ? 'checked' : '' }}>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-semibold text-slate-900 dark:text-white text-sm break-words">{{ $service->name }}</div>
+                                            <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                                                <span class="font-medium">{{ number_format($service->price, 0, ',', ' ') }} Br</span>
+                                                <span class="mx-1.5">•</span>
+                                                <span>{{ $service->duration }} мин</span>
+                                            </div>
+                                            @if($service->description)
+                                                <div class="text-xs text-slate-500 dark:text-slate-500 mt-1 break-words line-clamp-1">{{ $service->description }}</div>
+                                            @endif
                                         </div>
-                                        @if($service->description)
-                                            <div class="text-sm text-slate-500 dark:text-slate-500 mt-2 break-words">{{ $service->description }}</div>
-                                        @endif
+                                    </div>
+                                    <div class="flex-shrink-0 ml-3">
+                                        <i class="fa-solid fa-chevron-right text-slate-400 service-option:not(.active) && text-indigo-600 text-sm"></i>
                                     </div>
                                 </label>
                             @endforeach
@@ -135,21 +143,25 @@
                     <!-- Step 3: Мастер -->
                     <div class="step-content hidden" data-step="3">
                         <div class="pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
-                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-user-tie text-indigo-600 dark:text-indigo-400"></i>
+                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Выберите мастера
                             </h3>
                         </div>
 
-                        <div class="space-y-3" id="masters-container">
+                        <div class="space-y-1" id="masters-container">
                             @foreach($masters as $master)
-                                <label class="flex items-start p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors master-option hidden" data-master-id="{{ $master->id }}" data-master-services="{{ $master->services->pluck('id')->implode(',') }}">
-                                    <input type="radio" name="master_id" value="{{ $master->id }}" required class="mt-1 mr-3 master-radio flex-shrink-0" {{ old('master_id') == $master->id ? 'checked' : '' }}>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-slate-900 dark:text-white text-base md:text-sm break-words">{{ $master->first_name }} {{ $master->last_name }}</div>
-                                        @if($master->specialization)
-                                            <div class="text-sm text-slate-600 dark:text-slate-400 mt-1 break-words">{{ $master->specialization }}</div>
-                                        @endif
+                                <label class="flex items-center justify-between p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors master-option hidden" data-master-id="{{ $master->id }}" data-master-services="{{ $master->services->pluck('id')->implode(',') }}">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                                        <input type="radio" name="master_id" value="{{ $master->id }}" required class="mt-0 mr-0 master-radio flex-shrink-0" {{ old('master_id') == $master->id ? 'checked' : '' }}>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-semibold text-slate-900 dark:text-white text-sm break-words">{{ $master->first_name }} {{ $master->last_name }}</div>
+                                            @if($master->specialization)
+                                                <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5 break-words">{{ $master->specialization }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0 ml-3">
+                                        <i class="fa-solid fa-chevron-right text-slate-400 master-option:not(.active) && text-indigo-600 text-sm"></i>
                                     </div>
                                 </label>
                             @endforeach
@@ -162,8 +174,7 @@
                     <!-- Step 4: Дата и время -->
                     <div class="step-content hidden" data-step="4">
                         <div class="pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
-                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-alt text-indigo-600 dark:text-indigo-400"></i>
+                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Выберите дату и время
                             </h3>
                         </div>
@@ -201,11 +212,27 @@
                         </div>
                     </div>
 
+                    <!-- Дополнительная информация -->
+                    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <button type="button" id="additional-info-toggle-create" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">Пожелания</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200" id="additional-info-icon-create"></i>
+                        </button>
+                        <div id="additional-info-content-create" class="hidden px-4 pt-4 pb-4">
+                            <div>
+                                <textarea id="notes" name="notes" rows="3"
+                                          class="w-full px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('notes') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors resize-none">{{ old('notes') }}</textarea>
+                                @error('notes')
+                                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Step 5: Контактные данные -->
                     <div class="step-content hidden" data-step="5">
                         <div class="pb-4 border-b border-slate-200 dark:border-slate-700 mb-5">
-                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
+                            <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Контактные данные
                             </h3>
                         </div>
@@ -236,43 +263,18 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                    <span>Телефон*</span>
-                                </label>
-                                <input type="tel" id="phone" name="phone" required
-                                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                                       value="{{ old('phone') }}" placeholder="+375 (XX) XXX-XX-XX">
-                                @error('phone')
-                                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                    <span>Email</span>
-                                </label>
-                                <input type="email" id="email" name="email"
-                                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                                       value="{{ old('email') }}" placeholder="your@email.com">
-                                @error('email')
-                                <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-
                         <div>
-                            <label for="notes" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                <span>Заметки (необязательно)</span>
+                            <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                <span>Телефон*</span>
                             </label>
-                            <textarea id="notes" name="notes" rows="3"
-                                      class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('notes') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors resize-none"
-                                      placeholder="Дополнительная информация...">{{ old('notes') }}</textarea>
-                            @error('notes')
+                            <input type="tel" id="phone" name="phone" required
+                                   class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                                   value="{{ old('phone') }}" placeholder="+375 (XX) XXX-XX-XX">
+                            @error('phone')
                             <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
                         </div>
+
                     </div>
 
                     <!-- Navigation Buttons -->
@@ -642,6 +644,25 @@
                     }
                 }
             });
+
+            // Collapsible дополнительная информация
+            const toggleBtnCreate = document.getElementById('additional-info-toggle-create');
+            const contentCreate = document.getElementById('additional-info-content-create');
+            const iconCreate = document.getElementById('additional-info-icon-create');
+
+            if (toggleBtnCreate && contentCreate && iconCreate) {
+                toggleBtnCreate.addEventListener('click', function() {
+                    const isHidden = contentCreate.classList.contains('hidden');
+
+                    if (isHidden) {
+                        contentCreate.classList.remove('hidden');
+                        iconCreate.style.transform = 'rotate(180deg)';
+                    } else {
+                        contentCreate.classList.add('hidden');
+                        iconCreate.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
 
             // Initialize
             showStep(1);

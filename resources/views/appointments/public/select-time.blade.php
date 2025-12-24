@@ -5,11 +5,11 @@
 @section('content')
 <div class="space-y-4 w-full min-w-0">
     <!-- Breadcrumb навигация -->
-    <div>
+    <div class="mb-4">
         <a href="{{ route('public.appointments.select-service', ['slug' => $business->slug, 'locationId' => $location->id, 'serviceId' => $service->id]) }}" 
-           class="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+           class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
             <i class="fa-solid fa-arrow-left text-xs"></i>
-            <span>Назад к выбору мастера</span>
+            <span>Назад</span>
         </a>
     </div>
 
@@ -21,17 +21,14 @@
         <input type="hidden" name="date" value="{{ $date }}" id="selected-date-input">
 
             <!-- Выбор даты: Горизонтальный скролл недели -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden w-full">
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
                 <!-- Компактный заголовок (всегда видимый) -->
-                <div class="px-4 py-3 sm:px-4 sm:py-3">
+                <div class="px-4 py-3">
                     <!-- Мобильная версия: вертикальный layout -->
-                    <div class="block sm:hidden space-y-3">
+                    <div class="block sm:hidden space-y-2">
                         <div class="flex items-center justify-between">
-                            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                                    <i class="fa-solid fa-calendar-alt text-indigo-600 dark:text-indigo-400 text-sm"></i>
-                                </div>
-                                <span>Дата</span>
+                            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Дата
                             </label>
                             @php
                                 $selectedDateCarbon = \Carbon\Carbon::parse($date);
@@ -44,17 +41,15 @@
                                 </span>
                             @endif
                         </div>
-                        <div class="text-sm font-medium text-slate-700 dark:text-slate-300 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-center" id="selected-date-display-mobile">
+                        <div class="text-sm font-medium text-slate-700 dark:text-slate-300 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-center" id="selected-date-display-mobile">
                             {{ $selectedDateCarbon->locale('ru')->isoFormat('D MMMM') }}
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="toggle-date-selector-btn" class="px-4 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-xl transition-colors flex items-center justify-center gap-2 border border-indigo-200 dark:border-indigo-800 min-h-[44px]">
-                                <i class="fa-solid fa-calendar-week text-sm"></i>
+                            <button type="button" id="toggle-date-selector-btn" class="px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
                                 <span>Выбрать</span>
                                 <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="date-selector-icon"></i>
                             </button>
-                            <button type="button" id="open-calendar-btn" class="px-4 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-xl transition-colors flex items-center justify-center gap-2 border border-indigo-200 dark:border-indigo-800 min-h-[44px]">
-                                <i class="fa-solid fa-calendar-days text-sm"></i>
+                            <button type="button" id="open-calendar-btn" class="px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
                                 <span>Календарь</span>
                             </button>
                         </div>
@@ -63,11 +58,8 @@
                     <!-- Десктопная версия: горизонтальный layout -->
                     <div class="hidden sm:flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                                    <i class="fa-solid fa-calendar-alt text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                </div>
-                                <span>Дата</span>
+                            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                Дата
                             </label>
                             @if($showYear)
                                 <span class="year-badge text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
@@ -76,18 +68,16 @@
                             @else
                                 <span class="year-badge text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded hidden"></span>
                             @endif
-                            <span class="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg" id="selected-date-display">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg" id="selected-date-display">
                                 {{ $selectedDateCarbon->locale('ru')->isoFormat('D MMMM') }}
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" id="toggle-date-selector-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-xl transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <i class="fa-solid fa-calendar-week text-xs"></i>
+                            <button type="button" id="toggle-date-selector-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
                                 <span>Выбрать</span>
                                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="date-selector-icon-desktop"></i>
                             </button>
-                            <button type="button" id="open-calendar-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-xl transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <i class="fa-solid fa-calendar-days text-xs"></i>
+                            <button type="button" id="open-calendar-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
                                 <span>Календарь</span>
                             </button>
                         </div>
@@ -131,7 +121,7 @@
                                 $isPast = $dateItem->isPast() && !$isToday;
                             @endphp
                             <button type="button" 
-                                    class="week-date-btn flex-shrink-0 w-16 sm:w-14 md:w-16 p-2.5 sm:p-2 rounded-xl border-2 transition-all duration-200 snap-start {{ $isSelected ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-200 dark:ring-indigo-800 shadow-sm' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-slate-800' }} {{ $isPast ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md active:scale-95' }} min-h-[60px] sm:min-h-0"
+                                    class="week-date-btn flex-shrink-0 w-14 p-2 rounded-lg border transition-colors snap-start {{ $isSelected ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-slate-800' }} {{ $isPast ? 'opacity-50 cursor-not-allowed' : '' }}"
                                     data-date="{{ $dateItem->format('Y-m-d') }}"
                                     {{ $isPast ? 'disabled' : '' }}>
                                 <div class="text-[10px] sm:text-[9px] text-slate-500 dark:text-slate-400 mb-1 sm:mb-0.5 leading-tight">
@@ -156,14 +146,11 @@
             </div>
 
             <!-- Выбор времени: Горизонтальный скролл -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden w-full">
-                <div class="px-4 pt-4 pb-3">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                            <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                                <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                            </div>
-                            <span>Время*</span>
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
+                <div class="px-4 pt-3 pb-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Время*
                         </label>
                         <div class="text-[10px] font-medium text-slate-500 dark:text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg" id="slots-count-badge" style="{{ count($availableSlots) == 0 ? 'display: none;' : '' }}">
                             {{ count($availableSlots) }} {{ count($availableSlots) == 1 ? 'слот' : 'слотов' }}
@@ -182,43 +169,51 @@
                         <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="time-slots-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
                             <div class="flex gap-2 pb-1.5 flex-nowrap" id="time-slots-container" style="min-width: max-content;">
                             @foreach($availableSlots as $slot)
-                                <label class="time-slot-label flex-shrink-0 w-20 sm:w-16 md:w-20 p-3 sm:p-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:shadow-md active:scale-95 snap-start {{ old('time') == $slot ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-200 dark:ring-indigo-800 shadow-sm' : '' }} min-h-[52px] sm:min-h-0">
+                                <label class="time-slot-label flex-shrink-0 w-16 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-colors hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 snap-start {{ old('time') == $slot ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
                                     <input type="radio" name="time" value="{{ $slot }}" required class="sr-only time-radio" {{ old('time') == $slot ? 'checked' : '' }}>
-                                    <span class="text-sm sm:text-xs font-semibold text-slate-900 dark:text-white leading-tight">{{ $slot }}</span>
+                                    <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $slot }}</span>
                                 </label>
                             @endforeach
                             </div>
                         </div>
                     @else
                         <!-- Уведомление о отсутствии слотов -->
-                        <div class="px-4 pb-4" id="time-slots-container">
-                            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                                <div class="flex items-start gap-3">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                                        <i class="fa-solid fa-info-circle text-amber-600 dark:text-amber-400 text-sm"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                                            Нет свободных мест на эту дату
-                                        </h4>
-                                        <p class="text-xs text-amber-800 dark:text-amber-300">
-                                            На выбранную дату все временные слоты заняты. Пожалуйста, выберите другую дату.
-                                        </p>
-                                    </div>
-                                </div>
+                        <div class="px-4 pb-3" id="time-slots-container">
+                            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                                <p class="text-sm text-amber-800 dark:text-amber-300">
+                                    На выбранную дату все временные слоты заняты. Выберите другую дату.
+                                </p>
                             </div>
                         </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Форма контактов -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg p-4">
-                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                    <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-sm"></i>
+            <!-- Дополнительная информация (выпадающее меню) -->
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <button type="button" id="additional-info-toggle" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Пожелания</span>
+                    <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200" id="additional-info-icon"></i>
+                </button>
+                <div id="additional-info-content" class="hidden px-4 pt-4 pb-4">
+                    <div>
+                        <input type="text" id="notes" name="notes"
+                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                               value="{{ old('notes') }}">
+                        @error('notes')
+                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
                     </div>
-                    <span>Контактные данные</span>
+                </div>
+            </div>
+
+            <!-- Форма контактов -->
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4">
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-3">
+                    Контактные данные
                 </h3>
 
                 <div class="space-y-4">
@@ -227,7 +222,7 @@
                             Имя*
                         </label>
                         <input type="text" id="first_name" name="first_name" required autofocus
-                               class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
+                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                                value="{{ old('first_name') }}" placeholder="Введите ваше имя" aria-label="Имя">
                         @error('first_name')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
@@ -242,7 +237,7 @@
                             Телефон*
                         </label>
                         <input type="tel" id="phone" name="phone" required
-                               class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
+                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                                value="{{ old('phone') }}" placeholder="+375XXXXXXXXX">
                         @error('phone')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
@@ -251,46 +246,13 @@
                         </p>
                         @enderror
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="email" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                Email
-                            </label>
-                            <input type="email" id="email" name="email"
-                                   class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
-                                   value="{{ old('email') }}" placeholder="your@email.com">
-                            @error('email')
-                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                                <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
-                                <span>{{ $message }}</span>
-                            </p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="notes" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                                Заметки
-                            </label>
-                            <input type="text" id="notes" name="notes"
-                                   class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
-                                   value="{{ old('notes') }}" placeholder="Дополнительная информация">
-                            @error('notes')
-                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                                <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
-                                <span>{{ $message }}</span>
-                            </p>
-                            @enderror
-                        </div>
-                    </div>
                 </div>
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" {{ count($availableSlots) == 0 ? 'disabled' : '' }}>
-                <i class="fa-solid fa-check text-xs"></i>
+            <button type="submit" id="submit-btn" class="w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" {{ count($availableSlots) == 0 ? 'disabled' : '' }}>
                 <span class="submit-text">Записаться</span>
                 <span class="submit-loading hidden">
-                    <i class="fa-solid fa-spinner fa-spin mr-1.5 text-xs"></i>
+                    <i class="fa-solid fa-spinner fa-spin text-xs"></i>
                     <span>Отправка...</span>
                 </span>
             </button>
@@ -300,7 +262,7 @@
 <!-- Модальное окно календаря -->
 <div id="calendar-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4" style="padding-bottom: env(safe-area-inset-bottom, 0);">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" id="calendar-backdrop"></div>
-    <div class="calendar-dialog w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-xl z-50 relative overflow-hidden max-h-[90vh] flex flex-col" style="max-height: calc(100vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));">
+    <div class="calendar-dialog w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-lg sm:rounded-lg shadow-lg z-50 relative overflow-hidden max-h-[90vh] flex flex-col" style="max-height: calc(100vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));">
         <!-- Индикатор drag для мобильных -->
         <div class="sm:hidden flex justify-center pt-3 pb-2">
             <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
@@ -309,7 +271,7 @@
             <div class="p-4 sm:p-3 md:p-4 pt-3 sm:pt-4 pb-4 sm:pb-4" style="padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);">
                 <!-- Заголовок модального окна -->
                 <div class="flex items-center justify-between mb-3 sm:mb-3">
-                    <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Выберите дату</h3>
+                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Выберите дату</h3>
                     <button type="button" id="close-calendar-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                         <i class="fa-solid fa-times text-lg"></i>
                     </button>
@@ -1372,6 +1334,27 @@
                 });
             }
         }
+
+        // Collapsible дополнительная информация
+        (function() {
+            const toggleBtn = document.getElementById('additional-info-toggle');
+            const content = document.getElementById('additional-info-content');
+            const icon = document.getElementById('additional-info-icon');
+
+            if (toggleBtn && content && icon) {
+                toggleBtn.addEventListener('click', function() {
+                    const isHidden = content.classList.contains('hidden');
+
+                    if (isHidden) {
+                        content.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+        })();
     })();
 </script>
 @endpush

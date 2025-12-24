@@ -112,11 +112,11 @@
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-x-hidden">
-    <!-- Header секция с градиентом -->
-    <header class="bg-gradient-to-br from-slate-50 to-indigo-50/30 dark:from-slate-900 dark:to-slate-800 border-b border-slate-200 dark:border-slate-800 overflow-x-hidden">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
+    <!-- Header секция -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-x-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full min-w-0">
             <!-- Логотип и переключатель темы -->
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                     <x-logo size="md" />
                     <span class="text-xl font-bold text-slate-900 dark:text-white uppercase font-display">{{ $business->name }}</span>
@@ -132,7 +132,7 @@
 
             <!-- Индикатор прогресса -->
             @if(isset($currentStep))
-            <div class="flex items-center justify-between w-full mb-2 min-w-0">
+            <div class="flex items-center justify-between w-full min-w-0">
                 @php
                     $steps = [
                         1 => ['label' => 'Локация', 'icon' => 'fa-map-marker-alt'],
@@ -145,38 +145,37 @@
                     <div class="flex flex-col items-center flex-1 relative">
                         <div class="relative flex items-center justify-center w-full">
                             <!-- Номер шага -->
-                            <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-200
+                            <div class="relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-medium text-xs transition-colors
                                 @if($currentStep > $stepNum)
-                                    bg-green-500 text-white ring-4 ring-green-200 dark:ring-green-800
+                                    bg-green-500 text-white
                                 @elseif($currentStep == $stepNum)
-                                    bg-indigo-600 text-white ring-4 ring-indigo-200 dark:ring-indigo-800 shadow-lg
+                                    bg-indigo-600 text-white
                                 @else
                                     bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400
                                 @endif">
                                 @if($currentStep > $stepNum)
-                                    <i class="fa-solid fa-check text-xs"></i>
+                                    <i class="fa-solid fa-check text-[10px]"></i>
                                 @else
                                     {{ $stepNum }}
                                 @endif
                             </div>
                             <!-- Линия между шагами -->
                             @if($stepNum < count($steps))
-                                <div class="absolute left-1/2 top-1/2 h-0.5 -translate-y-1/2 transition-all duration-200
+                                <div class="absolute left-1/2 top-1/2 h-0.5 -translate-y-1/2 transition-colors
                                     @if($currentStep > $stepNum)
                                         bg-green-500
                                     @else
                                         bg-slate-200 dark:bg-slate-700
-                                    @endif" style="width: calc(100% - 2.5rem);"></div>
+                                    @endif" style="width: calc(100% - 2rem);"></div>
                             @endif
                         </div>
                         <!-- Название шага -->
-                        <span class="mt-2 text-xs font-medium text-center transition-colors duration-200
+                        <span class="mt-1.5 text-[10px] font-medium text-center transition-colors
                             @if($currentStep >= $stepNum)
-                                text-indigo-600 dark:text-indigo-400 font-semibold
+                                text-indigo-600 dark:text-indigo-400
                             @else
                                 text-slate-500 dark:text-slate-400
                             @endif">
-                            <i class="fa-solid {{ $step['icon'] }} mr-1"></i>
                             <span class="hidden sm:inline">{{ $step['label'] }}</span>
                         </span>
                     </div>
@@ -187,7 +186,7 @@
     </header>
 
     <!-- Контентная область -->
-    <main class="min-h-screen py-4 sm:py-6 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+    <main class="min-h-screen py-4 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         <div class="max-w-4xl mx-auto w-full min-w-0">
             @yield('content')
         </div>

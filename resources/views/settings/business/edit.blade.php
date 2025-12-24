@@ -42,7 +42,7 @@
 
                 <div>
                     <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Персональная ссылка*</span>
+                        <span>Ссылка на запись*</span>
                     </label>
                     <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
                         <!-- Префикс -->
@@ -72,7 +72,7 @@
                     <div id="slugPreviewCard" class="{{ old('slug', $business->slug) ? '' : 'hidden' }} mt-2 transition-opacity duration-200">
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center">
                             <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs mr-1.5"></i>
-                            <span class="select-none">https://cliently.by/</span><span id="slugPreview" class="font-semibold text-indigo-600 dark:text-indigo-400">{{ old('slug', $business->slug) }}</span>
+                            <span class="select-none">{{ url('/') }}/book/</span><span id="slugPreview" class="font-semibold text-indigo-600 dark:text-indigo-400">{{ old('slug', $business->slug) }}</span>
                         </p>
                     </div>
                     @error('slug')
