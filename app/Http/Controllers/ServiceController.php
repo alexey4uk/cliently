@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ServiceRequest;
 use App\Models\Service;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
@@ -17,7 +16,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses.services');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -35,7 +34,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -52,7 +51,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -86,7 +85,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $service->business_id !== $business->id) {
+        if (! $business || $service->business_id !== $business->id) {
             return redirect()->route('services.index');
         }
 
@@ -104,7 +103,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $service->business_id !== $business->id) {
+        if (! $business || $service->business_id !== $business->id) {
             return redirect()->route('services.index');
         }
 
@@ -129,7 +128,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business || $service->business_id !== $business->id) {
+        if (! $business || $service->business_id !== $business->id) {
             return redirect()->route('services.index');
         }
 

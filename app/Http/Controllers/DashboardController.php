@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Appointment;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -13,7 +12,7 @@ class DashboardController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('onboarding.business');
         }
 
@@ -51,7 +50,7 @@ class DashboardController extends Controller
 
         // Исключаем следующую запись из основного списка, чтобы избежать дублирования
         $upcomingAppointmentsWithoutNext = $upcomingAppointments->filter(function ($appointment) use ($nextAppointment) {
-            return !$nextAppointment || $appointment->id !== $nextAppointment->id;
+            return ! $nextAppointment || $appointment->id !== $nextAppointment->id;
         });
 
         // Прогресс дня

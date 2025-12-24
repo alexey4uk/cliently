@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class Appointment extends Model
 {
@@ -45,7 +44,7 @@ class Appointment extends Model
     /**
      * Генерация красивого читаемого токена
      * Формат: abc-123-def-456 (чередование букв и цифр, 2 группы)
-     * 
+     *
      * Математика безопасности:
      * - Буквы: 26 символов (a-z)
      * - Цифры: 10 символов (0-9)
@@ -57,23 +56,23 @@ class Appointment extends Model
     {
         $maxAttempts = 100; // Защита от бесконечного цикла
         $attempts = 0;
-        
+
         do {
             // Генерируем формат: abc-123-def-456
             // Группа 1: 3 буквы + 3 цифры
             $letters1 = self::generateTokenPart(3, 'letters');
             $digits1 = self::generateTokenPart(3, 'digits');
-            
+
             // Группа 2: 3 буквы + 3 цифры
             $letters2 = self::generateTokenPart(3, 'letters');
             $digits2 = self::generateTokenPart(3, 'digits');
-            
-            $token = strtolower($letters1 . '-' . $digits1 . '-' . $letters2 . '-' . $digits2);
+
+            $token = strtolower($letters1.'-'.$digits1.'-'.$letters2.'-'.$digits2);
             $attempts++;
-            
+
             // Если превысили лимит попыток, добавляем случайный суффикс
             if ($attempts >= $maxAttempts) {
-                $token .= '-' . self::generateTokenPart(4, 'mixed');
+                $token .= '-'.self::generateTokenPart(4, 'mixed');
                 break;
             }
         } while (self::where('token', $token)->exists());
@@ -83,25 +82,25 @@ class Appointment extends Model
 
     /**
      * Генерация части токена
-     * 
-     * @param int $length Длина части
-     * @param string $type Тип: 'letters' (только буквы), 'digits' (только цифры), 'mixed' (буквы и цифры)
+     *
+     * @param  int  $length  Длина части
+     * @param  string  $type  Тип: 'letters' (только буквы), 'digits' (только цифры), 'mixed' (буквы и цифры)
      */
     protected static function generateTokenPart(int $length, string $type = 'mixed'): string
     {
-        $characters = match($type) {
+        $characters = match ($type) {
             'letters' => 'abcdefghijklmnopqrstuvwxyz',
             'digits' => '0123456789',
             'mixed' => 'abcdefghijklmnopqrstuvwxyz0123456789',
             default => 'abcdefghijklmnopqrstuvwxyz0123456789',
         };
-        
+
         $part = '';
-        
+
         for ($i = 0; $i < $length; $i++) {
             $part .= $characters[random_int(0, strlen($characters) - 1)];
         }
-        
+
         return $part;
     }
 
@@ -135,9 +134,8 @@ class Appointment extends Model
      */
     public function getDateTimeAttribute(): Carbon
     {
-        return Carbon::parse($this->date->format('Y-m-d') . ' ' . $this->time);
+        return Carbon::parse($this->date->format('Y-m-d').' '.$this->time);
     }
-
 
     /**
      * Получить финальную цену (переопределенная или из услуги)
@@ -174,10 +172,9 @@ class Appointment extends Model
     /**
      * Проверить, пересекается ли запись с другим временным интервалом
      *
-     * @param Carbon $startTime Время начала
-     * @param int $duration Длительность в минутах
-     * @param int|null $excludeAppointmentId ID записи для исключения (при обновлении)
-     * @return bool
+     * @param  Carbon  $startTime  Время начала
+     * @param  int  $duration  Длительность в минутах
+     * @param  int|null  $excludeAppointmentId  ID записи для исключения (при обновлении)
      */
     public function overlapsWith(Carbon $startTime, int $duration, ?int $excludeAppointmentId = null): bool
     {
@@ -204,16 +201,15 @@ class Appointment extends Model
     /**
      * Проверить, есть ли конфликтующие записи для мастера
      *
-     * @param int $masterId ID мастера
-     * @param Carbon $date Дата
-     * @param string $time Время в формате H:i
-     * @param int $duration Длительность в минутах
-     * @param int|null $excludeAppointmentId ID записи для исключения
-     * @return bool
+     * @param  int  $masterId  ID мастера
+     * @param  Carbon  $date  Дата
+     * @param  string  $time  Время в формате H:i
+     * @param  int  $duration  Длительность в минутах
+     * @param  int|null  $excludeAppointmentId  ID записи для исключения
      */
     public static function hasConflictForMaster(int $masterId, Carbon $date, string $time, int $duration, ?int $excludeAppointmentId = null): bool
     {
-        $startTime = Carbon::parse($date->format('Y-m-d') . ' ' . $time);
+        $startTime = Carbon::parse($date->format('Y-m-d').' '.$time);
 
         $appointments = self::where('master_id', $masterId)
             ->where('date', $date->format('Y-m-d'))

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Carbon\Carbon;
 
 class Master extends Model
 {
@@ -49,7 +49,7 @@ class Master extends Model
     protected function getWorkingHoursArray(): ?array
     {
         $workingHours = $this->working_hours;
-        
+
         if (empty($workingHours)) {
             return null;
         }
@@ -62,6 +62,7 @@ class Master extends Model
         // Если это строка JSON, декодируем
         if (is_string($workingHours)) {
             $decoded = json_decode($workingHours, true);
+
             return is_array($decoded) ? $decoded : null;
         }
 
@@ -74,8 +75,8 @@ class Master extends Model
     public function isDayOff(Carbon $date): bool
     {
         $workingHours = $this->getWorkingHoursArray();
-        
-        if (!$workingHours || !is_array($workingHours)) {
+
+        if (! $workingHours || ! is_array($workingHours)) {
             return true; // Если нет данных о рабочем времени, считаем выходным
         }
 
@@ -88,7 +89,6 @@ class Master extends Model
     /**
      * Получить время работы на конкретную дату
      *
-     * @param Carbon $date
      * @return array|null ['from' => '09:00', 'to' => '18:00'] или null если выходной
      */
     public function getWorkingTimeForDate(Carbon $date): ?array
@@ -98,8 +98,8 @@ class Master extends Model
         }
 
         $workingHours = $this->getWorkingHoursArray();
-        
-        if (!$workingHours || !is_array($workingHours)) {
+
+        if (! $workingHours || ! is_array($workingHours)) {
             return null;
         }
 
@@ -129,8 +129,8 @@ class Master extends Model
     public function isWorkingAt(Carbon $date, string $time): bool
     {
         $workingTime = $this->getWorkingTimeForDate($date);
-        
-        if (!$workingTime) {
+
+        if (! $workingTime) {
             return false;
         }
 

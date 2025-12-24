@@ -23,9 +23,9 @@ class BusinessRequest extends FormRequest
         // Получаем бизнес из route или из сессии/пользователя
         $business = $this->route('business');
         $businessId = $business?->id ?? null;
-        
+
         // Если бизнес не в route, пытаемся получить из пользователя
-        if (!$businessId && auth()->check()) {
+        if (! $businessId && auth()->check()) {
             $userBusiness = auth()->user()->businesses->first();
             $businessId = $userBusiness?->id;
         }

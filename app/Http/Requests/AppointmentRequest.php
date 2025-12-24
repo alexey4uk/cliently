@@ -3,12 +3,12 @@
 namespace App\Http\Requests;
 
 use App\Models\Appointment;
-use App\Models\Service;
 use App\Models\Master;
+use App\Models\Service;
+use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
-use Carbon\Carbon;
 
 class AppointmentRequest extends FormRequest
 {
@@ -59,7 +59,7 @@ class AppointmentRequest extends FormRequest
 
             // Получаем длительность услуги
             $service = Service::find($serviceId);
-            if (!$service) {
+            if (! $service) {
                 return;
             }
 
@@ -68,8 +68,9 @@ class AppointmentRequest extends FormRequest
             // Проверяем, что мастер предоставляет эту услугу
             if ($masterId) {
                 $master = Master::find($masterId);
-                if ($master && !$master->services()->where('services.id', $serviceId)->exists()) {
+                if ($master && ! $master->services()->where('services.id', $serviceId)->exists()) {
                     $validator->errors()->add('master_id', 'Выбранный мастер не предоставляет эту услугу.');
+
                     return;
                 }
 
@@ -78,6 +79,7 @@ class AppointmentRequest extends FormRequest
                     $selectedDate = Carbon::parse($date);
                     if ($master->isDayOff($selectedDate)) {
                         $validator->errors()->add('date', 'Выбранная дата является выходным днем для мастера.');
+
                         return;
                     }
 
@@ -90,6 +92,7 @@ class AppointmentRequest extends FormRequest
 
                         if ($startTime->lt($workStart) || $endTime->gt($workEnd)) {
                             $validator->errors()->add('time', 'Выбранное время выходит за рамки рабочего времени мастера.');
+
                             return;
                         }
                     }

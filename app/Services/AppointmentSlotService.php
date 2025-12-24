@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Service;
-use App\Models\Master;
 use App\Models\Appointment;
+use App\Models\Master;
+use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -23,11 +23,11 @@ class AppointmentSlotService
     /**
      * Получить доступные временные слоты
      *
-     * @param int $serviceId ID услуги
-     * @param string $date Дата в формате Y-m-d
-     * @param int|null $masterId ID мастера (опционально)
-     * @param int|null $locationId ID локации (опционально, не используется в расчете)
-     * @param int|null $excludeAppointmentId ID записи для исключения из расчета (при редактировании)
+     * @param  int  $serviceId  ID услуги
+     * @param  string  $date  Дата в формате Y-m-d
+     * @param  int|null  $masterId  ID мастера (опционально)
+     * @param  int|null  $locationId  ID локации (опционально, не используется в расчете)
+     * @param  int|null  $excludeAppointmentId  ID записи для исключения из расчета (при редактировании)
      * @return array Массив доступных слотов в формате ['HH:MM', ...]
      */
     public function getAvailableSlots(int $serviceId, string $date, ?int $masterId = null, ?int $locationId = null, &$debugInfo = null, ?int $excludeAppointmentId = null): array
@@ -53,11 +53,11 @@ class AppointmentSlotService
         // Получаем мастеров для услуги
         $masters = $this->getMastersForService($serviceId, $masterId);
         $debug['masters_found'] = $masters->count();
-        $debug['masters'] = $masters->map(function($master) {
+        $debug['masters'] = $masters->map(function ($master) {
             return [
                 'id' => $master->id,
-                'name' => $master->first_name . ' ' . $master->last_name,
-                'has_working_hours' => !empty($master->working_hours),
+                'name' => $master->first_name.' '.$master->last_name,
+                'has_working_hours' => ! empty($master->working_hours),
                 'working_hours' => $master->working_hours,
             ];
         })->toArray();
@@ -72,6 +72,7 @@ class AppointmentSlotService
             if ($debugInfo !== null) {
                 $debugInfo = $debug;
             }
+
             return [];
         }
 
@@ -84,6 +85,7 @@ class AppointmentSlotService
             if ($debugInfo !== null) {
                 $debugInfo = $debug;
             }
+
             return [];
         }
 
@@ -101,6 +103,7 @@ class AppointmentSlotService
             if ($debugInfo !== null) {
                 $debugInfo = $debug;
             }
+
             return [];
         }
 
@@ -113,6 +116,7 @@ class AppointmentSlotService
             if ($debugInfo !== null) {
                 $debugInfo = $debug;
             }
+
             return [];
         }
 
@@ -125,11 +129,11 @@ class AppointmentSlotService
 
         // Сортируем и возвращаем
         sort($availableSlots);
-        
+
         if ($debugInfo !== null) {
             $debugInfo = $debug;
         }
-        
+
         return $availableSlots;
     }
 
@@ -154,7 +158,7 @@ class AppointmentSlotService
                 })
                 ->first();
 
-            if (!$master) {
+            if (! $master) {
                 // Если мастер не найден или не предоставляет услугу, возвращаем пустую коллекцию
                 return collect();
             }
@@ -175,8 +179,8 @@ class AppointmentSlotService
     /**
      * Получить доступные временные окна от мастеров
      *
-     * @param Collection $masters Коллекция мастеров
-     * @param Carbon $date Дата
+     * @param  Collection  $masters  Коллекция мастеров
+     * @param  Carbon  $date  Дата
      * @return array Массив временных окон [['from' => '09:00', 'to' => '18:00', 'master_id' => 1], ...]
      */
     protected function getAvailableTimeWindows(Collection $masters, Carbon $date): array
@@ -187,26 +191,28 @@ class AppointmentSlotService
         foreach ($masters as $master) {
             // Получаем working_hours - может быть строкой JSON или массивом (из-за cast)
             $rawWorkingHours = $master->working_hours;
-            
+
             // Если это null или пусто, пропускаем
             if (empty($rawWorkingHours)) {
                 \Log::debug('У мастера нет working_hours', [
                     'master_id' => $master->id,
-                    'master_name' => $master->first_name . ' ' . $master->last_name,
+                    'master_name' => $master->first_name.' '.$master->last_name,
                     'raw_type' => gettype($rawWorkingHours),
                 ]);
+
                 continue;
             }
 
             // Парсим working_hours
             $workingHours = $this->parseWorkingHours($rawWorkingHours);
 
-            if (!$workingHours || !is_array($workingHours)) {
+            if (! $workingHours || ! is_array($workingHours)) {
                 \Log::debug('Не удалось распарсить working_hours', [
                     'master_id' => $master->id,
                     'raw_type' => gettype($rawWorkingHours),
                     'raw_value' => is_string($rawWorkingHours) ? substr($rawWorkingHours, 0, 100) : $rawWorkingHours,
                 ]);
+
                 continue;
             }
 
@@ -217,6 +223,7 @@ class AppointmentSlotService
                     'day_of_week' => $dayOfWeek,
                     'days_off' => $workingHours['days_off'] ?? [],
                 ]);
+
                 continue;
             }
 
@@ -266,20 +273,21 @@ class AppointmentSlotService
         if (is_string($workingHours)) {
             // Убираем возможные пробелы
             $workingHours = trim($workingHours);
-            
+
             // Если пустая строка после trim
             if ($workingHours === '') {
                 return null;
             }
 
             $decoded = json_decode($workingHours, true);
-            
+
             // Проверяем ошибки JSON
             if (json_last_error() !== JSON_ERROR_NONE) {
                 \Log::warning('Ошибка декодирования JSON working_hours', [
                     'json_error' => json_last_error_msg(),
                     'raw_value' => substr($workingHours, 0, 200),
                 ]);
+
                 return null;
             }
 
@@ -293,9 +301,9 @@ class AppointmentSlotService
      * Генерация слотов из временных окон
      * Интервал между слотами равен длительности услуги
      *
-     * @param array $timeWindows Временные окна
-     * @param int $interval Интервал в минутах (длительность услуги)
-     * @param Carbon|null $selectedDate Дата для проверки прошедших слотов (если сегодня)
+     * @param  array  $timeWindows  Временные окна
+     * @param  int  $interval  Интервал в минутах (длительность услуги)
+     * @param  Carbon|null  $selectedDate  Дата для проверки прошедших слотов (если сегодня)
      * @return array Массив слотов ['09:00', '10:00', ...]
      */
     protected function generateSlots(array $timeWindows, int $interval, ?Carbon $selectedDate = null): array
@@ -314,7 +322,7 @@ class AppointmentSlotService
             // Слот должен помещаться в рабочее время (слот + длительность <= конец рабочего дня)
             while ($current->lt($to)) {
                 $slotEndTime = $current->copy()->addMinutes($interval);
-                
+
                 // Проверяем, что слот помещается в рабочее время
                 // Слот + длительность должна быть <= конец рабочего дня
                 if ($slotEndTime->lte($to)) {
@@ -333,7 +341,7 @@ class AppointmentSlotService
                         $slots[] = $current->format('H:i');
                     }
                 }
-                
+
                 $current->addMinutes($interval);
             }
         }
@@ -341,7 +349,7 @@ class AppointmentSlotService
         // Убираем дубликаты и сортируем
         $uniqueSlots = array_unique($slots);
         sort($uniqueSlots);
-        
+
         return $uniqueSlots;
     }
 
@@ -381,7 +389,7 @@ class AppointmentSlotService
         $query = Appointment::where('date', $date->format('Y-m-d'))
             ->where('status', '!=', 'cancelled')
             ->where('service_id', $serviceId);
-        
+
         // Исключаем текущую запись при редактировании
         if ($excludeAppointmentId) {
             $query->where('id', '!=', $excludeAppointmentId);
@@ -391,7 +399,7 @@ class AppointmentSlotService
         if ($masterId) {
             $query->where(function ($q) use ($masterId) {
                 $q->where('master_id', $masterId)
-                  ->orWhereNull('master_id'); // Также учитываем записи без мастера
+                    ->orWhereNull('master_id'); // Также учитываем записи без мастера
             });
         }
 
@@ -408,7 +416,7 @@ class AppointmentSlotService
             foreach ($existingAppointments as $appointment) {
                 // Если мастер не указан при поиске слотов, но у записи есть мастер,
                 // то эта запись не блокирует слот (так как слот может быть для другого мастера)
-                if (!$masterId && $appointment->master_id) {
+                if (! $masterId && $appointment->master_id) {
                     continue;
                 }
 
@@ -417,15 +425,15 @@ class AppointmentSlotService
                 $appointmentEndTime = $appointmentTime->copy()->addMinutes($appointmentDuration);
 
                 // Проверяем пересечение временных интервалов
-                // 
+                //
                 // Время подготовки уже учтено при генерации слотов (интервал между слотами = длительность + подготовка)
                 // Поэтому здесь проверяем только прямое пересечение с существующими записями
                 //
                 // Слот блокируется если он пересекается с записью:
                 // slotTime < appointmentEndTime AND slotEndTime > appointmentTime
-                
+
                 $hasOverlap = $slotTime->lt($appointmentEndTime) && $slotEndTime->gt($appointmentTime);
-                
+
                 if ($hasOverlap) {
                     // Есть пересечение - слот занят
                     $isAvailable = false;
@@ -447,6 +455,7 @@ class AppointmentSlotService
     public function setSlotInterval(int $minutes): self
     {
         $this->slotInterval = $minutes;
+
         return $this;
     }
 
@@ -456,7 +465,7 @@ class AppointmentSlotService
     public function setMinIntervalBetweenAppointments(int $minutes): self
     {
         $this->minIntervalBetweenAppointments = $minutes;
+
         return $this;
     }
 }
-

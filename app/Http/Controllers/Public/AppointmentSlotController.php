@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Services\AppointmentSlotService;
 use App\Models\Business;
-use Illuminate\Http\Request;
+use App\Services\AppointmentSlotService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class AppointmentSlotController extends Controller
@@ -21,9 +21,7 @@ class AppointmentSlotController extends Controller
     /**
      * Получить доступные временные слоты для публичной записи
      *
-     * @param Request $request
-     * @param string $slug Slug бизнеса
-     * @return JsonResponse
+     * @param  string  $slug  Slug бизнеса
      */
     public function getAvailableSlots(Request $request, string $slug): JsonResponse
     {
@@ -46,11 +44,11 @@ class AppointmentSlotController extends Controller
             $serviceId = $validator->getData()['service_id'] ?? null;
             $masterId = $validator->getData()['master_id'] ?? null;
 
-            if ($serviceId && !$business->services()->where('id', $serviceId)->exists()) {
+            if ($serviceId && ! $business->services()->where('id', $serviceId)->exists()) {
                 $validator->errors()->add('service_id', 'Услуга не принадлежит этому бизнесу.');
             }
 
-            if ($masterId && !$business->masters()->where('id', $masterId)->exists()) {
+            if ($masterId && ! $business->masters()->where('id', $masterId)->exists()) {
                 $validator->errors()->add('master_id', 'Мастер не принадлежит этому бизнесу.');
             }
         });
@@ -66,7 +64,7 @@ class AppointmentSlotController extends Controller
             // Нормализуем пустые значения в null
             $masterId = $request->input('master_id');
             $locationId = $request->input('location_id');
-            
+
             $masterId = ($masterId === '' || $masterId === null) ? null : (int) $masterId;
             $locationId = ($locationId === '' || $locationId === null) ? null : (int) $locationId;
 
@@ -89,19 +87,19 @@ class AppointmentSlotController extends Controller
                 if ($master) {
                     $selectedDate = \Carbon\Carbon::parse($date);
                     $dayOfWeek = $selectedDate->dayOfWeek;
-                    
+
                     // Получаем working_hours через getRawOriginal, чтобы обойти cast
                     $rawWorkingHours = $master->getRawOriginal('working_hours');
-                    
+
                     $workingHoursArray = null;
-                    if (!empty($rawWorkingHours)) {
+                    if (! empty($rawWorkingHours)) {
                         if (is_array($rawWorkingHours)) {
                             $workingHoursArray = $rawWorkingHours;
                         } elseif (is_string($rawWorkingHours)) {
                             $workingHoursArray = json_decode($rawWorkingHours, true);
                         }
                     }
-                    
+
                     try {
                         $isDayOff = $master->isDayOff($selectedDate);
                         $workingTime = $master->getWorkingTimeForDate($selectedDate);
@@ -113,17 +111,17 @@ class AppointmentSlotController extends Controller
                         $isDayOff = true;
                         $workingTime = null;
                     }
-                    
+
                     $debugInfo['master'] = [
-                        'name' => $master->first_name . ' ' . $master->last_name,
-                        'has_working_hours' => !empty($workingHoursArray),
+                        'name' => $master->first_name.' '.$master->last_name,
+                        'has_working_hours' => ! empty($workingHoursArray),
                         'working_hours_raw_type' => gettype($rawWorkingHours),
                         'working_hours' => $workingHoursArray,
                         'day_of_week' => $dayOfWeek,
                         'is_day_off' => $isDayOff,
                         'working_time_for_date' => $workingTime,
                     ];
-                    
+
                     // Если у мастера нет working_hours, возвращаем понятную ошибку
                     if (empty($workingHoursArray)) {
                         return response()->json([
@@ -169,9 +167,8 @@ class AppointmentSlotController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Ошибка при получении доступных слотов: ' . $e->getMessage(),
+                'message' => 'Ошибка при получении доступных слотов: '.$e->getMessage(),
             ], 500);
         }
     }
 }
-

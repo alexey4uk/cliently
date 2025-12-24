@@ -10,7 +10,7 @@ class WorkingHoursService
     public static function format(array $workingHours): array
     {
         $daysOff = $workingHours['days_off'] ?? [];
-        $is24Hours = !empty($workingHours['24_hours']);
+        $is24Hours = ! empty($workingHours['24_hours']);
 
         return [
             'from' => $is24Hours ? '00:00' : ($workingHours['from'] ?? null),
@@ -28,4 +28,3 @@ class WorkingHoursService
         return json_encode(self::format($workingHours));
     }
 }
-
