@@ -11,3 +11,63 @@
 @source "../../resources/**/*.js";
 @source "../../resources/**/*.vue";
 
+/* Скрываем элементы с x-cloak до инициализации Alpine.js */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Предотвращаем мерцание sidebar элементов при загрузке */
+@media (min-width: 1024px) {
+    /* Скрываем sidebar-text до инициализации Alpine, если sidebar должен быть свернут */
+    html[data-sidebar-collapsed="true"] .sidebar-text {
+        display: none !important;
+    }
+    
+    html[data-sidebar-collapsed="true"] .sidebar-section-title {
+        display: none !important;
+    }
+}
+
+/* Кастомный scrollbar для WebKit браузеров (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(203 213 225);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184);
+    background-clip: padding-box;
+}
+
+/* Темная тема для scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+    background: rgb(51 65 85);
+    background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgb(71 85 105);
+    background-clip: padding-box;
+}
+
+/* Кастомный scrollbar для Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.dark * {
+    scrollbar-color: rgb(51 65 85) transparent;
+}
+

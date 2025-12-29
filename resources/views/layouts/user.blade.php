@@ -8,6 +8,9 @@
 
     <!-- Theme initialization (must be before styles) -->
     <x-theme-init />
+    
+    <!-- Sidebar initialization (must be before styles) -->
+    <x-sidebar-init />
 
     <!-- Favicons links -->
     <link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96" />
@@ -29,27 +32,76 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans">
-    <div class="flex h-screen overflow-hidden">
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans">
+    <div x-data="{ 
+        sidebarCollapsed: (() => {
+            try {
+                return localStorage.getItem('sidebarCollapsed') === 'true';
+            } catch (e) {
+                return false;
+            }
+        })(),
+        transitionsEnabled: false,
+        toggleSidebar() {
+            // Включаем transitions при первом переключении
+            if (!this.transitionsEnabled) {
+                this.transitionsEnabled = true;
+                // Включаем transitions для sidebar
+                const sidebar = document.querySelector('.sidebar-container');
+                if (sidebar) {
+                    sidebar.classList.add('transition-all', 'duration-300', 'ease-in-out');
+                }
+                // Включаем transitions для main-content
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.style.transition = 'margin-left 300ms ease-in-out';
+                }
+            }
+            
+            this.sidebarCollapsed = !this.sidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+            // Синхронизируем data-атрибут на html (явно конвертируем в строку)
+            document.documentElement.setAttribute('data-sidebar-collapsed', this.sidebarCollapsed ? 'true' : 'false');
+            // Отправляем событие для синхронизации sidebar
+            window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
+                detail: { collapsed: this.sidebarCollapsed } 
+            }));
+        },
+        init() {
+            // Синхронизируем data-атрибут при инициализации (уже должен быть установлен из sidebar-init)
+            // Явно конвертируем в строку для консистентности
+            document.documentElement.setAttribute('data-sidebar-collapsed', this.sidebarCollapsed ? 'true' : 'false');
+        }
+    }" class="flex min-h-screen lg:h-screen lg:overflow-hidden">
         <!-- Sidebar (скрыт на мобильных, виден на lg+) -->
         @include('sidebar')
 
         <!-- Основной контент -->
-        <div class="flex flex-col flex-1 overflow-hidden">
+        <div class="main-content flex flex-col flex-1 lg:overflow-hidden"
+             :class="sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'"
+             :style="transitionsEnabled ? 'transition: margin-left 300ms ease-in-out;' : ''">
             <!-- Верхний header -->
-            <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 w-full">
-                <div class="w-full px-4 md:px-6 py-3">
-                    <div class="flex items-center justify-between">
-                        <!-- Левая часть: Логотип/Заголовок -->
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 w-full sticky top-0 z-30">
+                <div class="w-full px-4 md:px-6 lg:px-8 py-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- Левая часть: Кнопка sidebar + Заголовок -->
+                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <!-- Кнопка сворачивания sidebar (только десктоп) -->
+                            <button @click.stop="toggleSidebar()" 
+                                    class="hidden lg:flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                    aria-label="Свернуть/развернуть меню"
+                                    type="button">
+                                <i class="fa-solid fa-bars-staggered text-base"></i>
+                            </button>
+                            
                             <!-- Логотип (только мобильные) -->
-                            <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-3 flex-shrink-0 hover:opacity-80 transition-opacity">
+                            <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
                                 <x-logo size="sm" />
                             </a>
                             
                             <!-- Заголовок страницы -->
                             <div class="min-w-0 flex-1">
-                                <h1 class="text-xl font-semibold text-slate-900 dark:text-white truncate">
+                                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white truncate">
                                     @yield('page-title', 'cliently')
                                 </h1>
                                 @hasSection('page-description')
@@ -61,124 +113,264 @@
                         </div>
 
                         <!-- Правая часть: Действия -->
-                        <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-4">
-                        <!-- Кнопка "Новая запись" (только на определенных страницах) -->
-                        @hasSection('show-new-button')
-                            <button
-                                class="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-[#6366F1] px-3 py-1.5 text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:bg-[#4F46E5] active:bg-[#4338CA] transition-colors">
-                                <i class="fa-solid fa-plus text-xs"></i>
-                                <span>Новая запись</span>
+                        <div class="flex items-center gap-2.5 flex-shrink-0">
+                            <!-- Кнопка "Новая запись" (только на определенных страницах) -->
+                            @hasSection('show-new-button')
+                                <button
+                                    class="hidden sm:inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors shadow-sm">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                    <span>Новая запись</span>
+                                </button>
+                            @endif
+
+                            <!-- Переключатель темы -->
+                            <button id="theme-toggle"
+                                class="h-9 w-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                aria-label="Переключить тему">
+                                <x-icon name="sun" size="md" class="hidden dark:block" />
+                                <x-icon name="moon" size="md" class="block dark:hidden" />
                             </button>
-                        @endif
 
-                        <!-- Переключатель темы -->
-                        <button id="theme-toggle"
-                            class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                            aria-label="Переключить тему">
-                            <x-icon name="sun" size="md" class="hidden dark:block" />
-                            <x-icon name="moon" size="md" class="block dark:hidden" />
-                        </button>
-
-                        <!-- Уведомления -->
-                        <div class="relative">
-                            <button
-                                class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
-                                aria-label="Уведомления">
-                                <i class="fa-solid fa-bell text-sm"></i>
-                                <!-- Индикатор новых уведомлений -->
-                                <span class="absolute top-1 right-1 h-2 w-2 bg-rose-500 rounded-full"></span>
-                            </button>
-                        </div>
-
-                        <!-- Профиль пользователя (только десктоп) -->
-                        <div x-data="{ open: false }" class="relative hidden lg:block">
-                            @auth
+                            <!-- Уведомления -->
+                            <div x-data="{ open: false }" class="relative">
                                 <button
                                     @click="open = !open"
-                                    class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden"
-                                    aria-label="Профиль">
-                                    @if(Auth::user()->avatar)
-                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
-                                             alt="{{ Auth::user()->name }}" 
-                                             class="w-full h-full object-cover rounded-full">
-                                    @else
-                                        <span class="h-full w-full rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-                                            {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
-                                        </span>
-                                    @endif
+                                    class="h-9 w-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+                                    aria-label="Уведомления">
+                                    <i class="fa-solid fa-bell text-base"></i>
+                                    <!-- Индикатор новых уведомлений -->
+                                    <span class="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
                                 </button>
-                            @else
-                                <button
-                                    @click="open = !open"
-                                    class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-800 border border-slate-300 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
-                                    aria-label="Профиль">
-                                    АМ
-                                </button>
-                            @endauth
-                            <div
-                                x-show="open"
-                                @click.away="open = false"
-                                x-transition:enter="transition ease-out duration-100"
-                                x-transition:enter-start="transform opacity-0 scale-95"
-                                x-transition:enter-end="transform opacity-100 scale-100"
-                                x-transition:leave="transition ease-in duration-75"
-                                x-transition:leave-start="transform opacity-100 scale-100"
-                                x-transition:leave-end="transform opacity-0 scale-95"
-                                class="absolute right-0 mt-2 z-[100] w-56 rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-lg"
-                                style="display: none;">
-                                <!-- Информация о пользователе -->
-                                @auth
-                                    <div class="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                                        <div class="flex items-center gap-2.5">
-                                            <div class="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-semibold text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 overflow-hidden flex-shrink-0">
-                                                @if(Auth::user()->avatar)
-                                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
-                                                         alt="{{ Auth::user()->name }}" 
-                                                         class="w-full h-full object-cover">
-                                                @else
-                                                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
-                                                @endif
+                                <div
+                                    x-show="open"
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute right-0 mt-2 z-[100] w-80 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
+                                    style="display: none;">
+                                    <!-- Заголовок -->
+                                    <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+                                            Уведомления
+                                        </h3>
+                                        <button class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors">
+                                            Отметить все как прочитанные
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Список уведомлений -->
+                                    <div class="max-h-96 overflow-y-auto">
+                                        <!-- Пример уведомления -->
+                                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 mt-0.5">
+                                                    <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                                                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                                        Новая запись
+                                                    </p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                                        У вас новая запись на завтра в 14:00
+                                                    </p>
+                                                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                                        2 часа назад
+                                                    </p>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <span class="h-2 w-2 bg-rose-500 rounded-full block"></span>
+                                                </div>
                                             </div>
-                                            <div class="min-w-0 flex-1">
-                                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">
-                                                    {{ Auth::user()->name }}
-                                                </p>
-                                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                                    {{ Auth::user()->email }}
-                                                </p>
+                                        </div>
+                                        
+                                        <!-- Пример уведомления -->
+                                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 mt-0.5">
+                                                    <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
+                                                        <i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                                        Запись выполнена
+                                                    </p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                                        Запись от 15:00 была отмечена как выполненная
+                                                    </p>
+                                                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                                        5 часов назад
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Пример уведомления -->
+                                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 mt-0.5">
+                                                    <div class="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                                                        <i class="fa-solid fa-exclamation text-amber-600 dark:text-amber-400 text-xs"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-slate-900 dark:text-white">
+                                                        Требуется внимание
+                                                    </p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                                        У вас есть записи, требующие подтверждения
+                                                    </p>
+                                                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                                                        Вчера
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                @endauth
-                                
-                                <!-- Действия -->
-                                <div class="py-1">
-                                    <a href="{{ route('profile.edit') }}"
-                                        class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                        <i class="fa-solid fa-user w-4 text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
-                                        <span>Профиль</span>
-                                    </a>
-                                    <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit"
-                                            class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left text-slate-700 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                                            <i class="fa-solid fa-right-from-bracket w-4 text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
-                                            <span>Выйти</span>
-                                        </button>
-                                    </form>
+                                    
+                                    <!-- Футер -->
+                                    <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+                                        <a href="#" class="text-sm text-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors block">
+                                            Показать все уведомления
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Кнопка меню (только мобильные) -->
-                        @include('mobile-menu')
+                            <!-- Профиль пользователя (только десктоп) -->
+                            <div x-data="{ open: false }" class="relative hidden lg:block">
+                                @auth
+                                    <button
+                                        @click="open = !open"
+                                        class="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700"
+                                        aria-label="Профиль">
+                                        @if(Auth::user()->avatar)
+                                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                                 alt="{{ Auth::user()->name }}" 
+                                                 class="w-full h-full object-cover">
+                                        @else
+                                            <span class="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
+                                                {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                                            </span>
+                                        @endif
+                                    </button>
+                                @else
+                                    <button
+                                        x-ref="profileButton"
+                                        @click="open = !open"
+                                        class="h-9 w-9 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-xs font-semibold text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                                        aria-label="Профиль">
+                                        АМ
+                                    </button>
+                                @endauth
+                                <div
+                                    x-show="open"
+                                    @click.away="open = false"
+                                    x-transition:enter="transition ease-out duration-100"
+                                    x-transition:enter-start="transform opacity-0 scale-95"
+                                    x-transition:enter-end="transform opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="transform opacity-100 scale-100"
+                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                    class="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+                                    style="display: none;"
+                                    x-init="
+                                        $watch('open', value => {
+                                            if (value) {
+                                                $nextTick(() => {
+                                                    const menu = $el;
+                                                    const rect = menu.getBoundingClientRect();
+                                                    const viewportHeight = window.innerHeight;
+                                                    const viewportWidth = window.innerWidth;
+                                                    
+                                                    // Сбрасываем стили перед проверкой
+                                                    menu.style.bottom = '';
+                                                    menu.style.top = '';
+                                                    menu.style.marginTop = '';
+                                                    menu.style.marginBottom = '';
+                                                    
+                                                    // Проверяем, не выходит ли меню за нижнюю границу
+                                                    if (rect.bottom > viewportHeight - 10) {
+                                                        menu.style.bottom = '100%';
+                                                        menu.style.top = 'auto';
+                                                        menu.style.marginTop = '0';
+                                                        menu.style.marginBottom = '0.5rem';
+                                                    }
+                                                    
+                                                    // Проверяем, не выходит ли меню за правую границу
+                                                    if (rect.right > viewportWidth - 10) {
+                                                        menu.style.right = '0.5rem';
+                                                    }
+                                                    
+                                                    // Проверяем, не выходит ли меню за левую границу
+                                                    if (rect.left < 10) {
+                                                        menu.style.left = '0.5rem';
+                                                        menu.style.right = 'auto';
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    ">
+                                    <!-- Информация о пользователе -->
+                                    @auth
+                                        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+                                            <div class="flex items-center gap-3">
+                                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden flex-shrink-0">
+                                                    @if(Auth::user()->avatar)
+                                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                                             alt="{{ Auth::user()->name }}" 
+                                                             class="w-full h-full object-cover">
+                                                    @else
+                                                        {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                                                    @endif
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                                                        {{ Auth::user()->name }}
+                                                    </p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                                        {{ Auth::user()->email }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endauth
+                                    
+                                    <!-- Действия -->
+                                    <div class="py-1.5 px-1.5">
+                                        <a href="{{ route('profile.edit') }}"
+                                            class="flex w-full items-center gap-3 px-3 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg">
+                                            <i class="fa-solid fa-user w-4 text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                                            <span>Профиль</span>
+                                        </a>
+                                        <div class="border-t border-slate-200 dark:border-slate-800 my-1.5 mx-1.5"></div>
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <button type="submit"
+                                                class="flex w-full items-center gap-3 px-3 py-2.5 text-sm text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors rounded-lg">
+                                                <i class="fa-solid fa-right-from-bracket w-4 text-xs"></i>
+                                                <span>Выйти</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка меню (только мобильные) -->
+                            @include('mobile-menu')
+                        </div>
                     </div>
                 </div>
             </header>
 
             <!-- Основной контент -->
-            <main class="flex-1 overflow-y-auto">
+            <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
                 <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
                     <div class="max-w-7xl mx-auto">
                         @stack('breadcrumbs')

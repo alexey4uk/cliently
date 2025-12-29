@@ -201,7 +201,7 @@ class AppointmentController extends Controller
     /**
      * Страница успешной записи
      */
-    public function success(string $slug, string $token, )
+    public function success(string $slug, string $token)
     {
         $appointment = null;
 
@@ -214,7 +214,7 @@ class AppointmentController extends Controller
                 ->first();
         }
 
-        if (!$business || !$appointment) {
+        if (! $business || ! $appointment) {
             abort(404);
         }
 
