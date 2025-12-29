@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Cliently - CRM для мастеров')</title>
 
+    <!-- Theme initialization (must be before styles) -->
+    <x-theme-init />
+
     <!-- Favicons links -->
     <link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}" />
@@ -69,24 +72,12 @@
                         @endif
 
                         <!-- Переключатель темы -->
-                        <div x-data="{
-                            theme: localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-                            init() {
-                                this.$watch('theme', value => {
-                                    document.documentElement.classList.toggle('dark', value === 'dark');
-                                    localStorage.setItem('theme', value);
-                                });
-                                // Применить тему при загрузке
-                                document.documentElement.classList.toggle('dark', this.theme === 'dark');
-                            }
-                        }">
-                            <button @click="theme = theme === 'dark' ? 'light' : 'dark'"
+                        <button id="theme-toggle"
                             class="h-8 w-8 rounded-full flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Переключить тему">
                             <x-icon name="sun" size="md" class="hidden dark:block" />
                             <x-icon name="moon" size="md" class="block dark:hidden" />
                         </button>
-                        </div>
 
                         <!-- Уведомления -->
                         <div class="relative">

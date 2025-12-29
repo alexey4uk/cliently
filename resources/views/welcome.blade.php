@@ -27,31 +27,8 @@
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Theme Script (must be before styles to prevent flash) -->
-    <script>
-        // Применяем тему немедленно, до загрузки DOM, чтобы избежать мерцания
-        (function() {
-            const getTheme = () => {
-                // Проверяем сохранённую тему в localStorage
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'dark' || savedTheme === 'light') {
-                    return savedTheme;
-                }
-                // Если тема не сохранена, используем системные настройки
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            };
-
-            const theme = getTheme();
-            const html = document.documentElement;
-            
-            if (theme === 'dark') {
-                html.classList.add('dark');
-            } else {
-                html.classList.remove('dark');
-            }
-
-        })();
-    </script>
+    <!-- Theme initialization (must be before styles to prevent flash) -->
+    <x-theme-init />
     
     <style>
         :root {
@@ -1221,7 +1198,6 @@
                 // If DOM is already loaded, run immediately
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', () => {
-                        this.initTheme();
                         this.initMobileMenu();
                         this.initFAQ();
                         this.initSmoothScroll();
@@ -1229,72 +1205,11 @@
                     });
                 } else {
                     // DOM already loaded
-                    this.initTheme();
                     this.initMobileMenu();
                     this.initFAQ();
                     this.initSmoothScroll();
                     this.initScrollToTop();
                 }
-            }
-
-            // Theme Management
-            initTheme() {
-                const themeToggle = document.getElementById('theme-toggle');
-                if (!themeToggle) return;
-
-                // Обработчик клика на кнопку переключения темы
-                themeToggle.addEventListener('click', () => {
-                    this.toggleTheme();
-                });
-
-                // Слушаем изменения системной темы (если пользователь не выбрал тему вручную)
-                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                mediaQuery.addEventListener('change', (e) => {
-                    // Применяем системную тему только если пользователь не сохранил свой выбор
-                    if (!localStorage.getItem('theme')) {
-                        const html = document.documentElement;
-                        if (e.matches) {
-                            html.classList.add('dark');
-                        } else {
-                            html.classList.remove('dark');
-                        }
-                    }
-                });
-            }
-
-            /**
-             * Получить текущую тему
-             * @returns {string} 'dark' или 'light'
-             */
-            getTheme() {
-                const html = document.documentElement;
-                return html.classList.contains('dark') ? 'dark' : 'light';
-            }
-
-            /**
-             * Установить тему
-             * @param {string} theme - 'dark' или 'light'
-             */
-            setTheme(theme) {
-                const html = document.documentElement;
-                
-                if (theme === 'dark') {
-                    html.classList.add('dark');
-                } else {
-                    html.classList.remove('dark');
-                }
-                
-                // Сохраняем выбор пользователя
-                localStorage.setItem('theme', theme);
-            }
-
-            /**
-             * Переключить тему между светлой и тёмной
-             */
-            toggleTheme() {
-                const currentTheme = this.getTheme();
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                this.setTheme(newTheme);
             }
 
             // Mobile Menu Management

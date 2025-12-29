@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Онлайн запись') - {{ $business->name }}</title>
     
+    <!-- Theme initialization (must be before styles) -->
+    <x-theme-init />
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -193,39 +196,5 @@
     </main>
     
     @stack('scripts')
-    
-    <script>
-        // Переключение темы
-        (function() {
-            // Применить тему сразу при загрузке (до DOMContentLoaded)
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-            
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-
-            // Обработчик переключения темы
-            const themeToggle = document.getElementById('theme-toggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    const html = document.documentElement;
-                    const isDark = html.classList.contains('dark');
-                    const newTheme = isDark ? 'light' : 'dark';
-                    
-                    if (newTheme === 'dark') {
-                        html.classList.add('dark');
-                    } else {
-                        html.classList.remove('dark');
-                    }
-                    
-                    localStorage.setItem('theme', newTheme);
-                });
-            }
-        })();
-    </script>
 </body>
 </html>

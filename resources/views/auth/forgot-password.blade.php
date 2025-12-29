@@ -1,151 +1,68 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Сброс пароля - {{ config('app.name', 'Cliently') }}</title>
+@extends('layouts.auth')
 
-    <!-- Favicons links -->
-    <link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}" />
-    <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}" />
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}" />
-    <meta name="apple-mobile-web-app-title" content="CLIENTLY" />
-    <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}" />
+@section('title', 'Сброс пароля')
 
-    <!-- Google Fonts - Poppins -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@section('content')
+    <!-- Форма сброса пароля -->
+    <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in-up">
+        <form method="POST" action="{{ route('password.email') }}" class="space-y-5" id="passwordResetForm">
+            @csrf
 
-<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-    <div class="min-h-screen flex items-center justify-center px-4 py-8">
-        <div class="w-full max-w-md">
-            <!-- Логотип и название -->
-            <div class="flex items-center justify-center gap-3 mb-6">
-                <x-logo size="lg" />
-                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight uppercase font-display">
-                    CLIENTLY
-                </h1>
+            <!-- Уведомление об успешной отправке -->
+            @if (session('status'))
+                <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
+                    <div class="flex items-center gap-2">
+                        <x-icon name="check-circle" size="sm" class="text-emerald-600 dark:text-emerald-400" />
+                        <p class="text-base md:text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <x-icon name="envelope" size="sm" class="text-[#6366F1] dark:text-[#818CF8]" />
+                    <span>Email адрес*</span>
+                </label>
+                <input
+                    type="email" 
+                    id="email"
+                    name="email"
+                    value="{{ old('email') }}"
+                    required
+                    autocomplete="email"
+                    autofocus
+                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-[#6366F1]' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                />
+                @error('email')
+                    <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                @enderror
             </div>
 
-            <!-- Форма сброса пароля -->
-            <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in-up">
-                <form method="POST" action="{{ route('password.email') }}" class="space-y-5" id="passwordResetForm">
-                    @csrf
+            <!-- Кнопка отправки -->
+            <div class="pt-2">
+                <button 
+                    type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                >
+                    <span>Отправить ссылку</span>
+                    <x-icon name="paper-airplane" size="sm" />
+                </button>
+            </div>
+        </form>
 
-                    <!-- Уведомление об успешной отправке -->
-                    @if (session('status'))
-                        <div class="rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
-                            <div class="flex items-center gap-2">
-                                <x-icon name="check-circle" size="sm" class="text-emerald-600 dark:text-emerald-400" />
-                                <p class="text-base md:text-sm text-emerald-700 dark:text-emerald-300">{{ session('status') }}</p>
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Email -->
-                    <div>
-                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <x-icon name="envelope" size="sm" class="text-[#6366F1] dark:text-[#818CF8]" />
-                            <span>Email адрес*</span>
-                        </label>
-                            <input
-                            type="email" 
-                                id="email"
-                                name="email"
-                            value="{{ old('email') }}"
-                            required
-                                autocomplete="email"
-                            autofocus
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-[#6366F1]' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        />
-                        @error('email')
-                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Кнопка отправки -->
-                    <div class="pt-2">
-                        <button 
-                            type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-                        >
-                            <span>Отправить ссылку</span>
-                            <x-icon name="paper-airplane" size="sm" />
-                        </button>
-                    </div>
-                </form>
-
-                    <!-- Разделитель -->
-                <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
-                                Вспомнили пароль?
-                        <a href="{{ route('login') }}" class="text-[#6366F1] hover:text-[#4F46E5] dark:text-[#818CF8] dark:hover:text-[#6366F1] transition-colors font-medium">
-                            Войти
-                        </a>
-                    </p>
+        <!-- Разделитель -->
+        <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
+                Вспомнили пароль?
+                <a href="{{ route('login') }}" class="text-[#6366F1] hover:text-[#4F46E5] dark:text-[#818CF8] dark:hover:text-[#6366F1] transition-colors font-medium">
+                    Войти
+                </a>
+            </p>
         </div>
     </div>
-</div>
 
-    <!-- Переключатель темы в правом верхнем углу -->
-    <div class="fixed top-4 right-4 z-10">
-        <button 
-            id="themeToggle"
-            class="h-10 w-10 rounded-full text-sm flex items-center justify-center text-slate-700 hover:bg-white/80 hover:shadow-sm transition-colors dark:text-slate-300 dark:hover:bg-slate-800/80"
-            aria-label="Переключить тему"
-        >
-            <x-icon name="sun" size="md" class="hidden dark:block" />
-            <x-icon name="moon" size="md" class="block dark:hidden" />
-        </button>
-    </div>
-</div>
-
-<script>
-        // Переключение темы
-        const themeToggle = document.getElementById('themeToggle');
-        const html = document.documentElement;
-
-        const savedTheme = localStorage.getItem('theme');
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        const currentTheme = savedTheme || systemTheme;
-
-        if (currentTheme === 'dark') {
-            html.classList.add('dark');
-        }
-
-        themeToggle.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            const isDark = html.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-
-        // Улучшение UX формы
-        const form = document.getElementById('passwordResetForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        form.addEventListener('submit', function() {
-            submitBtn.innerHTML = '<svg class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg><span> Отправка...</span>';
-            submitBtn.disabled = true;
-        });
-
-        // Валидация в реальном времени
-        const inputs = form.querySelectorAll('input[required]');
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                if (!this.value) {
-                    this.classList.add('border-rose-500', 'ring-2', 'ring-rose-500/20');
-                } else {
-                    this.classList.remove('border-rose-500', 'ring-2', 'ring-rose-500/20');
-                }
-            });
-    });
-</script>
-</body>
-</html>
+    @push('scripts')
+        <x-auth-form-scripts formId="passwordResetForm" submitText="Отправка..." />
+    @endpush
+@endsection
