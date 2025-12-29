@@ -32,7 +32,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans">
+<body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans overflow-x-hidden">
     <div x-data="{ 
         sidebarCollapsed: (() => {
             try {
@@ -72,18 +72,18 @@
             // Явно конвертируем в строку для консистентности
             document.documentElement.setAttribute('data-sidebar-collapsed', this.sidebarCollapsed ? 'true' : 'false');
         }
-    }" class="flex min-h-screen lg:h-screen lg:overflow-hidden">
+    }" class="flex min-h-screen lg:h-screen overflow-x-hidden lg:overflow-hidden">
         <!-- Sidebar (скрыт на мобильных, виден на lg+) -->
         @include('sidebar')
 
         <!-- Основной контент -->
-        <div class="main-content flex flex-col flex-1 lg:overflow-hidden"
+        <div class="main-content flex flex-col flex-1 overflow-x-hidden lg:overflow-hidden"
              :class="sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'"
              :style="transitionsEnabled ? 'transition: margin-left 300ms ease-in-out;' : ''">
             <!-- Верхний header -->
             <header class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 w-full sticky top-0 z-30">
                 <div class="w-full px-4 md:px-6 lg:px-8 py-4">
-                    <div class="flex items-center justify-between gap-4">
+                    <div class="flex items-center justify-between gap-2 md:gap-4 min-w-0">
                         <!-- Левая часть: Кнопка sidebar + Заголовок -->
                         <div class="flex items-center gap-4 flex-1 min-w-0">
                             <!-- Кнопка сворачивания sidebar (только десктоп) -->
@@ -113,7 +113,7 @@
                         </div>
 
                         <!-- Правая часть: Действия -->
-                        <div class="flex items-center gap-2.5 flex-shrink-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
                             <!-- Кнопка "Новая запись" (только на определенных страницах) -->
                             @hasSection('show-new-button')
                                 <button
@@ -134,6 +134,7 @@
                             <!-- Уведомления -->
                             <div x-data="{ open: false }" class="relative">
                                 <button
+                                    x-ref="notificationsButton"
                                     @click="open = !open"
                                     class="h-9 w-9 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
                                     aria-label="Уведомления">
@@ -150,8 +151,40 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="absolute right-0 mt-2 z-[100] w-80 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
-                                    style="display: none;">
+                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
+                                    style="display: none;"
+                                    x-init="
+                                        $watch('open', value => {
+                                            if (value) {
+                                                $nextTick(() => {
+                                                    const button = $refs.notificationsButton;
+                                                    const menu = $el;
+                                                    if (button) {
+                                                        const buttonRect = button.getBoundingClientRect();
+                                                        const viewportHeight = window.innerHeight;
+                                                        const viewportWidth = window.innerWidth;
+                                                        
+                                                        // Позиционируем меню под кнопкой
+                                                        menu.style.top = (buttonRect.bottom + 8) + 'px';
+                                                        menu.style.right = (viewportWidth - buttonRect.right) + 'px';
+                                                        
+                                                        // Проверяем, не выходит ли меню за границы
+                                                        const menuRect = menu.getBoundingClientRect();
+                                                        if (menuRect.bottom > viewportHeight - 10) {
+                                                            menu.style.top = (buttonRect.top - menuRect.height - 8) + 'px';
+                                                        }
+                                                        if (menuRect.right > viewportWidth - 10) {
+                                                            menu.style.right = '0.5rem';
+                                                        }
+                                                        if (menuRect.left < 10) {
+                                                            menu.style.left = '0.5rem';
+                                                            menu.style.right = 'auto';
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    ">
                                     <!-- Заголовок -->
                                     <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                                         <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
@@ -247,6 +280,7 @@
                             <div x-data="{ open: false }" class="relative hidden lg:block">
                                 @auth
                                     <button
+                                        x-ref="profileButton"
                                         @click="open = !open"
                                         class="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700"
                                         aria-label="Профиль">
@@ -278,40 +312,35 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="absolute right-0 mt-2 z-[100] w-56 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-56 max-w-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
                                     style="display: none;"
                                     x-init="
                                         $watch('open', value => {
                                             if (value) {
                                                 $nextTick(() => {
+                                                    const button = $refs.profileButton;
                                                     const menu = $el;
-                                                    const rect = menu.getBoundingClientRect();
-                                                    const viewportHeight = window.innerHeight;
-                                                    const viewportWidth = window.innerWidth;
-                                                    
-                                                    // Сбрасываем стили перед проверкой
-                                                    menu.style.bottom = '';
-                                                    menu.style.top = '';
-                                                    menu.style.marginTop = '';
-                                                    menu.style.marginBottom = '';
-                                                    
-                                                    // Проверяем, не выходит ли меню за нижнюю границу
-                                                    if (rect.bottom > viewportHeight - 10) {
-                                                        menu.style.bottom = '100%';
-                                                        menu.style.top = 'auto';
-                                                        menu.style.marginTop = '0';
-                                                        menu.style.marginBottom = '0.5rem';
-                                                    }
-                                                    
-                                                    // Проверяем, не выходит ли меню за правую границу
-                                                    if (rect.right > viewportWidth - 10) {
-                                                        menu.style.right = '0.5rem';
-                                                    }
-                                                    
-                                                    // Проверяем, не выходит ли меню за левую границу
-                                                    if (rect.left < 10) {
-                                                        menu.style.left = '0.5rem';
-                                                        menu.style.right = 'auto';
+                                                    if (button) {
+                                                        const buttonRect = button.getBoundingClientRect();
+                                                        const viewportHeight = window.innerHeight;
+                                                        const viewportWidth = window.innerWidth;
+                                                        
+                                                        // Позиционируем меню под кнопкой
+                                                        menu.style.top = (buttonRect.bottom + 8) + 'px';
+                                                        menu.style.right = (viewportWidth - buttonRect.right) + 'px';
+                                                        
+                                                        // Проверяем, не выходит ли меню за границы
+                                                        const menuRect = menu.getBoundingClientRect();
+                                                        if (menuRect.bottom > viewportHeight - 10) {
+                                                            menu.style.top = (buttonRect.top - menuRect.height - 8) + 'px';
+                                                        }
+                                                        if (menuRect.right > viewportWidth - 10) {
+                                                            menu.style.right = '0.5rem';
+                                                        }
+                                                        if (menuRect.left < 10) {
+                                                            menu.style.left = '0.5rem';
+                                                            menu.style.right = 'auto';
+                                                        }
                                                     }
                                                 });
                                             }
@@ -370,9 +399,9 @@
             </header>
 
             <!-- Основной контент -->
-            <main class="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950">
                 <div class="px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10">
-                    <div class="max-w-7xl mx-auto">
+                    <div class="max-w-7xl mx-auto w-full">
                         @stack('breadcrumbs')
                         @yield('content')
                     </div>

@@ -13,27 +13,31 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('settings.business.update') }}" class="space-y-6">
+<form method="POST" action="{{ route('settings.business.update') }}" class="space-y-4 md:space-y-6">
     @csrf
     @method('PATCH')
     
-    <div class="space-y-6">
+    <div class="space-y-4 md:space-y-6">
         <!-- Основная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
                         Основная информация
                     </h3>
                 </div>
-                
+            </div>
+            <div class="p-4 md:p-6 space-y-5">
                 <div>
-                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Название бизнеса*</span>
+                    <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Название бизнеса <span class="text-rose-500">*</span>
                     </label>
                     <input type="text" id="name" name="name" required value="{{ old('name', $business->name) }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        placeholder="Введите название вашего бизнеса"
                         autofocus>
                     @error('name')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -41,67 +45,67 @@
                 </div>
 
                 <div>
-                    <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Ссылка на запись*</span>
+                    <label for="slug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Ссылка на запись <span class="text-rose-500">*</span>
                     </label>
-                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
+                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-lg border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
                         <!-- Префикс -->
-                        <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-base md:text-sm font-mono select-none">
-                            /
+                        <span class="inline-flex items-center px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">
+                            {{ url('/') }}/book/
                         </span>
                         <!-- Поле ввода -->
                         <div class="flex-1 relative">
                             <input type="text" id="slug" name="slug" required value="{{ old('slug', $business->slug) }}"
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                                class="w-full px-3 py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                placeholder="vash-biznes">
                             
                             <!-- Индикаторы проверки -->
-                            <div id="slugChecking" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2">
-                                <div class="animate-spin h-3.5 w-3.5 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+                            <div id="slugChecking" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
                             </div>
                             
-                            <div id="slugAvailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                                <i class="fa-solid fa-check text-xs"></i>
+                            <div id="slugAvailable" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-500">
+                                <i class="fa-solid fa-check text-sm"></i>
                             </div>
                             
-                            <div id="slugUnavailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-rose-500">
-                                <i class="fa-solid fa-xmark text-xs"></i>
+                            <div id="slugUnavailable" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-500">
+                                <i class="fa-solid fa-xmark text-sm"></i>
                             </div>
                         </div>
-                    </div>
-                    <!-- Предпросмотр адреса -->
-                    <div id="slugPreviewCard" class="{{ old('slug', $business->slug) ? '' : 'hidden' }} mt-2 transition-opacity duration-200">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center">
-                            <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs mr-1.5"></i>
-                            <span class="select-none">{{ url('/') }}/book/</span><span id="slugPreview" class="font-semibold text-indigo-600 dark:text-indigo-400">{{ old('slug', $business->slug) }}</span>
-                        </p>
                     </div>
                     @error('slug')
                         <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @else
                         <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
                     @enderror
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Используйте только латинские буквы, цифры и дефисы. Минимум 3 символа.
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Контактная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-phone text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
                         Контактная информация
                     </h3>
                 </div>
-                
+            </div>
+            <div class="p-4 md:p-6">
                 <div>
-                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Телефон*</span>
+                    <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Телефон <span class="text-rose-500">*</span>
                     </label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone', $business->phone) }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                         placeholder="+375 (29) 123-45-67">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
                         Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
                     </p>
                     @error('phone')
@@ -112,37 +116,44 @@
         </div>
 
         <!-- Дополнительная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex items-center gap-2">
+                    <div class="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                        <i class="fa-solid fa-align-left text-purple-600 dark:text-purple-400 text-xs"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
                         Дополнительная информация
                     </h3>
                 </div>
-                
+            </div>
+            <div class="p-4 md:p-6">
                 <div>
-                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Описание</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">(необязательно)</span>
+                    <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Описание
+                        <span class="text-xs text-slate-400 dark:text-slate-500 font-normal ml-1">(необязательно)</span>
                     </label>
                     <textarea id="description" name="description" rows="4" maxlength="500"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                         placeholder="Краткое описание вашего бизнеса...">{{ old('description', $business->description) }}</textarea>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        Максимум 500 символов
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Кнопки действий -->
-    <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
         <a href="{{ route('settings.index') }}" 
-           class="px-4 py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+           class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             Отмена
         </a>
         <button type="submit"
-            class="px-4 py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Сохранить изменения
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Сохранить изменения</span>
         </button>
     </div>
 </form>
@@ -182,8 +193,6 @@
         available: document.getElementById('slugAvailable'),
         unavailable: document.getElementById('slugUnavailable'),
         error: document.getElementById('slugError'),
-        preview: document.getElementById('slugPreview'),
-        previewCard: document.getElementById('slugPreviewCard'),
         container: document.getElementById('slugContainer')
     };
 
@@ -248,9 +257,6 @@
                 break;
             case 'available':
                 if (slugElements.available) slugElements.available.classList.remove('hidden');
-                if (slugElements.preview && slugElements.input) {
-                    slugElements.preview.textContent = slugElements.input.value || currentBusinessSlug;
-                }
                 break;
             case 'unavailable':
                 if (slugElements.unavailable) slugElements.unavailable.classList.remove('hidden');
@@ -266,12 +272,6 @@
                 }
                 break;
             case 'reset':
-                if (slugElements.preview) {
-                    slugElements.preview.textContent = currentBusinessSlug;
-                }
-                if (slugElements.previewCard) {
-                    slugElements.previewCard.classList.add('hidden');
-                }
                 break;
         }
     }
@@ -362,14 +362,6 @@
 
     function resetSlugValidation() {
         setSlugState('reset');
-        if (slugElements.previewCard) {
-            slugElements.previewCard.classList.add('opacity-0');
-            setTimeout(() => {
-                if (slugElements.previewCard) {
-                    slugElements.previewCard.classList.add('hidden');
-                }
-            }, 200);
-        }
     }
 
     function handleSlugKeydown(e) {
@@ -405,24 +397,6 @@
         
         const slug = sanitizedValue.trim();
         
-        if (slugElements.previewCard) {
-            if (slug) {
-                slugElements.previewCard.classList.remove('hidden', 'opacity-0');
-                slugElements.previewCard.classList.add('opacity-100');
-            } else {
-                slugElements.previewCard.classList.add('opacity-0');
-                setTimeout(() => {
-                    if (slugElements.previewCard) {
-                        slugElements.previewCard.classList.add('hidden');
-                    }
-                }, 200);
-            }
-        }
-        
-        if (slugElements.preview) {
-            slugElements.preview.textContent = slug || currentBusinessSlug;
-        }
-        
         if (slugCheckTimeout) {
             clearTimeout(slugCheckTimeout);
         }
@@ -443,9 +417,6 @@
         
         if (input.value !== formatted) {
             input.value = formatted;
-            if (slugElements.preview) {
-                slugElements.preview.textContent = formatted || currentBusinessSlug;
-            }
         }
         
         const slug = formatted.trim();
@@ -462,18 +433,7 @@
             slugElements.input.addEventListener('keydown', handleSlugKeydown);
             slugElements.input.addEventListener('input', handleSlugInput);
             slugElements.input.addEventListener('blur', handleSlugBlur);
-            
-            // Показываем предпросмотр если slug уже есть
-            if (slugElements.input.value) {
-                if (slugElements.previewCard) {
-                    slugElements.previewCard.classList.remove('hidden');
-                }
-                if (slugElements.preview) {
-                    slugElements.preview.textContent = slugElements.input.value;
-                }
-            }
         }
     });
 </script>
 @endpush
-
