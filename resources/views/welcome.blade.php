@@ -27,6 +27,9 @@
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    <!-- Theme initialization (must be before styles to prevent flash) -->
+    <x-theme-init />
+    
     <style>
         :root {
             --transition-base: 200ms ease;
@@ -369,10 +372,7 @@
                 <!-- Actions -->
                 <div class="flex items-center space-x-3">
                     <!-- Theme Toggle -->
-                    <button id="theme-toggle" class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Переключить тему">
-                        <i class="fa-solid fa-sun text-base dark:hidden"></i>
-                        <i class="fa-solid fa-moon text-base hidden dark:inline"></i>
-                    </button>
+                    <x-theme-toggle />
 
                     @auth
                         <a href="{{ route('dashboard') }}" class="hidden sm:inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all">
@@ -1189,19 +1189,6 @@
 
     <script>
         // Welcome App JavaScript
-        // Apply theme immediately (before DOMContentLoaded)
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-            
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-
         class WelcomeApp {
             constructor() {
                 this.init();
@@ -1211,7 +1198,6 @@
                 // If DOM is already loaded, run immediately
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', () => {
-                        this.initTheme();
                         this.initMobileMenu();
                         this.initFAQ();
                         this.initSmoothScroll();
@@ -1219,37 +1205,11 @@
                     });
                 } else {
                     // DOM already loaded
-                    this.initTheme();
                     this.initMobileMenu();
                     this.initFAQ();
                     this.initSmoothScroll();
                     this.initScrollToTop();
                 }
-            }
-
-            // Theme Management
-            initTheme() {
-                const themeToggle = document.getElementById('theme-toggle');
-                if (themeToggle) {
-                    themeToggle.addEventListener('click', () => this.toggleTheme());
-                }
-            }
-
-            setTheme(theme) {
-                const html = document.documentElement;
-                if (theme === 'dark') {
-                    html.classList.add('dark');
-                } else {
-                    html.classList.remove('dark');
-                }
-                localStorage.setItem('theme', theme);
-            }
-
-            toggleTheme() {
-                const html = document.documentElement;
-                const isDark = html.classList.contains('dark');
-                const newTheme = isDark ? 'light' : 'dark';
-                this.setTheme(newTheme);
             }
 
             // Mobile Menu Management

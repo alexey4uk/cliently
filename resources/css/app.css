@@ -1,100 +1,73 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import "tailwindcss";
 
-@layer utilities {
-    /* Кастомный скроллбар для WebKit браузеров (Chrome, Safari, Edge) */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+@theme {
+  --font-display: 'Poppins', 'sans-serif';
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../../resources/**/*.blade.php";
+@source "../../resources/**/*.js";
+@source "../../resources/**/*.vue";
+
+/* Скрываем элементы с x-cloak до инициализации Alpine.js */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Предотвращаем мерцание sidebar элементов при загрузке */
+@media (min-width: 1024px) {
+    /* Скрываем sidebar-text до инициализации Alpine, если sidebar должен быть свернут */
+    html[data-sidebar-collapsed="true"] .sidebar-text {
+        display: none !important;
     }
-
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-        border-radius: 4px;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgb(203 213 225 / 0.5);
-        border-radius: 4px;
-        transition: background 0.2s ease;
-    }
-
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgb(148 163 184 / 0.7);
-    }
-
-    /* Темная тема для скроллбара */
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgb(51 65 85 / 0.5);
-    }
-
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: rgb(71 85 105 / 0.7);
-    }
-
-    /* Кастомный скроллбар для Firefox */
-    .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: rgb(203 213 225 / 0.5) transparent;
-    }
-
-    .dark .custom-scrollbar {
-        scrollbar-color: rgb(51 65 85 / 0.5) transparent;
-    }
-
-    /* Применение стилей ко всем элементам с overflow */
-    * {
-        scrollbar-width: thin;
-        scrollbar-color: rgb(203 213 225 / 0.5) transparent;
-    }
-
-    *::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    *::-webkit-scrollbar-track {
-        background: transparent;
-        border-radius: 4px;
-    }
-
-    *::-webkit-scrollbar-thumb {
-        background: rgb(203 213 225 / 0.5);
-        border-radius: 4px;
-        transition: background 0.2s ease;
-    }
-
-    *::-webkit-scrollbar-thumb:hover {
-        background: rgb(148 163 184 / 0.7);
-    }
-
-    /* Темная тема */
-    .dark * {
-        scrollbar-color: rgb(51 65 85 / 0.5) transparent;
-    }
-
-    .dark *::-webkit-scrollbar-thumb {
-        background: rgb(51 65 85 / 0.5);
-    }
-
-    .dark *::-webkit-scrollbar-thumb:hover {
-        background: rgb(71 85 105 / 0.7);
-    }
-
-    /* Анимация появления формы */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-fade-in-up {
-        animation: fadeInUp 0.4s ease-out;
+    
+    html[data-sidebar-collapsed="true"] .sidebar-section-title {
+        display: none !important;
     }
 }
+
+/* Кастомный scrollbar для WebKit браузеров (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(203 213 225);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184);
+    background-clip: padding-box;
+}
+
+/* Темная тема для scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+    background: rgb(51 65 85);
+    background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgb(71 85 105);
+    background-clip: padding-box;
+}
+
+/* Кастомный scrollbar для Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(203 213 225) transparent;
+}
+
+.dark * {
+    scrollbar-color: rgb(51 65 85) transparent;
+}
+

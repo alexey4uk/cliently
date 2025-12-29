@@ -88,9 +88,10 @@
 
         <!-- Переключатель темы -->
         <button id="themeToggle"
-            class="h-8 w-8 rounded-full border border-slate-300 bg-white text-xs flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            class="h-8 w-8 rounded-full border border-slate-300 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
             aria-label="Переключить тему">
-            🌓
+            <x-icon name="sun" size="sm" class="hidden dark:block" />
+            <x-icon name="moon" size="sm" class="block dark:hidden" />
         </button>
 
 
