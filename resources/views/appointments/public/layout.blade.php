@@ -125,8 +125,8 @@
                 <button id="theme-toggle" 
                         class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         aria-label="Переключить тему">
-                    <i class="fa-solid fa-sun text-base dark:hidden"></i>
-                    <i class="fa-solid fa-moon text-base hidden dark:inline"></i>
+                    <x-icon name="sun" size="md" class="hidden dark:block" />
+                    <x-icon name="moon" size="md" class="block dark:hidden" />
                 </button>
             </div>
 

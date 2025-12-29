@@ -14,9 +14,6 @@
     <meta name="apple-mobile-web-app-title" content="CLIENTLY" />
     <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}" />
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <!-- Google Fonts - Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,7 +45,7 @@
                     <!-- Email Address -->
                     <div>
                         <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-envelope text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
+                            <x-icon name="envelope" size="sm" class="text-[#6366F1] dark:text-[#818CF8]" />
                             <span>Email адрес*</span>
                         </label>
                             <input
@@ -69,7 +66,7 @@
                     <!-- Password -->
                     <div>
                         <label for="password" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-lock text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
+                            <x-icon name="lock-closed" size="sm" class="text-[#6366F1] dark:text-[#818CF8]" />
                             <span>Новый пароль*</span>
                         </label>
                             <input
@@ -88,7 +85,7 @@
                     <!-- Confirm Password -->
                     <div>
                         <label for="password_confirmation" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <i class="fa-solid fa-lock text-[#6366F1] dark:text-[#818CF8] text-xs"></i>
+                            <x-icon name="lock-closed" size="sm" class="text-[#6366F1] dark:text-[#818CF8]" />
                             <span>Подтверждение пароля*</span>
                         </label>
                             <input
@@ -108,7 +105,7 @@
                             class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                             <span>Установить пароль</span>
-                            <i class="fa-solid fa-key text-xs"></i>
+                            <x-icon name="key" size="sm" />
                         </button>
                     </div>
                 </form>
@@ -131,8 +128,8 @@
             class="h-10 w-10 rounded-full text-sm flex items-center justify-center text-slate-700 hover:bg-white/80 hover:shadow-sm transition-colors dark:text-slate-300 dark:hover:bg-slate-800/80"
             aria-label="Переключить тему"
         >
-            <i class="fa-solid fa-sun text-sm dark:hidden"></i>
-            <i class="fa-solid fa-moon text-sm hidden dark:inline"></i>
+            <x-icon name="sun" size="md" class="hidden dark:block" />
+            <x-icon name="moon" size="md" class="block dark:hidden" />
         </button>
     </div>
 </div>
@@ -161,7 +158,7 @@
         const submitBtn = form.querySelector('button[type="submit"]');
 
         form.addEventListener('submit', function() {
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span> Обновление...</span>';
+            submitBtn.innerHTML = '<svg class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg><span> Обновление...</span>';
             submitBtn.disabled = true;
         });
 
