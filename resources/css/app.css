@@ -71,3 +71,17 @@
     scrollbar-color: rgb(51 65 85) transparent;
 }
 
+/* Предотвращаем горизонтальную прокрутку на мобильных */
+@media (max-width: 1023px) {
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Убеждаемся, что длинные URL не вызывают горизонтальную прокрутку */
+    .break-all,
+    .break-words {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+}
+
