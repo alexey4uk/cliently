@@ -24,17 +24,17 @@
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
                 <!-- Компактный заголовок (всегда видимый) -->
                 <div class="px-4 py-3">
+                    @php
+                        $selectedDateCarbon = \Carbon\Carbon::parse($date);
+                        $currentYear = \Carbon\Carbon::now()->year;
+                        $showYear = $selectedDateCarbon->year !== $currentYear;
+                    @endphp
                     <!-- Мобильная версия: вертикальный layout -->
                     <div class="block sm:hidden space-y-2">
                         <div class="flex items-center justify-between">
                             <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Дата
                             </label>
-                            @php
-                                $selectedDateCarbon = \Carbon\Carbon::parse($date);
-                                $currentYear = \Carbon\Carbon::now()->year;
-                                $showYear = $selectedDateCarbon->year !== $currentYear;
-                            @endphp
                             @if($showYear)
                                 <span class="year-badge text-xs font-semibold text-indigo-600 dark:text-indigo-400 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                                     {{ $selectedDateCarbon->year }}
@@ -89,9 +89,9 @@
                     <!-- Горизонтальный скролл недели -->
                     <div class="relative pt-3">
                         <!-- Fade эффект слева -->
-                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-left"></div>
+                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-left"></div>
                         <!-- Fade эффект справа -->
-                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-right"></div>
+                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-right"></div>
                         <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="week-dates-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
                             <div class="flex gap-1.5 pb-1.5 flex-nowrap" id="week-dates" style="min-width: max-content;">
                         @php
@@ -121,7 +121,7 @@
                                 $isPast = $dateItem->isPast() && !$isToday;
                             @endphp
                             <button type="button" 
-                                    class="week-date-btn flex-shrink-0 w-14 p-2 rounded-lg border transition-colors snap-start {{ $isSelected ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-slate-800' }} {{ $isPast ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                    class="week-date-btn shrink-0 w-14 p-2 rounded-lg border transition-colors snap-start {{ $isSelected ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-slate-800' }} {{ $isPast ? 'opacity-50 cursor-not-allowed' : '' }}"
                                     data-date="{{ $dateItem->format('Y-m-d') }}"
                                     {{ $isPast ? 'disabled' : '' }}>
                                 <div class="text-[10px] sm:text-[9px] text-slate-500 dark:text-slate-400 mb-1 sm:mb-0.5 leading-tight">
@@ -152,7 +152,7 @@
                         <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
                             Время*
                         </label>
-                        <div class="text-[10px] font-medium text-slate-500 dark:text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg" id="slots-count-badge" style="{{ count($availableSlots) == 0 ? 'display: none;' : '' }}">
+                        <div class="text-[10px] font-medium text-slate-500 dark:text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg {{ count($availableSlots) == 0 ? 'hidden' : '' }}" id="slots-count-badge">
                             {{ count($availableSlots) }} {{ count($availableSlots) == 1 ? 'слот' : 'слотов' }}
                         </div>
                     </div>
@@ -161,15 +161,15 @@
                 <!-- Контейнер для слотов (динамически обновляется) -->
                 <div class="relative" id="time-slots-section">
                     <!-- Fade эффект слева -->
-                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
+                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
                     <!-- Fade эффект справа -->
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
                     @if(count($availableSlots) > 0)
                         <!-- Горизонтальный скролл временных слотов -->
                         <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="time-slots-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
                             <div class="flex gap-2 pb-1.5 flex-nowrap" id="time-slots-container" style="min-width: max-content;">
                             @foreach($availableSlots as $slot)
-                                <label class="time-slot-label flex-shrink-0 w-16 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-colors hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 snap-start {{ old('time') == $slot ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
+                                <label class="time-slot-label shrink-0 w-16 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-colors hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 snap-start {{ old('time') == $slot ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
                                     <input type="radio" name="time" value="{{ $slot }}" required class="sr-only time-radio" {{ old('time') == $slot ? 'checked' : '' }}>
                                     <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $slot }}</span>
                                 </label>
@@ -260,7 +260,7 @@
 </div>
 
 <!-- Модальное окно календаря -->
-<div id="calendar-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4" style="padding-bottom: env(safe-area-inset-bottom, 0);">
+<div id="calendar-modal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4" style="padding-bottom: env(safe-area-inset-bottom, 0);">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" id="calendar-backdrop"></div>
     <div class="calendar-dialog w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-lg sm:rounded-lg shadow-lg z-50 relative overflow-hidden max-h-[90vh] flex flex-col" style="max-height: calc(100vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));">
         <!-- Индикатор drag для мобильных -->
@@ -272,18 +272,18 @@
                 <!-- Заголовок модального окна -->
                 <div class="flex items-center justify-between mb-3 sm:mb-3">
                     <h3 class="text-base font-semibold text-slate-900 dark:text-white">Выберите дату</h3>
-                    <button type="button" id="close-calendar-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <button type="button" id="close-calendar-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                         <i class="fa-solid fa-times text-lg"></i>
                     </button>
                 </div>
 
                 <!-- Навигация по месяцам -->
                 <div class="flex items-center justify-between gap-2 mb-3">
-                    <button type="button" id="prev-month-btn" class="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
+                    <button type="button" id="prev-month-btn" class="p-2 min-w-10 min-h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
                         <i class="fa-solid fa-chevron-left text-sm"></i>
                     </button>
                     <div class="text-sm sm:text-base font-bold text-slate-900 dark:text-white px-2 flex-1 text-center" id="calendar-month-year"></div>
-                    <button type="button" id="next-month-btn" class="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
+                    <button type="button" id="next-month-btn" class="p-2 min-w-10 min-h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
                         <i class="fa-solid fa-chevron-right text-sm"></i>
                     </button>
                 </div>
@@ -303,10 +303,10 @@
 
                 <!-- Быстрые кнопки -->
                 <div class="flex gap-2.5">
-                    <button type="button" id="select-today-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-[48px]">
+                    <button type="button" id="select-today-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-12">
                         Сегодня
                     </button>
-                    <button type="button" id="select-tomorrow-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-[48px]">
+                    <button type="button" id="select-tomorrow-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-12">
                         Завтра
                     </button>
                 </div>
@@ -868,6 +868,7 @@
             const modal = document.getElementById('calendar-modal');
             if (modal) {
                 modal.classList.remove('hidden');
+                modal.classList.add('flex');
                 document.body.classList.add('modal-open');
                 document.body.style.overflow = 'hidden';
                 document.body.style.position = 'fixed';
@@ -880,6 +881,7 @@
             const modal = document.getElementById('calendar-modal');
             if (modal) {
                 modal.classList.add('hidden');
+                modal.classList.remove('flex');
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = '';
                 document.body.style.position = '';
@@ -1036,7 +1038,7 @@
                     <div class="px-4 pb-4" id="time-slots-container">
                         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                                <div class="shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                                     <i class="fa-solid fa-info-circle text-amber-600 dark:text-amber-400 text-sm"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -1082,8 +1084,8 @@
                     </div>
                 `;
                 timeSlotsSection.innerHTML = `
-                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
+                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
                     ${wrapperHtml}
                 `;
                 timeSlotsWrapper = document.getElementById('time-slots-wrapper');
@@ -1098,7 +1100,7 @@
             // Генерируем HTML для слотов
             slots.forEach(slot => {
                 const label = document.createElement('label');
-                label.className = 'time-slot-label flex-shrink-0 w-20 sm:w-16 md:w-20 p-3 sm:p-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:shadow-md active:scale-95 snap-start min-h-[52px] sm:min-h-0';
+                label.className = 'time-slot-label shrink-0 w-20 sm:w-16 md:w-20 p-3 sm:p-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:shadow-md active:scale-95 snap-start min-h-[52px] sm:min-h-0';
                 
                 const input = document.createElement('input');
                 input.type = 'radio';
@@ -1137,15 +1139,17 @@
         
         // ========== Показ ошибки при загрузке слотов ==========
         function showSlotsError(message) {
-            const timeSlotsContainer = document.getElementById('time-slots-container');
+            const timeSlotsSection = document.getElementById('time-slots-section');
             const submitBtn = document.getElementById('submit-btn');
             
-            if (timeSlotsContainer) {
+            if (timeSlotsSection) {
                 const errorHtml = `
-                    <div class="px-4 pb-4">
+                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
+                    <div class="px-4 pb-4" id="time-slots-container">
                         <div class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4">
                             <div class="flex items-start gap-3">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                                <div class="shrink-0 w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
                                     <i class="fa-solid fa-exclamation-circle text-rose-600 dark:text-rose-400 text-sm"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
@@ -1160,7 +1164,7 @@
                         </div>
                     </div>
                 `;
-                timeSlotsContainer.innerHTML = errorHtml;
+                timeSlotsSection.innerHTML = errorHtml;
             }
             
             if (submitBtn) {
