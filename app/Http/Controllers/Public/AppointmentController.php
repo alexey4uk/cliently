@@ -194,27 +194,28 @@ class AppointmentController extends Controller
         ]);
 
         return redirect()
-            ->route('public.appointments.success', $business->slug)
-            ->with('success', 'Ваша запись успешно создана! Мы свяжемся с вами для подтверждения.')
-            ->with('appointment_token', $appointment->token);
+            ->route('public.appointments.success', [$business->slug, $appointment->token])
+            ->with('success', 'Ваша запись успешно создана! Мы свяжемся с вами для подтверждения.');
     }
 
     /**
      * Страница успешной записи
      */
-    public function success(string $slug, Request $request)
+    public function success(string $slug, string $token, )
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
-
-        // Получаем запись по токену из сессии или параметра
-        $token = $request->session()->get('appointment_token') ?? $request->get('token');
         $appointment = null;
+
+        $business = Business::where('slug', $slug)->firstOrFail();
 
         if ($token) {
             $appointment = Appointment::where('token', $token)
                 ->where('business_id', $business->id)
                 ->with(['service', 'master', 'location', 'client'])
                 ->first();
+        }
+
+        if (!$business || !$appointment) {
+            abort(404);
         }
 
         return view('appointments.public.success', compact('business', 'appointment', 'token'));

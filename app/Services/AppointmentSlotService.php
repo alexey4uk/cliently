@@ -7,6 +7,7 @@ use App\Models\Master;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentSlotService
 {
@@ -64,7 +65,7 @@ class AppointmentSlotService
 
         if ($masters->isEmpty()) {
             if ($masterId) {
-                \Log::warning('Мастер не найден или не предоставляет услугу', [
+                Log::warning('Мастер не найден или не предоставляет услугу', [
                     'master_id' => $masterId,
                     'service_id' => $serviceId,
                 ]);
@@ -194,7 +195,7 @@ class AppointmentSlotService
 
             // Если это null или пусто, пропускаем
             if (empty($rawWorkingHours)) {
-                \Log::debug('У мастера нет working_hours', [
+                Log::debug('У мастера нет working_hours', [
                     'master_id' => $master->id,
                     'master_name' => $master->first_name.' '.$master->last_name,
                     'raw_type' => gettype($rawWorkingHours),
@@ -207,7 +208,7 @@ class AppointmentSlotService
             $workingHours = $this->parseWorkingHours($rawWorkingHours);
 
             if (! $workingHours || ! is_array($workingHours)) {
-                \Log::debug('Не удалось распарсить working_hours', [
+                Log::debug('Не удалось распарсить working_hours', [
                     'master_id' => $master->id,
                     'raw_type' => gettype($rawWorkingHours),
                     'raw_value' => is_string($rawWorkingHours) ? substr($rawWorkingHours, 0, 100) : $rawWorkingHours,
@@ -218,7 +219,7 @@ class AppointmentSlotService
 
             // Проверяем, не выходной ли день
             if (in_array($dayOfWeek, $workingHours['days_off'] ?? [])) {
-                \Log::debug('Выходной день для мастера', [
+                Log::debug('Выходной день для мастера', [
                     'master_id' => $master->id,
                     'day_of_week' => $dayOfWeek,
                     'days_off' => $workingHours['days_off'] ?? [],
@@ -243,7 +244,7 @@ class AppointmentSlotService
                     'master_id' => $master->id,
                 ];
             } else {
-                \Log::debug('У мастера нет времени работы для этого дня', [
+                Log::debug('У мастера нет времени работы для этого дня', [
                     'master_id' => $master->id,
                     'from' => $from,
                     'to' => $to,
@@ -283,7 +284,7 @@ class AppointmentSlotService
 
             // Проверяем ошибки JSON
             if (json_last_error() !== JSON_ERROR_NONE) {
-                \Log::warning('Ошибка декодирования JSON working_hours', [
+                Log::warning('Ошибка декодирования JSON working_hours', [
                     'json_error' => json_last_error_msg(),
                     'raw_value' => substr($workingHours, 0, 200),
                 ]);
