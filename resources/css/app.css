@@ -18,6 +18,40 @@
     display: none !important;
 }
 
+/* Единый размер шрифта для всех инпутов */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="search"],
+input[type="url"],
+input[type="datetime-local"],
+textarea,
+select {
+    font-size: 0.875rem; /* 14px - text-sm */
+}
+
+/* Предотвращение автоматического увеличения масштаба на мобильных устройствах при фокусе на input */
+@media screen and (max-width: 640px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="search"],
+    input[type="url"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+}
+
 /* Предотвращаем мерцание sidebar элементов при загрузке */
 @media (min-width: 1024px) {
     /* Скрываем sidebar-text до инициализации Alpine, если sidebar должен быть свернут */

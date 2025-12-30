@@ -19,14 +19,14 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div class="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                     <i class="fa-solid fa-building text-white text-2xl md:text-3xl"></i>
-                </div>
-                <div class="flex-1 min-w-0">
+            </div>
+            <div class="flex-1 min-w-0">
                     <h2 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-1.5 truncate">
-                        {{ $business->name }}
-                    </h2>
+                    {{ $business->name }}
+                </h2>
                     <p class="text-sm md:text-base text-slate-600 dark:text-slate-400 mb-3">
-                        Управляйте настройками вашего бизнеса
-                    </p>
+                    Управляйте настройками вашего бизнеса
+                </p>
                     @if($business->phone || $business->email)
                         <div class="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm">
                             @if($business->phone)
@@ -95,7 +95,7 @@
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-0.5">
                             Публичная ссылка на запись
-                        </h3>
+            </h3>
                         <p class="text-xs text-slate-600 dark:text-slate-400">
                             Поделитесь с клиентами для онлайн-записи
                         </p>
@@ -106,7 +106,7 @@
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-indigo-200 dark:border-indigo-800/50 p-3 md:p-4">
                 <div class="flex flex-col sm:flex-row gap-2 sm:items-center mb-3">
                     <div class="flex-1 min-w-0 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2.5 overflow-hidden">
-                        <span class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-mono break-all break-words min-w-0 block" style="word-break: break-word; overflow-wrap: anywhere;" x-text="publicUrl"></span>
+                        <span class="text-sm text-slate-700 dark:text-slate-300 font-mono break-all break-words min-w-0 block" style="word-break: break-word; overflow-wrap: anywhere;" x-text="publicUrl"></span>
                     </div>
                     <div class="flex items-center gap-2">
                         <a :href="publicUrl" 
@@ -117,14 +117,14 @@
                             <i class="fa-solid fa-external-link text-xs"></i>
                             <span class="hidden sm:inline">Открыть</span>
                         </a>
-                        <button type="button" 
+                <button type="button" 
                                 @click="copyUrl()"
                                 :class="copied ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-indigo-600 hover:bg-indigo-700'"
                                 class="inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-white active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex-shrink-0"
-                                title="Копировать ссылку">
+                        title="Копировать ссылку">
                             <i :class="copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'" class="text-xs"></i>
                             <span class="hidden sm:inline" x-text="copied ? 'Скопировано!' : 'Копировать'"></span>
-                        </button>
+                </button>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -141,17 +141,17 @@
         <div class="flex items-center gap-2 mb-4">
             <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Основные разделы
-            </h3>
-        </div>
+                    </h3>
+                    </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Локации -->
-            <a href="{{ route('settings.locations') }}" 
+        <!-- Локации -->
+        <a href="{{ route('settings.locations') }}" 
                class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-700 transition-all overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-emerald-100 dark:bg-emerald-500/10 rounded-bl-full -mr-10 -mt-10 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-500/20 transition-colors"></div>
                 <div class="relative">
                     <div class="h-12 w-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-4 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-500/30 transition-colors">
-                        <i class="fa-solid fa-location-dot text-emerald-600 dark:text-emerald-400 text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-location-dot text-emerald-600 dark:text-emerald-400 text-lg"></i>
+                </div>
                     <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         Локации
                     </h3>
@@ -162,18 +162,18 @@
                     <div class="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                         <span>Управлять</span>
                         <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                    </div>
                 </div>
-            </a>
+            </div>
+        </a>
 
-            <!-- Услуги -->
-            <a href="{{ route('services.index') }}" 
+        <!-- Услуги -->
+        <a href="{{ route('services.index') }}" 
                class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-purple-300 dark:hover:border-purple-700 transition-all overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-purple-100 dark:bg-purple-500/10 rounded-bl-full -mr-10 -mt-10 group-hover:bg-purple-200 dark:group-hover:bg-purple-500/20 transition-colors"></div>
                 <div class="relative">
                     <div class="h-12 w-12 rounded-xl bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center mb-4 group-hover:bg-purple-200 dark:group-hover:bg-purple-500/30 transition-colors">
-                        <i class="fa-solid fa-scissors text-purple-600 dark:text-purple-400 text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-scissors text-purple-600 dark:text-purple-400 text-lg"></i>
+                </div>
                     <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                         Услуги
                     </h3>
@@ -184,18 +184,18 @@
                     <div class="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400 font-medium">
                         <span>Управлять</span>
                         <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                    </div>
                 </div>
-            </a>
+            </div>
+        </a>
 
-            <!-- Мастера -->
-            <a href="{{ route('settings.masters') }}" 
+        <!-- Мастера -->
+        <a href="{{ route('settings.masters') }}" 
                class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-amber-300 dark:hover:border-amber-700 transition-all overflow-hidden">
                 <div class="absolute top-0 right-0 w-20 h-20 bg-amber-100 dark:bg-amber-500/10 rounded-bl-full -mr-10 -mt-10 group-hover:bg-amber-200 dark:group-hover:bg-amber-500/20 transition-colors"></div>
                 <div class="relative">
                     <div class="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-500/30 transition-colors">
-                        <i class="fa-solid fa-user-tie text-amber-600 dark:text-amber-400 text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-user-tie text-amber-600 dark:text-amber-400 text-lg"></i>
+                </div>
                     <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                         Мастера
                     </h3>

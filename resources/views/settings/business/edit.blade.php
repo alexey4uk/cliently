@@ -7,7 +7,7 @@
 @push('breadcrumbs')
     <x-breadcrumbs :items="[
         ['title' => 'Настройки', 'url' => route('settings.index')],
-        ['title' => 'Данные бизнеса', 'url' => null]
+        ['title' => 'Редактирование', 'url' => null]
     ]" />
 @endpush
 
@@ -48,13 +48,13 @@
                     <label for="slug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Ссылка на запись <span class="text-rose-500">*</span>
                     </label>
-                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-lg border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
-                        <!-- Префикс -->
-                        <span class="inline-flex items-center px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-sm font-mono select-none">
-                            {{ url('/') }}/book/
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center bg-white dark:bg-slate-900 rounded-lg border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
+                        <!-- Префикс с отображением полного URL -->
+                        <span class="inline-flex items-center px-2 sm:px-3 py-2 sm:py-2.5 bg-slate-50 dark:bg-slate-800 border-b sm:border-b-0 sm:border-r border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-mono select-none break-all sm:whitespace-nowrap flex-shrink-0">
+                            <span id="slugPrefix">{{ url('/') }}/book/</span><span id="slugDisplay" class="text-slate-700 dark:text-slate-300 sm:hidden">{{ old('slug', $business->slug) }}</span>
                         </span>
                         <!-- Поле ввода -->
-                        <div class="flex-1 relative">
+                        <div class="flex-1 relative min-w-0">
                             <input type="text" id="slug" name="slug" required value="{{ old('slug', $business->slug) }}"
                                 class="w-full px-3 py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                 placeholder="vash-biznes">
@@ -381,6 +381,13 @@
         }
     }
 
+    function updateSlugDisplay(value) {
+        const slugDisplay = document.getElementById('slugDisplay');
+        if (slugDisplay) {
+            slugDisplay.textContent = value || '';
+        }
+    }
+
     function handleSlugInput(e) {
         const input = e.target;
         const originalValue = input.value;
@@ -394,6 +401,9 @@
             input.value = sanitizedValue;
             setCursorPosition(input, newCursorPosition);
         }
+        
+        // Обновляем отображение slug в префиксе
+        updateSlugDisplay(sanitizedValue.trim());
         
         const slug = sanitizedValue.trim();
         
@@ -418,6 +428,9 @@
         if (input.value !== formatted) {
             input.value = formatted;
         }
+        
+        // Обновляем отображение slug в префиксе
+        updateSlugDisplay(formatted.trim());
         
         const slug = formatted.trim();
         if (slug && slug.length >= SLUG_MIN_LENGTH) {
