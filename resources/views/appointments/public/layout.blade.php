@@ -11,7 +11,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -114,28 +114,36 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-x-hidden">
-    <!-- Header секция -->
-    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-x-hidden">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full min-w-0">
-            <!-- Логотип и переключатель темы -->
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
+<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans overflow-x-hidden flex flex-col">
+    <!-- Обычный header -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-4xl lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <!-- Логотип и название -->
+                <div class="flex items-center gap-3">
                     <x-logo size="md" />
-                    <span class="text-xl font-bold text-slate-900 dark:text-white uppercase font-display">{{ $business->name }}</span>
+                    <span class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white font-sans">
+                        {{ $business->name }}
+                    </span>
                 </div>
+
                 <!-- Переключатель темы -->
-                <button id="theme-toggle" 
-                        class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                <button id="theme-toggle"
+                        class="h-10 w-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-200"
                         aria-label="Переключить тему">
                     <x-icon name="sun" size="md" class="hidden dark:block" />
                     <x-icon name="moon" size="md" class="block dark:hidden" />
                 </button>
             </div>
+        </div>
+    </header>
 
-            <!-- Индикатор прогресса -->
+    <!-- Контентная область -->
+    <main class="flex-1 py-8 sm:py-12 lg:py-8 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
+        <div class="max-w-4xl lg:max-w-4xl mx-auto w-full min-w-0">
+            <!-- Прогресс интегрирован в начало контента -->
             @if(isset($currentStep))
-            <div class="flex items-center justify-between w-full min-w-0">
+            <div class="mb-8 sm:mb-12 lg:mb-8">
                 @php
                     $steps = [
                         1 => ['label' => 'Локация', 'icon' => 'fa-map-marker-alt'],
@@ -143,57 +151,97 @@
                         3 => ['label' => 'Мастер', 'icon' => 'fa-user-tie'],
                         4 => ['label' => 'Время', 'icon' => 'fa-clock'],
                     ];
+                    $totalSteps = count($steps);
                 @endphp
-                @foreach($steps as $stepNum => $step)
-                    <div class="flex flex-col items-center flex-1 relative">
-                        <div class="relative flex items-center justify-center w-full">
-                            <!-- Номер шага -->
-                            <div class="relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-medium text-xs transition-colors
-                                @if($currentStep > $stepNum)
-                                    bg-green-500 text-white
-                                @elseif($currentStep == $stepNum)
-                                    bg-indigo-600 text-white
-                                @else
-                                    bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400
-                                @endif">
-                                @if($currentStep > $stepNum)
-                                    <i class="fa-solid fa-check text-[10px]"></i>
-                                @else
-                                    {{ $stepNum }}
+                
+                <!-- Вертикальный прогресс-бар -->
+                <div class="flex items-center gap-3 sm:gap-4 lg:gap-3 mb-6 lg:mb-4">
+                    @foreach($steps as $stepNum => $step)
+                        <div class="flex-1 flex flex-col items-center">
+                            <div class="w-full h-2 lg:h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-2 lg:mb-1.5 relative">
+                                @if($currentStep >= $stepNum)
+                                    <div class="absolute top-0 left-0 h-full bg-indigo-600 rounded-full transition-all duration-500"
+                                         style="width: {{ $currentStep == $stepNum ? '100%' : '100%' }}"></div>
                                 @endif
                             </div>
-                            <!-- Линия между шагами -->
-                            @if($stepNum < count($steps))
-                                <div class="absolute left-1/2 top-1/2 h-0.5 -translate-y-1/2 transition-colors
+                            <div class="flex items-center gap-2 lg:gap-1.5 mt-2 lg:mt-1.5">
+                                <div class="w-6 h-6 lg:w-5 lg:h-5 rounded-full flex items-center justify-center text-[10px] lg:text-[9px] transition-all duration-300
                                     @if($currentStep > $stepNum)
-                                        bg-green-500
+                                        bg-emerald-500 text-white
+                                    @elseif($currentStep == $stepNum)
+                                        bg-indigo-600 text-white scale-110
                                     @else
-                                        bg-slate-200 dark:bg-slate-700
-                                    @endif" style="width: calc(100% - 2rem);"></div>
-                            @endif
+                                        bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400
+                                    @endif">
+                                    @if($currentStep > $stepNum)
+                                        <i class="fa-solid fa-check"></i>
+                                    @else
+                                        <i class="fa-solid {{ $step['icon'] }}"></i>
+                                    @endif
+                                </div>
+                                <span class="text-xs sm:text-sm lg:text-[10px] font-medium transition-colors duration-200 hidden sm:inline
+                                    @if($currentStep >= $stepNum)
+                                        text-indigo-600 dark:text-indigo-400
+                                    @else
+                                        text-slate-500 dark:text-slate-400
+                                    @endif">
+                                    {{ $step['label'] }}
+                                </span>
+                            </div>
                         </div>
-                        <!-- Название шага -->
-                        <span class="mt-1.5 text-[10px] font-medium text-center transition-colors
-                            @if($currentStep >= $stepNum)
-                                text-indigo-600 dark:text-indigo-400
-                            @else
-                                text-slate-500 dark:text-slate-400
-                            @endif">
-                            <span class="hidden sm:inline">{{ $step['label'] }}</span>
-                        </span>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
             @endif
-        </div>
-    </header>
 
-    <!-- Контентная область -->
-    <main class="min-h-screen py-4 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-        <div class="max-w-4xl mx-auto w-full min-w-0">
             @yield('content')
         </div>
     </main>
+    
+    <!-- Футер -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-16 sm:mt-20 lg:mt-12">
+        <div class="max-w-4xl lg:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-6">
+                <!-- Информация о бизнесе -->
+                <div class="space-y-4 lg:space-y-3">
+                    <div class="flex items-center gap-3 lg:gap-2.5">
+                        <x-logo size="sm" />
+                        <h3 class="text-lg lg:text-base font-bold text-slate-900 dark:text-white font-sans">
+                            {{ $business->name }}
+                        </h3>
+                    </div>
+                    
+                    @if($business->description)
+                        <p class="text-sm lg:text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                            {{ $business->description }}
+                        </p>
+                    @endif
+                </div>
+                
+                <!-- Контакты -->
+                <div class="space-y-4 lg:space-y-3">
+                    <h4 class="text-sm lg:text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Контакты
+                    </h4>
+                    
+                    @if($business->phone)
+                        <a href="tel:{{ $business->phone }}" 
+                           class="flex items-center gap-3 lg:gap-2.5 text-sm lg:text-xs text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                            <i class="fa-solid fa-phone w-5 lg:w-4 text-center"></i>
+                            <span>{{ $business->phone }}</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+            
+            <!-- Копирайт -->
+            <div class="mt-8 lg:mt-6 pt-8 lg:pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+                <p class="text-xs lg:text-[10px] text-slate-500 dark:text-slate-400">
+                    © {{ date('Y') }} {{ $business->name }}. Все права защищены.
+                </p>
+            </div>
+        </div>
+    </footer>
     
     @stack('scripts')
 </body>

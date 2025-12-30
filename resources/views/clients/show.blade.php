@@ -45,38 +45,38 @@
     <!-- Заголовок страницы -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-3 md:gap-4">
-            <!-- Аватар -->
+                <!-- Аватар -->
             <div class="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center text-xl md:text-2xl font-bold text-white shadow-lg flex-shrink-0">
-                {{ $client->initials }}
-            </div>
+                    {{ $client->initials }}
+                </div>
             <div class="min-w-0 flex-1">
                 <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white mb-1 truncate">
-                    {{ $client->full_name }}
-                </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                    <i class="fa-solid fa-calendar text-xs"></i>
-                    <span>Клиент с {{ $client->created_at->format('d.m.Y') }}</span>
-                </p>
+                        {{ $client->full_name }}
+                    </h1>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar text-xs"></i>
+                        <span>Клиент с {{ $client->created_at->format('d.m.Y') }}</span>
+                    </p>
+                </div>
             </div>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-            <a href="{{ route('clients.edit', $client) }}"
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="{{ route('clients.edit', $client) }}"
                class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                 <i class="fa-solid fa-pencil text-xs"></i>
-                <span>Редактировать</span>
-            </a>
-            <form method="POST" action="{{ route('clients.destroy', $client) }}" 
+                    <span>Редактировать</span>
+                </a>
+                <form method="POST" action="{{ route('clients.destroy', $client) }}" 
                   id="delete-form"
                   class="inline">
-                @csrf
-                @method('DELETE')
+                    @csrf
+                    @method('DELETE')
             </form>
             <button type="button"
                     @click="openDeleteModal()"
                     class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                <i class="fa-solid fa-trash text-xs"></i>
-                <span>Удалить</span>
-            </button>
+                        <i class="fa-solid fa-trash text-xs"></i>
+                        <span>Удалить</span>
+                    </button>
         </div>
     </div>
 
@@ -89,7 +89,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Основная информация
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">
@@ -126,7 +126,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Контактная информация
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">
@@ -166,7 +166,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Системная информация
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">

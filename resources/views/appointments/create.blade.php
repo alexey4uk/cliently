@@ -16,13 +16,13 @@
 <form method="POST" action="{{ route('appointments.store') }}" class="space-y-4 md:space-y-6">
     @csrf
 
-    <!-- Основная информация -->
+        <!-- Основная информация -->
     <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
             <div class="flex items-center gap-2">
                 <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
                     <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                </div>
+                    </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Основная информация
                 </h2>
@@ -32,8 +32,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div>
                     <label for="client_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Клиент <span class="text-rose-500">*</span>
-                    </label>
+                            Клиент <span class="text-rose-500">*</span>
+                        </label>
                     <div x-data="{
                         open: false,
                         search: '',
@@ -170,20 +170,20 @@
                                     </button>
                                 </template>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    @error('client_id')
+                        @error('client_id')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
-                </div>
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
 
                 <div>
                     <label for="service_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Услуга <span class="text-rose-500">*</span>
-                    </label>
+                            Услуга <span class="text-rose-500">*</span>
+                        </label>
                     <div x-data="{
                         open: false,
                         search: '',
@@ -320,22 +320,22 @@
                                     </button>
                                 </template>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    @error('service_id')
+                        @error('service_id')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
                 </div>
-            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div>
                     <label for="master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Мастер
-                    </label>
+                            Мастер
+                        </label>
                     <div x-data="{
                         open: false,
                         search: '',
@@ -477,55 +477,55 @@
                                     </button>
                                 </template>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    @error('master_id')
+                        @error('master_id')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
-                </div>
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
 
                 <div>
                     <label for="location_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Локация
-                    </label>
-                    <div class="relative">
+                            Локация
+                        </label>
+                        <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-location-dot text-slate-400 text-sm"></i>
                         </div>
-                        <select id="location_id" name="location_id"
+                            <select id="location_id" name="location_id"
                                 class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors appearance-none cursor-pointer">
-                            <option value="">Не выбрана</option>
-                            @foreach($locations as $location)
-                                <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
-                                    {{ $location->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                                <option value="">Не выбрана</option>
+                                @foreach($locations as $location)
+                                    <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
+                                        {{ $location->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
                         </div>
-                    </div>
-                    @error('location_id')
+                        @error('location_id')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Дата и время -->
+        <!-- Дата и время -->
     <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
             <div class="flex items-center gap-2">
                 <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
                     <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                </div>
+                    </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Дата и время
                 </h2>
@@ -535,8 +535,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div>
                     <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Дата <span class="text-rose-500">*</span>
-                    </label>
+                            Дата <span class="text-rose-500">*</span>
+                        </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-calendar text-slate-400 text-sm"></i>
@@ -545,75 +545,75 @@
                                min="{{ date('Y-m-d') }}"
                                class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('date') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                     </div>
-                    @error('date')
+                        @error('date')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
-                </div>
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
 
                 <div>
                     <label for="time" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Время <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
+                            Время <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-clock text-slate-400 text-sm"></i>
                         </div>
-                        <select id="time" name="time" required
+                            <select id="time" name="time" required
                                 class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('time') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors appearance-none cursor-pointer">
-                            <option value="">{{ old('time') ? old('time') : 'Сначала выберите услугу и дату' }}</option>
-                        </select>
+                                <option value="">{{ old('time') ? old('time') : 'Сначала выберите услугу и дату' }}</option>
+                            </select>
                         <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                            </div>
                         </div>
-                    </div>
-                    <div id="time-loading" class="hidden mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-spinner fa-spin text-xs"></i>
-                        <span>Загрузка доступных слотов...</span>
-                    </div>
-                    <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span></span>
-                    </div>
-                    @error('time')
+                        <div id="time-loading" class="hidden mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner fa-spin text-xs"></i>
+                            <span>Загрузка доступных слотов...</span>
+                        </div>
+                        <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span></span>
+                        </div>
+                        @error('time')
                     <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                    @enderror
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                        @enderror
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Дополнительная информация -->
+        <!-- Дополнительная информация -->
     <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
         <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
             <div class="flex items-center gap-2">
                 <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
                     <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                </div>
+                    </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Дополнительная информация
                 </h2>
             </div>
-        </div>
-        <div class="p-4 md:p-6">
+            </div>
+            <div class="p-4 md:p-6">
             <div>
                 <label for="notes" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                    Заметки
-                </label>
-                <textarea id="notes" name="notes" rows="4"
+                        Заметки
+                    </label>
+                    <textarea id="notes" name="notes" rows="4"
                           class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                          placeholder="Дополнительная информация о записи...">{{ old('notes') }}</textarea>
-                @error('notes')
+                              placeholder="Дополнительная информация о записи...">{{ old('notes') }}</textarea>
+                    @error('notes')
                 <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                    <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                    <span>{{ $message }}</span>
-                </p>
-                @enderror
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
+                    @enderror
             </div>
         </div>
     </div>
@@ -755,16 +755,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработчики событий
     if (serviceSelect) {
-        serviceSelect.addEventListener('change', loadAvailableSlots);
+    serviceSelect.addEventListener('change', loadAvailableSlots);
     }
     if (masterSelect) {
-        masterSelect.addEventListener('change', loadAvailableSlots);
+    masterSelect.addEventListener('change', loadAvailableSlots);
     }
     if (dateInput) {
-        dateInput.addEventListener('change', loadAvailableSlots);
+    dateInput.addEventListener('change', loadAvailableSlots);
     }
     if (locationSelect) {
-        locationSelect.addEventListener('change', loadAvailableSlots);
+    locationSelect.addEventListener('change', loadAvailableSlots);
     }
 
     // Загружаем слоты при загрузке страницы, если уже выбраны услуга и дата

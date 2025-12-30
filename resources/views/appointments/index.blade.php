@@ -255,13 +255,13 @@
                                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-calendar text-slate-400 text-xs"></i>
                                 </div>
-                                <input
-                                    type="date"
-                                    name="date"
-                                    value="{{ $date }}"
+                            <input
+                                type="date"
+                                name="date"
+                                value="{{ $date }}"
                                     class="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white"
-                                    onchange="this.form.submit()"
-                                >
+                                onchange="this.form.submit()"
+                            >
                             </div>
                         </div>
                         <div>
@@ -270,14 +270,14 @@
                                 <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-info-circle text-slate-400 text-xs"></i>
                                 </div>
-                                <select name="status" onchange="this.form.submit()"
+                            <select name="status" onchange="this.form.submit()"
                                     class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
-                                    <option value="">Все статусы</option>
-                                    <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидает</option>
-                                    <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтверждена</option>
-                                    <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершена</option>
-                                    <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отменена</option>
-                                </select>
+                                <option value="">Все статусы</option>
+                                <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидает</option>
+                                <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтверждена</option>
+                                <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершена</option>
+                                <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отменена</option>
+                            </select>
                                 <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
                                 </div>
@@ -319,14 +319,14 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                             <i class="fa-solid fa-calendar text-slate-400 text-xs"></i>
                         </div>
-                        <input
-                            id="date-filter"
-                            type="date"
-                            name="date"
-                            value="{{ $date }}"
+                    <input
+                        id="date-filter"
+                        type="date"
+                        name="date"
+                        value="{{ $date }}"
                             class="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white"
-                            onchange="this.form.submit()"
-                        >
+                        onchange="this.form.submit()"
+                    >
                     </div>
                 </div>
 
@@ -365,8 +365,8 @@
                             <div class="flex items-center gap-2 flex-1 min-w-0">
                                 <div class="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
                                     <span class="text-xs md:text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                                        {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
-                                    </span>
+                                    {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
+                                </span>
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <a href="{{ route('appointments.show', $appointment) }}" class="block group">

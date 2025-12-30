@@ -57,7 +57,7 @@
     <!-- Список услуг -->
     @if($services->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            @foreach($services as $service)
+                @foreach($services as $service)
                 <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
                     <!-- Заголовок карточки -->
                     <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
@@ -68,7 +68,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5">
-                                        {{ $service->name }}
+                                            {{ $service->name }}
                                     </h3>
                                     <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                         <span class="font-semibold text-indigo-600 dark:text-indigo-400">
@@ -104,35 +104,35 @@
                                     <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 break-words">
                                         {{ $service->description }}
                                     </p>
-                                </div>
-                            </div>
+                                    </div>
+                                    </div>
                         @endif
-                    </div>
+                                    </div>
 
                     <!-- Действия -->
                     <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="{{ route('services.edit', $service) }}"
+                                        <a href="{{ route('services.edit', $service) }}"
                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <i class="fa-solid fa-pencil text-xs"></i>
+                                            <i class="fa-solid fa-pencil text-xs"></i>
                                 <span>Редактировать</span>
-                            </a>
-                            <form method="POST" action="{{ route('services.destroy', $service) }}" 
+                                        </a>
+                                        <form method="POST" action="{{ route('services.destroy', $service) }}" 
                                   id="delete-form-{{ $service->id }}"
-                                  class="inline">
-                                @csrf
-                                @method('DELETE')
+                                              class="inline">
+                                            @csrf
+                                            @method('DELETE')
                             </form>
                             <button type="button"
                                     @click="openDeleteModal({{ $service->id }}, '{{ addslashes($service->name) }}')"
                                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                                <i class="fa-solid fa-trash text-xs"></i>
+                                                <i class="fa-solid fa-trash text-xs"></i>
                                 <span>Удалить</span>
-                            </button>
+                                            </button>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                                    </div>
+                @endforeach
         </div>
     @else
         <!-- Пустое состояние -->
@@ -200,6 +200,6 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 @endsection

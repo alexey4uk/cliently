@@ -31,86 +31,86 @@
     
     <!-- Заголовок страницы -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-        <div class="space-y-2">
+            <div class="space-y-2">
             <div class="flex items-center gap-2 md:gap-3 flex-wrap">
                 <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white">
-                    Запись #{{ $appointment->id }}
-                </h1>
-                @php
-                    $statusColors = [
-                        'pending' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-                        'confirmed' => 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-                        'completed' => 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
-                        'cancelled' => 'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800',
-                    ];
-                    $statusLabels = [
-                        'pending' => 'Ожидает',
-                        'confirmed' => 'Подтверждена',
-                        'completed' => 'Завершена',
-                        'cancelled' => 'Отменена',
-                    ];
-                @endphp
-                <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border {{ $statusColors[$appointment->status] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300' }}">
-                    {{ $statusLabels[$appointment->status] ?? $appointment->status }}
-                </span>
+                        Запись #{{ $appointment->id }}
+                    </h1>
+                    @php
+                        $statusColors = [
+                            'pending' => 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+                            'confirmed' => 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+                            'completed' => 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                            'cancelled' => 'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+                        ];
+                        $statusLabels = [
+                            'pending' => 'Ожидает',
+                            'confirmed' => 'Подтверждена',
+                            'completed' => 'Завершена',
+                            'cancelled' => 'Отменена',
+                        ];
+                    @endphp
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border {{ $statusColors[$appointment->status] ?? 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300' }}">
+                        {{ $statusLabels[$appointment->status] ?? $appointment->status }}
+                    </span>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-calendar text-xs"></i>
+                    <span>{{ $appointment->date->format('d.m.Y') }} в {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
+                </p>
             </div>
-            <p class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <i class="fa-solid fa-calendar text-xs"></i>
-                <span>{{ $appointment->date->format('d.m.Y') }} в {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
-            </p>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-            <!-- Быстрые действия по статусам -->
-            @if($appointment->status === 'pending')
-                <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit"
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Быстрые действия по статусам -->
+                @if($appointment->status === 'pending')
+                    <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
                             class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-colors">
-                        <i class="fa-solid fa-check-circle text-xs"></i>
-                        <span>Подтвердить</span>
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
-                      onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
-                      class="inline">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit"
+                            <i class="fa-solid fa-check-circle text-xs"></i>
+                            <span>Подтвердить</span>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                          onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
+                          class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
                             class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-lg shadow-sm transition-colors">
-                        <i class="fa-solid fa-times-circle text-xs"></i>
-                        <span>Отменить</span>
-                    </button>
-                </form>
-            @elseif($appointment->status === 'confirmed')
-                <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit"
+                            <i class="fa-solid fa-times-circle text-xs"></i>
+                            <span>Отменить</span>
+                        </button>
+                    </form>
+                @elseif($appointment->status === 'confirmed')
+                    <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
                             class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-sm transition-colors">
-                        <i class="fa-solid fa-check-double text-xs"></i>
-                        <span>Выполнить</span>
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
-                      onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
-                      class="inline">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit"
+                            <i class="fa-solid fa-check-double text-xs"></i>
+                            <span>Выполнить</span>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                          onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
+                          class="inline">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
                             class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-lg shadow-sm transition-colors">
-                        <i class="fa-solid fa-times-circle text-xs"></i>
-                        <span>Отменить</span>
-                    </button>
-                </form>
-            @endif
+                            <i class="fa-solid fa-times-circle text-xs"></i>
+                            <span>Отменить</span>
+                        </button>
+                    </form>
+                @endif
 
-            <!-- Редактирование доступно всегда -->
-            <a href="{{ route('appointments.edit', $appointment) }}"
+                <!-- Редактирование доступно всегда -->
+                <a href="{{ route('appointments.edit', $appointment) }}"
                class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                 <i class="fa-solid fa-pencil text-xs"></i>
-                <span>Редактировать</span>
-            </a>
+                    <span>Редактировать</span>
+                </a>
         </div>
     </div>
 
@@ -123,7 +123,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Основная информация
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">
@@ -136,7 +136,7 @@
                         <p class="text-sm md:text-base font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {{ $appointment->client->full_name }}
                         </p>
-                    </a>
+                        </a>
                     <button @click="openPhoneModal('{{ $appointment->client->phone }}', '{{ $appointment->client->phone }}', '{{ addslashes($appointment->client->full_name) }}')"
                             class="text-xs md:text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1.5 mt-1 transition-colors">
                         <i class="fa-solid fa-phone text-xs"></i>
@@ -192,7 +192,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Дата и время
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">
@@ -239,7 +239,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Заметки
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">
@@ -259,7 +259,7 @@
                 </div>
                 <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
                     Системная информация
-                </h2>
+            </h2>
             </div>
         </div>
         <div class="p-4 md:p-6">

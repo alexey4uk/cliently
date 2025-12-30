@@ -57,10 +57,10 @@
     <!-- Список мастеров -->
     @if($masters->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            @foreach($masters as $master)
-                @php
-                    $workingHours = json_decode($master->working_hours, true);
-                @endphp
+                        @foreach($masters as $master)
+                            @php
+                                $workingHours = json_decode($master->working_hours, true);
+                            @endphp
                 <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
                     <!-- Заголовок карточки -->
                     <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5">
-                                        {{ $master->first_name }} {{ $master->last_name }}
+                                            {{ $master->first_name }} {{ $master->last_name }}
                                     </h3>
                                     <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
                                         {{ $master->specialization }}
@@ -103,9 +103,9 @@
                                             {{ $master->email }}
                                         </p>
                                     </div>
-                                </div>
-                            @endif
-                        </div>
+                                            </div>
+                                        @endif
+                                    </div>
 
                         <!-- Время работы -->
                         @if($workingHours)
@@ -141,48 +141,48 @@
 
                         <!-- Локации и услуги -->
                         <div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
-                            @if($master->locations->count() > 0)
-                                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
-                                    <i class="fa-solid fa-location-dot text-xs"></i>
+                                        @if($master->locations->count() > 0)
+                                            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+                                                <i class="fa-solid fa-location-dot text-xs"></i>
                                     <span>{{ $master->locations->count() }} {{ $master->locations->count() === 1 ? 'локация' : 'локаций' }}</span>
-                                </div>
-                            @endif
-                            @if($master->services->count() > 0)
-                                <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-medium">
-                                    <i class="fa-solid fa-scissors text-xs"></i>
+                                            </div>
+                                        @endif
+                                        @if($master->services->count() > 0)
+                                            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-medium">
+                                                <i class="fa-solid fa-scissors text-xs"></i>
                                     <span>{{ $master->services->count() }} {{ $master->services->count() === 1 ? 'услуга' : 'услуг' }}</span>
-                                </div>
-                            @endif
-                            @if($master->locations->count() === 0 && $master->services->count() === 0)
-                                <span class="text-xs text-slate-400 dark:text-slate-500 italic">Не назначены</span>
-                            @endif
-                        </div>
+                                            </div>
+                                        @endif
+                                        @if($master->locations->count() === 0 && $master->services->count() === 0)
+                                            <span class="text-xs text-slate-400 dark:text-slate-500 italic">Не назначены</span>
+                                        @endif
+                                    </div>
                     </div>
 
                     <!-- Действия -->
                     <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
                         <div class="flex items-center justify-end gap-2">
-                            <a href="{{ route('settings.masters.edit', $master) }}"
+                                        <a href="{{ route('settings.masters.edit', $master) }}"
                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <i class="fa-solid fa-pencil text-xs"></i>
+                                            <i class="fa-solid fa-pencil text-xs"></i>
                                 <span>Редактировать</span>
-                            </a>
-                            <form method="POST" action="{{ route('settings.masters.destroy', $master) }}" 
+                                        </a>
+                                        <form method="POST" action="{{ route('settings.masters.destroy', $master) }}" 
                                   id="delete-form-{{ $master->id }}"
-                                  class="inline">
-                                @csrf
-                                @method('DELETE')
+                                              class="inline">
+                                            @csrf
+                                            @method('DELETE')
                             </form>
                             <button type="button"
                                     @click="openDeleteModal({{ $master->id }}, '{{ addslashes($master->first_name . ' ' . $master->last_name) }}')"
                                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                                <i class="fa-solid fa-trash text-xs"></i>
+                                                <i class="fa-solid fa-trash text-xs"></i>
                                 <span>Удалить</span>
-                            </button>
+                                            </button>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                                    </div>
+                        @endforeach
         </div>
     @else
         <!-- Пустое состояние -->

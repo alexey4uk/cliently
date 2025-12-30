@@ -13,21 +13,21 @@
 @section('content')
 
 <div x-data="{ 
-    showPhoneModal: false, 
-    phone: '', 
-    phoneDisplay: '', 
-    client: '',
+         showPhoneModal: false, 
+         phone: '', 
+         phoneDisplay: '', 
+         client: '',
     showDeleteModal: false,
     clientToDelete: null,
     clientName: '',
-    openPhoneModal(phone, phoneDisplay, client) {
-        this.phone = phone;
-        this.phoneDisplay = phoneDisplay;
-        this.client = client;
-        this.showPhoneModal = true;
-    },
-    closePhoneModal() {
-        this.showPhoneModal = false;
+         openPhoneModal(phone, phoneDisplay, client) {
+             this.phone = phone;
+             this.phoneDisplay = phoneDisplay;
+             this.client = client;
+             this.showPhoneModal = true;
+         },
+         closePhoneModal() {
+             this.showPhoneModal = false;
     },
     openDeleteModal(clientId, clientName) {
         this.clientToDelete = clientId;
@@ -46,7 +46,7 @@
                 form.submit();
             }
         }
-    }
+         }
 }" class="space-y-4 md:space-y-6">
     
     <!-- Заголовок с кнопкой -->
@@ -114,7 +114,7 @@
     <!-- Список клиентов -->
     @if($clients->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            @foreach($clients as $client)
+                @foreach($clients as $client)
                 <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
                     <!-- Заголовок карточки -->
                     <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
@@ -125,13 +125,13 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {{ $client->full_name }}
+                                                {{ $client->full_name }}
                                     </h3>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">
                                         Клиент с {{ $client->created_at->format('d.m.Y') }}
                                     </p>
-                                </div>
-                            </a>
+                                            </div>
+                                        </a>
                         </div>
                     </div>
 
@@ -144,13 +144,13 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Телефон</p>
                                 <button @click="openPhoneModal('{{ $client->phone }}', '{{ $client->phone }}', '{{ addslashes($client->full_name) }}')"
                                         class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium break-all text-left transition-colors">
-                                    {{ $client->phone }}
-                                </button>
-                            </div>
+                                            {{ $client->phone }}
+                                        </button>
+                                    </div>
                         </div>
 
                         <!-- Email -->
-                        @if($client->email)
+                                        @if($client->email)
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-envelope text-slate-400 text-xs flex-shrink-0"></i>
                                 <div class="min-w-0 flex-1">
@@ -160,8 +160,8 @@
                                     </p>
                                 </div>
                             </div>
-                        @endif
-                    </div>
+                                        @endif
+                                    </div>
 
                     <!-- Действия -->
                     <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
@@ -170,103 +170,103 @@
                                     class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-700/50 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors">
                                 <i class="fa-solid fa-phone text-xs"></i>
                                 <span>Контакт</span>
-                            </button>
+                                        </button>
                             <div x-data="{ open: false }" class="relative">
-                                <button @click="open = !open"
+                                            <button @click="open = !open"
                                         class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                    <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
-                                </button>
-                                <div x-show="open" 
-                                    @click.away="open = false" 
-                                    x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="transform opacity-0 scale-95"
-                                    x-transition:enter-end="transform opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="transform opacity-100 scale-100"
-                                    x-transition:leave-end="transform opacity-0 scale-95"
+                                                <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                                            </button>
+                                            <div x-show="open" 
+                                                @click.away="open = false" 
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="transform opacity-0 scale-95"
+                                                x-transition:enter-end="transform opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="transform opacity-100 scale-100"
+                                                x-transition:leave-end="transform opacity-0 scale-95"
                                     class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50"
                                     style="display: none;">
                                     <a href="{{ route('clients.show', $client) }}" 
                                        @click="open = false"
                                        class="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-t-lg transition-colors">
                                         <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
-                                    </a>
+                                                </a>
                                     <a href="{{ route('clients.edit', $client) }}" 
                                        @click="open = false"
                                        class="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                         <i class="fa-solid fa-pencil w-4 inline-block"></i> Редактировать
-                                    </a>
+                                                </a>
                                     <div class="border-t border-slate-200 dark:border-slate-800 my-1"></div>
-                                    <form method="POST" action="{{ route('clients.destroy', $client) }}" 
+                                                <form method="POST" action="{{ route('clients.destroy', $client) }}" 
                                           id="delete-form-{{ $client->id }}"
-                                          class="w-full">
-                                        @csrf
-                                        @method('DELETE')
+                                                      class="w-full">
+                                                    @csrf
+                                                    @method('DELETE')
                                     </form>
                                     <button @click="open = false; openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')" 
                                             class="w-full text-left px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 rounded-b-lg transition-colors">
                                         <i class="fa-solid fa-trash w-4 inline-block"></i> Удалить
-                                    </button>
+                                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                @endforeach
+            </div>
 
-        <!-- Пагинация -->
-        @if($clients->hasPages())
+            <!-- Пагинация -->
+            @if($clients->hasPages())
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm px-4 py-3">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                        Показано <span class="font-medium text-slate-900 dark:text-white">{{ $clients->firstItem() }}</span> - 
-                        <span class="font-medium text-slate-900 dark:text-white">{{ $clients->lastItem() }}</span> из 
-                        <span class="font-medium text-slate-900 dark:text-white">{{ $clients->total() }}</span> клиентов
+                            Показано <span class="font-medium text-slate-900 dark:text-white">{{ $clients->firstItem() }}</span> - 
+                            <span class="font-medium text-slate-900 dark:text-white">{{ $clients->lastItem() }}</span> из 
+                            <span class="font-medium text-slate-900 dark:text-white">{{ $clients->total() }}</span> клиентов
                     </div>
 
                     <div class="flex items-center space-x-1">
-                        @if($clients->onFirstPage())
-                            <button disabled
-                                class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
-                                <i class="fa-solid fa-chevron-left text-xs"></i>
-                            </button>
-                        @else
-                            <a href="{{ $clients->previousPageUrl() }}"
-                                class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
-                                <i class="fa-solid fa-chevron-left text-xs"></i>
-                            </a>
-                        @endif
-
-                        @foreach($clients->getUrlRange(1, min(5, $clients->lastPage())) as $page => $url)
-                            @if($page == $clients->currentPage())
+                            @if($clients->onFirstPage())
                                 <button disabled
-                                    class="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-medium cursor-default text-xs sm:text-sm">
-                                    {{ $page }}
-                                </button>
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
                             @else
-                                <a href="{{ $url }}"
-                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                                    {{ $page }}
+                                <a href="{{ $clients->previousPageUrl() }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
                                 </a>
                             @endif
-                        @endforeach
 
-                        @if($clients->hasMorePages())
-                            <a href="{{ $clients->nextPageUrl() }}"
-                                class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </a>
-                        @else
-                            <button disabled
-                                class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </button>
-                        @endif
+                            @foreach($clients->getUrlRange(1, min(5, $clients->lastPage())) as $page => $url)
+                                @if($page == $clients->currentPage())
+                                    <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-medium cursor-default text-xs sm:text-sm">
+                                        {{ $page }}
+                        </button>
+                                @else
+                                    <a href="{{ $url }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            @if($clients->hasMorePages())
+                                <a href="{{ $clients->nextPageUrl() }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </a>
+                            @else
+                                <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                        </button>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
     @else
         <!-- Пустое состояние -->
         <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-8 md:p-12 text-center">
@@ -412,14 +412,14 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
-<script>
-function updateSortDirection(select) {
-    const selectedOption = select.options[select.selectedIndex];
-    const direction = selectedOption.getAttribute('data-direction');
-    document.getElementById('sort-direction').value = direction;
-}
-</script>
+    <script>
+    function updateSortDirection(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        const direction = selectedOption.getAttribute('data-direction');
+        document.getElementById('sort-direction').value = direction;
+    }
+    </script>
 
 @endsection

@@ -3,1363 +3,446 @@
 @section('title', 'Выбор времени')
 
 @section('content')
-<div class="space-y-4 w-full min-w-0">
-    <!-- Breadcrumb навигация -->
-    <div class="mb-4">
+<div class="max-w-4xl lg:max-w-4xl mx-auto">
+    <!-- Кнопка назад -->
+    <div class="mb-4 sm:mb-5 lg:mb-4">
         <a href="{{ route('public.appointments.select-service', ['slug' => $business->slug, 'locationId' => $location->id, 'serviceId' => $service->id]) }}" 
-           class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-            <span>Назад</span>
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base lg:text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
+            <i class="fa-solid fa-arrow-left text-xs lg:text-[10px]"></i>
+            <span>Вернуться к мастерам</span>
         </a>
     </div>
 
-    <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" class="space-y-4" id="appointment-form">
+    <!-- Заголовок -->
+    <div class="mb-5 sm:mb-6 lg:mb-5">
+        <h1 class="text-2xl sm:text-3xl lg:text-2xl font-bold text-slate-900 dark:text-white mb-2 lg:mb-1.5 leading-tight">
+            Выберите время
+        </h1>
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400">
+            {{ $location->name }} • {{ $service->name }} • {{ $master->first_name }} {{ $master->last_name }}
+        </p>
+    </div>
+
+    <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" class="space-y-4 sm:space-y-5 lg:space-y-4" id="appointment-form">
         @csrf
         <input type="hidden" name="location_id" value="{{ $location->id }}">
         <input type="hidden" name="service_id" value="{{ $service->id }}">
         <input type="hidden" name="master_id" value="{{ $master->id }}">
         <input type="hidden" name="date" value="{{ $date }}" id="selected-date-input">
 
-            <!-- Выбор даты: Горизонтальный скролл недели -->
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
-                <!-- Компактный заголовок (всегда видимый) -->
-                <div class="px-4 py-3">
+        <!-- Выбор даты -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4">
+            <div class="flex items-center gap-3 mb-4 lg:mb-3">
+                <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                    <i class="fa-solid fa-calendar text-indigo-600 dark:text-indigo-400 text-sm lg:text-xs"></i>
+                </div>
+                <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
+                    Выберите дату
+                </h2>
+            </div>
+
+            <!-- Упрощенный выбор даты -->
+            <div class="space-y-4">
                     @php
                         $selectedDateCarbon = \Carbon\Carbon::parse($date);
                         $currentYear = \Carbon\Carbon::now()->year;
                         $showYear = $selectedDateCarbon->year !== $currentYear;
                     @endphp
-                    <!-- Мобильная версия: вертикальный layout -->
-                    <div class="block sm:hidden space-y-2">
-                        <div class="flex items-center justify-between">
-                            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Дата
-                            </label>
+
+                <!-- Текущая выбранная дата -->
+                <div class="text-center">
+                    <div class="inline-flex items-center gap-2.5 px-4 py-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                        <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-base"></i>
+                        <div class="text-center">
+                            <div class="text-base sm:text-lg lg:text-base font-bold text-slate-900 dark:text-white">
+                                {{ $selectedDateCarbon->locale('ru')->isoFormat('dddd, D MMMM') }}
+                            </div>
                             @if($showYear)
-                                <span class="year-badge text-xs font-semibold text-indigo-600 dark:text-indigo-400 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                                <div class="text-xs text-slate-600 dark:text-slate-400">
                                     {{ $selectedDateCarbon->year }}
-                                </span>
+                                </div>
                             @endif
                         </div>
-                        <div class="text-sm font-medium text-slate-700 dark:text-slate-300 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-center" id="selected-date-display-mobile">
-                            {{ $selectedDateCarbon->locale('ru')->isoFormat('D MMMM') }}
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="toggle-date-selector-btn" class="px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <span>Выбрать</span>
+                        </div>
+
+                <!-- Кнопка выбора другой даты -->
+                <div class="text-center">
+                    <button type="button" id="toggle-date-selector-btn"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base lg:text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors duration-200">
+                        <span>Выбрать другую дату</span>
                                 <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" id="date-selector-icon"></i>
                             </button>
-                            <button type="button" id="open-calendar-btn" class="px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 rounded-lg transition-colors flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <span>Календарь</span>
-                            </button>
-                        </div>
                     </div>
                     
-                    <!-- Десктопная версия: горизонтальный layout -->
-                    <div class="hidden sm:flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Дата
-                            </label>
-                            @if($showYear)
-                                <span class="year-badge text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                                    {{ $selectedDateCarbon->year }}
-                                </span>
-                            @else
-                                <span class="year-badge text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 rounded hidden"></span>
-                            @endif
-                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg" id="selected-date-display">
-                                {{ $selectedDateCarbon->locale('ru')->isoFormat('D MMMM') }}
-                            </span>
+                <!-- Скрытый календарь -->
+                <div id="calendar-container" class="hidden space-y-4">
+                    <!-- Кнопки навигации -->
+                    <div class="flex items-center justify-between">
+                        <button type="button" id="prev-month" class="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                        <h3 id="current-month-year" class="text-lg font-semibold text-slate-900 dark:text-white"></h3>
+                        <button type="button" id="next-month" class="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                            <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" id="toggle-date-selector-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <span>Выбрать</span>
-                                <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="date-selector-icon-desktop"></i>
-                            </button>
-                            <button type="button" id="open-calendar-btn-desktop" class="px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-800">
-                                <span>Календарь</span>
-                            </button>
+
+                    <!-- Дни недели -->
+                    <div class="grid grid-cols-7 gap-1 text-center text-sm font-medium text-slate-600 dark:text-slate-400">
+                        @foreach(['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'] as $day)
+                            <div class="py-2">{{ $day }}</div>
+                        @endforeach
+                    </div>
+                    
+                    <!-- Календарь -->
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+                        <!-- Будет заполнено JavaScript -->
+                        </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Блок выбора даты (скрыт по умолчанию) -->
-                <div id="date-selector-panel" class="hidden border-t border-slate-200 dark:border-slate-700">
-                    <!-- Горизонтальный скролл недели -->
-                    <div class="relative pt-3">
-                        <!-- Fade эффект слева -->
-                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-left"></div>
-                        <!-- Fade эффект справа -->
-                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="dates-fade-right"></div>
-                        <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="week-dates-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
-                            <div class="flex gap-1.5 pb-1.5 flex-nowrap" id="week-dates" style="min-width: max-content;">
-                        @php
-                            $today = \Carbon\Carbon::today();
-                            $selectedDateCarbon = \Carbon\Carbon::parse($date);
-                            
-                            // Начинаем с текущей недели по умолчанию
-                            $startOfWeek = $today->copy()->startOfWeek();
-                            
-                            // Если выбранная дата в будущем и не попадает в текущий диапазон (14 дней)
-                            $endOfRange = $startOfWeek->copy()->addDays(13);
-                            if ($selectedDateCarbon->gte($today) && $selectedDateCarbon->gt($endOfRange)) {
-                                // Начинаем с недели выбранной даты
-                                $startOfWeek = $selectedDateCarbon->copy()->startOfWeek();
+        <!-- Выбор времени -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4">
+            <div class="flex items-center gap-3 mb-4 lg:mb-3">
+                <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                    <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-sm lg:text-xs"></i>
+                        </div>
+                <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
+                    Выберите время
+                </h2>
+                </div>
+
+            <div id="time-slots-container" class="space-y-4">
+                @if(isset($availableSlots) && count($availableSlots) > 0)
+                    @php
+                        // Группируем слоты по времени суток
+                        $morningSlots = [];
+                        $afternoonSlots = [];
+                        $eveningSlots = [];
+
+                        foreach($availableSlots as $slot) {
+                            $hour = (int)explode(':', $slot)[0];
+                            if ($hour >= 6 && $hour < 12) {
+                                $morningSlots[] = $slot;
+                            } elseif ($hour >= 12 && $hour < 18) {
+                                $afternoonSlots[] = $slot;
+                            } else {
+                                $eveningSlots[] = $slot;
                             }
-                            
-                            // Если выбранная дата в прошлом, всегда начинаем с текущей недели
-                            if ($selectedDateCarbon->lt($today)) {
-                                $startOfWeek = $today->copy()->startOfWeek();
-                            }
+                        }
+
+                        $slotGroups = [
+                            ['title' => 'Утро', 'icon' => 'fa-sun', 'bgClass' => 'bg-amber-100 dark:bg-amber-900/30', 'textClass' => 'text-amber-600 dark:text-amber-400', 'hoverClass' => 'hover:border-amber-500 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20', 'slots' => $morningSlots],
+                            ['title' => 'День', 'icon' => 'fa-sun', 'bgClass' => 'bg-orange-100 dark:bg-orange-900/30', 'textClass' => 'text-orange-600 dark:text-orange-400', 'hoverClass' => 'hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20', 'slots' => $afternoonSlots],
+                            ['title' => 'Вечер', 'icon' => 'fa-moon', 'bgClass' => 'bg-indigo-100 dark:bg-indigo-900/30', 'textClass' => 'text-indigo-600 dark:text-indigo-400', 'hoverClass' => 'hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20', 'slots' => $eveningSlots],
+                        ];
                         @endphp
-                        @for($i = 0; $i < 14; $i++)
-                            @php
-                                $dateItem = $startOfWeek->copy()->addDays($i);
-                                $isToday = $dateItem->isToday();
-                                $isSelected = $dateItem->format('Y-m-d') === $date;
-                                $isPast = $dateItem->isPast() && !$isToday;
-                            @endphp
-                            <button type="button" 
-                                    class="week-date-btn shrink-0 w-14 p-2 rounded-lg border transition-colors snap-start {{ $isSelected ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 bg-white dark:bg-slate-800' }} {{ $isPast ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                    data-date="{{ $dateItem->format('Y-m-d') }}"
-                                    {{ $isPast ? 'disabled' : '' }}>
-                                <div class="text-[10px] sm:text-[9px] text-slate-500 dark:text-slate-400 mb-1 sm:mb-0.5 leading-tight">
-                                    @php
-                                        $dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-                                        $dayIndex = $dateItem->dayOfWeekIso - 1; // ISO: 1=Пн, 7=Вс
-                                    @endphp
-                                    {{ $dayNames[$dayIndex] }}
+
+                    <!-- Группы слотов -->
+                    <div class="space-y-4">
+                        @foreach($slotGroups as $group)
+                            @if(count($group['slots']) > 0)
+                                <div class="space-y-2.5">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-6 h-6 rounded-lg {{ $group['bgClass'] }} flex items-center justify-center">
+                                            <i class="fa-solid {{ $group['icon'] }} {{ $group['textClass'] }} text-xs"></i>
                                 </div>
-                                <div class="text-base sm:text-sm md:text-base font-bold {{ $isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white' }} leading-tight">
-                                    {{ $dateItem->day }}
+                                        <h3 class="text-base font-semibold text-slate-900 dark:text-white">
+                                            {{ $group['title'] }}
+                                        </h3>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                            {{ count($group['slots']) }}
+                                        </span>
                                 </div>
-                                <div class="text-[10px] sm:text-[9px] text-slate-500 dark:text-slate-400 mt-1 sm:mt-0.5 leading-tight">
-                                    {{ $dateItem->locale('ru')->shortMonthName }}
-                                </div>
+                                    <div class="flex flex-wrap gap-1.5 sm:gap-2 justify-start">
+                                        @foreach($group['slots'] as $slot)
+                                            <button type="button"
+                                                    class="time-slot-btn flex-shrink-0 px-3 py-1.5 sm:px-3.5 sm:py-2 text-center border border-slate-200 dark:border-slate-700 rounded-lg {{ $group['hoverClass'] }} transition-all duration-200"
+                                                    data-time="{{ $slot }}">
+                                                <span class="text-xs font-medium text-slate-900 dark:text-white">
+                                                    {{ $slot }}
+                                                </span>
                             </button>
-                        @endfor
+                                        @endforeach
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Выбор времени: Горизонтальный скролл -->
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
-                <div class="px-4 pt-3 pb-2">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Время*
-                        </label>
-                        <div class="text-[10px] font-medium text-slate-500 dark:text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-lg {{ count($availableSlots) == 0 ? 'hidden' : '' }}" id="slots-count-badge">
-                            {{ count($availableSlots) }} {{ count($availableSlots) == 1 ? 'слот' : 'слотов' }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Контейнер для слотов (динамически обновляется) -->
-                <div class="relative" id="time-slots-section">
-                    <!-- Fade эффект слева -->
-                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
-                    <!-- Fade эффект справа -->
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
-                    @if(count($availableSlots) > 0)
-                        <!-- Горизонтальный скролл временных слотов -->
-                        <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="time-slots-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
-                            <div class="flex gap-2 pb-1.5 flex-nowrap" id="time-slots-container" style="min-width: max-content;">
-                            @foreach($availableSlots as $slot)
-                                <label class="time-slot-label shrink-0 w-16 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-colors hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 snap-start {{ old('time') == $slot ? 'border-indigo-500 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
-                                    <input type="radio" name="time" value="{{ $slot }}" required class="sr-only time-radio" {{ old('time') == $slot ? 'checked' : '' }}>
-                                    <span class="text-sm font-medium text-slate-900 dark:text-white">{{ $slot }}</span>
-                                </label>
+                            @endif
                             @endforeach
-                            </div>
                         </div>
                     @else
-                        <!-- Уведомление о отсутствии слотов -->
-                        <div class="px-4 pb-3" id="time-slots-container">
-                            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                                <p class="text-sm text-amber-800 dark:text-amber-300">
-                                    На выбранную дату все временные слоты заняты. Выберите другую дату.
-                                </p>
-                            </div>
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-clock text-slate-400 dark:text-slate-500 text-2xl"></i>
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">
+                            На выбранную дату нет доступных слотов времени
+                        </p>
                         </div>
                     @endif
                 </div>
             </div>
 
-            <!-- Дополнительная информация (выпадающее меню) -->
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <button type="button" id="additional-info-toggle" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Пожелания</span>
-                    <i class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200" id="additional-info-icon"></i>
-                </button>
-                <div id="additional-info-content" class="hidden px-4 pt-4 pb-4">
-                    <div>
-                        <input type="text" id="notes" name="notes"
-                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                               value="{{ old('notes') }}">
-                        @error('notes')
-                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                        @enderror
+        <!-- Форма записи -->
+        <div id="appointment-details" class="hidden bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4">
+            <div class="flex items-center gap-3 mb-4 lg:mb-3">
+                <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                    <i class="fa-solid fa-user-check text-emerald-600 dark:text-emerald-400 text-sm lg:text-xs"></i>
                     </div>
-                </div>
+                <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
+                    Ваши данные
+                </h2>
             </div>
 
-            <!-- Форма контактов -->
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4">
-                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-3">
-                    Контактные данные
-                </h3>
-
-                <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <!-- Имя -->
                     <div>
-                        <label for="first_name" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Имя*
+                    <label for="first_name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Имя *
                         </label>
-                        <input type="text" id="first_name" name="first_name" required autofocus
-                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                               value="{{ old('first_name') }}" placeholder="Введите ваше имя" aria-label="Имя">
-                        @error('first_name')
-                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                        @enderror
+                    <input type="text" id="first_name" name="first_name"
+                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                           required>
                     </div>
 
+                <!-- Фамилия -->
                     <div>
-                        <label for="phone" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            Телефон*
+                    <label for="last_name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Фамилия *
                         </label>
-                        <input type="tel" id="phone" name="phone" required
-                               class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                               value="{{ old('phone') }}" placeholder="+375XXXXXXXXX">
-                        @error('phone')
-                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-exclamation-circle text-[10px]"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                        @enderror
-                    </div>
-                </div>
+                    <input type="text" id="last_name" name="last_name"
+                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                           required>
             </div>
 
-            <button type="submit" id="submit-btn" class="w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" {{ count($availableSlots) == 0 ? 'disabled' : '' }}>
-                <span class="submit-text">Записаться</span>
-                <span class="submit-loading hidden">
-                    <i class="fa-solid fa-spinner fa-spin text-xs"></i>
-                    <span>Отправка...</span>
-                </span>
-            </button>
-        </form>
+                <!-- Телефон -->
+                <div class="sm:col-span-2">
+                    <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Телефон *
+                    </label>
+                    <input type="tel" id="phone" name="phone"
+                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                           placeholder="+375 (__) ___-__-__"
+                           required>
 </div>
 
-<!-- Модальное окно календаря -->
-<div id="calendar-modal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4" style="padding-bottom: env(safe-area-inset-bottom, 0);">
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" id="calendar-backdrop"></div>
-    <div class="calendar-dialog w-full sm:max-w-md bg-white dark:bg-slate-800 rounded-t-lg sm:rounded-lg shadow-lg z-50 relative overflow-hidden max-h-[90vh] flex flex-col" style="max-height: calc(100vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px));">
-        <!-- Индикатор drag для мобильных -->
-        <div class="sm:hidden flex justify-center pt-3 pb-2">
-            <div class="w-12 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                <!-- Комментарий -->
+                <div class="sm:col-span-2">
+                    <label for="comment" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Комментарий (необязательно)
+                    </label>
+                    <textarea id="comment" name="comment" rows="3"
+                              class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                              placeholder="Дополнительные пожелания..."></textarea>
         </div>
-        <div class="flex-1 overflow-y-auto overflow-x-hidden" id="calendar-content" style="max-height: calc(100vh - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px) - 20px);">
-            <div class="p-4 sm:p-3 md:p-4 pt-3 sm:pt-4 pb-4 sm:pb-4" style="padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);">
-                <!-- Заголовок модального окна -->
-                <div class="flex items-center justify-between mb-3 sm:mb-3">
-                    <h3 class="text-base font-semibold text-slate-900 dark:text-white">Выберите дату</h3>
-                    <button type="button" id="close-calendar-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 min-w-11 min-h-11 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                        <i class="fa-solid fa-times text-lg"></i>
-                    </button>
                 </div>
 
-                <!-- Навигация по месяцам -->
-                <div class="flex items-center justify-between gap-2 mb-3">
-                    <button type="button" id="prev-month-btn" class="p-2 min-w-10 min-h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
-                        <i class="fa-solid fa-chevron-left text-sm"></i>
-                    </button>
-                    <div class="text-sm sm:text-base font-bold text-slate-900 dark:text-white px-2 flex-1 text-center" id="calendar-month-year"></div>
-                    <button type="button" id="next-month-btn" class="p-2 min-w-10 min-h-10 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 active:bg-slate-100 dark:active:bg-slate-700 transition-colors rounded-md">
-                        <i class="fa-solid fa-chevron-right text-sm"></i>
-                    </button>
+            <!-- Выбранное время -->
+            <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                    <div class="text-sm text-slate-600 dark:text-slate-400">
+                        Выбранное время:
+                </div>
+                    <div class="text-sm font-medium text-slate-900 dark:text-white" id="selected-time-display">
+                        Не выбрано
+                    </div>
+                </div>
                 </div>
 
-                <!-- Календарь -->
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-3">
-                    <!-- Дни недели -->
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Пн</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Вт</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Ср</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Чт</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Пт</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Сб</div>
-                    <div class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 py-2">Вс</div>
-                    <!-- Ячейки календаря будут сгенерированы через JavaScript -->
-                </div>
-
-                <!-- Быстрые кнопки -->
-                <div class="flex gap-2.5">
-                    <button type="button" id="select-today-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-12">
-                        Сегодня
-                    </button>
-                    <button type="button" id="select-tomorrow-btn" class="flex-1 px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 border-2 border-indigo-600 dark:border-indigo-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:bg-indigo-100 dark:active:bg-indigo-900/30 transition-colors min-h-12">
-                        Завтра
+            <!-- Кнопка записи -->
+            <div class="mt-4 text-center">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-3 text-sm sm:text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Записаться</span>
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
+    </form>
 </div>
 
-@push('scripts')
 <script>
-    (function() {
-        'use strict';
-        
-        // ========== Глобальные переменные ==========
-        const selectedDate = '{{ $date }}'; // YYYY-MM-DD
-        let selectedDateObj = parseISOToLocalDate(selectedDate);
-        let today = startOfDay(new Date());
-        let currentCalendarMonth = setMonth(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1);
-
-        // ========== Переключение видимости блока выбора даты ==========
-        function initDateSelectorToggle() {
-            // Мобильная версия
-            const toggleBtn = document.getElementById('toggle-date-selector-btn');
-            const panel = document.getElementById('date-selector-panel');
-            const icon = document.getElementById('date-selector-icon');
-            
-            // Десктопная версия
-            const toggleBtnDesktop = document.getElementById('toggle-date-selector-btn-desktop');
-            const iconDesktop = document.getElementById('date-selector-icon-desktop');
-            
-            function togglePanel() {
-                const isHidden = panel.classList.contains('hidden');
-                
-                if (isHidden) {
-                    panel.classList.remove('hidden');
-                    if (icon) icon.classList.add('rotate-180');
-                    if (iconDesktop) iconDesktop.classList.add('rotate-180');
-                } else {
-                    panel.classList.add('hidden');
-                    if (icon) icon.classList.remove('rotate-180');
-                    if (iconDesktop) iconDesktop.classList.remove('rotate-180');
-                }
-            }
-            
-            if (toggleBtn && panel) {
-                toggleBtn.addEventListener('click', togglePanel);
-            }
-            
-            if (toggleBtnDesktop && panel) {
-                toggleBtnDesktop.addEventListener('click', togglePanel);
-            }
-        }
-        
-        // ========== Инициализация ==========
         document.addEventListener('DOMContentLoaded', function() {
-            initCalendar();
-            initTimeSlots();
-            initPhoneInput();
-            initWeekDates();
-            initWeekDatesDrag();
-            initTimeSlotsDrag();
-            initDateSelectorToggle();
-            renderCalendar();
-            
-            // Обновляем визуальное отображение выбранной даты при загрузке
-            updateSelectedDate(selectedDate);
-            
-            // Инициализация fade эффектов для скролла
-            setTimeout(() => {
-                updateFadeEffects('week-dates-wrapper', 'dates-fade-left', 'dates-fade-right');
-                const timeWrapper = document.getElementById('time-slots-wrapper');
-                if (timeWrapper) {
-                    updateFadeEffects('time-slots-wrapper', 'time-fade-left', 'time-fade-right');
+    const timeSlotButtons = document.querySelectorAll('.time-slot-btn');
+    const appointmentDetails = document.getElementById('appointment-details');
+    const selectedTimeDisplay = document.getElementById('selected-time-display');
+    const selectedDateInput = document.getElementById('selected-date-input');
+
+    let selectedTime = null;
+    let currentDate = new Date('{{ $date }}');
+
+    // Обработка выбора времени
+    timeSlotButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Убираем выделение с других кнопок
+            timeSlotButtons.forEach(btn => {
+                // Убираем все возможные классы выделения (включая bg-indigo-600)
+                btn.classList.remove('bg-indigo-500', 'bg-indigo-600', 'bg-amber-500', 'bg-orange-500', 'text-white', 'border-indigo-500', 'border-indigo-600', 'border-amber-500', 'border-orange-500');
+
+                // Восстанавливаем hover эффекты
+                if (!btn.classList.contains('hover:border-amber-500') &&
+                    !btn.classList.contains('hover:border-orange-500') &&
+                    !btn.classList.contains('hover:border-indigo-500')) {
+                    btn.classList.add('hover:border-indigo-500');
                 }
-            }, 100);
-            
-            // Проверяем доступность формы при загрузке
-            updateFormAvailability();
+            });
+
+            // Выделяем выбранную кнопку
+            this.classList.add('bg-indigo-600', 'text-white', 'border-indigo-600');
+            this.classList.remove('hover:border-amber-500', 'hover:border-orange-500', 'hover:border-indigo-500');
+
+            // Сохраняем выбранное время
+            selectedTime = this.dataset.time;
+
+            // Обновляем отображение
+            const dateStr = currentDate.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: currentDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+            });
+            selectedTimeDisplay.textContent = `${selectedTime}, ${dateStr}`;
+
+            // Показываем форму
+            appointmentDetails.classList.remove('hidden');
+            appointmentDetails.scrollIntoView({ behavior: 'smooth' });
         });
-        
-        // ========== Обновление доступности формы ==========
-        function updateFormAvailability() {
-            const timeSlotsContainer = document.getElementById('time-slots-container');
-            const submitBtn = document.getElementById('submit-btn');
-            const hasSlots = timeSlotsContainer && timeSlotsContainer.children.length > 0;
-            
-            if (submitBtn) {
-                if (hasSlots) {
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
+    });
+
+    // Форматирование телефона
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('focus', function() {
+            if (!this.value) {
+                this.value = '+375';
             }
-        }
-        
-        // ========== Выбор даты из недели ==========
-        function initWeekDates() {
-            const weekDateButtons = document.querySelectorAll('.week-date-btn');
-            weekDateButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    if (this.disabled) return;
-                    const date = this.getAttribute('data-date');
-                    selectDate(date);
-                });
-            });
-        }
-        
-        // Проверка, есть ли дата в текущем скролле
-        function isDateInScroll(dateISO) {
-            const weekDateButtons = document.querySelectorAll('.week-date-btn');
-            for (let btn of weekDateButtons) {
-                if (btn.getAttribute('data-date') === dateISO) {
-                    return true;
-                }
+        });
+
+        phoneInput.addEventListener('input', function(e) {
+            let value = this.value.replace(/[^\d+]/g, '');
+            if (value.startsWith('375')) {
+                value = '+' + value;
+            } else if (!value.startsWith('+375') && value.length > 0) {
+                value = '+375' + value.replace(/\+/g, '');
             }
-            return false;
-        }
-        
-        // Обновление визуального отображения выбранной даты
-        function updateSelectedDate(dateISO) {
-            if (!dateISO) return false;
-            
-            // Проверяем, есть ли дата в текущем скролле
-            if (!isDateInScroll(dateISO)) {
-                return false; // Дата не найдена в скролле
+            if (value.length > 13) {
+                value = value.substring(0, 13);
             }
-            
-            // Парсим выбранную дату
-            const selectedDate = new Date(dateISO + 'T00:00:00');
-            const selectedYear = selectedDate.getFullYear();
-            const currentYear = new Date().getFullYear();
-            
-            // Обновляем отображение года рядом с заголовком "Дата"
-            const dateLabelContainer = document.querySelector('.flex.items-center.gap-2');
-            if (dateLabelContainer) {
-                let yearElement = dateLabelContainer.querySelector('.year-badge');
-                
-                if (selectedYear !== currentYear) {
-                    if (!yearElement) {
-                        yearElement = document.createElement('span');
-                        yearElement.className = 'year-badge text-xs font-semibold text-indigo-600 dark:text-indigo-400 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-md';
-                        dateLabelContainer.appendChild(yearElement);
-                    }
-                    yearElement.textContent = selectedYear;
-                    yearElement.classList.remove('hidden');
-                } else {
-                    if (yearElement) {
-                        yearElement.classList.add('hidden');
-                    }
-                }
-            }
-            
-            // Обновляем все кнопки дат в горизонтальном скролле
-            const weekDateButtons = document.querySelectorAll('.week-date-btn');
-            
-            weekDateButtons.forEach(btn => {
-                const btnDate = btn.getAttribute('data-date');
-                if (btnDate === dateISO) {
-                    // Добавляем классы для выбранной даты через Tailwind
-                    btn.classList.remove('border-slate-200', 'dark:border-slate-700', 'hover:border-indigo-300', 'dark:hover:border-indigo-600', 'bg-white', 'dark:bg-slate-800');
-                    btn.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'ring-1', 'ring-indigo-200', 'dark:ring-indigo-800', 'shadow-sm');
-                } else {
-                    // Убираем классы выбранной даты
-                    btn.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'ring-1', 'ring-indigo-200', 'dark:ring-indigo-800', 'shadow-sm');
-                    btn.classList.add('border-slate-200', 'dark:border-slate-700', 'hover:border-indigo-300', 'dark:hover:border-indigo-600', 'bg-white', 'dark:bg-slate-800');
-                }
-            });
-            
-            // Обновляем скрытое поле с датой
-            const dateInput = document.getElementById('selected-date-input');
-            if (dateInput) {
-                dateInput.value = dateISO;
-            }
-            
-            // Обновляем отображение выбранной даты в заголовке (десктоп)
-            const dateDisplay = document.getElementById('selected-date-display');
-            if (dateDisplay) {
-                const dateObj = new Date(dateISO + 'T00:00:00');
-                const formatter = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long' });
-                dateDisplay.textContent = formatter.format(dateObj);
-            }
-            
-            // Обновляем отображение выбранной даты в заголовке (мобильная)
-            const dateDisplayMobile = document.getElementById('selected-date-display-mobile');
-            if (dateDisplayMobile) {
-                const dateObj = new Date(dateISO + 'T00:00:00');
-                const formatter = new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long' });
-                dateDisplayMobile.textContent = formatter.format(dateObj);
-            }
-            
-            // Прокручиваем к выбранной дате в горизонтальном скролле
-            const selectedBtn = document.querySelector(`.week-date-btn[data-date="${dateISO}"]`);
-            if (selectedBtn) {
-                const wrapper = document.getElementById('week-dates-wrapper');
-                if (wrapper) {
-                    setTimeout(() => {
-                        const btnRect = selectedBtn.getBoundingClientRect();
-                        const wrapperRect = wrapper.getBoundingClientRect();
-                        const scrollLeft = wrapper.scrollLeft + (btnRect.left - wrapperRect.left) - (wrapperRect.width / 2) + (btnRect.width / 2);
-                        
-                        wrapper.scrollTo({
-                            left: Math.max(0, scrollLeft),
-                            behavior: 'smooth'
-                        });
-                    }, 100);
-                }
-            }
-            
-            return true; // Дата успешно обновлена
-        }
+            this.value = value;
+        });
+    }
 
-        // Горизонтальный скролл с drag/wheel
-        function initHorizontalDrag({ wrapperId, itemSelector }) {
-            const wrapper = document.getElementById(wrapperId);
-            if (!wrapper) return;
+    // Функциональность календаря
+    const toggleDateBtn = document.getElementById('toggle-date-selector-btn');
+    const calendarContainer = document.getElementById('calendar-container');
+    const dateSelectorIcon = document.getElementById('date-selector-icon');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const currentMonthYearEl = document.getElementById('current-month-year');
+    const calendarGrid = document.getElementById('calendar-grid');
 
-            const container = itemSelector ? wrapper.querySelector(itemSelector) : wrapper;
-            if (!container) return;
+    let calendarDate = new Date(currentDate);
 
-            let isDown = false;
-            let startX = 0;
-            let scrollLeft = 0;
-            let startLeft = 0;
-            let lastScrollTime = 0;
-            let velocity = 0;
-            let lastScrollLeft = 0;
-            let rafId = null;
+    function updateCalendar() {
+        // Обновляем заголовок месяца
+        const monthNames = [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ];
+        currentMonthYearEl.textContent = `${monthNames[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
 
-            function smoothScroll() {
-                if (Math.abs(velocity) < 0.5) {
-                    velocity = 0;
-                    return;
-                }
-                
-                wrapper.scrollLeft += velocity;
-                velocity *= 0.95;
-                
-                rafId = requestAnimationFrame(smoothScroll);
-            }
+        // Очищаем календарь
+        calendarGrid.innerHTML = '';
 
-            const start = (pageX) => {
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
-                velocity = 0;
-                
-                isDown = true;
-                const rect = wrapper.getBoundingClientRect();
-                startLeft = rect.left;
-                startX = pageX - startLeft;
-                scrollLeft = wrapper.scrollLeft;
-                lastScrollLeft = scrollLeft;
-                lastScrollTime = Date.now();
-                wrapper.style.scrollBehavior = 'auto';
-                wrapper.classList.add('dragging');
-                wrapper.classList.remove('cursor-grab');
-                wrapper.classList.add('cursor-grabbing');
-            };
-
-            const move = (pageX) => {
-                if (!isDown) return;
-                const x = pageX - startLeft;
-                const walk = (x - startX) * 1.2;
-                const newScrollLeft = scrollLeft - walk;
-                
-                const now = Date.now();
-                const timeDelta = now - lastScrollTime;
-                if (timeDelta > 0) {
-                    velocity = (newScrollLeft - lastScrollLeft) / timeDelta * 16;
-                }
-                lastScrollLeft = newScrollLeft;
-                lastScrollTime = now;
-                
-                wrapper.scrollLeft = newScrollLeft;
-            };
-
-            const end = () => {
-                if (!isDown) return;
-                isDown = false;
-                wrapper.classList.remove('dragging', 'cursor-grabbing');
-                wrapper.classList.add('cursor-grab');
-                wrapper.style.scrollBehavior = 'smooth';
-                
-                if (Math.abs(velocity) > 1) {
-                    smoothScroll();
-                }
-            };
-
-            // Mouse события
-            wrapper.addEventListener('mousedown', (e) => {
-                if (e.target.closest('button, label, a, input')) return;
-                if (e.button !== 0) return;
-                
-                e.preventDefault();
-                e.stopPropagation();
-                start(e.pageX);
-            }, { passive: false });
-            
-            document.addEventListener('mouseup', (e) => {
-                if (isDown) {
-                    end();
-                }
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault();
-                e.stopPropagation();
-                move(e.pageX);
-            }, { passive: false });
-
-            // Touch события
-            let touchStartX = 0;
-            let touchStartY = 0;
-            let touchStartScrollLeft = 0;
-            let isScrolling = false;
-            
-            wrapper.addEventListener('touchstart', (e) => {
-                if (!e.touches || !e.touches[0]) return;
-                
-                const touch = e.touches[0];
-                touchStartX = touch.pageX;
-                touchStartY = touch.pageY;
-                touchStartScrollLeft = wrapper.scrollLeft;
-                isScrolling = false;
-                
-                const target = e.target;
-                if (target.closest('button, label, a, input')) {
-                    return;
-                }
-                
-                start(touch.pageX);
-            }, { passive: true });
-            
-            wrapper.addEventListener('touchend', (e) => {
-                if (!isScrolling && e.target.closest('button, label')) {
-                    return;
-                }
-                end();
-            }, { passive: true });
-            
-            wrapper.addEventListener('touchcancel', (e) => {
-                end();
-            }, { passive: true });
-            
-            wrapper.addEventListener('touchmove', (e) => {
-                if (!isDown) return;
-                if (!e.touches || !e.touches[0]) return;
-                
-                const touch = e.touches[0];
-                const deltaX = Math.abs(touch.pageX - touchStartX);
-                const deltaY = Math.abs(touch.pageY - touchStartY);
-                
-                if (!isScrolling) {
-                    if (deltaX > 10 || deltaY > 10) {
-                        isScrolling = true;
-                        if (deltaY > deltaX) {
-                            end();
-                            return;
-                        }
-                    } else {
-                        return;
-                    }
-                }
-                
-                if (deltaX > deltaY) {
-                    e.preventDefault();
-                    move(touch.pageX);
-                }
-            }, { passive: false });
-
-            // Wheel события
-            let wheelTimeout = null;
-            let wheelAccumulator = 0;
-            
-            wrapper.addEventListener('wheel', (e) => {
-                if (isDown) return;
-                if (e.ctrlKey || e.metaKey) return;
-                
-                let delta = 0;
-                
-                if (e.shiftKey) {
-                    delta = e.deltaY;
-                } else {
-                    delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
-                }
-                
-                if (Math.abs(delta) > 0) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    wheelAccumulator += delta;
-                    
-                    if (wheelTimeout) {
-                        clearTimeout(wheelTimeout);
-                    }
-                    
-                    wrapper.scrollLeft += wheelAccumulator;
-                    wheelAccumulator *= 0.5;
-                    
-                    wheelTimeout = setTimeout(() => {
-                        wheelAccumulator = 0;
-                    }, 50);
-                }
-            }, { passive: false });
-        }
-
-        function initWeekDatesDrag() {
-            initHorizontalDrag({ wrapperId: 'week-dates-wrapper', itemSelector: '#week-dates' });
-        }
-        
-        function initTimeSlotsDrag() {
-            initHorizontalDrag({ wrapperId: 'time-slots-wrapper', itemSelector: '#time-slots-container' });
-        }
-        
-        // ========== Календарь ==========
-        function initCalendar() {
-            const openBtn = document.getElementById('open-calendar-btn');
-            const openBtnDesktop = document.getElementById('open-calendar-btn-desktop');
-            
-            if (openBtn) {
-                openBtn.addEventListener('click', openCalendar);
-            }
-            if (openBtnDesktop) {
-                openBtnDesktop.addEventListener('click', openCalendar);
-            }
-            
-            const closeBtn = document.getElementById('close-calendar-btn');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', closeCalendar);
-            }
-            
-            const backdrop = document.getElementById('calendar-backdrop');
-            if (backdrop) {
-                backdrop.addEventListener('click', closeCalendar);
-            }
-            
-            const content = document.getElementById('calendar-content');
-            if (content) {
-                content.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-            }
-            
-            const prevBtn = document.getElementById('prev-month-btn');
-            const nextBtn = document.getElementById('next-month-btn');
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => changeMonth(-1));
-            }
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => changeMonth(1));
-            }
-            
-            const todayBtn = document.getElementById('select-today-btn');
-            const tomorrowBtn = document.getElementById('select-tomorrow-btn');
-            if (todayBtn) {
-                todayBtn.addEventListener('click', selectToday);
-            }
-            if (tomorrowBtn) {
-                tomorrowBtn.addEventListener('click', selectTomorrow);
-            }
-            
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    const modal = document.getElementById('calendar-modal');
-                    if (modal && !modal.classList.contains('hidden')) {
-                        closeCalendar();
-                    }
-                }
-            });
-        }
-
-        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-
-        function startOfDay(date) {
-            const d = new Date(date);
-            d.setHours(0,0,0,0);
-            return d;
-        }
-
-        function parseISOToLocalDate(iso) {
-            const [y, m, d] = iso.split('-').map(Number);
-            return new Date(y, m - 1, d);
-        }
-        
-        function setMonth(year, month, day=1) {
-            return new Date(year, month, day);
-        }
-
-        function formatDateISO(date) {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            const header = document.getElementById('calendar-month-year');
-            if (!grid || !header) return;
-
-            const old = grid.querySelectorAll('.calendar-day');
-            old.forEach(node => node.remove());
-
-            const year = currentCalendarMonth.getFullYear();
-            const month = currentCalendarMonth.getMonth();
-            header.textContent = `${monthNames[month]} ${year}`;
-
-            const firstDay = setMonth(year, month, 1);
-            const dow = firstDay.getDay();
-            const offset = dow === 0 ? 6 : dow - 1;
+        // Получаем первый день месяца и последний день
+        const firstDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+        const lastDay = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
             const startDate = new Date(firstDay);
-            startDate.setDate(firstDay.getDate() - offset);
+        startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Начинаем с понедельника
 
-            for (let i = 0; i < 42; i++) {
-                const date = new Date(startDate);
-                date.setDate(startDate.getDate() + i);
-                const dateStart = startOfDay(date);
+        // Создаем ячейки календаря
+        const today = new Date();
+        const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-                const isCurrentMonth = date.getMonth() === month;
-                const isToday = dateStart.getTime() === today.getTime();
-                const isSelected = dateStart.getTime() === selectedDateObj.getTime();
-                const isPast = dateStart < today;
+        for (let i = 0; i < 42; i++) { // 6 недель * 7 дней
+            const cellDate = new Date(startDate);
+            cellDate.setDate(startDate.getDate() + i);
 
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'calendar-day p-2 sm:p-2.5 min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] md:min-w-[44px] md:min-h-[44px] rounded-md text-sm font-semibold transition-all duration-200 flex items-center justify-center ' +
-                    (isCurrentMonth ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500') +
-                    (isToday ? ' bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : '') +
-                    (isSelected ? ' bg-indigo-600 text-white dark:bg-indigo-500 ring-1 ring-indigo-200 dark:ring-indigo-800' : ' hover:bg-slate-100 dark:hover:bg-slate-700') +
-                    (isPast ? ' opacity-50 cursor-not-allowed' : ' active:scale-95');
-                btn.textContent = date.getDate();
-                btn.disabled = isPast;
+            const dayEl = document.createElement('button');
+            dayEl.className = 'p-1.5 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors';
+            dayEl.textContent = cellDate.getDate();
 
-                if (!isPast) {
-                    btn.addEventListener('click', () => {
-                        const iso = formatDateISO(dateStart);
-                        selectDate(iso);
-                    });
-                }
-
-                grid.appendChild(btn);
-            }
-        }
-
-        function changeMonth(direction) {
-            currentCalendarMonth = setMonth(
-                currentCalendarMonth.getFullYear(),
-                currentCalendarMonth.getMonth() + direction,
-                1
-            );
-            renderCalendar();
-        }
-
-        function openCalendar() {
-            const modal = document.getElementById('calendar-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.body.classList.add('modal-open');
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.width = '100%';
-                renderCalendar();
-            }
-        }
-
-        function closeCalendar() {
-            const modal = document.getElementById('calendar-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.position = '';
-                document.body.style.width = '';
-            }
-        }
-
-        function selectToday() {
-            const iso = formatDateISO(today);
-            selectDate(iso);
-        }
-
-        function selectTomorrow() {
-            const t = new Date(today);
-            t.setDate(t.getDate() + 1);
-            const iso = formatDateISO(t);
-            selectDate(iso);
-        }
-
-        function selectDate(dateISO) {
-            selectedDateObj = startOfDay(parseISOToLocalDate(dateISO));
-            
-            closeCalendar();
-            
-            // Обновляем визуальное отображение даты
-            updateSelectedDate(dateISO);
-            
-            // Загружаем слоты через API
-            loadSlotsForDate(dateISO);
-            
-            // Обновляем URL без перезагрузки страницы
-            const url = new URL(window.location.href);
-            url.searchParams.set('date', dateISO);
-            window.history.pushState({ date: dateISO }, '', url.toString());
-        }
-        
-        // ========== Загрузка слотов через API ==========
-        function loadSlotsForDate(dateISO) {
-            const serviceId = {{ $service->id }};
-            const masterId = {{ $master->id }};
-            const locationId = {{ $location->id }};
-            const businessSlug = '{{ $business->slug }}';
-            
-            // Проверяем, что master_id обязателен
-            if (!masterId || masterId === 0) {
-                console.error('Master ID is required');
-                showSlotsError('Ошибка: не указан мастер. Пожалуйста, обновите страницу.');
-                return;
-            }
-            
-            const timeSlotsSection = document.getElementById('time-slots-section');
-            const slotsCountBadge = document.getElementById('slots-count-badge');
-            const submitBtn = document.getElementById('submit-btn');
-            
-            // Показываем индикатор загрузки
-            if (timeSlotsSection) {
-                const loadingHtml = `
-                    <div class="px-4 pb-4">
-                        <div class="flex items-center justify-center py-8">
-                            <div class="flex flex-col items-center gap-2">
-                                <i class="fa-solid fa-spinner fa-spin text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                                <span class="text-sm text-slate-600 dark:text-slate-400">Загрузка слотов...</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                timeSlotsSection.innerHTML = loadingHtml;
-            }
-            
-            // Отключаем форму
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-            
-            // Формируем URL для API (master_id обязателен)
-            const apiUrl = `/api/book/${businessSlug}/available-slots`;
-            const params = new URLSearchParams({
-                service_id: serviceId,
-                date: dateISO,
-                master_id: masterId, // Обязательный параметр для конкретного мастера
-                location_id: locationId,
-            });
-            
-            fetch(`${apiUrl}?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
-                credentials: 'same-origin',
-            })
-            .then(response => {
-                // Проверяем статус ответа
-                if (!response.ok) {
-                    // Пытаемся получить JSON с ошибкой
-                    return response.json().then(errData => {
-                        throw new Error(errData.message || `Ошибка ${response.status}: ${response.statusText}`);
-                    }).catch(() => {
-                        throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('API Response:', data);
-                
-                // Проверяем структуру ответа
-                if (!data || typeof data !== 'object') {
-                    throw new Error('Некорректный формат ответа от сервера');
-                }
-                
-                // Обрабатываем успешный ответ
-                if (data.success === true) {
-                    // slots может быть пустым массивом - это нормально
-                    if (Array.isArray(data.slots)) {
-                        updateTimeSlots(data.slots, data.preparation_time);
+            // Определяем стиль для разных типов дней
+            if (cellDate.getMonth() !== calendarDate.getMonth()) {
+                dayEl.classList.add('text-slate-400', 'dark:text-slate-600');
+            } else if (cellDate.getTime() === currentDate.getTime()) {
+                dayEl.classList.add('bg-indigo-500', 'text-white', 'hover:bg-indigo-600');
+            } else if (cellDate.getFullYear() === todayLocal.getFullYear() &&
+                       cellDate.getMonth() === todayLocal.getMonth() &&
+                       cellDate.getDate() === todayLocal.getDate()) {
+                dayEl.classList.add('bg-emerald-500', 'text-white', 'hover:bg-emerald-600');
                     } else {
-                        throw new Error('Слоты не найдены в ответе сервера');
-                    }
-                } else {
-                    // Обрабатываем ошибки от API
-                    let errorMessage = 'Не удалось загрузить слоты';
-                    
-                    if (data.message) {
-                        errorMessage = data.message;
-                    } else if (data.errors) {
-                        // Ошибки валидации
-                        const errorMessages = Object.values(data.errors).flat();
-                        errorMessage = errorMessages.join(', ') || errorMessage;
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке слотов:', error);
-                const errorMessage = error.message || 'Не удалось загрузить слоты. Пожалуйста, обновите страницу.';
-                showSlotsError(errorMessage);
-            });
-        }
-        
-        // ========== Обновление блока со слотами ==========
-        function updateTimeSlots(slots, preparationTime = null) {
-            const timeSlotsSection = document.getElementById('time-slots-section');
-            const slotsCountBadge = document.getElementById('slots-count-badge');
-            const submitBtn = document.getElementById('submit-btn');
-            
-            if (!timeSlotsSection) return;
-            
-            if (slots.length === 0) {
-                // Показываем уведомление об отсутствии слотов
-                const notificationHtml = `
-                    <div class="px-4 pb-4" id="time-slots-container">
-                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                            <div class="flex items-start gap-3">
-                                <div class="shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                                    <i class="fa-solid fa-info-circle text-amber-600 dark:text-amber-400 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="text-sm font-semibold text-amber-900 dark:text-amber-200 mb-1">
-                                        Нет свободных мест на эту дату
-                                    </h4>
-                                    <p class="text-xs text-amber-800 dark:text-amber-300">
-                                        На выбранную дату все временные слоты заняты. Пожалуйста, выберите другую дату.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                timeSlotsSection.innerHTML = notificationHtml;
-                
-                // Скрываем счетчик слотов
-                if (slotsCountBadge) {
-                    slotsCountBadge.style.display = 'none';
-                }
-                
-                // Отключаем форму
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-                
-                return;
+                dayEl.classList.add('text-slate-900', 'dark:text-slate-100');
             }
-            
-            // Показываем счетчик слотов
-            if (slotsCountBadge) {
-                slotsCountBadge.textContent = `${slots.length} ${slots.length === 1 ? 'слот' : 'слотов'}`;
-                slotsCountBadge.style.display = '';
-            }
-            
-            // Создаем wrapper для скролла если его нет
-            let timeSlotsWrapper = document.getElementById('time-slots-wrapper');
-            if (!timeSlotsWrapper) {
-                const wrapperHtml = `
-                    <div class="overflow-x-auto scrollbar-hide scroll-smooth select-none px-4 pb-3 snap-x snap-mandatory cursor-grab active:cursor-grabbing" id="time-slots-wrapper" style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;">
-                        <div class="flex gap-2 pb-1.5 flex-nowrap" id="time-slots-container" style="min-width: max-content;"></div>
-                    </div>
-                `;
-                timeSlotsSection.innerHTML = `
-                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
-                    ${wrapperHtml}
-                `;
-                timeSlotsWrapper = document.getElementById('time-slots-wrapper');
-            }
-            
-            const timeSlotsContainer = document.getElementById('time-slots-container');
-            if (!timeSlotsContainer) return;
-            
-            // Очищаем контейнер
-            timeSlotsContainer.innerHTML = '';
-            
-            // Генерируем HTML для слотов
-            slots.forEach(slot => {
-                const label = document.createElement('label');
-                label.className = 'time-slot-label shrink-0 w-20 sm:w-16 md:w-20 p-3 sm:p-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-center cursor-pointer transition-all duration-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:shadow-md active:scale-95 snap-start min-h-[52px] sm:min-h-0';
-                
-                const input = document.createElement('input');
-                input.type = 'radio';
-                input.name = 'time';
-                input.value = slot;
-                input.required = true;
-                input.className = 'sr-only time-radio';
-                
-                const span = document.createElement('span');
-                span.className = 'text-sm sm:text-xs font-semibold text-slate-900 dark:text-white leading-tight';
-                span.textContent = slot;
-                
-                label.appendChild(input);
-                label.appendChild(span);
-                timeSlotsContainer.appendChild(label);
-            });
-            
-            // Показываем wrapper
-            timeSlotsWrapper.style.display = '';
-            
-            // Восстанавливаем fade эффекты
-            setTimeout(() => {
-                updateFadeEffects('time-slots-wrapper', 'time-fade-left', 'time-fade-right');
-            }, 100);
-            
-            // Инициализируем обработчики для новых слотов
-            initTimeSlots();
-            initTimeSlotsDrag();
-            
-            // Включаем форму
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
-        
-        // ========== Показ ошибки при загрузке слотов ==========
-        function showSlotsError(message) {
-            const timeSlotsSection = document.getElementById('time-slots-section');
-            const submitBtn = document.getElementById('submit-btn');
-            
-            if (timeSlotsSection) {
-                const errorHtml = `
-                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-linear-to-r from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-left"></div>
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-linear-to-l from-white dark:from-slate-900 to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300" id="time-fade-right"></div>
-                    <div class="px-4 pb-4" id="time-slots-container">
-                        <div class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4">
-                            <div class="flex items-start gap-3">
-                                <div class="shrink-0 w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
-                                    <i class="fa-solid fa-exclamation-circle text-rose-600 dark:text-rose-400 text-sm"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="text-sm font-semibold text-rose-900 dark:text-rose-200 mb-1">
-                                        Ошибка загрузки
-                                    </h4>
-                                    <p class="text-xs text-rose-800 dark:text-rose-300">
-                                        ${message}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                timeSlotsSection.innerHTML = errorHtml;
-            }
-            
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
-        
-        // ========== Подсветка выбранного времени ==========
-        function initTimeSlots() {
-            const container = document.getElementById('time-slots-container');
-            const wrapper = document.getElementById('time-slots-wrapper');
-            if (!container) return;
-            
-            function updateHighlight() {
-                const allLabels = container.querySelectorAll('.time-slot-label');
-                allLabels.forEach(label => {
-                    const radio = label.querySelector('.time-radio');
-                    if (radio && radio.checked) {
-                        label.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800', 'hover:border-indigo-300', 'dark:hover:border-indigo-600', 'hover:bg-indigo-50', 'dark:hover:bg-indigo-900/20');
-                        label.classList.add('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'ring-1', 'ring-indigo-200', 'dark:ring-indigo-800', 'shadow-sm');
-                        
-                        // Прокручиваем к выбранному слоту
-                        if (wrapper) {
-                            setTimeout(() => {
-                                const labelRect = label.getBoundingClientRect();
-                                const wrapperRect = wrapper.getBoundingClientRect();
-                                const scrollLeft = wrapper.scrollLeft + (labelRect.left - wrapperRect.left) - (wrapperRect.width / 2) + (labelRect.width / 2);
-                                
-                                wrapper.scrollTo({
-                                    left: Math.max(0, scrollLeft),
-                                    behavior: 'smooth'
-                                });
-                            }, 100);
-                        }
+
+            // Блокируем прошедшие дни
+            if (cellDate.getFullYear() < todayLocal.getFullYear() ||
+                (cellDate.getFullYear() === todayLocal.getFullYear() && cellDate.getMonth() < todayLocal.getMonth()) ||
+                (cellDate.getFullYear() === todayLocal.getFullYear() && cellDate.getMonth() === todayLocal.getMonth() && cellDate.getDate() < todayLocal.getDate())) {
+                dayEl.disabled = true;
+                dayEl.classList.add('opacity-50', 'cursor-not-allowed');
                     } else {
-                        label.classList.remove('border-indigo-400', 'dark:border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-900/20', 'ring-1', 'ring-indigo-200', 'dark:ring-indigo-800', 'shadow-sm');
-                        label.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white', 'dark:bg-slate-800', 'hover:border-indigo-300', 'dark:hover:border-indigo-600', 'hover:bg-indigo-50', 'dark:hover:bg-indigo-900/20');
+                dayEl.addEventListener('click', function() {
+                    currentDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+                    selectedDateInput.value = currentDate.getFullYear() + '-' +
+                        String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(currentDate.getDate()).padStart(2, '0');
+
+                    // Обновляем отображение выбранной даты
+                    const dateDisplay = document.querySelector('#selected-date-display');
+                    if (dateDisplay && selectedTime) {
+                        const dateStr = currentDate.toLocaleDateString('ru-RU', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: currentDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+                        });
+                        dateDisplay.textContent = `${selectedTime}, ${dateStr}`;
                     }
+
+                    // Перезагружаем страницу с новой датой
+                    window.location.href = `?date=${selectedDateInput.value}`;
                 });
             }
-            
-            container.addEventListener('click', function(e) {
-                const label = e.target.closest('.time-slot-label');
-                if (label) {
-                    setTimeout(updateHighlight, 10);
-                }
-            });
-            
-            container.addEventListener('change', function(e) {
-                if (e.target.classList.contains('time-radio')) {
-                    updateHighlight();
-                }
-            });
-            
-            setTimeout(updateHighlight, 100);
-        }
-        
-        // ========== Обработка отправки формы ==========
-        const form = document.querySelector('form');
-        const submitBtn = document.getElementById('submit-btn');
-        let isSubmitting = false; // Флаг для предотвращения повторной отправки
-        
-        if (form && submitBtn) {
-            form.addEventListener('submit', function(e) {
-                // Предотвращаем повторную отправку
-                if (isSubmitting) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return false;
-                }
-                
-                // Проверяем, что дата и время выбраны
-                const dateInput = document.getElementById('selected-date-input');
-                const timeRadio = document.querySelector('input[name="time"]:checked');
-                
-                if (!dateInput || !dateInput.value) {
-                    e.preventDefault();
-                    alert('Пожалуйста, выберите дату');
-                    return false;
-                }
-                
-                if (!timeRadio) {
-                    e.preventDefault();
-                    alert('Пожалуйста, выберите время');
-                    return false;
-                }
-                
-                // Устанавливаем флаг отправки
-                isSubmitting = true;
-                
-                // Показываем индикатор загрузки
-                submitBtn.disabled = true;
-                const submitText = submitBtn.querySelector('.submit-text');
-                const submitLoading = submitBtn.querySelector('.submit-loading');
-                if (submitText) submitText.classList.add('hidden');
-                if (submitLoading) submitLoading.classList.remove('hidden');
-                
-                // Если форма не отправилась в течение 10 секунд, разрешаем повторную попытку
-                setTimeout(() => {
-                    if (isSubmitting) {
-                        isSubmitting = false;
-                        submitBtn.disabled = false;
-                        if (submitText) submitText.classList.remove('hidden');
-                        if (submitLoading) submitLoading.classList.add('hidden');
-                    }
-                }, 10000);
-            });
-        }
-        
-        // ========== Fade эффекты для скролла ==========
-        function updateFadeEffects(wrapperId, fadeLeftId, fadeRightId) {
-            const wrapper = document.getElementById(wrapperId);
-            const fadeLeft = document.getElementById(fadeLeftId);
-            const fadeRight = document.getElementById(fadeRightId);
-            
-            if (!wrapper || !fadeLeft || !fadeRight) return;
-            
-            function checkScroll() {
-                const { scrollLeft, scrollWidth, clientWidth } = wrapper;
-                const isAtStart = scrollLeft <= 5;
-                const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 5;
-                
-                fadeLeft.style.opacity = isAtStart ? '0' : '1';
-                fadeRight.style.opacity = isAtEnd ? '0' : '1';
-            }
-            
-            wrapper.addEventListener('scroll', checkScroll);
-            checkScroll(); // Проверяем при загрузке
-        }
-        
-        // ========== Обработка телефона ==========
-        function initPhoneInput() {
-            const phoneInput = document.getElementById('phone');
-            if (!phoneInput) return;
-            
-            phoneInput.addEventListener('focus', function() {
-                if (!this.value) {
-                    this.value = '+375';
-                }
-            });
-            
-            phoneInput.addEventListener('input', function(e) {
-                // Убираем все нецифровые символы кроме +
-                let value = this.value.replace(/[^\d+]/g, '');
-                
-                // Если начинается с 375, добавляем +
-                if (value.startsWith('375')) {
-                    value = '+' + value;
-                } else if (!value.startsWith('+375') && value.length > 0) {
-                    // Если не начинается с +375, добавляем префикс
-                    value = '+375' + value.replace(/\+/g, '');
-                }
-                
-                // Ограничиваем до 13 символов (+375 + 9 цифр)
-                if (value.length > 13) {
-                    value = value.substring(0, 13);
-                }
-                
-                this.value = value;
-            });
-            
-            // Перед отправкой формы убираем форматирование (оставляем только цифры и +)
-            const form = document.getElementById('appointment-form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    if (phoneInput.value) {
-                        // Сохраняем только +375 и цифры
-                        phoneInput.value = phoneInput.value.replace(/[^\d+]/g, '');
-                    }
-                });
-            }
-        }
 
-        // Collapsible дополнительная информация
-        (function() {
-            const toggleBtn = document.getElementById('additional-info-toggle');
-            const content = document.getElementById('additional-info-content');
-            const icon = document.getElementById('additional-info-icon');
+            calendarGrid.appendChild(dayEl);
+        }
+    }
 
-            if (toggleBtn && content && icon) {
-                toggleBtn.addEventListener('click', function() {
-                    const isHidden = content.classList.contains('hidden');
+    // Обработчики кнопок календаря
+    if (toggleDateBtn && calendarContainer) {
+        toggleDateBtn.addEventListener('click', function() {
+            calendarContainer.classList.toggle('hidden');
+            dateSelectorIcon.classList.toggle('rotate-180');
 
-                    if (isHidden) {
-                        content.classList.remove('hidden');
-                        icon.style.transform = 'rotate(180deg)';
-                    } else {
-                        content.classList.add('hidden');
-                        icon.style.transform = 'rotate(0deg)';
-                    }
-                });
+            if (!calendarContainer.classList.contains('hidden')) {
+                updateCalendar();
             }
-        })();
-    })();
+        });
+    }
+
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener('click', function() {
+            calendarDate.setMonth(calendarDate.getMonth() - 1);
+            updateCalendar();
+        });
+    }
+
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener('click', function() {
+            calendarDate.setMonth(calendarDate.getMonth() + 1);
+            updateCalendar();
+        });
+    }
+});
 </script>
-@endpush
 @endsection

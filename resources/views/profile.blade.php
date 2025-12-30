@@ -119,12 +119,12 @@
                             <i class="fa-solid fa-envelope text-slate-400 text-[10px] sm:text-xs flex-shrink-0"></i>
                             <span class="truncate break-all">{{ $user->email }}</span>
                         </p>
-                        @if ($user->phone)
+                    @if ($user->phone)
                             <p class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5 sm:gap-2">
                                 <i class="fa-solid fa-phone text-slate-400 text-[10px] sm:text-xs flex-shrink-0"></i>
                                 <span class="break-all">{{ $user->phone }}</span>
-                            </p>
-                        @endif
+                        </p>
+                    @endif
                     </div>
                 </div>
             </div>
@@ -146,9 +146,9 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-user text-slate-400 text-sm"></i>
                         </div>
-                        <input type="text" id="name" name="name" required value="{{ old('name', $user->name) }}"
+                    <input type="text" id="name" name="name" required value="{{ old('name', $user->name) }}"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Ваше имя" />
+                        placeholder="Ваше имя" />
                     </div>
                     @error('name')
                         <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -165,9 +165,9 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-envelope text-slate-400 text-sm"></i>
                         </div>
-                        <input type="email" id="email" name="email" required value="{{ old('email', $user->email) }}"
+                    <input type="email" id="email" name="email" required value="{{ old('email', $user->email) }}"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="your@email.com" />
+                        placeholder="your@email.com" />
                     </div>
                     @error('email')
                         <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -184,7 +184,7 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-phone text-slate-400 text-sm"></i>
                         </div>
-                        <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone) }}"
+                    <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone) }}"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                             placeholder="+375 (XX) XXX-XX-XX" />
                     </div>
@@ -240,9 +240,9 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-lock text-slate-400 text-sm"></i>
                         </div>
-                        <input type="password" id="current_password" name="current_password"
+                    <input type="password" id="current_password" name="current_password"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('current_password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Введите текущий пароль" />
+                        placeholder="Введите текущий пароль" />
                     </div>
                     @error('current_password')
                         <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -259,9 +259,9 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-lock text-slate-400 text-sm"></i>
                         </div>
-                        <input type="password" id="password" name="password"
+                    <input type="password" id="password" name="password"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Введите новый пароль" />
+                        placeholder="Введите новый пароль" />
                     </div>
                     @error('password')
                         <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -278,9 +278,9 @@
                         <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-lock text-slate-400 text-sm"></i>
                         </div>
-                        <input type="password" id="password_confirmation" name="password_confirmation"
+                    <input type="password" id="password_confirmation" name="password_confirmation"
                             class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Повторите новый пароль" />
+                        placeholder="Повторите новый пароль" />
                     </div>
                 </div>
 
