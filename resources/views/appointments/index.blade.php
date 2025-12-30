@@ -19,9 +19,6 @@
          phone: '', 
          phoneDisplay: '', 
          client: '',
-         showDayModal: false,
-         selectedDate: '',
-         dayAppointments: [],
          openPhoneModal(phone, phoneDisplay, client) {
              this.phone = phone;
              this.phoneDisplay = phoneDisplay;
@@ -30,14 +27,6 @@
          },
          closePhoneModal() {
              this.showPhoneModal = false;
-         },
-         openDayModal(date, appointments) {
-             this.selectedDate = date;
-             this.dayAppointments = appointments;
-             this.showDayModal = true;
-         },
-         closeDayModal() {
-             this.showDayModal = false;
          }
      }">
     <!-- Заголовок страницы -->
@@ -76,33 +65,73 @@
 
     @if($view === 'calendar')
         <!-- Календарное представление -->
-        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <!-- Навигация по месяцам -->
-            <div class="flex items-center justify-between mb-6">
-                <form method="GET" action="{{ route('appointments.index') }}" class="flex items-center gap-3">
-                    <input type="hidden" name="view" value="calendar">
-                    @if(request('search'))
-                        <input type="hidden" name="search" value="{{ request('search') }}">
-                    @endif
-                    @if(request('status'))
-                        <input type="hidden" name="status" value="{{ request('status') }}">
-                    @endif
-                    <button type="submit" name="month" value="{{ $selectedDate->copy()->subMonth()->format('Y-m') }}"
-                            class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
+            <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/30 border-b border-indigo-200 dark:border-indigo-800/50 px-3 md:px-6 py-3 md:py-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <!-- Кнопка назад -->
+                        <form method="GET" action="{{ route('appointments.index') }}" class="inline">
+                            <input type="hidden" name="view" value="calendar">
+                            <input type="hidden" name="month" value="{{ $selectedDate->copy()->subMonth()->format('Y-m') }}">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <button type="submit"
+                                    class="h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm flex-shrink-0">
+                                <i class="fa-solid fa-chevron-left text-xs md:text-sm"></i>
+                            </button>
+                        </form>
+                        
+                        <!-- Поле выбора месяца -->
+                        <form method="GET" action="{{ route('appointments.index') }}" id="calendar-month-form" class="flex-1 sm:flex-initial">
+                            <input type="hidden" name="view" value="calendar">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <input type="month" name="month" value="{{ $currentMonth }}"
+                                   onchange="this.form.submit()"
+                                   class="w-full sm:w-auto px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-slate-900 dark:text-white font-semibold cursor-pointer shadow-sm hover:border-indigo-300 dark:hover:border-indigo-600">
+                        </form>
+                        
+                        <!-- Кнопка вперед -->
+                        <form method="GET" action="{{ route('appointments.index') }}" class="inline">
+                            <input type="hidden" name="view" value="calendar">
+                            <input type="hidden" name="month" value="{{ $selectedDate->copy()->addMonth()->format('Y-m') }}">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <button type="submit"
+                                    class="h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm flex-shrink-0">
+                                <i class="fa-solid fa-chevron-right text-xs md:text-sm"></i>
+                            </button>
+                        </form>
+                    </div>
+                    @php
+                        $todayParams = ['view' => 'calendar', 'month' => \Carbon\Carbon::now()->format('Y-m')];
+                        if (request()->has('search') && request()->search) {
+                            $todayParams['search'] = request()->search;
+                        }
+                        if (request()->has('status') && request()->status) {
+                            $todayParams['status'] = request()->status;
+                        }
+                    @endphp
+                    <button onclick="window.location.href = '{{ route('appointments.index', $todayParams) }}'"
+                            class="w-full sm:w-auto px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 transition-all shadow-sm">
+                        <i class="fa-solid fa-calendar-day mr-1.5 md:mr-2"></i>
+                        <span class="hidden sm:inline">Сегодня</span>
+                        <span class="sm:hidden">Сегодня</span>
                     </button>
-                    <input type="month" name="month" value="{{ $currentMonth }}"
-                           onchange="this.form.submit()"
-                           class="px-3 md:px-4 py-2 text-xs md:text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-slate-900 dark:text-white font-medium">
-                    <button type="submit" name="month" value="{{ $selectedDate->copy()->addMonth()->format('Y-m') }}"
-                            class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
-                </form>
-                <button onclick="window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'calendar', 'month' => \Carbon\Carbon::now()->format('Y-m')])) }}'"
-                        class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                    Сегодня
-                </button>
+                </div>
             </div>
 
             <!-- Календарь -->
@@ -114,91 +143,130 @@
                 $daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
             @endphp
 
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <!-- Дни недели -->
-                    <thead>
-                        <tr>
-                            @foreach($daysOfWeek as $day)
-                                <th class="p-1.5 md:p-2 text-xs md:text-xs font-semibold text-slate-500 dark:text-slate-400 text-center">
-                                    {{ $day }}
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for($date = $startOfCalendar->copy(); $date->lte($endOfCalendar); $date->addDay())
-                            @if($date->dayOfWeek === Carbon\Carbon::MONDAY)
-                                <tr>
-                            @endif
-                            @php
-                                $dateKey = $date->format('Y-m-d');
-                                $dayAppointments = $appointmentsByDate->get($dateKey, collect());
-                                $isCurrentMonth = $date->month === $selectedDate->month;
-                                $isToday = $date->isToday();
-                            @endphp
-                            @php
-                                $appointmentsData = $dayAppointments->map(function($apt) {
-                                    return [
-                                        'id' => $apt->id,
-                                        'time' => $apt->time,
-                                        'client' => [
-                                            'full_name' => $apt->client->full_name,
-                                            'phone' => $apt->client->phone
-                                        ],
-                                        'service' => [
-                                            'name' => $apt->service->name
-                                        ],
-                                        'status' => $apt->status,
-                                        'master' => $apt->master ? [
-                                            'first_name' => $apt->master->first_name,
-                                            'last_name' => $apt->master->last_name
-                                        ] : null
-                                    ];
-                                })->values()->all();
-                            @endphp
-                            <td class="p-0.5 md:p-1 border border-slate-200 dark:border-slate-700 {{ $isCurrentMonth ? '' : 'bg-slate-50 dark:bg-slate-800/50' }} {{ $isToday ? 'bg-indigo-50 dark:bg-indigo-500/10' : '' }} {{ $dayAppointments->count() > 0 ? 'cursor-pointer hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-colors' : '' }}"
-                                @if($dayAppointments->count() > 0)
-                                @click="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                @endif>
-                                <div class="min-h-[50px] md:min-h-[100px]">
-                                    <div class="flex items-center justify-between mb-1 px-1">
-                                        <span class="text-xs md:text-sm font-medium {{ $isCurrentMonth ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }} {{ $isToday ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : '' }}">
+            <div class="p-3 md:p-6">
+                <!-- Дни недели -->
+                <div class="grid grid-cols-7 gap-1.5 md:gap-2 mb-2 md:mb-2">
+                    @foreach($daysOfWeek as $day)
+                        <div class="py-2 md:py-2 text-center">
+                            <span class="text-[11px] md:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                                {{ $day }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Календарная сетка -->
+                <div class="grid grid-cols-7 gap-1.5 md:gap-2">
+                    @for($date = $startOfCalendar->copy(); $date->lte($endOfCalendar); $date->addDay())
+                        @php
+                            $dateKey = $date->format('Y-m-d');
+                            $dayAppointments = $appointmentsByDate->get($dateKey, collect());
+                            $isCurrentMonth = $date->month === $selectedDate->month;
+                            $isToday = $date->isToday();
+                            $tableParams = [
+                                'view' => 'table',
+                                'date' => $date->format('Y-m-d')
+                            ];
+                            if (request()->has('search') && request()->search) {
+                                $tableParams['search'] = request()->search;
+                            }
+                            if (request()->has('status') && request()->status) {
+                                $tableParams['status'] = request()->status;
+                            }
+                        @endphp
+                        <div class="aspect-square md:min-h-[120px] rounded-lg md:rounded-lg transition-all duration-200
+                            {{ $isCurrentMonth ? 'border-2 border-slate-200 dark:border-slate-700' : 'border-2 border-slate-100 dark:border-slate-800/50' }}
+                            {{ $isToday ? 'bg-blue-100 dark:bg-blue-900/60 border-blue-300 dark:border-blue-600' : ($isCurrentMonth ? 'bg-white dark:bg-slate-800/50' : 'bg-slate-50/50 dark:bg-slate-900/30') }}
+                            {{ $dayAppointments->count() > 0 ? 'hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20 cursor-pointer active:scale-[0.97] md:active:scale-100' : 'hover:border-slate-300 dark:hover:border-slate-600' }}"
+                            @if($dayAppointments->count() > 0)
+                            onclick="window.location.href = '{{ route('appointments.index', $tableParams) }}'"
+                            @endif>
+                            <div class="h-full flex flex-col justify-center md:justify-start p-2 md:p-2">
+                                <!-- Мобильная версия: только дата -->
+                                <div class="md:hidden flex items-center justify-center h-full relative">
+                                    <span class="text-lg font-bold
+                                        {{ $isCurrentMonth ? ($isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-900 dark:text-white') : 'text-slate-400 dark:text-slate-500' }}">
+                                        {{ $date->day }}
+                                    </span>
+                                    @if($dayAppointments->count() > 0)
+                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400"></span>
+                                    @endif
+                                </div>
+                                
+                                <!-- Десктопная версия: полная информация -->
+                                <div class="hidden md:block">
+                                    <!-- Заголовок дня -->
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-base font-semibold
+                                            {{ $isCurrentMonth ? ($isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-900 dark:text-white') : 'text-slate-400 dark:text-slate-500' }}">
                                             {{ $date->day }}
                                         </span>
                                         @if($dayAppointments->count() > 0)
-                                            <button @click.stop="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                                    class="h-5 w-5 md:h-6 md:w-6 rounded-full bg-indigo-600 text-white text-[10px] md:text-xs flex items-center justify-center font-semibold hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0">
+                                            <a href="{{ route('appointments.index', $tableParams) }}"
+                                               @click.stop
+                                               class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white text-sm flex items-center justify-center font-bold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-sm hover:shadow-md hover:scale-110 flex-shrink-0"
+                                               title="{{ $dayAppointments->count() }} {{ $dayAppointments->count() === 1 ? 'запись' : ($dayAppointments->count() < 5 ? 'записи' : 'записей') }}">
                                                 {{ $dayAppointments->count() }}
-                                            </button>
+                                            </a>
                                         @endif
                                     </div>
-                                    <!-- Десктопная версия: показываем записи -->
-                                    <div class="hidden md:block space-y-1">
-                                        @foreach($dayAppointments->take(1) as $appointment)
+                                    
+                                    <!-- Записи -->
+                                    <div class="flex-1 space-y-1.5 overflow-hidden">
+                                        @foreach($dayAppointments->take(2) as $appointment)
                                             <a href="{{ route('appointments.show', $appointment) }}"
                                                @click.stop
-                                               class="block px-1.5 py-0.5 rounded text-xs truncate {{ $appointment->status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300' : ($appointment->status === 'cancelled' ? 'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' : ($appointment->status === 'confirmed' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300' : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300')) }} hover:opacity-80 transition-opacity"
+                                               class="block px-2 py-1.5 rounded-md text-xs font-medium truncate transition-all hover:scale-[1.02] hover:shadow-sm
+                                               {{ $appointment->status === 'completed' 
+                                                   ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                                                   : ($appointment->status === 'cancelled' 
+                                                       ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800' 
+                                                       : ($appointment->status === 'confirmed' 
+                                                           ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
+                                                           : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800')) }}"
                                                title="{{ $appointment->client->full_name }} - {{ $appointment->service->name }}">
-                                                <span class="font-medium">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
-                                                <span class="ml-1">{{ $appointment->client->first_name }}</span>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="font-bold">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
+                                                    <span class="truncate">{{ $appointment->client->first_name }}</span>
+                                                </div>
                                             </a>
                                         @endforeach
-                                        @if($dayAppointments->count() > 1)
-                                            <button @click.stop="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                                    class="text-xs text-slate-500 dark:text-slate-400 px-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
-                                                +{{ $dayAppointments->count() - 1 }} еще
-                                            </button>
+                                        @if($dayAppointments->count() > 2)
+                                            <a href="{{ route('appointments.index', $tableParams) }}"
+                                               @click.stop
+                                               class="block text-xs text-indigo-600 dark:text-indigo-400 font-semibold px-2 py-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                                                +{{ $dayAppointments->count() - 2 }} еще
+                                            </a>
                                         @endif
                                     </div>
                                 </div>
-                            </td>
-                            @if($date->dayOfWeek === Carbon\Carbon::SUNDAY)
-                                </tr>
-                            @endif
-                        @endfor
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
+            
+            <!-- Легенда статусов -->
+            <div class="hidden md:block px-3 md:px-6 pb-3 md:pb-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                <div class="flex flex-wrap items-center gap-2 md:gap-6 pt-3 md:pt-4">
+                    <span class="text-[10px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide w-full sm:w-auto mb-1 sm:mb-0">Статусы:</span>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-amber-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Ожидает</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-blue-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Подтверждена</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-emerald-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Завершена</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-rose-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Отменена</span>
+                    </div>
+                </div>
             </div>
         </div>
     @else
@@ -863,146 +931,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для записей дня -->
-    <div x-show="showDayModal && !showPhoneModal" 
-         @click.away="if (!showPhoneModal) closeDayModal()"
-         @keydown.escape.window="if (!showPhoneModal) closeDayModal()"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-         style="display: none;">
-        <div @click.stop
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="transform opacity-0 scale-95"
-            x-transition:enter-end="transform opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="transform opacity-100 scale-100"
-            x-transition:leave-end="transform opacity-0 scale-95"
-            class="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md md:max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <!-- Заголовок -->
-            <div class="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white" x-text="selectedDate"></h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" x-text="`${dayAppointments.length} ${dayAppointments.length === 1 ? 'запись' : dayAppointments.length < 5 ? 'записи' : 'записей'}`"></p>
-                </div>
-                <button @click="closeDayModal()" 
-                    class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-
-            <!-- Контент: список записей -->
-            <div class="flex-1 overflow-y-auto px-4 md:px-6 py-4">
-                <template x-if="dayAppointments.length === 0">
-                    <div class="text-center py-8">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Нет записей на этот день</p>
-                    </div>
-                </template>
-                <div class="space-y-3" x-show="dayAppointments.length > 0">
-                    <template x-for="appointment in dayAppointments" :key="appointment.id">
-                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 md:p-4">
-                            <div class="flex items-start justify-between gap-3 mb-2">
-                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                    <span class="inline-flex items-center justify-center w-12 h-7 rounded bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-medium flex-shrink-0" x-text="appointment.time.length >= 5 ? appointment.time.substring(0, 5) : appointment.time"></span>
-                                    <div class="min-w-0 flex-1">
-                                        <a :href="`{{ route('appointments.index') }}/${appointment.id}`" class="block">
-                                            <h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate" x-text="appointment.client.full_name"></h4>
-                                        </a>
-                                        <p class="text-xs text-slate-600 dark:text-slate-400 truncate mt-0.5" x-text="appointment.service.name"></p>
-                                    </div>
-                                </div>
-                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium flex-shrink-0"
-                                      :class="{
-                                          'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300': appointment.status === 'pending',
-                                          'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300': appointment.status === 'confirmed',
-                                          'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300': appointment.status === 'completed',
-                                          'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300': appointment.status === 'cancelled'
-                                      }"
-                                      x-text="appointment.status === 'pending' ? 'Ожидает' : appointment.status === 'confirmed' ? 'Подтверждена' : appointment.status === 'completed' ? 'Завершена' : 'Отменена'"></span>
-                            </div>
-                            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                                <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                    <template x-if="appointment.master">
-                                        <span x-text="`${appointment.master.first_name} ${appointment.master.last_name}`"></span>
-                                    </template>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button @click.stop="openPhoneModal(appointment.client.phone, appointment.client.phone, appointment.client.full_name)"
-                                            class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors flex items-center justify-center">
-                                        <i class="fa-solid fa-phone text-xs"></i>
-                                    </button>
-                                    <div x-data="{ open: false }" class="relative">
-                                        <button @click.stop="open = !open"
-                                            class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center">
-                                            <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
-                                        </button>
-                                        <div x-show="open" 
-                                            @click.away="open = false" 
-                                            x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="transform opacity-0 scale-95"
-                                            x-transition:enter-end="transform opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="transform opacity-100 scale-100"
-                                            x-transition:leave-end="transform opacity-0 scale-95"
-                                            class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100]"
-                                            style="display: none;">
-                                            <a :href="`{{ route('appointments.index') }}/${appointment.id}`" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                                <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
-                                            </a>
-                                            <template x-if="appointment.status === 'pending'">
-                                                <div>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/confirm`" class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20">
-                                                            <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
-                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
-                                                          class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </template>
-                                            <template x-if="appointment.status === 'confirmed'">
-                                                <div>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/complete`" class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
-                                                            <i class="fa-solid fa-check w-4 inline-block"></i> Выполнить
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
-                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
-                                                          class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 @endsection
