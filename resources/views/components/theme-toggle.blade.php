@@ -22,10 +22,12 @@
     class="{{ $buttonClasses }} {{ $class }}" 
     aria-label="Переключить тему"
     type="button"
+    data-theme-mode="auto"
 >
     <!-- Солнце (показывается в тёмной теме) -->
     <x-icon name="sun" variant="outline" :size="$size" class="hidden dark:block" />
     <!-- Луна (показывается в светлой теме) -->
     <x-icon name="moon" variant="outline" :size="$size" class="block dark:hidden" />
 </button>
+
 
