@@ -116,7 +116,7 @@
                         </div>
 
                         <!-- Правая часть: Действия -->
-                        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
                             <!-- Кнопка "Новая запись" (только на определенных страницах) -->
                             @hasSection('show-new-button')
                                 <button
@@ -154,7 +154,7 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="fixed z-100 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
+                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
                                     style="display: none;"
                                     x-init="
                                         $watch('open', value => {
@@ -315,7 +315,7 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="fixed z-100 w-[calc(100vw-2rem)] sm:w-56 max-w-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-56 max-w-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
                                     style="display: none;"
                                     x-init="
                                         $watch('open', value => {
