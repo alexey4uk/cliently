@@ -47,8 +47,8 @@
 
                 <!-- Адрес -->
                 <div>
-                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Адрес*</span>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                        Адрес <span class="text-rose-500">*</span>
                     </label>
                     <div class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

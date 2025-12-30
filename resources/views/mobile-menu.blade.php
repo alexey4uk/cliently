@@ -200,47 +200,47 @@
             <!-- Нижняя часть: Профиль -->
             <div class="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4 flex-shrink-0">
                 <div class="px-3">
-                    @auth
-                        <!-- Информация о пользователе (кликабельная, ведет на профиль) -->
-                        <a href="{{ route('profile.edit') }}" 
-                           @click="open = false"
+                @auth
+                    <!-- Информация о пользователе (кликабельная, ведет на профиль) -->
+                    <a href="{{ route('profile.edit') }}" 
+                       @click="open = false"
                            class="block mb-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden flex-shrink-0">
-                                    @if(Auth::user()->avatar)
-                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
-                                             alt="{{ Auth::user()->name }}" 
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                         alt="{{ Auth::user()->name }}" 
                                              class="w-full h-full object-cover">
-                                    @else
-                                        {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
-                                    @endif
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                                        {{ Auth::user()->name }}
-                                    </p>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                        {{ Auth::user()->email }}
-                                    </p>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
-                                </div>
+                                @else
+                                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                                @endif
                             </div>
-                        </a>
-                    @endauth
-                    
-                    <!-- Выход -->
-                    <form method="POST" action="{{ route('logout') }}" class="w-full">
-                        @csrf
-                        <button type="submit"
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                                    {{ Auth::user()->name }}
+                                </p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                    {{ Auth::user()->email }}
+                                </p>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+                            </div>
+                        </div>
+                    </a>
+                @endauth
+                
+                <!-- Выход -->
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <button type="submit"
                             class="w-full flex items-center px-3 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all duration-200">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-right-from-bracket text-base"></i>
                             </div>
                             <span class="ml-3 whitespace-nowrap">Выйти</span>
-                        </button>
-                    </form>
+                    </button>
+                </form>
                 </div>
             </div>
         </div>

@@ -14,100 +14,154 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('settings.masters.store') }}" class="space-y-6">
+<form method="POST" action="{{ route('settings.masters.store') }}" class="space-y-4 md:space-y-6">
     @csrf
 
-    <div class="space-y-6">
         <!-- Основная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
-                        Основная информация
-                    </h3>
+    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Основная информация
+                </h2>
+            </div>
+        </div>
+        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                     <div>
-                        <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Имя*</span>
+                    <label for="first_name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                        Имя <span class="text-rose-500">*</span>
                         </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-slate-400 text-sm"></i>
+                        </div>
                         <input type="text" id="first_name" name="first_name" required value="{{ old('first_name') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                               class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                               placeholder="Введите имя"
                                autofocus>
+                    </div>
                         @error('first_name')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="last_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Фамилия</span>
+                    <label for="last_name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                        Фамилия
                         </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-slate-400 text-sm"></i>
+                        </div>
                         <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                               class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                               placeholder="Введите фамилию">
+                    </div>
                         @error('last_name')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                         @enderror
                     </div>
                 </div>
 
                 <div>
-                    <label for="specialization" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Специализация*</span>
+                <label for="specialization" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                    Специализация <span class="text-rose-500">*</span>
                     </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-briefcase text-slate-400 text-sm"></i>
+                    </div>
                     <input type="text" id="specialization" name="specialization" required value="{{ old('specialization') }}"
-                           class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('specialization') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                           class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('specialization') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                           placeholder="Например: Парикмахер, Массажист">
                     @error('specialization')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                     @enderror
                 </div>
+                </div>
 
                 <div>
-                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Описание</span>
+                <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                    Описание
                     </label>
-                    <textarea id="description" name="description" rows="3"
-                              class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none">{{ old('description') }}</textarea>
+                <textarea id="description" name="description" rows="4"
+                          class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                          placeholder="Расскажите о мастере...">{{ old('description') }}</textarea>
                 </div>
             </div>
         </div>
 
         <!-- Контактная информация -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
-                        Контактная информация
-                    </h3>
+    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-phone text-emerald-600 dark:text-emerald-400 text-xs"></i>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Контактная информация
+                </h2>
+            </div>
+        </div>
+        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                     <div>
-                        <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Телефон*</span>
+                    <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                        Телефон <span class="text-rose-500">*</span>
                         </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-phone text-slate-400 text-sm"></i>
+                        </div>
                         <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                        <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
+                               class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                               placeholder="+375XXXXXXXXX">
+                    </div>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-slate-500 dark:text-slate-400">
                             Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
                         </p>
                         @error('phone')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                         @enderror
-                        <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
+                    <p id="phoneError" class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 hidden flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span></span>
+                    </p>
                     </div>
 
                     <div>
-                        <label for="email" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Почта</span>
+                    <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                        Почта
                         </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-envelope text-slate-400 text-sm"></i>
+                        </div>
                         <input type="email" id="email" name="email" value="{{ old('email') }}"
-                               class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                               class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                               placeholder="example@mail.com">
+                    </div>
                         @error('email')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
                         @enderror
                     </div>
                 </div>
@@ -116,23 +170,26 @@
 
         <!-- Локации и услуги -->
         @if($locations->count() > 0 || $services->count() > 0)
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400"></i>
-                        Связи
-                    </h3>
+    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-link text-purple-600 dark:text-purple-400 text-xs"></i>
                 </div>
-                
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Связи
+                </h2>
+            </div>
+        </div>
+        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
                 @if($locations->count() > 0)
                 <div>
-                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Локации</span>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Локации
                     </label>
                     <div class="space-y-2">
                         @foreach($locations as $location)
-                            <label class="flex items-center gap-2 cursor-pointer p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <label class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                 <input type="checkbox" name="location_ids[]" value="{{ $location->id }}"
                                        class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
                                        {{ in_array($location->id, old('location_ids', [])) ? 'checked' : '' }}>
@@ -145,12 +202,12 @@
 
                 @if($services->count() > 0)
                 <div>
-                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Услуги</span>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Услуги
                     </label>
                     <div class="space-y-2">
                         @foreach($services as $service)
-                            <label class="flex items-center gap-2 cursor-pointer p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <label class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                 <input type="checkbox" name="service_ids[]" value="{{ $service->id }}"
                                        class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
                                        {{ in_array($service->id, old('service_ids', [])) ? 'checked' : '' }}>
@@ -165,22 +222,25 @@
         @endif
 
         <!-- Время работы -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400"></i>
-                        Время работы
-                    </h3>
+    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                    <i class="fa-solid fa-clock text-amber-600 dark:text-amber-400 text-xs"></i>
                 </div>
-                
+                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
+                    Время работы
+                </h2>
+            </div>
+        </div>
+        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
                 <div>
-                    <label class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>График работы*</span>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    График работы <span class="text-rose-500">*</span>
                     </label>
                     <div class="space-y-3">
                         <!-- Чекбокс круглосуточно -->
-                        <label class="flex items-center gap-2 cursor-pointer">
+                    <label class="flex items-center gap-2 cursor-pointer p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <input type="checkbox" id="workingHours24" name="working_hours[24_hours]" value="1"
                                    class="rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
                                    {{ old('working_hours.24_hours') ? 'checked' : '' }}>
@@ -188,88 +248,133 @@
                         </label>
 
                         <!-- Поля времени работы -->
-                        <div id="workingHoursFields" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="workingHoursFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                             <div>
-                                <label for="workingHoursFrom" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">С</label>
+                            <label for="workingHoursFrom" class="block text-sm text-slate-500 dark:text-slate-400 mb-1.5 font-medium">С</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-clock text-slate-400 text-sm"></i>
+                                </div>
                                 <input type="time" name="working_hours[from]" id="workingHoursFrom" required
                                        value="{{ old('working_hours.from', '09:00') }}"
-                                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                                       class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            </div>
                                 @error('working_hours.from')
-                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                                <span>{{ $message }}</span>
+                            </p>
                                 @enderror
                             </div>
 
                             <div>
-                                <label for="workingHoursTo" class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5 font-medium">До</label>
+                            <label for="workingHoursTo" class="block text-sm text-slate-500 dark:text-slate-400 mb-1.5 font-medium">До</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-clock text-slate-400 text-sm"></i>
+                                </div>
                                 <input type="time" name="working_hours[to]" id="workingHoursTo" required
                                        value="{{ old('working_hours.to', '18:00') }}"
-                                       class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                                       class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            </div>
                                 @error('working_hours.to')
-                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                                <span>{{ $message }}</span>
+                            </p>
                                 @enderror
                             </div>
                         </div>
 
                         <!-- Выходные дни -->
-                        <div>
-                            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Выходные дни</label>
-                            @php
-                                $days = [
-                                    'monday' => 'Понедельник',
-                                    'tuesday' => 'Вторник',
-                                    'wednesday' => 'Среда',
-                                    'thursday' => 'Четверг',
-                                    'friday' => 'Пятница',
-                                    'saturday' => 'Суббота',
-                                    'sunday' => 'Воскресенье'
-                                ];
-                                $oldDaysOff = old('working_hours.days_off', []);
-                            @endphp
+                    <div x-data="{
+                        open: false,
+                        selectedDays: new Set({{ json_encode(old('working_hours.days_off', [])) }}),
+                        days: {
+                            'monday': 'Понедельник',
+                            'tuesday': 'Вторник',
+                            'wednesday': 'Среда',
+                            'thursday': 'Четверг',
+                            'friday': 'Пятница',
+                            'saturday': 'Суббота',
+                            'sunday': 'Воскресенье'
+                        },
+                        init() {
+                            // Инициализируем выбранные дни из старых значений формы
+                            const oldDays = {{ json_encode(old('working_hours.days_off', [])) }};
+                            oldDays.forEach(day => this.selectedDays.add(day));
+                        },
+                        toggleDay(day) {
+                            if (this.selectedDays.has(day)) {
+                                this.selectedDays.delete(day);
+                            } else {
+                                this.selectedDays.add(day);
+                            }
+                        },
+                        removeDay(day) {
+                            this.selectedDays.delete(day);
+                        }
+                    }">
+                        <label class="block text-sm text-slate-500 dark:text-slate-400 mb-2 font-medium">Выходные дни</label>
                             
                             <!-- Кнопка для раскрытия блока -->
-                            <button type="button" id="daysOffToggle" class="w-full md:w-auto flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <i class="fa-solid fa-plus text-xs text-indigo-600 dark:text-indigo-400" id="daysOffIcon"></i>
+                        <button type="button" @click="open = !open" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid transition-transform duration-200" :class="open ? 'fa-chevron-up' : 'fa-plus'"></i>
                                 <span>Добавить выходные дни</span>
                             </button>
                             
                             <!-- Раскрывающийся блок с чекбоксами -->
-                            <div id="daysOffDropdown" class="hidden mt-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-200 dark:border-slate-700">
+                        <div x-show="open" x-cloak x-transition class="mt-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    @foreach($days as $dayKey => $dayName)
-                                        <label class="flex items-center gap-2 cursor-pointer p-2 rounded border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors days-off-checkbox-label" data-day="{{ $dayKey }}">
-                                            <input type="checkbox" class="days-off-checkbox rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
-                                                   data-day="{{ $dayKey }}"
-                                                   {{ in_array($dayKey, $oldDaysOff) ? 'checked' : '' }}>
-                                            <span class="text-sm text-slate-700 dark:text-slate-300">{{ $dayName }}</span>
+                                <template x-for="(dayName, dayKey) in days" :key="dayKey">
+                                    <label @click.prevent="toggleDay(dayKey)" class="flex items-center gap-2 cursor-pointer p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition-colors" :class="selectedDays.has(dayKey) ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-200 dark:border-indigo-700' : ''">
+                                        <input type="checkbox" class="days-off-checkbox rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 pointer-events-none"
+                                               :checked="selectedDays.has(dayKey)">
+                                        <span class="text-sm text-slate-700 dark:text-slate-300" x-text="dayName"></span>
                                         </label>
-                                    @endforeach
+                                </template>
                                 </div>
                             </div>
                             
                             <!-- Скрытые input'ы для отправки данных -->
-                            <div id="daysOffHiddenInputs"></div>
+                        <template x-for="day in Array.from(selectedDays)" :key="day">
+                            <input type="hidden" name="working_hours[days_off][]" :value="day">
+                        </template>
                             
                             <!-- Теги выбранных дней -->
-                            <div id="daysOffTags" class="flex flex-wrap gap-2 mt-3"></div>
+                        <div x-show="selectedDays.size > 0" x-cloak class="flex flex-wrap gap-2 mt-3">
+                            <template x-for="day in Array.from(selectedDays)" :key="day">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-lg text-xs font-medium">
+                                    <span x-text="days[day]"></span>
+                                    <button type="button" @click="removeDay(day)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors">
+                                        <i class="fa-solid fa-times text-xs"></i>
+                                    </button>
+                                </div>
+                            </template>
                         </div>
                     </div>
-                    @error('working_hours')
-                    <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @enderror
                 </div>
+                @error('working_hours')
+                <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                    <span>{{ $message }}</span>
+                </p>
+                @enderror
             </div>
         </div>
     </div>
 
     <!-- Кнопки действий -->
-    <div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
         <a href="{{ route('settings.masters') }}" 
-           class="px-4 py-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-            Отмена
+           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            <span>Отмена</span>
         </a>
         <button type="submit"
-            class="px-4 py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Сохранить
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm">
+            <i class="fa-solid fa-check text-xs"></i>
+            <span>Сохранить</span>
         </button>
     </div>
 </form>
@@ -279,15 +384,10 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Обработка телефона
         setupPhoneInput();
-        // Обработка круглосуточного режима
         setupWorkingHours();
-        // Обработка выходных дней
-        setupDaysOff();
     });
 
-    // Обработка телефона
     function setupPhoneInput() {
         const phoneInput = document.getElementById('phone');
         if (!phoneInput) return;
@@ -354,7 +454,7 @@
         function showPhoneError(message) {
             const errorElement = document.getElementById('phoneError');
             if (errorElement && phoneInput) {
-                errorElement.textContent = message;
+                errorElement.querySelector('span').textContent = message;
                 errorElement.classList.remove('hidden');
                 phoneInput.classList.add('border-rose-500');
             }
@@ -424,7 +524,6 @@
         });
     }
 
-    // Обработка круглосуточного режима работы
     function setupWorkingHours() {
         const checkbox24 = document.getElementById('workingHours24');
         const fieldsContainer = document.getElementById('workingHoursFields');
@@ -454,109 +553,5 @@
         checkbox24.addEventListener('change', toggleFields);
         toggleFields();
     }
-
-    // Обработка выходных дней
-    function setupDaysOff() {
-        const toggleButton = document.getElementById('daysOffToggle');
-        const dropdown = document.getElementById('daysOffDropdown');
-        const icon = document.getElementById('daysOffIcon');
-        const checkboxes = document.querySelectorAll('.days-off-checkbox');
-        const tagsContainer = document.getElementById('daysOffTags');
-        const hiddenInputsContainer = document.getElementById('daysOffHiddenInputs');
-
-        if (!toggleButton || !dropdown || !icon || !tagsContainer || !hiddenInputsContainer) return;
-
-        const daysMap = {
-            'monday': 'Понедельник',
-            'tuesday': 'Вторник',
-            'wednesday': 'Среда',
-            'thursday': 'Четверг',
-            'friday': 'Пятница',
-            'saturday': 'Суббота',
-            'sunday': 'Воскресенье'
-        };
-
-        let isExpanded = false;
-        const selectedDays = new Set();
-
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                selectedDays.add(checkbox.dataset.day);
-            }
-        });
-        updateTags();
-        updateHiddenInputs();
-
-        toggleButton.addEventListener('click', function() {
-            isExpanded = !isExpanded;
-            if (isExpanded) {
-                dropdown.classList.remove('hidden');
-                icon.classList.remove('fa-plus');
-                icon.classList.add('fa-chevron-up');
-            } else {
-                dropdown.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-plus');
-            }
-        });
-
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const day = this.dataset.day;
-                if (this.checked) {
-                    selectedDays.add(day);
-                } else {
-                    selectedDays.delete(day);
-                }
-                updateTags();
-                updateHiddenInputs();
-            });
-        });
-
-        function updateTags() {
-            tagsContainer.innerHTML = '';
-            if (selectedDays.size === 0) {
-                tagsContainer.classList.add('hidden');
-                return;
-            }
-            tagsContainer.classList.remove('hidden');
-            
-            selectedDays.forEach(day => {
-                const tag = document.createElement('div');
-                tag.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-md text-xs font-medium';
-                tag.innerHTML = `
-                    <span>${daysMap[day]}</span>
-                    <button type="button" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors" data-day="${day}">
-                        <i class="fa-solid fa-times text-xs"></i>
-                    </button>
-                `;
-                tagsContainer.appendChild(tag);
-                
-                const removeButton = tag.querySelector('button');
-                removeButton.addEventListener('click', function() {
-                    const dayToRemove = this.dataset.day;
-                    selectedDays.delete(dayToRemove);
-                    const checkbox = document.querySelector(`.days-off-checkbox[data-day="${dayToRemove}"]`);
-                    if (checkbox) {
-                        checkbox.checked = false;
-                    }
-                    updateTags();
-                    updateHiddenInputs();
-                });
-            });
-        }
-
-        function updateHiddenInputs() {
-            hiddenInputsContainer.innerHTML = '';
-            selectedDays.forEach(day => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'working_hours[days_off][]';
-                input.value = day;
-                hiddenInputsContainer.appendChild(input);
-            });
-        }
-    }
 </script>
 @endpush
-

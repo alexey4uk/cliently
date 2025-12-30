@@ -49,11 +49,11 @@
                 </div>
                 
                 <div>
-                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <span>Название бизнеса*</span>
                     </label>
                     <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                         autofocus>
                     <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
                         Название будет отображаться клиентам
@@ -64,18 +64,18 @@
                 </div>
 
                 <div>
-                    <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <span>Ссылка на запись*</span>
                     </label>
                     <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
                         <!-- Префикс -->
-                        <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-base md:text-sm font-mono select-none">
+                        <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-sm font-mono select-none">
                             /
                         </span>
                         <!-- Поле ввода -->
                         <div class="flex-1 relative">
                             <input type="text" id="slug" name="slug" required value="{{ old('slug') }}"
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
+                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
                             
                             <!-- Индикаторы проверки -->
                             <div id="slugChecking" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2">
@@ -119,22 +119,22 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <span>Имя*</span>
                         </label>
                         <input type="text" id="first_name" name="first_name" required value="{{ old('first_name') }}"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                         @error('first_name')
                             <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
                     </div>
                     
                     <div>
-                        <label for="last_name" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label for="last_name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <span>Фамилия*</span>
                         </label>
                         <input type="text" id="last_name" name="last_name" required value="{{ old('last_name') }}"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                         @error('last_name')
                             <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
@@ -154,11 +154,11 @@
                 </div>
                 
                 <div>
-                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <span>Телефон*</span>
                     </label>
                     <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                         placeholder="+375 (29) 123-45-67">
                     <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
                         Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
@@ -182,13 +182,13 @@
                 </div>
                 
                 <div>
-                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-base md:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         <span>Описание</span>
                         <span class="text-xs text-slate-400 dark:text-slate-500">(необязательно)</span>
                     </label>
                     <div class="relative">
                         <textarea id="description" name="description" rows="3" maxlength="500"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
                             placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
                         <div class="absolute bottom-2 right-2 flex items-center gap-1">
                             <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
@@ -204,7 +204,7 @@
         <!-- Кнопки действий -->
         <div class="flex items-center justify-end pt-6 border-t border-slate-200 dark:border-slate-800">
             <button type="submit" id="submitButton"
-                class="px-3 md:px-4 py-1.5 md:py-2 text-base md:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="px-3 md:px-4 py-1.5 md:py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 Продолжить <i class="fa-solid fa-arrow-right ml-1.5 md:ml-2"></i>
             </button>
         </div>
