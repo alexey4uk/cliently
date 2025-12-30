@@ -18,6 +18,7 @@
     phone: '', 
     phoneDisplay: '', 
     client: '',
+    actionsMenuOpen: false,
     openPhoneModal(phone, phoneDisplay, client) {
         this.phone = phone;
         this.phoneDisplay = phoneDisplay;
@@ -59,59 +60,86 @@
                     <span>{{ $appointment->date->format('d.m.Y') }} в {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
                 </p>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-                <!-- Быстрые действия по статусам -->
-                @if($appointment->status === 'pending')
-                    <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-colors">
-                            <i class="fa-solid fa-check-circle text-xs"></i>
-                            <span>Подтвердить</span>
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
-                          onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
-                          class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-lg shadow-sm transition-colors">
-                            <i class="fa-solid fa-times-circle text-xs"></i>
-                            <span>Отменить</span>
-                        </button>
-                    </form>
-                @elseif($appointment->status === 'confirmed')
-                    <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-sm transition-colors">
-                            <i class="fa-solid fa-check-double text-xs"></i>
-                            <span>Выполнить</span>
-                        </button>
-                    </form>
-                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
-                          onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
-                          class="inline">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit"
-                            class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800 rounded-lg shadow-sm transition-colors">
-                            <i class="fa-solid fa-times-circle text-xs"></i>
-                            <span>Отменить</span>
-                        </button>
-                    </form>
-                @endif
-
-                <!-- Редактирование доступно всегда -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
+                <!-- Кнопка редактирования (отдельно) -->
                 <a href="{{ route('appointments.edit', $appointment) }}"
-               class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                <i class="fa-solid fa-pencil text-xs"></i>
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    <i class="fa-solid fa-pencil text-xs"></i>
                     <span>Редактировать</span>
                 </a>
-        </div>
+
+                <!-- Выпадающее меню для остальных действий -->
+                <div class="relative w-full sm:w-auto" @click.away="actionsMenuOpen = false">
+                    <!-- Кнопка открытия меню -->
+                    <button @click="actionsMenuOpen = !actionsMenuOpen"
+                            type="button"
+                            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <span>Действия</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200" :class="{ 'rotate-180': actionsMenuOpen }"></i>
+                    </button>
+
+                    <!-- Выпадающее меню -->
+                    <div x-show="actionsMenuOpen"
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 sm:right-0 mt-2 w-full sm:w-56 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-hidden"
+                         style="display: none;">
+                        <div class="py-1">
+                            <!-- Действия по статусам -->
+                            @if($appointment->status === 'pending')
+                                <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" 
+                                      @submit="actionsMenuOpen = false">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">
+                                        <i class="fa-solid fa-check-circle text-xs w-5"></i>
+                                        <span>Подтвердить</span>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                                      onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
+                                      @submit="actionsMenuOpen = false">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                        <i class="fa-solid fa-times-circle text-xs w-5"></i>
+                                        <span>Отменить</span>
+                                    </button>
+                                </form>
+                            @elseif($appointment->status === 'confirmed')
+                                <form method="POST" action="{{ route('appointments.complete', $appointment) }}" 
+                                      @submit="actionsMenuOpen = false">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors">
+                                        <i class="fa-solid fa-check-double text-xs w-5"></i>
+                                        <span>Выполнить</span>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" 
+                                      onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');"
+                                      @submit="actionsMenuOpen = false">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                        <i class="fa-solid fa-times-circle text-xs w-5"></i>
+                                        <span>Отменить</span>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 
     <!-- Основная информация -->

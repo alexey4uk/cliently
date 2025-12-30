@@ -491,21 +491,156 @@
                     <label for="location_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
                             Локация
                         </label>
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        selectedLocation: null,
+                        dropdownPosition: { top: 0, left: 0, width: 0 },
+                        locations: @js($locations->map(function($location) {
+                            return [
+                                'id' => $location->id,
+                                'name' => $location->name,
+                                'full_address' => $location->full_address,
+                                'phone' => $location->phone
+                            ];
+                        })),
+                        oldLocationId: {{ old('location_id', 0) }},
+                        init() {
+                            if (this.oldLocationId) {
+                                const location = this.locations.find(l => l.id === this.oldLocationId);
+                                if (location) {
+                                    this.selectedLocation = location;
+                                }
+                            }
+                        },
+                        updatePosition() {
+                            if (!this.open) return;
+                            this.$nextTick(() => {
+                                const button = this.$el.querySelector('button');
+                                if (button) {
+                                    const rect = button.getBoundingClientRect();
+                                    this.dropdownPosition = {
+                                        top: rect.bottom + 4,
+                                        left: rect.left,
+                                        width: rect.width
+                                    };
+                                }
+                            });
+                        },
+                        get filteredLocations() {
+                            if (!this.search) {
+                                return this.locations;
+                            }
+                            const query = this.search.toLowerCase();
+                            return this.locations.filter(location => 
+                                location.name.toLowerCase().includes(query) ||
+                                (location.full_address && location.full_address.toLowerCase().includes(query)) ||
+                                (location.phone && location.phone.includes(query))
+                            );
+                        },
+                        selectLocation(location) {
+                            this.selectedLocation = location;
+                            this.search = '';
+                            this.open = false;
+                            // Диспатчим событие изменения для скрипта загрузки слотов
+                            const hiddenInput = document.getElementById('location_id');
+                            if (hiddenInput) {
+                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        },
+                        clearSelection() {
+                            this.selectedLocation = null;
+                            this.search = '';
+                            // Диспатчим событие изменения для скрипта загрузки слотов
+                            const hiddenInput = document.getElementById('location_id');
+                            if (hiddenInput) {
+                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        },
+                        toggleOpen() {
+                            this.open = !this.open;
+                            if (this.open) {
+                                setTimeout(() => this.updatePosition(), 10);
+                            }
+                        }
+                    }" 
+                    x-init="$watch('open', () => updatePosition())"
+                    @resize.window="updatePosition()"
+                    @scroll.window="updatePosition()"
+                    class="relative" 
+                    @click.away="open = false">
+                        <!-- Скрытый input для формы -->
+                        <input type="hidden" id="location_id" name="location_id" :value="selectedLocation ? selectedLocation.id : ''">
+                        
+                        <!-- Поле выбора локации -->
                         <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-location-dot text-slate-400 text-sm"></i>
+                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none z-10">
+                                <i class="fa-solid fa-location-dot text-slate-400 text-sm"></i>
+                            </div>
+                            <button type="button"
+                                    @click="toggleOpen()"
+                                    class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                <span x-show="selectedLocation" x-cloak class="text-slate-900 dark:text-white">
+                                    <span x-text="selectedLocation ? selectedLocation.name : ''"></span>
+                                    <span x-show="selectedLocation && selectedLocation.full_address" x-cloak class="text-slate-500 dark:text-slate-400 text-xs ml-1">
+                                        (<span x-text="selectedLocation ? (selectedLocation.full_address || '') : ''"></span>)
+                                    </span>
+                                </span>
+                                <span x-show="!selectedLocation" x-cloak class="text-slate-400 dark:text-slate-500">
+                                    Не выбрана
+                                </span>
+                            </button>
+                            <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                            </div>
                         </div>
-                            <select id="location_id" name="location_id"
-                                class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors appearance-none cursor-pointer">
-                                <option value="">Не выбрана</option>
-                                @foreach($locations as $location)
-                                    <option value="{{ $location->id }}" {{ old('location_id') == $location->id ? 'selected' : '' }}>
-                                        {{ $location->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                        
+                        <!-- Выпадающий список -->
+                        <div x-show="open"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
+                             :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
+                             style="display: none;">
+                            <!-- Поиск -->
+                            <div class="p-2 border-b border-slate-200 dark:border-slate-800">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-search text-slate-400 text-xs"></i>
+                                    </div>
+                                    <input type="text"
+                                           x-model="search"
+                                           @click.stop
+                                           placeholder="Поиск локации..."
+                                           class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                                </div>
+                            </div>
+                            
+                            <!-- Список локаций -->
+                            <div class="max-h-80 overflow-y-auto">
+                                <template x-if="filteredLocations.length === 0">
+                                    <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                                        Локации не найдены
+                                    </div>
+                                </template>
+                                <template x-for="location in filteredLocations" :key="location.id">
+                                    <button type="button"
+                                            @click="selectLocation(location)"
+                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 first:rounded-t-lg last:rounded-b-lg"
+                                            :class="selectedLocation && selectedLocation.id === location.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="location.name"></div>
+                                            <div x-show="location.full_address" class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="location.full_address"></div>
+                                        </div>
+                                        <i x-show="selectedLocation && selectedLocation.id === location.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
+                                    </button>
+                                </template>
+                            </div>
                             </div>
                         </div>
                         @error('location_id')
@@ -515,6 +650,7 @@
                         </p>
                         @enderror
                     </div>
+                </div>
                 </div>
             </div>
         </div>
