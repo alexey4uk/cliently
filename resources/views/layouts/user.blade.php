@@ -26,7 +26,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Inter (основной) и Poppins (для логотипа) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -95,7 +98,7 @@
                             </button>
                             
                             <!-- Логотип (только мобильные) -->
-                            <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
+                            <a href="{{ route('dashboard') }}" class="lg:hidden flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity">
                                 <x-logo size="sm" />
                             </a>
                             
@@ -113,7 +116,7 @@
                         </div>
 
                         <!-- Правая часть: Действия -->
-                        <div class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                             <!-- Кнопка "Новая запись" (только на определенных страницах) -->
                             @hasSection('show-new-button')
                                 <button
@@ -151,7 +154,7 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
+                                    class="fixed z-100 w-[calc(100vw-2rem)] sm:w-80 max-w-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl"
                                     style="display: none;"
                                     x-init="
                                         $watch('open', value => {
@@ -200,7 +203,7 @@
                                         <!-- Пример уведомления -->
                                         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
                                             <div class="flex items-start gap-3">
-                                                <div class="flex-shrink-0 mt-0.5">
+                                                <div class="shrink-0 mt-0.5">
                                                     <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
                                                         <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xs"></i>
                                                     </div>
@@ -216,7 +219,7 @@
                                                         2 часа назад
                                                     </p>
                                                 </div>
-                                                <div class="flex-shrink-0">
+                                                <div class="shrink-0">
                                                     <span class="h-2 w-2 bg-rose-500 rounded-full block"></span>
                                                 </div>
                                             </div>
@@ -225,7 +228,7 @@
                                         <!-- Пример уведомления -->
                                         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
                                             <div class="flex items-start gap-3">
-                                                <div class="flex-shrink-0 mt-0.5">
+                                                <div class="shrink-0 mt-0.5">
                                                     <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
                                                         <i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400 text-xs"></i>
                                                     </div>
@@ -247,7 +250,7 @@
                                         <!-- Пример уведомления -->
                                         <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
                                             <div class="flex items-start gap-3">
-                                                <div class="flex-shrink-0 mt-0.5">
+                                                <div class="shrink-0 mt-0.5">
                                                     <div class="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
                                                         <i class="fa-solid fa-exclamation text-amber-600 dark:text-amber-400 text-xs"></i>
                                                     </div>
@@ -289,7 +292,7 @@
                                                  alt="{{ Auth::user()->name }}" 
                                                  class="w-full h-full object-cover">
                                         @else
-                                            <span class="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
+                                            <span class="h-full w-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
                                                 {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
                                             </span>
                                         @endif
@@ -312,7 +315,7 @@
                                     x-transition:leave="transition ease-in duration-75"
                                     x-transition:leave-start="transform opacity-100 scale-100"
                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                    class="fixed z-[100] w-[calc(100vw-2rem)] sm:w-56 max-w-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
+                                    class="fixed z-100 w-[calc(100vw-2rem)] sm:w-56 max-w-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
                                     style="display: none;"
                                     x-init="
                                         $watch('open', value => {
@@ -350,7 +353,7 @@
                                     @auth
                                         <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
                                             <div class="flex items-center gap-3">
-                                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden flex-shrink-0">
+                                                <div class="h-10 w-10 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden shrink-0">
                                                     @if(Auth::user()->avatar)
                                                         <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
                                                              alt="{{ Auth::user()->name }}" 
