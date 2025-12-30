@@ -19,9 +19,6 @@
          phone: '', 
          phoneDisplay: '', 
          client: '',
-         showDayModal: false,
-         selectedDate: '',
-         dayAppointments: [],
          openPhoneModal(phone, phoneDisplay, client) {
              this.phone = phone;
              this.phoneDisplay = phoneDisplay;
@@ -30,14 +27,6 @@
          },
          closePhoneModal() {
              this.showPhoneModal = false;
-         },
-         openDayModal(date, appointments) {
-             this.selectedDate = date;
-             this.dayAppointments = appointments;
-             this.showDayModal = true;
-         },
-         closeDayModal() {
-             this.showDayModal = false;
          }
      }">
     <!-- Заголовок страницы -->
@@ -170,35 +159,59 @@
                                             <button @click.stop="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
                                                     class="h-5 w-5 md:h-6 md:w-6 rounded-full bg-indigo-600 text-white text-[10px] md:text-xs flex items-center justify-center font-semibold hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0">
                                                 {{ $dayAppointments->count() }}
-                                            </button>
+                                            </a>
                                         @endif
                                     </div>
-                                    <!-- Десктопная версия: показываем записи -->
-                                    <div class="hidden md:block space-y-1">
-                                        @foreach($dayAppointments->take(1) as $appointment)
+                                    
+                                    <!-- Записи -->
+                                    <div class="flex-1 space-y-1.5 overflow-hidden">
+                                        @foreach($dayAppointments->take(2) as $appointment)
                                             <a href="{{ route('appointments.show', $appointment) }}"
                                                @click.stop
                                                class="block px-1.5 py-0.5 rounded text-xs truncate {{ $appointment->status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300' : ($appointment->status === 'cancelled' ? 'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' : ($appointment->status === 'confirmed' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300' : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300')) }} hover:opacity-80 transition-opacity"
                                                title="{{ $appointment->client->full_name }} - {{ $appointment->service->name }}">
-                                                <span class="font-medium">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
-                                                <span class="ml-1">{{ $appointment->client->first_name }}</span>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="font-bold">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
+                                                    <span class="truncate">{{ $appointment->client->first_name }}</span>
+                                                </div>
                                             </a>
                                         @endforeach
-                                        @if($dayAppointments->count() > 1)
-                                            <button @click.stop="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                                    class="text-xs text-slate-500 dark:text-slate-400 px-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
-                                                +{{ $dayAppointments->count() - 1 }} еще
-                                            </button>
+                                        @if($dayAppointments->count() > 2)
+                                            <a href="{{ route('appointments.index', $tableParams) }}"
+                                               @click.stop
+                                               class="block text-xs text-indigo-600 dark:text-indigo-400 font-semibold px-2 py-1 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                                                +{{ $dayAppointments->count() - 2 }} еще
+                                            </a>
                                         @endif
                                     </div>
                                 </div>
-                            </td>
-                            @if($date->dayOfWeek === Carbon\Carbon::SUNDAY)
-                                </tr>
-                            @endif
-                        @endfor
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
+            
+            <!-- Легенда статусов -->
+            <div class="hidden md:block px-3 md:px-6 pb-3 md:pb-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                <div class="flex flex-wrap items-center gap-2 md:gap-6 pt-3 md:pt-4">
+                    <span class="text-[10px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide w-full sm:w-auto mb-1 sm:mb-0">Статусы:</span>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-amber-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Ожидает</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-blue-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Подтверждена</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-emerald-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Завершена</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 md:gap-2">
+                        <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded bg-rose-500"></div>
+                        <span class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400">Отменена</span>
+                    </div>
+                </div>
             </div>
         </div>
     @else
@@ -863,146 +876,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для записей дня -->
-    <div x-show="showDayModal && !showPhoneModal" 
-         @click.away="if (!showPhoneModal) closeDayModal()"
-         @keydown.escape.window="if (!showPhoneModal) closeDayModal()"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-         style="display: none;">
-        <div @click.stop
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="transform opacity-0 scale-95"
-            x-transition:enter-end="transform opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="transform opacity-100 scale-100"
-            x-transition:leave-end="transform opacity-0 scale-95"
-            class="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md md:max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <!-- Заголовок -->
-            <div class="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-5 pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
-                <div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white" x-text="selectedDate"></h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" x-text="`${dayAppointments.length} ${dayAppointments.length === 1 ? 'запись' : dayAppointments.length < 5 ? 'записи' : 'записей'}`"></p>
-                </div>
-                <button @click="closeDayModal()" 
-                    class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-
-            <!-- Контент: список записей -->
-            <div class="flex-1 overflow-y-auto px-4 md:px-6 py-4">
-                <template x-if="dayAppointments.length === 0">
-                    <div class="text-center py-8">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Нет записей на этот день</p>
-                    </div>
-                </template>
-                <div class="space-y-3" x-show="dayAppointments.length > 0">
-                    <template x-for="appointment in dayAppointments" :key="appointment.id">
-                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 md:p-4">
-                            <div class="flex items-start justify-between gap-3 mb-2">
-                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                    <span class="inline-flex items-center justify-center w-12 h-7 rounded bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-medium flex-shrink-0" x-text="appointment.time.length >= 5 ? appointment.time.substring(0, 5) : appointment.time"></span>
-                                    <div class="min-w-0 flex-1">
-                                        <a :href="`{{ route('appointments.index') }}/${appointment.id}`" class="block">
-                                            <h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate" x-text="appointment.client.full_name"></h4>
-                                        </a>
-                                        <p class="text-xs text-slate-600 dark:text-slate-400 truncate mt-0.5" x-text="appointment.service.name"></p>
-                                    </div>
-                                </div>
-                                <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium flex-shrink-0"
-                                      :class="{
-                                          'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300': appointment.status === 'pending',
-                                          'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300': appointment.status === 'confirmed',
-                                          'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300': appointment.status === 'completed',
-                                          'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300': appointment.status === 'cancelled'
-                                      }"
-                                      x-text="appointment.status === 'pending' ? 'Ожидает' : appointment.status === 'confirmed' ? 'Подтверждена' : appointment.status === 'completed' ? 'Завершена' : 'Отменена'"></span>
-                            </div>
-                            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
-                                <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                    <template x-if="appointment.master">
-                                        <span x-text="`${appointment.master.first_name} ${appointment.master.last_name}`"></span>
-                                    </template>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button @click.stop="openPhoneModal(appointment.client.phone, appointment.client.phone, appointment.client.full_name)"
-                                            class="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors flex items-center justify-center">
-                                        <i class="fa-solid fa-phone text-xs"></i>
-                                    </button>
-                                    <div x-data="{ open: false }" class="relative">
-                                        <button @click.stop="open = !open"
-                                            class="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center">
-                                            <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
-                                        </button>
-                                        <div x-show="open" 
-                                            @click.away="open = false" 
-                                            x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="transform opacity-0 scale-95"
-                                            x-transition:enter-end="transform opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="transform opacity-100 scale-100"
-                                            x-transition:leave-end="transform opacity-0 scale-95"
-                                            class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-[100]"
-                                            style="display: none;">
-                                            <a :href="`{{ route('appointments.index') }}/${appointment.id}`" class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                                <i class="fa-regular fa-eye w-4 inline-block"></i> Просмотр
-                                            </a>
-                                            <template x-if="appointment.status === 'pending'">
-                                                <div>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/confirm`" class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/20">
-                                                            <i class="fa-solid fa-check-circle w-4 inline-block"></i> Подтвердить
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
-                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
-                                                          class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </template>
-                                            <template x-if="appointment.status === 'confirmed'">
-                                                <div>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/complete`" class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20">
-                                                            <i class="fa-solid fa-check w-4 inline-block"></i> Выполнить
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" :action="`{{ route('appointments.index') }}/${appointment.id}/cancel`" 
-                                                          onsubmit="return confirm('Вы уверены, что хотите отменить запись?');"
-                                                          class="w-full">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" @click="open = false; closeDayModal();" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20">
-                                                            <i class="fa-solid fa-xmark w-4 inline-block"></i> Отменить
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 @endsection
