@@ -29,6 +29,7 @@
         <input type="hidden" name="service_id" value="{{ $service->id }}">
         <input type="hidden" name="master_id" value="{{ $master->id }}">
         <input type="hidden" name="date" value="{{ $date }}" id="selected-date-input">
+        <input type="hidden" name="time" value="" id="selected-time-input">
 
         <!-- Выбор даты -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4">
@@ -209,11 +210,10 @@
                 <!-- Фамилия -->
                     <div>
                     <label for="last_name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Фамилия *
-                        </label>
+                        Фамилия
+                    </label>
                     <input type="text" id="last_name" name="last_name"
-                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                           required>
+                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
             </div>
 
                 <!-- Телефон -->
@@ -225,6 +225,16 @@
                            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                            placeholder="+375 (__) ___-__-__"
                            required>
+</div>
+
+                <!-- Email -->
+                <div class="sm:col-span-2">
+                    <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Email
+                    </label>
+                    <input type="email" id="email" name="email"
+                           class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                           placeholder="example@email.com">
 </div>
 
                 <!-- Комментарий -->
@@ -252,7 +262,7 @@
 
             <!-- Кнопка записи -->
             <div class="mt-4 text-center">
-                <button type="submit"
+                <button type="submit" id="submit-btn"
                         class="inline-flex items-center gap-2 px-6 py-3 text-sm sm:text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl">
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>Записаться</span>
@@ -294,6 +304,12 @@
 
             // Сохраняем выбранное время
             selectedTime = this.dataset.time;
+            
+            // Обновляем скрытое поле формы
+            const selectedTimeInput = document.getElementById('selected-time-input');
+            if (selectedTimeInput) {
+                selectedTimeInput.value = selectedTime;
+            }
 
             // Обновляем отображение
             const dateStr = currentDate.toLocaleDateString('ru-RU', {
@@ -398,16 +414,22 @@
                         String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
                         String(currentDate.getDate()).padStart(2, '0');
 
-                    // Обновляем отображение выбранной даты
-                    const dateDisplay = document.querySelector('#selected-date-display');
-                    if (dateDisplay && selectedTime) {
-                        const dateStr = currentDate.toLocaleDateString('ru-RU', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: currentDate.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-                        });
-                        dateDisplay.textContent = `${selectedTime}, ${dateStr}`;
+                    // Сбрасываем выбранное время при смене даты
+                    selectedTime = null;
+                    const timeInput = document.getElementById('selected-time-input');
+                    if (timeInput) {
+                        timeInput.value = '';
                     }
+                    
+                    // Скрываем форму записи
+                    if (appointmentDetails) {
+                        appointmentDetails.classList.add('hidden');
+                    }
+                    
+                    // Сбрасываем выделение с кнопок времени
+                    timeSlotButtons.forEach(btn => {
+                        btn.classList.remove('bg-indigo-500', 'bg-indigo-600', 'bg-amber-500', 'bg-orange-500', 'text-white', 'border-indigo-500', 'border-indigo-600', 'border-amber-500', 'border-orange-500');
+                    });
 
                     // Перезагружаем страницу с новой датой
                     window.location.href = `?date=${selectedDateInput.value}`;
@@ -416,6 +438,21 @@
 
             calendarGrid.appendChild(dayEl);
         }
+    }
+
+    // Валидация формы перед отправкой
+    const appointmentForm = document.getElementById('appointment-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (appointmentForm && submitBtn) {
+        appointmentForm.addEventListener('submit', function(e) {
+            const timeInput = document.getElementById('selected-time-input');
+            if (!timeInput || !timeInput.value) {
+                e.preventDefault();
+                alert('Пожалуйста, выберите время для записи');
+                return false;
+            }
+        });
     }
 
     // Обработчики кнопок календаря

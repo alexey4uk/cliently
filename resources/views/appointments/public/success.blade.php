@@ -3,89 +3,107 @@
 @section('title', 'Запись успешно создана')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 text-center">
-        <!-- Иконка успеха -->
-        <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-            <i class="fa-solid fa-check text-2xl text-green-600 dark:text-green-400"></i>
+<div class="max-w-3xl lg:max-w-3xl mx-auto">
+    <!-- Заголовок -->
+    <div class="text-center mb-5 sm:mb-6 lg:mb-5">
+        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-16 lg:h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 mb-3 sm:mb-4 lg:mb-3">
+            <i class="fa-solid fa-check-circle text-2xl sm:text-3xl lg:text-2xl text-emerald-600 dark:text-emerald-400"></i>
         </div>
         
-        <h1 class="text-2xl font-semibold text-slate-900 dark:text-white mb-3">
+        <h1 class="text-2xl sm:text-3xl lg:text-2xl font-bold text-slate-900 dark:text-white mb-2 lg:mb-1.5">
             Запись успешно создана!
         </h1>
         
-        <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400">
             Мы свяжемся с вами в ближайшее время для подтверждения записи.
         </p>
-        
-        @if(session('success'))
-        <div class="mb-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <p class="text-sm text-green-800 dark:text-green-200">
-                {{ session('success') }}
-            </p>
-        </div>
-        @endif
-        
-        <!-- Детали записи -->
-        @if(isset($appointment))
-        <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 mb-6 text-left">
-            <h3 class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+    </div>
+    
+    @if(session('success'))
+    <div class="mb-4 sm:mb-5 lg:mb-4 p-3 sm:p-4 lg:p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+        <p class="text-sm sm:text-base lg:text-sm text-emerald-800 dark:text-emerald-200 text-center">
+            {{ session('success') }}
+        </p>
+    </div>
+    @endif
+    
+    <!-- Детали записи -->
+    @if(isset($appointment))
+    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">
+        <div class="flex items-center gap-3 mb-4 lg:mb-3">
+            <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-sm lg:text-xs"></i>
+            </div>
+            <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
                 Детали записи
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                @if(isset($appointment->service))
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Услуга</span>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
-                </div>
-                @endif
-                @if(isset($appointment->master))
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Мастер</span>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</p>
-                </div>
-                @endif
-                @if(isset($appointment->date))
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Дата</span>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->date)->locale('ru')->isoFormat('D MMMM YYYY') }}</p>
-                </div>
-                @endif
-                @if(isset($appointment->time))
-                <div>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Время</span>
-                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->time }}</p>
-                </div>
-                @endif
-            </div>
+            </h2>
         </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-3">
+            @if(isset($appointment->service))
+            <div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Услуга</span>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+            </div>
+            @endif
+            
+            @if(isset($appointment->master))
+            <div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Мастер</span>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</p>
+            </div>
+            @endif
+            
+            @if(isset($appointment->location))
+            <div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Локация</span>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->location->name }}</p>
+            </div>
+            @endif
+            
+            @if(isset($appointment->date) && isset($appointment->time))
+            <div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Дата и время</span>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">
+                    {{ \Carbon\Carbon::parse($appointment->date)->locale('ru')->isoFormat('D MMMM') }}, {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
+                </p>
+            </div>
+            @elseif(isset($appointment->date))
+            <div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Дата</span>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->date)->locale('ru')->isoFormat('D MMMM') }}</p>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+    
+    <!-- Кнопки действий -->
+    <div class="space-y-2.5 sm:space-y-3 lg:space-y-2.5">
+        @if($token && $appointment)
+        <a href="{{ route('public.appointment.view', ['token' => $token]) }}"
+           class="block w-full px-6 py-3 text-sm sm:text-base lg:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl text-center">
+            <i class="fa-solid fa-eye mr-2"></i>
+            Просмотреть запись
+        </a>
         @endif
         
-        <!-- Кнопки действий -->
-        <div class="space-y-3">
-            @if($token && $appointment)
-            <a href="{{ route('public.appointment.view', ['token' => $token]) }}"
-               class="block w-full px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                Просмотреть запись
+        <a href="{{ route('public.appointments.show', $business->slug) }}"
+           class="block w-full px-6 py-3 text-sm sm:text-base lg:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl transition-colors duration-200 text-center">
+            <i class="fa-solid fa-plus mr-2"></i>
+            Создать еще одну запись
+        </a>
+        
+        @if($business->phone)
+        <div class="pt-4 lg:pt-3 border-t border-slate-200 dark:border-slate-700 mt-4 lg:mt-3 text-center">
+            <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400 mb-2">По вопросам обращайтесь:</p>
+            <a href="tel:{{ $business->phone }}" 
+               class="inline-flex items-center gap-2 text-sm sm:text-base lg:text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
+                <i class="fa-solid fa-phone text-xs"></i>
+                <span>{{ $business->phone }}</span>
             </a>
-            @endif
-            
-            <a href="{{ route('public.appointments.show', $business->slug) }}"
-               class="block w-full px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-lg transition-colors">
-                Создать еще одну запись
-            </a>
-            
-            @if($business->phone)
-            <div class="pt-4 border-t border-slate-200 dark:border-slate-700 mt-4">
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">По вопросам обращайтесь:</p>
-                <a href="tel:{{ $business->phone }}" 
-                   class="inline-flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                    <i class="fa-solid fa-phone text-xs"></i>
-                    <span>{{ $business->phone }}</span>
-                </a>
-            </div>
-            @endif
         </div>
+        @endif
     </div>
 </div>
 @endsection
