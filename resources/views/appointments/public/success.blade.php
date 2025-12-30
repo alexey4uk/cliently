@@ -6,10 +6,6 @@
 <div class="max-w-3xl lg:max-w-3xl mx-auto">
     <!-- Заголовок -->
     <div class="text-center mb-5 sm:mb-6 lg:mb-5">
-        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-16 lg:h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 mb-3 sm:mb-4 lg:mb-3">
-            <i class="fa-solid fa-check-circle text-2xl sm:text-3xl lg:text-2xl text-emerald-600 dark:text-emerald-400"></i>
-        </div>
-        
         <h1 class="text-2xl sm:text-3xl lg:text-2xl font-bold text-slate-900 dark:text-white mb-2 lg:mb-1.5">
             Запись успешно создана!
         </h1>
@@ -93,17 +89,6 @@
             <i class="fa-solid fa-plus mr-2"></i>
             Создать еще одну запись
         </a>
-        
-        @if($business->phone)
-        <div class="pt-4 lg:pt-3 border-t border-slate-200 dark:border-slate-700 mt-4 lg:mt-3 text-center">
-            <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400 mb-2">По вопросам обращайтесь:</p>
-            <a href="tel:{{ $business->phone }}" 
-               class="inline-flex items-center gap-2 text-sm sm:text-base lg:text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                <i class="fa-solid fa-phone text-xs"></i>
-                <span>{{ $business->phone }}</span>
-            </a>
-        </div>
-        @endif
     </div>
 </div>
 @endsection

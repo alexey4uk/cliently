@@ -121,14 +121,21 @@
             <div class="flex items-center justify-between">
                 <!-- Логотип и название -->
                 <div class="flex items-center gap-3">
-                    <x-logo size="md" />
+                    @if(isset($business->logo) && $business->logo)
+                        <!-- Логотип бизнеса (если есть) -->
+                        <a href="/" class="hover:opacity-80 transition-opacity flex-shrink-0">
+                            <img src="{{ asset('storage/' . $business->logo) }}" 
+                                 alt="{{ $business->name }}"
+                                 class="h-10 w-10 sm:h-12 sm:w-12 lg:h-10 lg:w-10 object-contain rounded-lg">
+                        </a>
+                    @endif
                     <span class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white font-sans">
                         {{ $business->name }}
                     </span>
                 </div>
 
                 <!-- Переключатель темы -->
-                <button id="theme-toggle"
+                <button id="theme-toggle" 
                         class="h-10 w-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all duration-200"
                         aria-label="Переключить тему">
                     <x-icon name="sun" size="md" class="hidden dark:block" />
@@ -156,7 +163,7 @@
                 
                 <!-- Вертикальный прогресс-бар -->
                 <div class="flex items-center gap-3 sm:gap-4 lg:gap-3 mb-6 lg:mb-4">
-                    @foreach($steps as $stepNum => $step)
+                @foreach($steps as $stepNum => $step)
                         <div class="flex-1 flex flex-col items-center">
                             <div class="w-full h-2 lg:h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-2 lg:mb-1.5 relative">
                                 @if($currentStep >= $stepNum)
@@ -177,24 +184,35 @@
                                         <i class="fa-solid fa-check"></i>
                                     @else
                                         <i class="fa-solid {{ $step['icon'] }}"></i>
-                                    @endif
-                                </div>
-                                <span class="text-xs sm:text-sm lg:text-[10px] font-medium transition-colors duration-200 hidden sm:inline
-                                    @if($currentStep >= $stepNum)
-                                        text-indigo-600 dark:text-indigo-400
-                                    @else
-                                        text-slate-500 dark:text-slate-400
-                                    @endif">
-                                    {{ $step['label'] }}
-                                </span>
-                            </div>
+                            @endif
                         </div>
-                    @endforeach
+                                <span class="text-xs sm:text-sm lg:text-[10px] font-medium transition-colors duration-200 hidden sm:inline
+                            @if($currentStep >= $stepNum)
+                                text-indigo-600 dark:text-indigo-400
+                            @else
+                                text-slate-500 dark:text-slate-400
+                            @endif">
+                                    {{ $step['label'] }}
+                        </span>
+                            </div>
+                    </div>
+                @endforeach
                 </div>
             </div>
             @endif
 
             @yield('content')
+            
+            <!-- Информация о платформе -->
+            <div class="mt-8 sm:mt-10 lg:mt-6 text-center">
+                <p class="text-xs lg:text-[10px] text-slate-400 dark:text-slate-500">
+                    Работает на 
+                    <a href="https://cliently.by" target="_blank" rel="noopener noreferrer" 
+                       class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline transition-colors font-semibold">
+                        cliently.by
+                    </a>
+                </p>
+            </div>
         </div>
     </main>
     
@@ -204,12 +222,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-6">
                 <!-- Информация о бизнесе -->
                 <div class="space-y-4 lg:space-y-3">
-                    <div class="flex items-center gap-3 lg:gap-2.5">
-                        <x-logo size="sm" />
-                        <h3 class="text-lg lg:text-base font-bold text-slate-900 dark:text-white font-sans">
-                            {{ $business->name }}
-                        </h3>
-                    </div>
+                    <h3 class="text-lg lg:text-base font-bold text-slate-900 dark:text-white font-sans">
+                        {{ $business->name }}
+                    </h3>
                     
                     @if($business->description)
                         <p class="text-sm lg:text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -232,13 +247,6 @@
                         </a>
                     @endif
                 </div>
-            </div>
-            
-            <!-- Копирайт -->
-            <div class="mt-8 lg:mt-6 pt-8 lg:pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-                <p class="text-xs lg:text-[10px] text-slate-500 dark:text-slate-400">
-                    © {{ date('Y') }} {{ $business->name }}. Все права защищены.
-                </p>
             </div>
         </div>
     </footer>

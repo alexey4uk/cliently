@@ -143,20 +143,6 @@
     </div>
     @endif
 
-    <!-- Контакты -->
-    @if($business->phone)
-    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">
-        <div class="text-center">
-            <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400 mb-2">По вопросам обращайтесь:</p>
-            <a href="tel:{{ $business->phone }}" 
-               class="inline-flex items-center gap-2 text-sm sm:text-base lg:text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                <i class="fa-solid fa-phone text-xs"></i>
-                <span>{{ $business->phone }}</span>
-            </a>
-        </div>
-    </div>
-    @endif
-
     <!-- Кнопка создания новой записи -->
     <div class="text-center">
         <a href="{{ route('public.appointments.show', $business->slug) }}"
