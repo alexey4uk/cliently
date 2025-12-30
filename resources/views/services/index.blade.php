@@ -58,9 +58,9 @@
     @if($services->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             @foreach($services as $service)
-                <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
                     <!-- Заголовок карточки -->
-                    <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex items-center gap-3 min-w-0 flex-1">
                                 <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
@@ -95,8 +95,8 @@
                     </div>
 
                     <!-- Содержимое карточки -->
-                    @if($service->description)
-                        <div class="p-4 md:p-5">
+                    <div class="p-4 md:p-5 flex-1">
+                        @if($service->description)
                             <div class="flex items-start gap-2">
                                 <i class="fa-solid fa-info-circle text-slate-400 text-xs mt-0.5 flex-shrink-0"></i>
                                 <div class="min-w-0 flex-1">
@@ -106,11 +106,11 @@
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                    @endif
+                        @endif
+                    </div>
 
                     <!-- Действия -->
-                    <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                    <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ route('services.edit', $service) }}"
                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
