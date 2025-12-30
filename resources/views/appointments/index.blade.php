@@ -65,33 +65,73 @@
 
     @if($view === 'calendar')
         <!-- Календарное представление -->
-        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
             <!-- Навигация по месяцам -->
-            <div class="flex items-center justify-between mb-6">
-                <form method="GET" action="{{ route('appointments.index') }}" class="flex items-center gap-3">
-                    <input type="hidden" name="view" value="calendar">
-                    @if(request('search'))
-                        <input type="hidden" name="search" value="{{ request('search') }}">
-                    @endif
-                    @if(request('status'))
-                        <input type="hidden" name="status" value="{{ request('status') }}">
-                    @endif
-                    <button type="submit" name="month" value="{{ $selectedDate->copy()->subMonth()->format('Y-m') }}"
-                            class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
+            <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/30 border-b border-indigo-200 dark:border-indigo-800/50 px-3 md:px-6 py-3 md:py-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <!-- Кнопка назад -->
+                        <form method="GET" action="{{ route('appointments.index') }}" class="inline">
+                            <input type="hidden" name="view" value="calendar">
+                            <input type="hidden" name="month" value="{{ $selectedDate->copy()->subMonth()->format('Y-m') }}">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <button type="submit"
+                                    class="h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm flex-shrink-0">
+                                <i class="fa-solid fa-chevron-left text-xs md:text-sm"></i>
+                            </button>
+                        </form>
+                        
+                        <!-- Поле выбора месяца -->
+                        <form method="GET" action="{{ route('appointments.index') }}" id="calendar-month-form" class="flex-1 sm:flex-initial">
+                            <input type="hidden" name="view" value="calendar">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <input type="month" name="month" value="{{ $currentMonth }}"
+                                   onchange="this.form.submit()"
+                                   class="w-full sm:w-auto px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-slate-900 dark:text-white font-semibold cursor-pointer shadow-sm hover:border-indigo-300 dark:hover:border-indigo-600">
+                        </form>
+                        
+                        <!-- Кнопка вперед -->
+                        <form method="GET" action="{{ route('appointments.index') }}" class="inline">
+                            <input type="hidden" name="view" value="calendar">
+                            <input type="hidden" name="month" value="{{ $selectedDate->copy()->addMonth()->format('Y-m') }}">
+                            @if(request('search'))
+                                <input type="hidden" name="search" value="{{ request('search') }}">
+                            @endif
+                            @if(request('status'))
+                                <input type="hidden" name="status" value="{{ request('status') }}">
+                            @endif
+                            <button type="submit"
+                                    class="h-9 w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm flex-shrink-0">
+                                <i class="fa-solid fa-chevron-right text-xs md:text-sm"></i>
+                            </button>
+                        </form>
+                    </div>
+                    @php
+                        $todayParams = ['view' => 'calendar', 'month' => \Carbon\Carbon::now()->format('Y-m')];
+                        if (request()->has('search') && request()->search) {
+                            $todayParams['search'] = request()->search;
+                        }
+                        if (request()->has('status') && request()->status) {
+                            $todayParams['status'] = request()->status;
+                        }
+                    @endphp
+                    <button onclick="window.location.href = '{{ route('appointments.index', $todayParams) }}'"
+                            class="w-full sm:w-auto px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 transition-all shadow-sm">
+                        <i class="fa-solid fa-calendar-day mr-1.5 md:mr-2"></i>
+                        <span class="hidden sm:inline">Сегодня</span>
+                        <span class="sm:hidden">Сегодня</span>
                     </button>
-                    <input type="month" name="month" value="{{ $currentMonth }}"
-                           onchange="this.form.submit()"
-                           class="px-3 md:px-4 py-2 text-xs md:text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-slate-900 dark:text-white font-medium">
-                    <button type="submit" name="month" value="{{ $selectedDate->copy()->addMonth()->format('Y-m') }}"
-                            class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
-                </form>
-                <button onclick="window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'calendar', 'month' => \Carbon\Carbon::now()->format('Y-m')])) }}'"
-                        class="px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                    Сегодня
-                </button>
+                </div>
             </div>
 
             <!-- Календарь -->
@@ -103,61 +143,69 @@
                 $daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
             @endphp
 
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <!-- Дни недели -->
-                    <thead>
-                        <tr>
-                            @foreach($daysOfWeek as $day)
-                                <th class="p-1.5 md:p-2 text-xs md:text-xs font-semibold text-slate-500 dark:text-slate-400 text-center">
-                                    {{ $day }}
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for($date = $startOfCalendar->copy(); $date->lte($endOfCalendar); $date->addDay())
-                            @if($date->dayOfWeek === Carbon\Carbon::MONDAY)
-                                <tr>
-                            @endif
-                            @php
-                                $dateKey = $date->format('Y-m-d');
-                                $dayAppointments = $appointmentsByDate->get($dateKey, collect());
-                                $isCurrentMonth = $date->month === $selectedDate->month;
-                                $isToday = $date->isToday();
-                            @endphp
-                            @php
-                                $appointmentsData = $dayAppointments->map(function($apt) {
-                                    return [
-                                        'id' => $apt->id,
-                                        'time' => $apt->time,
-                                        'client' => [
-                                            'full_name' => $apt->client->full_name,
-                                            'phone' => $apt->client->phone
-                                        ],
-                                        'service' => [
-                                            'name' => $apt->service->name
-                                        ],
-                                        'status' => $apt->status,
-                                        'master' => $apt->master ? [
-                                            'first_name' => $apt->master->first_name,
-                                            'last_name' => $apt->master->last_name
-                                        ] : null
-                                    ];
-                                })->values()->all();
-                            @endphp
-                            <td class="p-0.5 md:p-1 border border-slate-200 dark:border-slate-700 {{ $isCurrentMonth ? '' : 'bg-slate-50 dark:bg-slate-800/50' }} {{ $isToday ? 'bg-indigo-50 dark:bg-indigo-500/10' : '' }} {{ $dayAppointments->count() > 0 ? 'cursor-pointer hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-colors' : '' }}"
-                                @if($dayAppointments->count() > 0)
-                                @click="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                @endif>
-                                <div class="min-h-[50px] md:min-h-[100px]">
-                                    <div class="flex items-center justify-between mb-1 px-1">
-                                        <span class="text-xs md:text-sm font-medium {{ $isCurrentMonth ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500' }} {{ $isToday ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : '' }}">
+            <div class="p-3 md:p-6">
+                <!-- Дни недели -->
+                <div class="grid grid-cols-7 gap-1.5 md:gap-2 mb-2 md:mb-2">
+                    @foreach($daysOfWeek as $day)
+                        <div class="py-2 md:py-2 text-center">
+                            <span class="text-[11px] md:text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                                {{ $day }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+
+                <!-- Календарная сетка -->
+                <div class="grid grid-cols-7 gap-1.5 md:gap-2">
+                    @for($date = $startOfCalendar->copy(); $date->lte($endOfCalendar); $date->addDay())
+                        @php
+                            $dateKey = $date->format('Y-m-d');
+                            $dayAppointments = $appointmentsByDate->get($dateKey, collect());
+                            $isCurrentMonth = $date->month === $selectedDate->month;
+                            $isToday = $date->isToday();
+                            $tableParams = [
+                                'view' => 'table',
+                                'date' => $date->format('Y-m-d')
+                            ];
+                            if (request()->has('search') && request()->search) {
+                                $tableParams['search'] = request()->search;
+                            }
+                            if (request()->has('status') && request()->status) {
+                                $tableParams['status'] = request()->status;
+                            }
+                        @endphp
+                        <div class="aspect-square md:min-h-[120px] rounded-lg md:rounded-lg transition-all duration-200
+                            {{ $isCurrentMonth ? 'border-2 border-slate-200 dark:border-slate-700' : 'border-2 border-slate-100 dark:border-slate-800/50' }}
+                            {{ $isToday ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-700' : ($isCurrentMonth ? 'bg-white dark:bg-slate-800/50' : 'bg-slate-50/50 dark:bg-slate-900/30') }}
+                            {{ $dayAppointments->count() > 0 ? 'hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20 cursor-pointer active:scale-[0.97] md:active:scale-100' : 'hover:border-slate-300 dark:hover:border-slate-600' }}"
+                            @if($dayAppointments->count() > 0)
+                            onclick="window.location.href = '{{ route('appointments.index', $tableParams) }}'"
+                            @endif>
+                            <div class="h-full flex flex-col justify-center md:justify-start p-2 md:p-2">
+                                <!-- Мобильная версия: только дата -->
+                                <div class="md:hidden flex items-center justify-center h-full relative">
+                                    <span class="text-lg font-bold
+                                        {{ $isCurrentMonth ? ($isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-900 dark:text-white') : 'text-slate-400 dark:text-slate-500' }}">
+                                        {{ $date->day }}
+                                    </span>
+                                    @if($dayAppointments->count() > 0)
+                                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400"></span>
+                                    @endif
+                                </div>
+                                
+                                <!-- Десктопная версия: полная информация -->
+                                <div class="hidden md:block">
+                                    <!-- Заголовок дня -->
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-base font-semibold
+                                            {{ $isCurrentMonth ? ($isToday ? 'text-blue-600 dark:text-blue-400 font-bold' : 'text-slate-900 dark:text-white') : 'text-slate-400 dark:text-slate-500' }}">
                                             {{ $date->day }}
                                         </span>
                                         @if($dayAppointments->count() > 0)
-                                            <button @click.stop="openDayModal('{{ $date->format('d.m.Y') }}', @js($appointmentsData))"
-                                                    class="h-5 w-5 md:h-6 md:w-6 rounded-full bg-indigo-600 text-white text-[10px] md:text-xs flex items-center justify-center font-semibold hover:bg-indigo-700 transition-colors cursor-pointer flex-shrink-0">
+                                            <a href="{{ route('appointments.index', $tableParams) }}"
+                                               @click.stop
+                                               class="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white text-sm flex items-center justify-center font-bold hover:from-indigo-600 hover:to-indigo-700 transition-all shadow-sm hover:shadow-md hover:scale-110 flex-shrink-0"
+                                               title="{{ $dayAppointments->count() }} {{ $dayAppointments->count() === 1 ? 'запись' : ($dayAppointments->count() < 5 ? 'записи' : 'записей') }}">
                                                 {{ $dayAppointments->count() }}
                                             </a>
                                         @endif
@@ -168,7 +216,14 @@
                                         @foreach($dayAppointments->take(2) as $appointment)
                                             <a href="{{ route('appointments.show', $appointment) }}"
                                                @click.stop
-                                               class="block px-1.5 py-0.5 rounded text-xs truncate {{ $appointment->status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300' : ($appointment->status === 'cancelled' ? 'bg-rose-100 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' : ($appointment->status === 'confirmed' ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300' : 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300')) }} hover:opacity-80 transition-opacity"
+                                               class="block px-2 py-1.5 rounded-md text-xs font-medium truncate transition-all hover:scale-[1.02] hover:shadow-sm
+                                               {{ $appointment->status === 'completed' 
+                                                   ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' 
+                                                   : ($appointment->status === 'cancelled' 
+                                                       ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800' 
+                                                       : ($appointment->status === 'confirmed' 
+                                                           ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
+                                                           : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800')) }}"
                                                title="{{ $appointment->client->full_name }} - {{ $appointment->service->name }}">
                                                 <div class="flex items-center gap-1.5">
                                                     <span class="font-bold">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
