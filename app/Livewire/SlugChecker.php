@@ -6,10 +6,13 @@ use Livewire\Component;
 use Illuminate\Support\Str;
 use App\Models\Business;
 use App\Services\SlugService;
+use App\Traits\HasOldValues;
 use Illuminate\Support\Facades\Auth;
 
 class SlugChecker extends Component
 {
+    use HasOldValues;
+
     public $slug = '';
     public $isAvailable = null;
     public $isChecking = false;
@@ -18,6 +21,11 @@ class SlugChecker extends Component
     public function mount($value = '')
     {
         $this->slug = $value;
+
+        if (session()->has('errors')) {
+            $this->slug = $this->getOldValue('slug');
+        }
+
         if (!empty($this->slug)) {
             $this->checkSlug();
         }
@@ -31,7 +39,7 @@ class SlugChecker extends Component
                 'min:3',
                 'max:50',
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                function ($attribute, $value, $fail) {
+                function ($value, $fail) {
                     if (!$this->checkSlugAvailability($value)) {
                         $fail('Этот slug уже занят. Пожалуйста, выберите другой.');
                     }

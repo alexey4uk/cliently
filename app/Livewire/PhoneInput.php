@@ -9,11 +9,12 @@ class PhoneInput extends Component
 {
     use HasOldValues;
 
-    public $phone = '';
+    public $phone;
+    public $value;
     public $error = '';
     public $cleanPhone = '';
     public $label;
-    public $name;
+    public $name = '';
     public $required;
     public $placeholder;
 
@@ -23,8 +24,8 @@ class PhoneInput extends Component
     public function mount(
         $required = false, 
         $label = null,
-        $name = null,
-        $placeholder = ''
+        $name = '',
+        $placeholder = '',
     ){
         $this->required = $required;
         $this->label = $label;
