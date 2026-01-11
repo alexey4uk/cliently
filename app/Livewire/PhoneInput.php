@@ -2,16 +2,38 @@
 
 namespace App\Livewire;
 
+use App\Traits\HasOldValues;
 use Livewire\Component;
 
 class PhoneInput extends Component
 {
+    use HasOldValues;
+
     public $phone = '';
     public $error = '';
     public $cleanPhone = '';
+    public $label;
+    public $name;
+    public $required;
+    public $placeholder;
 
     private $validOperatorCodes = ['29', '33', '44', '25'];
     private $requiredDigits = 9;
+
+    public function mount(
+        $required = false, 
+        $label = null,
+        $name = null,
+        $placeholder = ''
+    ){
+        $this->required = $required;
+        $this->label = $label;
+        $this->placeholder = $placeholder;
+
+        if (session()->has('errors')) {
+            $this->phone = $this->getOldValue($name, $this->phone);
+        }
+    }
     
     public function updatedPhone($value)
     {
