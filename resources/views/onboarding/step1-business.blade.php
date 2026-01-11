@@ -7,7 +7,7 @@
 @section('content')
     <!-- Индикатор прогресса -->
     <div class="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
-        
+
         <!-- Индикатор прогресса -->
         <div class="w-full md:w-auto">
             <div class="flex items-center w-full md:w-auto md:gap-1.5">
@@ -16,16 +16,19 @@
                         1 => 'Бизнес',
                         2 => 'Локация',
                         3 => 'Услуга',
-                        4 => 'Мастер'
+                        4 => 'Мастер',
                     ];
                 @endphp
-                @for($i = 1; $i <= 4; $i++)
+                @for ($i = 1; $i <= 4; $i++)
                     <div class="flex items-center {{ $i < 4 ? 'flex-1 md:flex-none' : 'flex-shrink-0' }}">
-                        <div class="flex items-center justify-center w-6 md:w-7 h-6 md:h-7 rounded-full text-xs font-semibold transition-colors flex-shrink-0 {{ $i == 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400' }}">
+                        <div
+                            class="flex items-center justify-center w-6 md:w-7 h-6 md:h-7 rounded-full text-xs font-semibold transition-colors flex-shrink-0 {{ $i == 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400' }}">
                             {{ $i }}
                         </div>
-                        @if($i < 4)
-                            <div class="flex-1 md:w-6 md:flex-none h-0.5 mx-1 md:mx-0 {{ $i <= 1 ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700' }}"></div>
+                        @if ($i < 4)
+                            <div
+                                class="flex-1 md:w-6 md:flex-none h-0.5 mx-1 md:mx-0 {{ $i <= 1 ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700' }}">
+                            </div>
                         @endif
                     </div>
                 @endfor
@@ -36,165 +39,134 @@
     <!-- Форма -->
     <form method="POST" action="{{ route('onboarding.business.store') }}" class="space-y-6">
         @csrf
-        
+
         <div class="space-y-6">
             <!-- Основная информация -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
-                        Основная информация
-                    </h3>
-                </div>
-                
-                <div>
-                    <label for="name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Название бизнеса*</span>
-                    </label>
-                    <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        autofocus>
-                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Название будет отображаться клиентам
-                    </p>
-                    @error('name')
-                        <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @enderror
-                </div>
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400"></i>
+                            Основная информация
+                        </h3>
+                    </div>
 
-                <div>
-                    <label for="slug" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Ссылка на запись*</span>
-                    </label>
-                    <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all" id="slugContainer">
-                        <!-- Префикс -->
-                        <span class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-sm font-mono select-none">
-                            /
-                        </span>
-                        <!-- Поле ввода -->
-                        <div class="flex-1 relative">
-                            <input type="text" id="slug" name="slug" required value="{{ old('slug') }}"
-                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500">
-                            
-                            <!-- Индикаторы проверки -->
-                            <div id="slugChecking" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2">
-                                <div class="animate-spin h-3.5 w-3.5 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
-                            </div>
-                            
-                            <div id="slugAvailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                                <i class="fa-solid fa-check text-xs"></i>
-                            </div>
-                            
-                            <div id="slugUnavailable" class="hidden absolute right-2.5 top-1/2 transform -translate-y-1/2 text-rose-500">
-                                <i class="fa-solid fa-xmark text-xs"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Предпросмотр адреса -->
-                    <div id="slugPreviewCard" class="hidden mt-2 transition-opacity duration-200">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center">
-                            <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs mr-1.5"></i>
-                            <span class="select-none">{{ url('/') }}/book/</span><span id="slugPreview" class="font-semibold text-indigo-600 dark:text-indigo-400">ip-ivanov</span>
+                    <div>
+                        <label for="name"
+                            class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <span>Название бизнеса*</span>
+                        </label>
+                        <input type="text" id="name" name="name" required value="{{ old('name') }}"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            autofocus>
+                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            Название будет отображаться клиентам
                         </p>
+                        @error('name')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('slug')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @else
-                        <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
-                    @enderror
-                </div>
+
+                    <livewire:slug-checker />
                 </div>
             </div>
 
             <!-- Информация о владельце -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
-                        Информация о владельце
-                    </h3>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label for="first_name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Имя*</span>
-                        </label>
-                        <input type="text" id="first_name" name="first_name" required value="{{ old('first_name') }}"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                        @error('first_name')
-                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
+                            Информация о владельце
+                        </h3>
                     </div>
-                    
-                    <div>
-                        <label for="last_name" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            <span>Фамилия*</span>
-                        </label>
-                        <input type="text" id="last_name" name="last_name" required value="{{ old('last_name') }}"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
-                        @error('last_name')
-                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="first_name"
+                                class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                <span>Имя*</span>
+                            </label>
+                            <input type="text" id="first_name" name="first_name" required value="{{ old('first_name') }}"
+                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('first_name')
+                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="last_name"
+                                class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                <span>Фамилия*</span>
+                            </label>
+                            <input type="text" id="last_name" name="last_name" required value="{{ old('last_name') }}"
+                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                            @error('last_name')
+                                <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Контактная информация -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
-                        Контактная информация
-                    </h3>
-                </div>
-                
-                <div>
-                    <label for="phone" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Телефон*</span>
-                    </label>
-                    <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                        class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                        placeholder="+375 (29) 123-45-67">
-                    <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
-                        Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
-                    </p>
-                    @error('phone')
-                        <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                    @enderror
-                    <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
-                </div>
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-phone text-indigo-600 dark:text-indigo-400"></i>
+                            Контактная информация
+                        </h3>
+                    </div>
+
+                    <div>
+                        <label for="phone"
+                            class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <span>Телефон*</span>
+                        </label>
+                        <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
+                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
+                            placeholder="+375 (29) 123-45-67">
+                        <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
+                            Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
+                        </p>
+                        @error('phone')
+                            <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                        <p id="phoneError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
+                    </div>
                 </div>
             </div>
 
             <!-- Дополнительная информация -->
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
-            <div class="space-y-5">
-                <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
-                    <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
-                        Дополнительная информация
-                    </h3>
-                </div>
-                
-                <div>
-                    <label for="description" class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Описание</span>
-                        <span class="text-xs text-slate-400 dark:text-slate-500">(необязательно)</span>
-                    </label>
-                    <div class="relative">
-                        <textarea id="description" name="description" rows="3" maxlength="500"
-                            class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                            placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
-                        <div class="absolute bottom-2 right-2 flex items-center gap-1">
-                            <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
-                            <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
-                            <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
-                        </div>
+            <div
+                class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 md:p-6">
+                <div class="space-y-5">
+                    <div class="pb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-align-left text-indigo-600 dark:text-indigo-400"></i>
+                            Дополнительная информация
+                        </h3>
+                    </div>
+
+                    <div>
+                        <label for="description"
+                            class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            <span>Описание</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500">(необязательно)</span>
+                        </label>
+                        <div class="relative">
+                            <textarea id="description" name="description" rows="3" maxlength="500"
+                                class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
+                                placeholder="Краткое описание вашего бизнеса...">{{ old('description') }}</textarea>
+                            <div class="absolute bottom-2 right-2 flex items-center gap-1">
+                                <span id="descriptionCount" class="text-xs text-slate-400 dark:text-slate-500">0</span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500">/</span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500">500</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -211,7 +183,7 @@
     </form>
 @endsection
 
-@push('scripts')
+{{-- @push('scripts')
 <script>
     // ==================== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ====================
     // Переменные для отслеживания состояния slug (для визуальной индикации)
@@ -877,4 +849,4 @@
         setupDescriptionCounter();
     });
 </script>
-@endpush
+@endpush --}}
