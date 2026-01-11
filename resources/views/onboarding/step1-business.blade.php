@@ -116,7 +116,6 @@
                     <livewire:textarea-input 
                         name="description"
                         label="Описание"
-                        {{-- :value="old('description')" --}}
                         placeholder="Краткое описание вашего бизнеса..."
                         :rows="3"
                         :maxlength="500"
