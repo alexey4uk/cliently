@@ -33,6 +33,7 @@
     
     <!-- Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans overflow-x-hidden">
@@ -427,6 +428,7 @@
             });
         });
     </script>
+    @livewireScripts
 </body>
 
 </html>

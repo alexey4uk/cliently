@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+@plugin "@tailwindcss/forms";
 
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -13,55 +14,39 @@
 @source "../../resources/**/*.js";
 @source "../../resources/**/*.vue";
 
-/* Скрываем элементы с x-cloak до инициализации Alpine.js */
 [x-cloak] {
     display: none !important;
 }
 
-/* Единый размер шрифта для всех инпутов */
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="password"],
-input[type="number"],
-input[type="date"],
-input[type="time"],
-input[type="search"],
-input[type="url"],
-input[type="datetime-local"],
-textarea,
-select {
-    font-size: 0.875rem; /* 14px - text-sm */
+/* Для вебкит-браузеров (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Предотвращение автоматического увеличения масштаба на мобильных устройствах при фокусе на input */
-@media screen and (max-width: 640px) {
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="password"],
-    input[type="number"],
-    input[type="date"],
-    input[type="time"],
-    input[type="search"],
-    input[type="url"],
-    input[type="datetime-local"],
-    textarea,
-    select {
-        font-size: 16px !important;
-    }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
 }
 
-/* Предотвращаем мерцание sidebar элементов при загрузке */
-@media (min-width: 1024px) {
-    /* Скрываем sidebar-text до инициализации Alpine, если sidebar должен быть свернут */
-    html[data-sidebar-collapsed="true"] .sidebar-text {
-        display: none !important;
-    }
-    
-    html[data-sidebar-collapsed="true"] .sidebar-section-title {
-        display: none !important;
-    }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Для Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+@layer base {
+  input, textarea, select {
+    @apply text-base;
+  }
 }
 
 /* Кастомный scrollbar для WebKit браузеров (Chrome, Safari, Edge) */
@@ -120,4 +105,3 @@ select {
         overflow-wrap: anywhere;
     }
 }
-

@@ -34,10 +34,18 @@ class ThemeManager {
      */
     getTheme() {
         const savedTheme = localStorage.getItem('theme');
+        
+        // Если тема не сохранена, используем системные настройки
+        if (!savedTheme) {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        
+        // Если явно установлена тема, используем её
         if (savedTheme === 'dark' || savedTheme === 'light') {
             return savedTheme;
         }
-        // Если тема не сохранена, используем системные настройки
+        
+        // По умолчанию используем системные настройки
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
@@ -70,8 +78,12 @@ class ThemeManager {
      * Переключить тему между светлой и тёмной
      */
     toggleTheme() {
-        const currentTheme = this.getTheme();
+        const savedTheme = localStorage.getItem('theme');
+        // Определяем текущую активную тему
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        // Переключаем на противоположную
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
         this.setTheme(newTheme);
     }
 
@@ -114,20 +126,40 @@ class ThemeManager {
 
     /**
      * Следить за изменениями системной темы
-     * Применяет системную тему только если пользователь не сохранил свой выбор
+     * При изменении системной темы очищаем сохранённую тему, чтобы применить системную
      */
     watchSystemTheme() {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
         
         mediaQuery.addEventListener('change', (e) => {
-            // Применяем системную тему только если пользователь не сохранил свой выбор
-            if (!localStorage.getItem('theme')) {
+            const savedTheme = localStorage.getItem('theme');
+            
+            // Если тема не сохранена, применяем системную тему
+            if (!savedTheme) {
                 const html = document.documentElement;
                 if (e.matches) {
                     html.classList.add('dark');
                 } else {
                     html.classList.remove('dark');
                 }
+                // Вызываем событие для других компонентов
+                window.dispatchEvent(new CustomEvent('themeChanged', { 
+                    detail: { theme: e.matches ? 'dark' : 'light' } 
+                }));
+            } else {
+                // Если пользователь явно выбрал тему, но изменил системную - очищаем сохранённую
+                // Это позволяет системной теме применяться автоматически
+                localStorage.removeItem('theme');
+                const html = document.documentElement;
+                if (e.matches) {
+                    html.classList.add('dark');
+                } else {
+                    html.classList.remove('dark');
+                }
+                // Вызываем событие для других компонентов
+                window.dispatchEvent(new CustomEvent('themeChanged', { 
+                    detail: { theme: e.matches ? 'dark' : 'light' } 
+                }));
             }
         });
     }

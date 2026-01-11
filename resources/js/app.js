@@ -1,8 +1,8 @@
 import './bootstrap';
 
-import Alpine from 'alpinejs';
-import './theme';
+// import Alpine from 'alpinejs';
+// import './theme';
 
-window.Alpine = Alpine;
+// window.Alpine = Alpine;
 
-Alpine.start();
+// Alpine.start();
