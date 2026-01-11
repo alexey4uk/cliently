@@ -127,9 +127,10 @@
                             class="flex items-center gap-1.5 md:gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                             <span>Телефон*</span>
                         </label>
-                        <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
+                        <livewire:phone-input />
+                        {{-- <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
                             class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="+375 (29) 123-45-67">
+                            placeholder="+375 (29) 123-45-67"> --}}
                         <p class="mt-2.5 text-xs text-slate-500 dark:text-slate-400">
                             Формат: +375XXXXXXXXX. Коды: 29, 33, 44, 25
                         </p>
