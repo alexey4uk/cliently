@@ -2,20 +2,21 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Illuminate\Support\Str;
 use App\Models\Business;
-use App\Services\SlugService;
 use App\Traits\HasOldValues;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Livewire\Component;
 
 class SlugChecker extends Component
 {
     use HasOldValues;
 
     public $slug = '';
+
     public $isAvailable = null;
+
     public $isChecking = false;
+
     public $errorMessage = '';
 
     public function mount($value = '')
@@ -26,7 +27,7 @@ class SlugChecker extends Component
             $this->slug = $this->getOldValue('slug');
         }
 
-        if (!empty($this->slug)) {
+        if (! empty($this->slug)) {
             $this->checkSlug();
         }
     }
@@ -40,7 +41,7 @@ class SlugChecker extends Component
                 'max:50',
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 function ($value, $fail) {
-                    if (!$this->checkSlugAvailability($value)) {
+                    if (! $this->checkSlugAvailability($value)) {
                         $fail('Этот slug уже занят. Пожалуйста, выберите другой.');
                     }
                 },
@@ -62,13 +63,15 @@ class SlugChecker extends Component
 
         if (empty($this->slug) || strlen($this->slug) < 3) {
             $this->isChecking = false;
+
             return;
         }
 
-        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $this->slug)) {
+        if (! preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $this->slug)) {
             $this->isAvailable = false;
             $this->errorMessage = 'Только латинские буквы в нижнем регистре, цифры и одиночные дефисы. Дефисы не могут быть в начале или конце.';
             $this->isChecking = false;
+
             return;
         }
 

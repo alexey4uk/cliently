@@ -3,20 +3,27 @@
 namespace App\Livewire;
 
 use App\Traits\HasOldValues;
-use Livewire\Component;
 use Illuminate\Support\Str;
+use Livewire\Component;
 
 class TextInput extends Component
 {
     use HasOldValues;
 
     public $value = '';
+
     public $name;
+
     public $type = 'text';
+
     public $placeholder = '';
+
     public $required = false;
+
     public $modifier = null;
+
     public $wireModel = 'value';
+
     public $label = null;
 
     public function mount(
@@ -41,7 +48,7 @@ class TextInput extends Component
 
     public function updatedValue($value)
     {
-        if (empty($value) || !$this->modifier) {
+        if (empty($value) || ! $this->modifier) {
             return;
         }
 
