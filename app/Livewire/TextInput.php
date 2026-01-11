@@ -26,6 +26,8 @@ class TextInput extends Component
 
     public $label = null;
 
+    public $id = null;
+
     public function mount(
         $name,
         $value = '',
@@ -34,7 +36,8 @@ class TextInput extends Component
         $required = false,
         $modifier = null,
         $wireModel = null,
-        $label = null
+        $label = null,
+        $id = ''
     ) {
         $this->name = $name;
         $this->value = $this->getOldValue($name, $value);
@@ -44,6 +47,7 @@ class TextInput extends Component
         $this->modifier = $modifier;
         $this->label = $label;
         $this->wireModel = $wireModel ?? 'value';
+        $this->id = $id;
     }
 
     public function updatedValue($value)
