@@ -28,13 +28,13 @@ class AppointmentController extends Controller
         $business = Business::where('slug', $slug)->firstOrFail();
         $locations = $business->locations()->orderBy('name')->get();
 
-        // Если локация только одна, сразу переходим к выбору услуг
-        if ($locations->count() === 1) {
-            return redirect()->route('public.appointments.select-location', [
-                'slug' => $business->slug,
-                'locationId' => $locations->first()->id,
-            ]);
-        }
+        // // Если локация только одна, сразу переходим к выбору услуг
+        // if ($locations->count() === 1) {
+        //     return redirect()->route('public.appointments.select-location', [
+        //         'slug' => $business->slug,
+        //         'locationId' => $locations->first()->id,
+        //     ]);
+        // }
 
         return view('appointments.public.select-location', compact('business', 'locations'))->with('currentStep', 1);
     }
