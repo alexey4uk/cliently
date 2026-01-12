@@ -108,7 +108,7 @@
                             </div>
                         @else
                             <div
-                                class="text-center py-10 bg-slate-50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500">
+                                class="text-center w-full py-10 bg-slate-50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500">
                                 На этот день свободных окон нет
                             </div>
                         @endif

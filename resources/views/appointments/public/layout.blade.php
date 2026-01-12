@@ -23,6 +23,7 @@
         /* Минимальные стили для функциональности, которую нельзя реализовать только через Tailwind */
         html,
         body {
+            font-family: "Onest", sans-serif;
             overflow-x: hidden !important;
             max-width: 100vw;
             width: 100%;
@@ -123,107 +124,100 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans antialiased selection:bg-indigo-100 dark:selection:bg-indigo-500/30 flex flex-col transition-colors duration-300">
-    
-    <!-- Шапка сайта -->
-    <header class="sticky top-0 z-40 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <!-- Логотип и название -->
-            <div class="flex items-center gap-3">
+<body
+    class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans antialiased flex flex-col transition-colors duration-300">
+
+    <!-- Шапка сайта (Sticky & Glassmorphism) -->
+    <header
+        class="sticky top-0 z-50 w-full bg-white/60 dark:bg-slate-950/60 backdrop-blur-2xl border-b border-slate-200/40 dark:border-slate-800/40 transition-all duration-300">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+            <!-- Группа Логотипа и Названия -->
+            <div class="flex items-center gap-4 group cursor-default">
                 @if (isset($business->logo) && $business->logo)
-                    <a href="/" class="group relative flex-shrink-0">
-                        <div class="absolute -inset-1 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl opacity-0 group-hover:opacity-20 transition duration-300"></div>
-                        <img src="{{ asset('storage/' . $business->logo) }}" 
-                             alt="{{ $business->name }}"
-                             class="relative h-11 w-11 object-cover rounded-xl shadow-sm ring-1 ring-slate-200 dark:ring-slate-700">
+                    <a href="{{ route('public.appointments.show', $business->slug) }}"
+                        class="relative flex-shrink-0 group/logo">
+                        <!-- Мягкое свечение -->
+                        <div
+                            class="absolute -inset-2 bg-indigo-500/5 dark:bg-indigo-400/5 rounded-full blur-xl opacity-0 group-hover/logo:opacity-100 transition-opacity duration-700">
+                        </div>
+
+                        <!-- Контейнер логотипа -->
+                        <div
+                            class="relative h-10 w-10 sm:h-11 sm:w-11 rounded-[12px] bg-white dark:bg-slate-900 shadow-[0_4px_12px_rgba(0,0,0,0.05)] ring-1 ring-slate-200/50 dark:ring-slate-800 overflow-hidden transition-all duration-500 group-hover/logo:shadow-indigo-500/10 group-hover/logo:-translate-y-0.5">
+                            <div class="w-full h-full p-[2px] flex items-center justify-center">
+                                <img src="{{ asset('storage/' . $business->logo) }}" alt="{{ $business->name }}"
+                                    class="w-full h-full aspect-square object-contain sm:object-cover rounded-[10px]">
+                            </div>
+                        </div>
                     </a>
                 @endif
+
+
                 <div class="flex flex-col">
-                    <span class="text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">
+                    <h1
+                        class="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tighter leading-none transition-all duration-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                         {{ $business->name }}
-                    </span>
-                    <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">Онлайн-запись</span>
+                    </h1>
                 </div>
             </div>
 
-            <!-- Кнопки управления -->
-            <div class="flex items-center gap-2">
-                <button id="theme-toggle"
-                    class="h-10 w-10 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
-                    aria-label="Переключить тему">
-                    <x-icon name="sun" size="md" class="hidden dark:block" />
-                    <x-icon name="moon" size="md" class="block dark:hidden" />
-                </button>
-            </div>
+            <!-- Кнопка темы: Минимализм 2026 -->
+            <button id="theme-toggle"
+                class="relative h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden">
+                <x-icon name="sun" size="sm"
+                    class="hidden dark:block animate-in fade-in zoom-in duration-300" />
+                <x-icon name="moon" size="sm"
+                    class="block dark:hidden animate-in fade-in zoom-in duration-300" />
+            </button>
         </div>
     </header>
 
-    <!-- Основной контент -->
-    <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+
+
+
+
+
+    <!-- Основная область -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div class="min-w-0">
             @yield('content')
         </div>
-
-        <!-- Копирайт платформы -->
-        <div class="mt-12 text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                <span class="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Powered by</span>
-                <a href="https://cliently.by" target="_blank" rel="noopener" class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-bold transition-colors">
-                    CLIENTLY
-                </a>
-            </div>
-        </div>
     </main>
 
-    <!-- Футер -->
-    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <!-- О компании -->
-                <div class="space-y-4">
-                    <h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">
-                        О компании
-                    </h3>
-                    @if ($business->description)
-                        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
-                            {{ $business->description }}
-                        </p>
-                    @endif
-                </div>
+    <!-- Финальный футер 2026 -->
+    <footer class="mt-auto py-8">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="flex flex-col items-center gap-4">
+                <!-- Разделитель-точка -->
+                <div class="w-8 h-[1px] bg-slate-200 dark:bg-slate-800"></div>
 
-                <!-- Быстрые контакты -->
-                <div class="space-y-4">
-                    <h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">
-                        Связь с нами
-                    </h4>
-                    <div class="flex flex-col gap-3">
-                        @if ($business->phone)
-                            <a href="tel:{{ $business->phone }}"
-                                class="group flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
-                                <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
-                                    <i class="fa-solid fa-phone text-xs"></i>
-                                </div>
-                                <span class="font-medium">{{ $business->phone }}</span>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </div>
+                <!-- Компактный копирайт и платформа -->
+                <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
+                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        &copy; 2026 {{ $business->name }}
+                    </p>
 
-            <!-- Нижняя плашка футера -->
-            <div class="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <p class="text-[11px] text-slate-400 uppercase tracking-widest font-medium">
-                    &copy; {{ date('2026') }} {{ $business->name }}
-                </p>
-                <div class="flex items-center gap-6">
-                    <span class="text-[11px] text-slate-400 uppercase tracking-widest font-medium">Все права защищены</span>
+                    <a href="https://cliently.by" target="_blank" rel="noopener" class="flex items-center gap-2 group">
+                        <span
+                            class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest transition-colors group-hover:text-slate-400">Powered
+                            by</span>
+                        <span
+                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] group-hover:text-indigo-500 transition-colors">
+                            CLIENTLY
+                        </span>
+                    </a>
                 </div>
             </div>
         </div>
     </footer>
 
+
+
     @stack('scripts')
 </body>
+
 
 
 </html>
