@@ -140,7 +140,7 @@
                         <div class="sm:col-span-2">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Телефон
                                 *</label>
-                            <input type="tel" id="phone" name="phone" required placeholder="+ код страны"
+                            <input type="tel" id="phone" name="phone" required
                                 class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white text-lg font-bold outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                     </div>
