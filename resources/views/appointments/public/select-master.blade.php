@@ -3,109 +3,108 @@
 @section('title', 'Выбор мастера')
 
 @section('content')
-<div class="max-w-3xl lg:max-w-3xl mx-auto">
-    <!-- Кнопка назад -->
-    <div class="mb-4 sm:mb-5 lg:mb-4">
-        <a href="{{ route('public.appointments.select-location', ['slug' => $business->slug, 'locationId' => $location->id]) }}"
-           class="inline-flex items-center gap-2 px-4 py-2 text-sm sm:text-base lg:text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors duration-200">
-            <i class="fa-solid fa-arrow-left text-xs lg:text-[10px]"></i>
-            <span>Вернуться к услугам</span>
-        </a>
-    </div>
+    <div class="max-w-3xl lg:max-w-3xl mx-auto sm:px-0">
 
-    @if($masters->count() > 0)
-        <!-- Заголовок -->
-        <div class="mb-5 sm:mb-6 lg:mb-5">
-            <h1 class="text-2xl sm:text-3xl lg:text-2xl font-bold text-slate-900 dark:text-white mb-2 lg:mb-1.5 leading-tight">
-                Выберите мастера
-            </h1>
-            <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-                {{ $location->name }} • {{ $service->name }}
-            </p>
-        </div>
+        <x-breadcrumbs-public-book :business="$business" currentStep="master" :location="$location" :service="$service" />
 
-        <!-- Вертикальный список мастеров -->
-        <div class="space-y-2.5 sm:space-y-3 lg:space-y-2">
-            @foreach($masters as $master)
-                <a href="{{ route('public.appointments.select-time', ['slug' => $business->slug, 'locationId' => $location->id, 'serviceId' => $service->id, 'masterId' => $master->id]) }}"
-                   class="group block w-full bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <div class="p-4 sm:p-5 lg:p-4">
-                        <div class="flex items-start gap-3 sm:gap-4 lg:gap-3">
-                            <!-- Фото или инициалы -->
-                            <div class="flex-shrink-0">
-                                @if($master->photo)
-                                    <img src="{{ asset('storage/' . $master->photo) }}"
-                                         alt="{{ $master->first_name }} {{ $master->last_name }}"
-                                         class="w-10 h-10 sm:w-12 sm:h-12 lg:w-10 lg:h-10 rounded-xl object-cover">
-                                @else
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-xs sm:text-sm lg:text-xs">
-                                        {{ strtoupper(substr($master->first_name, 0, 1) . substr($master->last_name, 0, 1)) }}
-                                    </div>
-                                @endif
-                            </div>
+        @if ($masters->count() > 0)
+            <!-- Список мастеров -->
+            <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                @foreach ($masters as $master)
+                    <div class="group relative">
+                        <!-- Основная ссылка-карточка -->
+                        <a href="{{ route('public.appointments.select-time', ['slug' => $business->slug, 'locationId' => $location->id, 'serviceId' => $service->id, 'masterId' => $master->id]) }}"
+                            class="block bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 overflow-hidden">
 
-                            <!-- Контент -->
-                            <div class="flex-1 min-w-0">
-                                <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white mb-1 sm:mb-1.5 lg:mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                                    {{ $master->first_name }} {{ $master->last_name }}
-                                </h2>
-                                
-                                @if($master->specialization)
-                                    <div class="flex items-center gap-1.5 mb-2 sm:mb-2.5 lg:mb-2">
-                                        <i class="fa-solid fa-star text-amber-500 text-xs lg:text-[10px]"></i>
-                                        <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400">
-                                            {{ $master->specialization }}
-                                        </p>
-                                    </div>
-                                @endif
+                            <div class="p-5 sm:p-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                                    <div class="flex items-center gap-5 flex-1 min-w-0">
+                                        <!-- Аватар (Квадратный со скруглением как иконки в филиалах) -->
+                                        <div class="relative shrink-0">
+                                            @if ($master->photo)
+                                                <img src="{{ asset('storage/' . $master->photo) }}"
+                                                    alt="{{ $master->first_name }}"
+                                                    class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover ring-1 ring-slate-100 dark:ring-slate-800 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                                            @else
+                                                <div
+                                                    class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xl font-black group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors">
+                                                    {{ mb_substr($master->first_name, 0, 1) }}{{ mb_substr($master->last_name, 0, 1) }}
+                                                </div>
+                                            @endif
 
-                                @if($master->description)
-                                    <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-2.5 sm:mb-3 lg:mb-2.5">
-                                        {{ $master->description }}
-                                    </p>
-                                @endif
-
-                                <!-- Дополнительная информация -->
-                                <div class="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-2.5 pt-3 lg:pt-2.5 border-t border-slate-100 dark:border-slate-800 group-hover:border-indigo-100 dark:group-hover:border-indigo-800/50 transition-colors duration-200">
-                                    @if($master->phone)
-                                        <div class="flex items-center gap-2 lg:gap-1.5 text-sm lg:text-xs text-slate-500 dark:text-slate-400">
-                                            <i class="fa-solid fa-phone text-xs lg:text-[10px]"></i>
-                                            <span>{{ $master->phone }}</span>
+                                            <!-- Статус-точка (как в услугах/филиалах) -->
+                                            <div
+                                                class="absolute -bottom-1 -right-1 w-5 h-5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+                                                <div
+                                                    class="w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-emerald-500/20 animate-pulse">
+                                                </div>
+                                            </div>
                                         </div>
-                                    @endif
-                                    
-                                    <div class="flex items-center gap-2 lg:gap-1.5 text-sm lg:text-xs text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                                        <span>Выбрать</span>
-                                        <i class="fa-solid fa-arrow-right text-xs lg:text-[10px] group-hover:translate-x-1 transition-transform duration-200"></i>
+
+                                        <!-- Инфо о мастере -->
+                                        <div class="min-w-0">
+                                            <h2
+                                                class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-1 truncate">
+                                                {{ $master->first_name }} {{ $master->last_name }}
+                                            </h2>
+
+                                            @if ($master->specialization)
+                                                <p
+                                                    class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-3 leading-none">
+                                                    {{ $master->specialization }}
+                                                </p>
+                                            @endif
+
+                                            <div class="flex items-center gap-4">
+                                                <div
+                                                    class="flex items-center gap-1.5 text-sm font-black text-slate-700 dark:text-slate-300">
+                                                    <i class="fa-solid fa-star text-[10px] text-amber-400"></i>
+                                                    <span>5.0</span>
+                                                </div>
+                                                <span class="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700"></span>
+                                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                                    Ближайшее: <span class="text-slate-900 dark:text-slate-200">14:30</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Кнопка "Выбрать" (десктоп) -->
+                                    <div class="hidden sm:flex items-center">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-indigo-600 flex items-center justify-center transition-all duration-300">
+                                            <i
+                                                class="fa-solid fa-chevron-right text-slate-400 group-hover:text-white transition-colors"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Мобильная кнопка -->
+                                    <div class="sm:hidden">
+                                        <div
+                                            class="w-full py-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-center text-[11px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                            Выбрать мастера
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                </a>
-            @endforeach
-        </div>
-    @else
-        <!-- Empty state -->
-        <div class="text-center py-12 sm:py-16">
-            <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-4">
-                <i class="fa-solid fa-user-tie text-slate-400 dark:text-slate-500 text-2xl sm:text-3xl"></i>
+                @endforeach
             </div>
-            
-            <h2 class="text-xl sm:text-2xl lg:text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Нет доступных мастеров
-            </h2>
-            
-            <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-6 max-w-md mx-auto">
-                К сожалению, для выбранной услуги и локации нет доступных мастеров.
-            </p>
-
-            <a href="{{ route('public.appointments.select-location', ['slug' => $business->slug, 'locationId' => $location->id]) }}" 
-               class="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm sm:text-base font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors duration-200">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Вернуться к услугам</span>
-            </a>
-        </div>
-    @endif
-</div>
+        @else
+            <!-- Empty state -->
+            <div
+                class="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div
+                    class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 mb-6 text-slate-400">
+                    <i class="fa-solid fa-user-slash text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-3">Мастер не найден</h2>
+                <a href="{{ url()->previous() }}"
+                    class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline underline-offset-4">
+                    Вернуться назад
+                </a>
+            </div>
+        @endif
+    </div>
 @endsection

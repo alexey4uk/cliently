@@ -3,153 +3,147 @@
 @section('title', 'Просмотр записи')
 
 @section('content')
-<div class="max-w-3xl lg:max-w-3xl mx-auto">
-    <!-- Уведомления -->
-    @if(session('success'))
-        <div class="mb-4 sm:mb-5 lg:mb-4 p-3 sm:p-4 lg:p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-            <p class="text-sm sm:text-base lg:text-sm text-emerald-800 dark:text-emerald-200 text-center">
-                {{ session('success') }}
-            </p>
+<div class="max-w-xl mx-auto px-2 sm:px-4 pb-10"> {{-- pb-10 чтобы кнопки не прилипали к низу экрана --}}
+    
+    <!-- Компактные уведомления -->
+    @if (session('success') || session('error'))
+        <div class="mb-4 p-4 rounded-2xl text-center text-sm font-bold animate-in fade-in slide-in-from-top-4 duration-300 border {{ session('success') ? 'bg-emerald-50 text-emerald-800 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-rose-50 text-rose-800 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20' }}">
+            <i class="fa-solid {{ session('success') ? 'fa-circle-check' : 'fa-circle-exclamation' }} mr-2"></i>
+            {{ session('success') ?? session('error') }}
         </div>
     @endif
 
-    @if(session('error'))
-        <div class="mb-4 sm:mb-5 lg:mb-4 p-3 sm:p-4 lg:p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl">
-            <p class="text-sm sm:text-base lg:text-sm text-rose-800 dark:text-rose-200 text-center">
-                {{ session('error') }}
-            </p>
-        </div>
-    @endif
-
-    <!-- Заголовок с номером записи -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-            <div class="flex-1 min-w-0">
-                <h1 class="text-xl sm:text-2xl lg:text-xl font-bold text-slate-900 dark:text-white mb-1.5 sm:mb-2 lg:mb-1.5">
-                    Запись #{{ $appointment->id }}
-                </h1>
-                <p class="text-sm sm:text-base lg:text-sm text-slate-600 dark:text-slate-400">
-                    {{ $appointment->date->locale('ru')->isoFormat('D MMMM') }}, {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
-                </p>
-            </div>
-            <div class="flex-shrink-0">
-                @if($appointment->status === 'pending')
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm lg:text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
-                        Ожидает подтверждения
-                    </span>
-                @elseif($appointment->status === 'confirmed')
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm lg:text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
-                        Подтверждена
-                    </span>
-                @elseif($appointment->status === 'completed')
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm lg:text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
-                        Завершена
-                    </span>
-                @elseif($appointment->status === 'cancelled')
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm lg:text-xs font-medium bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300">
-                        Отменена
-                    </span>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    <!-- Основная информация -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">
-        <div class="flex items-center gap-3 mb-4 lg:mb-3">
-            <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-sm lg:text-xs"></i>
-            </div>
-            <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
-                Основная информация
-            </h2>
-        </div>
+    <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-3">
-            <!-- Услуга -->
-            <div>
-                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Услуга</span>
-                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white mb-1">
-                    {{ $appointment->service->name }}
-                </p>
-                <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                    @if($appointment->final_price)
-                        <span>{{ number_format($appointment->final_price, 0, ',', ' ') }} Br</span>
-                    @endif
-                    @if($appointment->final_price && $appointment->final_duration)
-                        <span>•</span>
-                    @endif
-                    @if($appointment->final_duration)
-                        <span>{{ $appointment->final_duration }} мин</span>
-                    @endif
+        <!-- Верхний блок: Время и Дата -->
+        <div class="relative p-8 sm:p-10 text-center bg-gradient-to-b from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent border-b border-slate-100 dark:border-slate-800">
+            
+            <!-- Статус в виде аккуратной точки и текста -->
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 mb-6">
+                @php
+                    $colors = [
+                        'confirmed' => 'bg-emerald-500',
+                        'pending'   => 'bg-amber-500',
+                        'completed' => 'bg-indigo-500',
+                        'cancelled' => 'bg-rose-500',
+                    ];
+                    $statusNames = ['confirmed' => 'Подтверждена', 'pending' => 'Ожидание', 'completed' => 'Завершена', 'cancelled' => 'Отменена'];
+                @endphp
+                <span class="w-2 h-2 rounded-full {{ $colors[$appointment->status] ?? 'bg-slate-400' }} animate-pulse"></span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                    {{ $statusNames[$appointment->status] ?? $appointment->status }}
+                </span>
+            </div>
+
+            <h1 class="text-6xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">
+                {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
+            </h1>
+            <p class="text-base text-slate-500 dark:text-slate-400 font-medium capitalize">
+                {{ $appointment->date->locale('ru')->isoFormat('dddd, D MMMM') }}
+            </p>
+        </div>
+
+        <!-- Инфо-блоки -->
+        <div class="p-6 sm:p-8 space-y-8">
+            
+            <div class="grid grid-cols-1 gap-8">
+                <!-- Услуга -->
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                        <i class="fa-solid fa-sparkles text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Услуга</p>
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">{{ $appointment->service->name }}</h4>
+                        <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                            {{ number_format($appointment->final_price, 0, ',', ' ') }} Br • {{ $appointment->final_duration }} мин
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Мастер -->
-            @if($appointment->master)
-            <div>
-                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Мастер</span>
-                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">
-                    {{ $appointment->master->first_name }} {{ $appointment->master->last_name }}
-                </p>
-            </div>
-            @endif
+                <!-- Мастер -->
+                @if($appointment->master)
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                        <i class="fa-solid fa-user-check text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Специалист</p>
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">{{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</h4>
+                    </div>
+                </div>
+                @endif
 
-            <!-- Локация -->
-            @if($appointment->location)
-            <div class="sm:col-span-2">
-                <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Локация</span>
-                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">
-                    {{ $appointment->location->name }}
-                </p>
-                @if($appointment->location->full_address)
-                    <p class="text-xs sm:text-sm lg:text-xs text-slate-600 dark:text-slate-400 mt-1">
-                        {{ $appointment->location->full_address }}
-                    </p>
+                <!-- Локация -->
+                @if($appointment->location)
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                        <i class="fa-solid fa-location-dot text-xl"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Место</p>
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white truncate">{{ $appointment->location->name }}</h4>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 truncate">{{ $appointment->location->full_address }}</p>
+                    </div>
+                </div>
                 @endif
             </div>
+
+            <!-- Заметки -->
+            @if($appointment->notes)
+            <div class="p-5 rounded-[1.5rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Ваш комментарий</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">«{{ $appointment->notes }}»</p>
+            </div>
             @endif
         </div>
-    </div>
 
-    <!-- Заметки -->
-    @if($appointment->notes)
-    <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">
-        <div class="flex items-center gap-3 mb-3 lg:mb-2.5">
-            <div class="w-8 h-8 lg:w-7 lg:h-7 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <i class="fa-solid fa-note-sticky text-slate-600 dark:text-slate-400 text-sm lg:text-xs"></i>
+        <!-- Кнопки: Адаптированы под большой палец -->
+        <div class="p-6 pt-0">
+            <div class="flex flex-col gap-3">
+                @if (!in_array($appointment->status, ['completed', 'cancelled']))
+                <form method="POST" action="{{ route('public.appointment.cancel', ['token' => $appointment->token]) }}" 
+                      class="m-0" onsubmit="return handleCancel(this);">
+                    @csrf
+                    <button type="submit" class="group w-full h-16 flex items-center justify-center gap-3 bg-rose-500 hover:bg-rose-600 active:scale-[0.97] transition-all duration-200 rounded-[1.25rem] text-white shadow-lg shadow-rose-200 dark:shadow-none">
+                        <i class="fa-solid fa-xmark transition-transform group-hover:rotate-90"></i>
+                        <span class="font-black text-sm uppercase tracking-widest">Отменить визит</span>
+                    </button>
+                </form>
+                @endif
+
+                <a href="{{ route('public.appointments.show', $business->slug) }}" 
+                   class="w-full h-16 flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 active:scale-[0.97] transition-all duration-200 rounded-[1.25rem] text-slate-900 dark:text-white">
+                    <i class="fa-solid fa-plus text-indigo-500"></i>
+                    <span class="font-black text-sm uppercase tracking-widest">Новая запись</span>
+                </a>
             </div>
-            <h2 class="text-lg sm:text-xl lg:text-base font-bold text-slate-900 dark:text-white">
-                Заметки
-            </h2>
         </div>
-        <p class="text-sm sm:text-base lg:text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-            {{ $appointment->notes }}
-        </p>
-    </div>
-    @endif
-
-    <!-- Действия -->
-    @if(!in_array($appointment->status, ['completed', 'cancelled']))
-    <div class="mb-4 sm:mb-5 lg:mb-4">
-        <form method="POST" action="{{ route('public.appointment.cancel', ['token' => $appointment->token]) }}" 
-              onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
-            @csrf
-            <button type="submit" class="w-full px-6 py-3 text-sm sm:text-base lg:text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl">
-                <i class="fa-solid fa-times mr-2"></i>
-                Отменить запись
-            </button>
-        </form>
-    </div>
-    @endif
-
-    <!-- Кнопка создания новой записи -->
-    <div class="text-center">
-        <a href="{{ route('public.appointments.show', $business->slug) }}"
-           class="inline-flex items-center gap-2 px-6 py-3 text-sm sm:text-base lg:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl transition-colors duration-200">
-            <i class="fa-solid fa-calendar-plus text-xs"></i>
-            <span>Создать новую запись</span>
-        </a>
     </div>
 </div>
+
+<script>
+    function handleCancel(form) {
+        if (confirm('Отменить эту запись?')) {
+            const btn = form.querySelector('button');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i>';
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            return true;
+        }
+        return false;
+    }
+</script>
+
+<style>
+    /* Убираем синий блик при нажатии на мобильных устройствах */
+    * { -webkit-tap-highlight-color: transparent; }
+    
+    /* Плавная анимация появления контента */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .max-w-xl { animation: slideIn 0.4s ease-out; }
+</style>
 @endsection
+

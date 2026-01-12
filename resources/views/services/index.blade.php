@@ -56,84 +56,93 @@
 
     <!-- Список услуг -->
     @if($services->count() > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                @foreach($services as $service)
-                <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full flex flex-col">
-                    <!-- Заголовок карточки -->
-                    <div class="px-4 md:px-5 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-center gap-3 min-w-0 flex-1">
-                                <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400 text-sm"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5">
-                                            {{ $service->name }}
-                                    </h3>
-                                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                        <span class="font-semibold text-indigo-600 dark:text-indigo-400">
-                                            {{ number_format($service->price, 0, ',', ' ') }} Br
-                                        </span>
-                                        <span>•</span>
-                                        <div class="flex items-center gap-1">
-                                            <i class="fa-solid fa-clock text-xs"></i>
-                                            <span>{{ $service->duration }} мин</span>
-                                        </div>
-                                    </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    @foreach($services as $service)
+        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-all h-full flex flex-col active:scale-[0.99]">
+            
+            <!-- Заголовок карточки -->
+            <div class="px-4 md:px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                        <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-scissors text-indigo-600 dark:text-indigo-400 text-base"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base font-semibold text-slate-900 dark:text-white truncate mb-1">
+                                {{ $service->name }}
+                            </h3>
+                            <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                                <span class="font-bold text-indigo-600 dark:text-indigo-400">
+                                    {{ number_format($service->price, 0, ',', ' ') }} Br
+                                </span>
+                                <span class="text-slate-300 dark:text-slate-600">•</span>
+                                <div class="flex items-center gap-1">
+                                    <i class="fa-solid fa-clock text-xs"></i>
+                                    <span>{{ $service->duration }} мин</span>
                                 </div>
                             </div>
-                            @if($service->is_active)
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex-shrink-0">
-                                    Активна
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex-shrink-0">
-                                    Неактивна
-                                </span>
-                            @endif
                         </div>
                     </div>
+                    
+                    {{-- Статус активности --}}
+                    @if($service->is_active)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex-shrink-0">
+                            Активна
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex-shrink-0">
+                            Неактивна
+                        </span>
+                    @endif
+                </div>
+            </div>
 
-                    <!-- Содержимое карточки -->
-                    <div class="p-4 md:p-5 flex-1">
-                        @if($service->description)
-                            <div class="flex items-start gap-2">
-                                <i class="fa-solid fa-info-circle text-slate-400 text-xs mt-0.5 flex-shrink-0"></i>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Описание</p>
-                                    <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 break-words">
-                                        {{ $service->description }}
-                                    </p>
-                                    </div>
-                                    </div>
-                        @endif
-                                    </div>
-
-                    <!-- Действия -->
-                    <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
-                        <div class="flex items-center justify-end gap-2">
-                                        <a href="{{ route('services.edit', $service) }}"
-                               class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                            <i class="fa-solid fa-pencil text-xs"></i>
-                                <span>Редактировать</span>
-                                        </a>
-                                        <form method="POST" action="{{ route('services.destroy', $service) }}" 
-                                  id="delete-form-{{ $service->id }}"
-                                              class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                            </form>
-                            <button type="button"
-                                    @click="openDeleteModal({{ $service->id }}, '{{ addslashes($service->name) }}')"
-                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                                                <i class="fa-solid fa-trash text-xs"></i>
-                                <span>Удалить</span>
-                                            </button>
+            <!-- Содержимое карточки -->
+            <div class="p-4 md:p-5 flex-1">
+                @if($service->description)
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-indigo-400 text-sm mt-0.5 flex-shrink-0"></i>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Описание</p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 break-words">
+                                {{ $service->description }}
+                            </p>
                         </div>
                     </div>
-                                    </div>
-                @endforeach
+                @endif
+            </div>
+
+            <!-- Действия -->
+            <div class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
+                <div class="flex items-center justify-end gap-2">
+                    
+                    <!-- Кнопка Редактировать -->
+                    <a href="{{ route('services.edit', $service) }}"
+                       class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-pencil text-xs"></i>
+                        <span>Редактировать</span>
+                    </a>
+                    
+                    <!-- Форма удаления -->
+                    <form method="POST" action="{{ route('services.destroy', $service) }}" 
+                          id="delete-form-{{ $service->id }}" class="inline">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    
+                    <!-- Кнопка Удалить -->
+                    <button type="button"
+                            @click="openDeleteModal({{ $service->id }}, '{{ addslashes($service->name) }}')"
+                            class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                        <span>Удалить</span>
+                    </button>
+                </div>
+            </div>
         </div>
+    @endforeach
+</div>
+
     @else
         <!-- Пустое состояние -->
         <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-8 md:p-12 text-center">
