@@ -12,18 +12,22 @@ class SlugChecker extends Component
     use HasOldValues;
 
     public $slug = '';
+
     public $isAvailable = null;
+
     public $isChecking = false;
+
     public $errorMessage = '';
+
     public $businessId = null;
 
     public function mount($value = '', $businessId = null)
     {
         $this->businessId = $businessId;
-        
+
         // Используем ваш трейт для получения старых данных при ошибках формы
-        $this->slug = session()->has('errors') 
-            ? $this->getOldValue('slug') 
+        $this->slug = session()->has('errors')
+            ? $this->getOldValue('slug')
             : $value;
 
         if (strlen($this->slug) >= 3) {
@@ -38,12 +42,13 @@ class SlugChecker extends Component
     {
         // Принудительно форматируем слаг (нижний регистр, дефисы)
         $this->slug = Str::slug($value);
-        
+
         $this->isAvailable = null;
         $this->errorMessage = '';
 
         if (strlen($this->slug) < 3) {
             $this->isChecking = false;
+
             return;
         }
 
@@ -56,7 +61,7 @@ class SlugChecker extends Component
 
         // Прямая проверка в БД без создания объекта Validator
         $isTaken = Business::where('slug', $this->slug)
-            ->when($this->businessId, fn($q) => $q->where('id', '!=', $this->businessId))
+            ->when($this->businessId, fn ($q) => $q->where('id', '!=', $this->businessId))
             ->exists();
 
         if ($isTaken) {

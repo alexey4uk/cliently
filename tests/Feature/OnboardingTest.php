@@ -51,7 +51,7 @@ class OnboardingTest extends TestCase
             'name' => 'Test Business',
             'slug' => 'test-business',
             'description' => 'Test description',
-            'phone' => '+375291234567',
+            'phone' => '375291234567',
             'first_name' => 'Иван',
             'last_name' => 'Иванов',
         ]);
@@ -327,7 +327,7 @@ class OnboardingTest extends TestCase
             'name' => 'Full Test Business',
             'slug' => 'full-test-business',
             'description' => 'Full test description',
-            'phone' => '+375291234567',
+            'phone' => '375291234567',
             'first_name' => 'Иван',
             'last_name' => 'Иванов',
         ]);

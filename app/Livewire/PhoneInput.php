@@ -3,18 +3,23 @@
 namespace App\Livewire;
 
 use App\Traits\HasOldValues;
-use Livewire\Component;
 use Livewire\Attributes\Computed;
+use Livewire\Component;
 
 class PhoneInput extends Component
 {
     use HasOldValues;
 
     public $phone = '+375';
+
     public $label;
+
     public $name;
+
     public $required;
+
     public $placeholder;
+
     public $error = '';
 
     public function mount($required = false, $label = null, $name = 'phone', $placeholder = '+375 (__) ___-__-__', $value = '')
@@ -36,10 +41,10 @@ class PhoneInput extends Component
     public function cleanPhone()
     {
         $digits = preg_replace('/\D/', '', $this->phone);
-        
+
         // Если номер начинается с 375, ограничиваем 12 цифрами, иначе добавляем префикс
-        if (!str_starts_with($digits, '375') && !empty($digits)) {
-            $digits = '375' . $digits;
+        if (! str_starts_with($digits, '375') && ! empty($digits)) {
+            $digits = '375'.$digits;
         }
 
         return substr($digits, 0, 12);
