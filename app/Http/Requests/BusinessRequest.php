@@ -43,8 +43,8 @@ class BusinessRequest extends FormRequest
             'phone' => [
                 'required',
                 'string',
-                'max:20',
-                'regex:/^\+375\d{9}$/',
+                'max:12',
+                'digits:12',
             ],
         ];
     }
