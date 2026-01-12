@@ -8,10 +8,10 @@
         <div class="flex items-center bg-white dark:bg-slate-900 rounded-md border {{ $errorMessage || $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all"
             id="slugContainer">
             <!-- Префикс -->
-            <span
+            {{-- <span
                 class="inline-flex items-center px-2.5 md:px-3 py-2 md:py-2.5 bg-slate-50 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-sm font-mono select-none">
                 /
-            </span>
+            </span> --}}
 
             <!-- Поле ввода -->
             <div class="flex-1 relative">
@@ -39,15 +39,15 @@
         </div>
 
         <!-- Предпросмотр адреса -->
-        @if ($slug)
+        @if ($slug && Str::length($slug) > 2)
             <div class="mt-2 transition-opacity duration-200">
                 <p class="text-xs text-slate-500 dark:text-slate-400 font-mono flex items-center">
                     <i class="fa-solid fa-link text-indigo-600 dark:text-indigo-400 text-xs mr-1.5"></i>
-                    <span class="select-none">{{ url('/') }}/book/</span>
-                    <span
+                    <span class="select-none">/book/</span>
+                    <span1
                         class="font-semibold {{ $isAvailable === true ? 'text-emerald-600 dark:text-emerald-400' : ($isAvailable === false ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400') }}">
                         {{ $slug ?: 'ip-ivanov' }}
-                    </span>
+                    </span1>
                 </p>
             </div>
         @endif

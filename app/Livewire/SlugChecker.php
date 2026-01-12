@@ -12,66 +12,38 @@ class SlugChecker extends Component
     use HasOldValues;
 
     public $slug = '';
-
     public $isAvailable = null;
-
     public $isChecking = false;
-
     public $errorMessage = '';
+    public $businessId = null;
 
-    public function mount($value = '')
+    public function mount($value = '', $businessId = null)
     {
-        $this->slug = $value;
+        $this->businessId = $businessId;
+        
+        // Используем ваш трейт для получения старых данных при ошибках формы
+        $this->slug = session()->has('errors') 
+            ? $this->getOldValue('slug') 
+            : $value;
 
-        if (session()->has('errors')) {
-            $this->slug = $this->getOldValue('slug');
-        }
-
-        if (! empty($this->slug)) {
+        if (strlen($this->slug) >= 3) {
             $this->checkSlug();
         }
     }
 
-    protected function rules()
-    {
-        return [
-            'slug' => [
-                'required',
-                'min:3',
-                'max:50',
-                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
-                function ($value, $fail) {
-                    if (! $this->checkSlugAvailability($value)) {
-                        $fail('Этот slug уже занят. Пожалуйста, выберите другой.');
-                    }
-                },
-            ],
-        ];
-    }
-
+    /**
+     * Срабатывает при каждом обновлении $slug через wire:model
+     */
     public function updatedSlug($value)
     {
+        // Принудительно форматируем слаг (нижний регистр, дефисы)
+        $this->slug = Str::slug($value);
+        
         $this->isAvailable = null;
         $this->errorMessage = '';
-        $this->isChecking = false;
 
-        $sanitized = Str::slug($value);
-
-        if ($sanitized !== $value) {
-            $this->slug = $sanitized;
-        }
-
-        if (empty($this->slug) || strlen($this->slug) < 3) {
+        if (strlen($this->slug) < 3) {
             $this->isChecking = false;
-
-            return;
-        }
-
-        if (! preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $this->slug)) {
-            $this->isAvailable = false;
-            $this->errorMessage = 'Только латинские буквы в нижнем регистре, цифры и одиночные дефисы. Дефисы не могут быть в начале или конце.';
-            $this->isChecking = false;
-
             return;
         }
 
@@ -80,28 +52,22 @@ class SlugChecker extends Component
 
     public function checkSlug()
     {
-        if (empty($this->slug) || strlen($this->slug) < 3) {
-            return;
-        }
-
         $this->isChecking = true;
 
-        try {
-            $this->validateOnly('slug');
-            $this->isAvailable = true;
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        // Прямая проверка в БД без создания объекта Validator
+        $isTaken = Business::where('slug', $this->slug)
+            ->when($this->businessId, fn($q) => $q->where('id', '!=', $this->businessId))
+            ->exists();
+
+        if ($isTaken) {
             $this->isAvailable = false;
-            $this->errorMessage = $e->validator->errors()->first('slug');
-        } finally {
-            $this->isChecking = false;
+            $this->errorMessage = 'Этот адрес уже занят';
+        } else {
+            $this->isAvailable = true;
+            $this->errorMessage = '';
         }
-    }
 
-    private function checkSlugAvailability($slug)
-    {
-        $query = Business::where('slug', $slug);
-
-        return $query->doesntExist();
+        $this->isChecking = false;
     }
 
     public function render()
