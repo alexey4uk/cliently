@@ -123,9 +123,9 @@ class AppointmentController extends Controller
 
         $date = request()->get('date', Carbon::today()->format('Y-m-d'));
         $selectedDate = Carbon::parse($date);
-        
+
         // ============ ПРОВЕРКА: ДАТА В ПРОШЛОМ ============
-        if ($selectedDate->isPast() && !$selectedDate->isToday()) {
+        if ($selectedDate->isPast() && ! $selectedDate->isToday()) {
             // Если дата в прошлом (не сегодня), перенаправляем на сегодня
             return redirect()->route('public.appointments.select-time', [
                 'slug' => $slug,
@@ -136,7 +136,7 @@ class AppointmentController extends Controller
             ]);
         }
         // ============ КОНЕЦ ПРОВЕРКИ ============
-        
+
         // Определяем, является ли это явным выбором пользователя
         $isExplicitDateChoice = request()->has('date');
 
@@ -153,7 +153,7 @@ class AppointmentController extends Controller
         // Получаем даты со слотами с сегодня до конца месяца
         $endOfMonth = $selectedDate->copy()->endOfMonth();
         $datesWithSlots = [];
-        
+
         // Начинаем с сегодня
         $checkDate = Carbon::today();
         if ($checkDate->gt($endOfMonth)) {
@@ -164,7 +164,7 @@ class AppointmentController extends Controller
         while ($checkDate->lte($endOfMonth)) {
             // Для текущей даты используем уже полученные слоты
             if ($checkDate->format('Y-m-d') === $date) {
-                $datesWithSlots[$checkDate->format('Y-m-d')] = !empty($availableSlots);
+                $datesWithSlots[$checkDate->format('Y-m-d')] = ! empty($availableSlots);
             } else {
                 // Для остальных дат проверяем слоты
                 $slots = $this->slotService->getAvailableSlots(
@@ -174,10 +174,10 @@ class AppointmentController extends Controller
                     $locationId,
                     $debugInfo
                 );
-                
-                $datesWithSlots[$checkDate->format('Y-m-d')] = !empty($slots);
+
+                $datesWithSlots[$checkDate->format('Y-m-d')] = ! empty($slots);
             }
-            
+
             $checkDate->addDay();
         }
 
@@ -187,8 +187,8 @@ class AppointmentController extends Controller
         // 2. ИЛИ это сегодняшняя дата (чтобы не показывать сегодня, если нет слотов)
         if (empty($availableSlots)) {
             // Определяем, нужно ли искать другую дату
-            $shouldFindNextDate = !$isExplicitDateChoice || $selectedDate->isToday();
-            
+            $shouldFindNextDate = ! $isExplicitDateChoice || $selectedDate->isToday();
+
             if ($shouldFindNextDate) {
                 $nextAvailableDate = $this->findNextAvailableDate(
                     $serviceId,
@@ -196,7 +196,7 @@ class AppointmentController extends Controller
                     $locationId,
                     $selectedDate
                 );
-                
+
                 // if ($nextAvailableDate) {
                 //     // Перенаправляем на ту же страницу с ближайшей датой
                 //     return redirect()->route('public.appointments.select-time', [
@@ -225,12 +225,12 @@ class AppointmentController extends Controller
 
     /**
      * Найти ближайшую дату со слотами
-     * 
-     * @param int $serviceId ID услуги
-     * @param int|null $masterId ID мастера (если указан)
-     * @param int|null $locationId ID локации (если указана)
-     * @param Carbon $startDate Дата, с которой начинаем поиск
-     * @param int $maxDays Максимальное количество дней для поиска вперед
+     *
+     * @param  int  $serviceId  ID услуги
+     * @param  int|null  $masterId  ID мастера (если указан)
+     * @param  int|null  $locationId  ID локации (если указана)
+     * @param  Carbon  $startDate  Дата, с которой начинаем поиск
+     * @param  int  $maxDays  Максимальное количество дней для поиска вперед
      * @return Carbon|null Ближайшая дата со слотами или null
      */
     private function findNextAvailableDate($serviceId, $masterId, $locationId, Carbon $startDate, $maxDays = 60): ?Carbon
@@ -251,7 +251,7 @@ class AppointmentController extends Controller
                     $debugInfo
                 );
 
-                if (!empty($slots)) {
+                if (! empty($slots)) {
                     return $checkDate;
                 }
             } catch (\Exception $e) {
