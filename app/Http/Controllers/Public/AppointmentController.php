@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Services\AppointmentSlotService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentController extends Controller
 {
@@ -27,14 +28,6 @@ class AppointmentController extends Controller
     {
         $business = Business::where('slug', $slug)->firstOrFail();
         $locations = $business->locations()->orderBy('name')->get();
-
-        // // Если локация только одна, сразу переходим к выбору услуг
-        // if ($locations->count() === 1) {
-        //     return redirect()->route('public.appointments.select-location', [
-        //         'slug' => $business->slug,
-        //         'locationId' => $locations->first()->id,
-        //     ]);
-        // }
 
         return view('appointments.public.select-location', compact('business', 'locations'))->with('currentStep', 1);
     }
@@ -130,8 +123,24 @@ class AppointmentController extends Controller
 
         $date = request()->get('date', Carbon::today()->format('Y-m-d'));
         $selectedDate = Carbon::parse($date);
+        
+        // ============ ПРОВЕРКА: ДАТА В ПРОШЛОМ ============
+        if ($selectedDate->isPast() && !$selectedDate->isToday()) {
+            // Если дата в прошлом (не сегодня), перенаправляем на сегодня
+            return redirect()->route('public.appointments.select-time', [
+                'slug' => $slug,
+                'locationId' => $locationId,
+                'serviceId' => $serviceId,
+                'masterId' => $masterId,
+                'date' => Carbon::today()->format('Y-m-d'),
+            ]);
+        }
+        // ============ КОНЕЦ ПРОВЕРКИ ============
+        
+        // Определяем, является ли это явным выбором пользователя
+        $isExplicitDateChoice = request()->has('date');
 
-        // Получаем доступные слоты
+        // Получаем доступные слоты для выбранной даты
         $debugInfo = [];
         $availableSlots = $this->slotService->getAvailableSlots(
             $serviceId,
@@ -141,6 +150,67 @@ class AppointmentController extends Controller
             $debugInfo
         );
 
+        // Получаем даты со слотами с сегодня до конца месяца
+        $endOfMonth = $selectedDate->copy()->endOfMonth();
+        $datesWithSlots = [];
+        
+        // Начинаем с сегодня
+        $checkDate = Carbon::today();
+        if ($checkDate->gt($endOfMonth)) {
+            // Если сегодня уже после конца месяца (редкий случай)
+            $checkDate = $selectedDate->copy();
+        }
+
+        while ($checkDate->lte($endOfMonth)) {
+            // Для текущей даты используем уже полученные слоты
+            if ($checkDate->format('Y-m-d') === $date) {
+                $datesWithSlots[$checkDate->format('Y-m-d')] = !empty($availableSlots);
+            } else {
+                // Для остальных дат проверяем слоты
+                $slots = $this->slotService->getAvailableSlots(
+                    $serviceId,
+                    $checkDate->format('Y-m-d'),
+                    $masterId,
+                    $locationId,
+                    $debugInfo
+                );
+                
+                $datesWithSlots[$checkDate->format('Y-m-d')] = !empty($slots);
+            }
+            
+            $checkDate->addDay();
+        }
+
+        // Если для запрошенной даты нет слотов, ищем ближайшую дату со слотами
+        // Но делаем это только если:
+        // 1. Это не явный выбор пользователя (первый визит или date не указан в URL)
+        // 2. ИЛИ это сегодняшняя дата (чтобы не показывать сегодня, если нет слотов)
+        if (empty($availableSlots)) {
+            // Определяем, нужно ли искать другую дату
+            $shouldFindNextDate = !$isExplicitDateChoice || $selectedDate->isToday();
+            
+            if ($shouldFindNextDate) {
+                $nextAvailableDate = $this->findNextAvailableDate(
+                    $serviceId,
+                    $masterId,
+                    $locationId,
+                    $selectedDate
+                );
+                
+                // if ($nextAvailableDate) {
+                //     // Перенаправляем на ту же страницу с ближайшей датой
+                //     return redirect()->route('public.appointments.select-time', [
+                //         'slug' => $slug,
+                //         'locationId' => $locationId,
+                //         'serviceId' => $serviceId,
+                //         'masterId' => $masterId,
+                //         'date' => $nextAvailableDate->format('Y-m-d'),
+                //     ]);
+                // }
+            }
+            // Если пользователь явно выбрал дату без слотов - показываем пустой список
+        }
+
         return view('appointments.public.select-time', compact(
             'business',
             'location',
@@ -148,8 +218,54 @@ class AppointmentController extends Controller
             'master',
             'selectedDate',
             'availableSlots',
-            'date'
+            'date',
+            'datesWithSlots'
         ))->with('currentStep', 4);
+    }
+
+    /**
+     * Найти ближайшую дату со слотами
+     * 
+     * @param int $serviceId ID услуги
+     * @param int|null $masterId ID мастера (если указан)
+     * @param int|null $locationId ID локации (если указана)
+     * @param Carbon $startDate Дата, с которой начинаем поиск
+     * @param int $maxDays Максимальное количество дней для поиска вперед
+     * @return Carbon|null Ближайшая дата со слотами или null
+     */
+    private function findNextAvailableDate($serviceId, $masterId, $locationId, Carbon $startDate, $maxDays = 60): ?Carbon
+    {
+        // Начинаем поиск с завтрашнего дня
+        $checkDate = $startDate->copy()->addDay();
+        $endDate = $startDate->copy()->addDays($maxDays);
+
+        while ($checkDate->lte($endDate)) {
+            $debugInfo = [];
+
+            try {
+                $slots = $this->slotService->getAvailableSlots(
+                    $serviceId,
+                    $checkDate->format('Y-m-d'),
+                    $masterId,
+                    $locationId,
+                    $debugInfo
+                );
+
+                if (!empty($slots)) {
+                    return $checkDate;
+                }
+            } catch (\Exception $e) {
+                // Логируем ошибку, но продолжаем поиск
+                Log::warning('Ошибка при поиске слотов для даты', [
+                    'date' => $checkDate->format('Y-m-d'),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            $checkDate->addDay();
+        }
+
+        return null;
     }
 
     /**
@@ -285,14 +401,14 @@ class AppointmentController extends Controller
         // Проверяем, можно ли отменить запись
         if (in_array($appointment->status, ['completed', 'cancelled'])) {
             return redirect()
-                ->route('public.appointments.view', ['slug' => $slug, 'token' => $token])
+                ->route('public.appointments.show', ['slug' => $slug, 'token' => $token])
                 ->with('error', 'Эту запись нельзя отменить.');
         }
 
         $appointment->update(['status' => 'cancelled']);
 
         return redirect()
-            ->route('public.appointments.view', ['slug' => $slug, 'token' => $token])
+            ->route('public.appointments.show', ['slug' => $slug, 'token' => $token])
             ->with('success', 'Запись успешно отменена.');
     }
 }
