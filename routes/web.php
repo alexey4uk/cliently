@@ -77,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
 
             //Telegram
             Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
+            Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
 
             // Настройки бизнеса
             Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');
@@ -101,4 +102,4 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

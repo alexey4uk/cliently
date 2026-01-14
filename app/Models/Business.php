@@ -16,6 +16,7 @@ class Business extends Model
         'phone',
         'description',
         'slug',
+        'telegram_chat_id',
     ];
 
     public function clients()
