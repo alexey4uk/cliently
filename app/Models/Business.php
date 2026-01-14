@@ -63,4 +63,9 @@ class Business extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function telegramUserStates(): HasMany
+    {
+        return $this->hasMany(\App\Models\TelegramUserState::class);
+    }
 }
