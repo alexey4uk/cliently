@@ -226,16 +226,19 @@
                     </div>
                 </a>
 
-                @php
-                    $business->telegram_bot_active = !empty($bot);
-                @endphp
-
+                    @php
+                        $telegramBotActive = $business->telegram_chat_id;
+                    @endphp
+                    
                 <!-- Карточка: Telegram Бот -->
                 <a href="{{ route('settings.telegram') }}"
-                    class="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-lg border {{ !$business->telegram_bot_active ? 'border-amber-200 dark:border-amber-900/50' : 'border-slate-200 dark:border-slate-800' }} shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
+                    class="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-lg border {{ !$telegramBotActive ? 'border-amber-200 dark:border-amber-900/50' : 'border-slate-200 dark:border-slate-800' }} shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
+                    
+
+                    
 
                     <!-- Декоративный фоновый элемент для выделения -->
-                    @if (!$business->telegram_bot_active)
+                    @if (!$telegramBotActive)
                         <div
                             class="absolute -right-4 -top-4 w-24 h-24 bg-amber-100/50 dark:bg-amber-900/20 rounded-full blur-2xl transition-group-hover:bg-indigo-500/10">
                         </div>
@@ -243,15 +246,15 @@
 
                     <div class="relative">
                         <div
-                            class="h-12 w-12 rounded-xl {{ !$business->telegram_bot_active ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-slate-100 dark:bg-slate-800' }} flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+                            class="h-12 w-12 rounded-xl {{ !$telegramBotActive ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-slate-100 dark:bg-slate-800' }} flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
                             <i
-                                class="fa-brands fa-telegram {{ !$business->telegram_bot_active ? 'text-amber-600 dark:text-amber-500' : 'text-indigo-600 dark:text-indigo-400' }} text-xl"></i>
+                                class="fa-brands fa-telegram {{ !$telegramBotActive ? 'text-amber-600 dark:text-amber-500' : 'text-indigo-600 dark:text-indigo-400' }} text-xl"></i>
                         </div>
 
                         <h3
                             class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors flex items-center gap-2">
                             Telegram Бот
-                            @if (!$business->telegram_bot_active)
+                            @if (!$telegramBotActive)
                                 <span class="flex h-2 w-2">
                                     <span
                                         class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-amber-400 opacity-75"></span>
@@ -261,7 +264,7 @@
                         </h3>
 
                         <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
-                            @if ($business->telegram_bot_active)
+                            @if ($telegramBotActive)
                                 <span class="inline-flex items-center text-emerald-600 dark:text-emerald-400 font-medium">
                                     <i class="fa-solid fa-check-circle mr-1.5"></i>
                                     Подключен

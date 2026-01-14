@@ -167,9 +167,9 @@
                         </div>
                         <div class="flex items-center justify-between gap-2 overflow-hidden">
                             <code
-                                class="text-sky-600 dark:text-sky-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start=book_{{ $business->id }}</code>
+                                class="text-sky-600 dark:text-sky-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start={{ $business->slug }}</code>
                             <button
-                                onclick="copyText('https://t.me/{{ $botUsername }}?start=book_{{ $business->id }}', this)"
+                                onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}', this)"
                                 class="shrink-0 text-slate-400 hover:text-sky-600 transition-colors p-1">
                                 <i class="fa-regular fa-copy text-base"></i>
                             </button>
@@ -178,7 +178,7 @@
                 </div>
 
                 <div class="p-6 pt-0 mt-auto">
-                    <button onclick="copyText('https://t.me/{{ $botUsername }}?start=book_{{ $business->id }}', this)"
+                    <button onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}', this)"
                         class="w-full flex items-center justify-center gap-2 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] shadow-sm">
                         <i class="fa-solid fa-share-nodes text-sky-500"></i>
                         <span>Скопировать ссылку</span>
