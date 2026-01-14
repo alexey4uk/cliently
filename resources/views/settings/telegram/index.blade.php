@@ -62,9 +62,9 @@
                             </div>
                             <div class="flex items-center justify-between gap-2 overflow-hidden">
                                 <code
-                                    class="text-indigo-600 dark:text-indigo-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start=auth_{{ $business->id }}</code>
+                                    class="text-indigo-600 dark:text-indigo-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}</code>
                                 <button
-                                    onclick="copyText('https://t.me/{{ $botUsername }}?start=auth_{{ $business->id }}', this)"
+                                    onclick="copyText('https://t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}', this)"
                                     class="shrink-0 text-slate-400 hover:text-indigo-600 transition-colors p-1">
                                     <i class="fa-regular fa-copy text-base"></i>
                                 </button>
@@ -110,7 +110,8 @@
 
                 <div class="p-6 pt-0 mt-auto">
                     @if (!$business->telegram_chat_id)
-                        <a href="https://t.me/{{ $botUsername }}?start=auth_{{ $business->id }}" target="_blank"
+                        <a href="https://t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}"
+                            target="_blank"
                             class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all active:scale-[0.98] shadow-lg shadow-indigo-100 dark:shadow-none">
                             <i class="fa-brands fa-telegram text-lg"></i>
                             <span>Подключить Telegram</span>

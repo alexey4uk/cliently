@@ -18,9 +18,9 @@ class Handler extends WebhookHandler
         $parts = explode(' ', $text);
 
         if (isset($parts[1]) && str_starts_with($parts[1], 'auth_')) {
-            $businessId = str_replace('auth_', '', $parts[1]);
+            $token = str_replace('auth_', '', $parts[1]);
 
-            $business = Business::find($businessId);
+            $business = Business::where('telegram_token', $token)->first();
             if ($business) {
                 $business->update(['telegram_chat_id' => $this->chat->chat_id]);
 
