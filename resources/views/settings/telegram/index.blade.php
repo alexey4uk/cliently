@@ -140,7 +140,21 @@
                             class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
                             <i class="fa-solid fa-calendar-check text-lg"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900 dark:text-white text-base">Онлайн-запись</h3>
+                        <div>
+                            <h3 class="font-bold text-slate-900 dark:text-white text-base">Онлайн-запись</h3>
+                            @if (!empty($bot))
+                                <span
+                                    class="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold rounded-full border border-emerald-100 dark:border-emerald-800/50">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    Бот активен
+                                </span>
+                            @else
+                                <span
+                                    class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-bold rounded-full border border-transparent">
+                                    Бот не настроен
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     <p class="text-slate-500 text-sm mb-6 leading-relaxed">

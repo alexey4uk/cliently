@@ -24,8 +24,11 @@ class BusinessSettingsController extends Controller
             return redirect()->route('onboarding.business');
         }
 
+        $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+
         return view('settings.index', [
             'business' => $business,
+            'bot' => $bot,
         ]);
     }
 

@@ -227,7 +227,7 @@
                 </a>
 
                 @php
-                    $business->telegram_bot_active = false
+                    $business->telegram_bot_active = !empty($bot);
                 @endphp
 
                 <!-- Карточка: Telegram Бот -->
