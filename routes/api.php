@@ -20,11 +20,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Публичный API для получения доступных слотов по slug бизнеса
 Route::get('/book/{slug}/available-slots', [\App\Http\Controllers\Public\AppointmentSlotController::class, 'getAvailableSlots'])
     ->name('api.public.appointments.available-slots');
-
-// Telegraph webhook
-Route::post('/telegraph/{token}/webhook', function (\Illuminate\Http\Request $request, string $token) {
-    \Illuminate\Support\Facades\Log::info('Webhook received for token: ' . $token);
-    $bot = \DefStudio\Telegraph\Models\TelegraphBot::where('token', $token)->firstOrFail();
-    $handler = app(\App\Telegram\WebhookHandler::class);
-    return $handler->handle($request, $bot);
-})->name('telegraph.webhook');
