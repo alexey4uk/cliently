@@ -59,89 +59,6 @@
             </div>
         </div>
 
-
-        <!-- Публичная ссылка -->
-        @php
-            $fullUrl = route('public.appointments.show', ['slug' => $business->slug]);
-            $displayUrl = str_replace(['http://', 'https://', 'www.'], '', $fullUrl);
-        @endphp
-
-        @if ($business->slug)
-            <div x-data="{
-                copied: false,
-                publicUrl: '{{ $fullUrl }}',
-                async copyUrl() {
-                    try {
-                        if (navigator.clipboard && window.isSecureContext) {
-                            await navigator.clipboard.writeText(this.publicUrl);
-                        } else {
-                            throw new Error();
-                        }
-                    } catch (err) {
-                        const textArea = document.createElement('textarea');
-                        textArea.value = this.publicUrl;
-                        textArea.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                    }
-                    this.copied = true;
-                    setTimeout(() => this.copied = false, 2000);
-                }
-            }"
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div class="p-4 md:p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div
-                            class="h-10 w-10 rounded-xl bg-green-500 dark:bg-green-600 flex items-center justify-center shrink-0 shadow-sm">
-                            <i class="fa-solid fa-share-alt text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-0.5">
-                                Ваша публичная ссылка
-                            </h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">
-                                Мгновенно поделитесь с клиентами
-                            </p>
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-2.5 md:p-3">
-                        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
-
-                            {{-- Поле с обрезанной ссылкой (Домен + Путь) --}}
-                            <div class="flex-1 min-w-0 bg-transparent px-1">
-                                <span
-                                    class="text-sm text-slate-700 dark:text-slate-300 font-mono block truncate selection:bg-green-100"
-                                    title="{{ $fullUrl }}">
-                                    {{ $displayUrl }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                {{-- Кнопка "Перейти" (иконка) --}}
-                                <a href="{{ $fullUrl }}" target="_blank" rel="noopener"
-                                    class="p-2.5 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shrink-0 shadow-sm"
-                                    title="Открыть ссылку">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-                                </a>
-
-                                {{-- Кнопка "Копировать" --}}
-                                <button type="button" @click="copyUrl()" aria-live="polite"
-                                    :class="copied ? 'bg-green-600' : 'bg-indigo-600'"
-                                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all active:scale-95 min-w-[130px] shadow-md hover:shadow-lg focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                    <i :class="copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'" class="text-xs"></i>
-                                    <span x-text="copied ? 'Готово!' : 'Копировать'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
         <!-- Основные разделы -->
         <div>
             <div class="flex items-center gap-2 mb-4">
@@ -226,16 +143,39 @@
                     </div>
                 </a>
 
-                    @php
-                        $telegramBotActive = $business->telegram_chat_id;
-                    @endphp
-                    
+                <!-- Карточка: Онлайн-запись -->
+                <a href="{{ route('settings.online-booking') }}"
+                    class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
+                    <div class="relative">
+                        <div
+                            class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+                            <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                        </div>
+                        <h3
+                            class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            Онлайн-запись
+                        </h3>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                            Ссылки для клиентов
+                        </p>
+                        <div
+                            class="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="mr-1">Управление ссылками</span>
+                            <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+
+                @php
+                    $telegramBotActive = $business->telegram_chat_id;
+                @endphp
+
                 <!-- Карточка: Telegram Бот -->
                 <a href="{{ route('settings.telegram') }}"
                     class="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-lg border {{ !$telegramBotActive ? 'border-amber-200 dark:border-amber-900/50' : 'border-slate-200 dark:border-slate-800' }} shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
-                    
 
-                    
+
+
 
                     <!-- Декоративный фоновый элемент для выделения -->
                     @if (!$telegramBotActive)

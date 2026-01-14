@@ -31,7 +31,6 @@ class LocationRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                'regex:/^\+375\d{9}$/',
             ],
             'working_hours' => ['required', 'array'],
             'working_hours.from' => ['required_without:working_hours.24_hours', 'date_format:H:i'],

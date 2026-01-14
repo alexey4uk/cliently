@@ -75,6 +75,10 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
 
+            // Онлайн-запись
+            Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
+            Route::patch('/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
+
             //Telegram
             Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
             Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
