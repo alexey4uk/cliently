@@ -321,4 +321,23 @@ class TelegramKeyboards
             ]);
     }
 
+    // ==================== КАТАЛОГ БИЗНЕСОВ ====================
+    
+    /**
+     * Клавиатура для каталога бизнесов
+     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Business[] $businesses
+     */
+    public static function businessCatalog($businesses): Keyboard
+    {
+        $keyboard = Keyboard::make();
+        
+        foreach ($businesses as $business) {
+            $keyboard = $keyboard->row([
+                Button::make("🏢 {$business->name}")->action("business_{$business->id}"),
+            ]);
+        }
+        
+        return $keyboard;
+    }
+
 }

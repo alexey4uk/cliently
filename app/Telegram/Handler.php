@@ -245,23 +245,19 @@ class Handler extends WebhookHandler
     }
 
     /**
-     * Команда /list - список бизнесов
+     * Команда /list - каталог бизнесов
      */
     public function list()
     {
-        $businesses = Business::select('name', 'slug')->get();
+        $businesses = Business::select('id', 'name', 'slug')->get();
 
         if ($businesses->isEmpty()) {
             $this->replyWithMessage(TelegramMessages::MSG_NO_BUSINESSES);
             return;
         }
 
-        $message = "Доступные бизнесы:\n";
-        foreach ($businesses as $business) {
-            $message .= "- {$business->name} (slug: {$business->slug})\n";
-        }
-
-        $this->replyWithMessage($message);
+        $message = "🏢 Выберите бизнес для записи:\n\n";
+        $this->replyWithMessage($message, TelegramKeyboards::businessCatalog($businesses));
     }
 
     /**
@@ -433,9 +429,10 @@ class Handler extends WebhookHandler
     /**
      * Начало процесса записи
      */
-    protected function startBookingProcess(Business $business)
+    protected function startBookingProcess(Business $business, $userId = null)
     {
-        $userId = $this->message->from()->id();
+        // Получаем userId из параметра или из сообщения/колбэка
+        $userId = $userId ?? $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
 
         // Очищаем предыдущее состояние
         TelegramUserState::clearState($userId, $business->id);
@@ -602,6 +599,26 @@ class Handler extends WebhookHandler
         if (!$action) {
             Log::error('No action found in callback data', ['callback_data' => $callbackData->toArray()]);
             $this->replyWithMessage('❌ Ошибка данных. Попробуйте снова.');
+            return;
+        }
+
+        // Обработка выбора бизнеса из каталога (может быть без состояния)
+        if (str_starts_with($action, 'business_')) {
+            $businessId = str_replace('business_', '', $action);
+            $business = Business::find($businessId);
+            
+            if (!$business) {
+                $this->replyWithMessage(TelegramMessages::MSG_BUSINESS_NOT_FOUND);
+                return;
+            }
+            
+            Log::info('Business selected from catalog:', ['business_id' => $businessId, 'business_name' => $business->name]);
+            
+            // Удаляем старое сообщение с каталогом
+            $this->deleteBotMessage($messageId);
+            
+            // Начинаем процесс записи
+            $this->startBookingProcess($business, $userId);
             return;
         }
 
