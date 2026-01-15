@@ -10,6 +10,7 @@ use App\Services\AppointmentSlotService;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
+use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;
 
@@ -28,28 +29,36 @@ class Handler extends WebhookHandler
      */
     protected function replyWithMessage(string $message, ?Keyboard $keyboard = null): void
     {
-        Log::info('replyWithMessage called', [
-            'has_last_message' => !is_null($this->lastMessageId),
-            'last_message_id' => $this->lastMessageId,
+        Log::info('=== replyWithMessage START ===');
+        Log::info('Input', [
+            'lastMessageId' => $this->lastMessageId,
             'message_length' => strlen($message),
-            'has_keyboard' => !is_null($keyboard)
+            'has_keyboard' => !is_null($keyboard),
+            'message_preview' => substr($message, 0, 50)
         ]);
 
         try {
             if ($this->lastMessageId) {
+                Log::info('Attempting to EDIT message', ['message_id' => $this->lastMessageId]);
+                
                 // Редактируем существующее сообщение
                 $this->chat->edit($this->lastMessageId)
                     ->message($message)
                     ->send();
                 
-                Log::info('Message edited', ['message_id' => $this->lastMessageId]);
+                Log::info('✓ Message edited successfully');
                 
                 // Если есть новая клавиатура, заменяем ее
                 if ($keyboard) {
                     $this->chat->replaceKeyboard($this->lastMessageId, $keyboard)->send();
-                    Log::info('Keyboard replaced');
+                    Log::info('✓ Keyboard replaced');
                 }
+                
+                // ВАЖНО: Сохраняем ID даже при редактировании
+                $this->saveMessageIdToState();
             } else {
+                Log::info('No lastMessageId, sending NEW message');
+                
                 // Отправляем новое сообщение
                 $response = $this->chat->message($message);
                 
@@ -61,10 +70,13 @@ class Handler extends WebhookHandler
                 
                 // Сохраняем ID сообщения
                 $this->lastMessageId = $result->telegraphMessageId();
-                Log::info('New message sent', ['message_id' => $this->lastMessageId]);
+                Log::info('✓ New message sent', ['message_id' => $this->lastMessageId]);
+                
+                // Сохраняем в базу для последующего восстановления
+                $this->saveMessageIdToState();
             }
         } catch (\Exception $e) {
-            Log::error('Error in replyWithMessage: ' . $e->getMessage());
+            Log::error('✗ Error in replyWithMessage: ' . $e->getMessage());
             
             // Если редактирование не удалось, отправляем новое сообщение
             $this->lastMessageId = null;
@@ -77,7 +89,57 @@ class Handler extends WebhookHandler
             
             $result = $response->send();
             $this->lastMessageId = $result->telegraphMessageId();
+            
+            Log::info('✓ New message sent after error', ['message_id' => $this->lastMessageId]);
+            
+            // Сохраняем в базу даже при ошибке
+            $this->saveMessageIdToState();
         }
+        
+        Log::info('=== replyWithMessage END ===');
+    }
+
+    /**
+     * Сохраняет ID последнего сообщения в состояние пользователя
+     */
+    protected function saveMessageIdToState(): void
+    {
+        Log::info('=== saveMessageIdToState START ===');
+        try {
+            // Получаем userId из callback или message
+            $userId = $this->callbackQuery?->from()->id() ?? $this->message?->from()->id();
+            
+            Log::info('Attempting to save', [
+                'user_id' => $userId,
+                'lastMessageId' => $this->lastMessageId
+            ]);
+            
+            if (!$userId || !$this->lastMessageId) {
+                Log::warning('✗ Skipping save - missing data', [
+                    'user_id' => $userId,
+                    'lastMessageId' => $this->lastMessageId
+                ]);
+                return;
+            }
+            
+            // Находим текущее состояние пользователя
+            $state = TelegramUserState::where('telegram_user_id', $userId)->first();
+            
+            if ($state) {
+                TelegramUserState::setMessageId($userId, $state->business_id, $this->lastMessageId);
+                Log::info('✓ Saved to state', [
+                    'user_id' => $userId,
+                    'business_id' => $state->business_id,
+                    'message_id' => $this->lastMessageId,
+                    'step' => $state->step
+                ]);
+            } else {
+                Log::warning('✗ No state found for user: ' . $userId);
+            }
+        } catch (\Exception $e) {
+            Log::error('✗ Failed to save message_id: ' . $e->getMessage());
+        }
+        Log::info('=== saveMessageIdToState END ===');
     }
 
     /**
@@ -86,22 +148,54 @@ class Handler extends WebhookHandler
     protected function handleChatMessage(\Illuminate\Support\Stringable $text): void
     {
         $messageText = $text->toString();
-        Log::info('Received chat message: ' . $messageText);
+        Log::info('=== handleChatMessage START ===');
+        Log::info('Received text: ' . $messageText);
 
         $userId = $this->message->from()->id();
         $states = TelegramUserState::where('telegram_user_id', $userId)->get();
 
+        $messageId = $this->message->id();
+        
         if ($states->isNotEmpty()) {
             $state = $states->first();
             $business = $state->business;
+            
+            Log::info('State found', [
+                'step' => $state->step,
+                'last_message_id_in_db' => $state->last_message_id,
+                'telegram_user_id' => $userId,
+                'business_id' => $business->id
+            ]);
+            
+            // Восстанавливаем lastMessageId из состояния
+            if ($state->last_message_id) {
+                $this->lastMessageId = $state->last_message_id;
+                Log::info('✓ Restored lastMessageId', ['message_id' => $this->lastMessageId]);
+            } else {
+                Log::warning('✗ No last_message_id in state');
+            }
+            
             if ($state && $state->step !== 'start') {
                 $this->handleTextMessage($messageText, $state, $business);
+                
+                // Удаляем сообщение пользователя после обработки
+                Log::info('About to delete user message', ['message_id' => $messageId]);
+                $this->deleteUserMessage($messageId);
+                
+                Log::info('=== handleChatMessage END ===');
                 return;
             }
+        } else {
+            Log::warning('No state found for user: ' . $userId);
         }
 
         // На неизвестные сообщения просто отвечаем
         $this->replyWithMessage('Привет! Для записи используйте ссылку с сайта бизнеса.');
+        
+        // Удаляем сообщение пользователя
+        $this->deleteUserMessage($messageId);
+        
+        Log::info('=== handleChatMessage END ===');
     }
 
     /**
@@ -115,19 +209,19 @@ class Handler extends WebhookHandler
         $parts = explode(' ', $text);
 
         if (isset($parts[1])) {
-            if (str_starts_with($parts[1], 'auth_')) {
-                // Подключение бизнеса
-                $token = str_replace('auth_', '', $parts[1]);
-                $business = Business::where('telegram_token', $token)->first();
-                
-                if ($business) {
-                    $business->update(['telegram_chat_id' => $this->chat->chat_id]);
-                    $this->replyWithMessage('✅ Аккаунт успешно подключен! Теперь вы будете получать уведомления о записях.');
-                } else {
-                    $this->replyWithMessage('❌ Бизнес не найден.');
-                }
-                return;
+        if (str_starts_with($parts[1], 'auth_')) {
+            // Подключение бизнеса
+            $token = str_replace('auth_', '', $parts[1]);
+            $business = Business::where('telegram_token', $token)->first();
+            
+            if ($business) {
+                $business->update(['telegram_chat_id' => $this->chat->chat_id]);
+                $this->replyWithMessage('✅ Аккаунт подключен!\n\nВы будете получать уведомления.');
+            } else {
+                $this->replyWithMessage('Бизнес не найден.');
             }
+            return;
+        }
 
             // Начало записи
             $slug = $parts[1];
@@ -136,7 +230,7 @@ class Handler extends WebhookHandler
             if ($business) {
                 $this->startBookingProcess($business);
             } else {
-                $this->replyWithMessage('❌ Бизнес не найден. Проверьте slug.');
+                $this->replyWithMessage('Бизнес не найден.');
             }
             return;
         }
@@ -172,6 +266,14 @@ class Handler extends WebhookHandler
     {
         Log::info('handleTextMessage', ['step' => $state->step, 'text' => $text]);
         
+        // Проверка на команду отмены
+        if (mb_strtolower(trim($text)) === 'отмена' || mb_strtolower(trim($text)) === 'cancel') {
+            TelegramUserState::clearState($state->telegram_user_id, $business->id);
+            $this->replyWithMessage('❌ Отменено.');
+            $this->lastMessageId = null;
+            return;
+        }
+        
         switch ($state->step) {
             case 'enter_client_info':
                 $this->handleClientInfo($business, $text, $state);
@@ -179,15 +281,12 @@ class Handler extends WebhookHandler
             case 'enter_phone':
                 $this->handlePhone($business, $text, $state);
                 break;
-            case 'enter_email':
-                $this->handleEmail($business, $text, $state);
-                break;
             case 'enter_notes':
                 $this->handleNotes($business, $text, $state);
                 break;
             default:
                 Log::warning('Unknown step in handleTextMessage: ' . $state->step);
-                $this->replyWithMessage('❌ Неизвестный шаг. Начните заново.');
+                $this->replyWithMessage('Неизвестный шаг. Начните заново.');
         }
     }
 
@@ -198,11 +297,39 @@ class Handler extends WebhookHandler
     {
         Log::info('handleClientInfo', ['text' => $text]);
         
+        $name = trim($text);
+        
+        if (empty($name)) {
+            $keyboard = Keyboard::make()->row([
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('❌ Имя не может быть пустым:', $keyboard);
+            return;
+        }
+        
+        if (mb_strlen($name) < 2) {
+            $keyboard = Keyboard::make()->row([
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('❌ Имя слишком короткое:', $keyboard);
+            return;
+        }
+        
         $data = $state->data;
-        $data['client_data']['first_name'] = $text;
+        $data['client_data']['first_name'] = $name;
 
-        TelegramUserState::updateState($state->telegram_user_id, $business->id, 'enter_phone', $data);
-        $this->replyWithMessage('📱 Введите ваш номер телефона:');
+        TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, $business->id, 'enter_phone', $data);
+        
+        $keyboard = Keyboard::make()->row([
+            Button::make('⬅️ Назад')->action('back_to_time'),
+            Button::make('❌ Отмена')->action('cancel'),
+        ]);
+        
+        $message = "✅ Имя: {$name}\n\n" .
+            "📱 Введите телефон:\n" .
+            "Пример: +79001234567";
+        
+        $this->replyWithMessage($message, $keyboard);
     }
 
     /**
@@ -212,33 +339,50 @@ class Handler extends WebhookHandler
     {
         Log::info('handlePhone', ['text' => $text]);
         
-        $data = $state->data;
-        $data['client_data']['phone'] = $text;
-
-        TelegramUserState::updateState($state->telegram_user_id, $business->id, 'enter_email', $data);
-
-        $keyboard = Keyboard::make();
-        $keyboard->button('Пропустить')->action('skip_email');
-
-        $this->replyWithMessage('📧 Введите ваш email (или нажмите "Пропустить"):', $keyboard);
-    }
-
-    /**
-     * Обработка email клиента
-     */
-    protected function handleEmail(Business $business, string $text, $state)
-    {
-        Log::info('handleEmail', ['text' => $text]);
+        $phone = trim($text);
+        
+        // Очистка и автоформатирование
+        $cleaned = preg_replace('/[^0-9+]/', '', $phone);
+        
+        if (str_starts_with($cleaned, '8')) {
+            $cleaned = '+7' . substr($cleaned, 1);
+        }
+        
+        if (!str_starts_with($cleaned, '+')) {
+            $cleaned = '+' . $cleaned;
+        }
+        
+        if (!preg_match('/^\+\d{10,15}$/', $cleaned)) {
+            $keyboard = Keyboard::make()->row([
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage(
+                "❌ Неверный формат\n\n" .
+                "Правильно: +79001234567\n" .
+                "Или: 89001234567\n\n" .
+                "Введите номер:", 
+                $keyboard
+            );
+            return;
+        }
         
         $data = $state->data;
-        $data['client_data']['email'] = $text;
+        $data['client_data']['phone'] = $cleaned;
 
-        TelegramUserState::updateState($state->telegram_user_id, $business->id, 'enter_notes', $data);
-
-        $keyboard = Keyboard::make();
-        $keyboard->button('Пропустить')->action('skip_notes');
-
-        $this->replyWithMessage('📝 Добавьте примечание к записи (или нажмите "Пропустить"):', $keyboard);
+        TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, $business->id, 'enter_notes', $data);
+        
+        $keyboard = Keyboard::make()->row([
+            Button::make('Пропустить')->action('skip_notes'),
+            Button::make('❌ Отмена')->action('cancel'),
+        ]);
+        
+        $message = "✅ Имя: {$data['client_data']['first_name']}\n" .
+            "✅ Телефон: {$cleaned}\n\n" .
+            "📝 Примечание (необязательно):\n" .
+            "Аллергия, предпочтения и т.д.\n\n" .
+            "Или нажмите Пропустить";
+        
+        $this->replyWithMessage($message, $keyboard);
     }
 
     /**
@@ -248,10 +392,34 @@ class Handler extends WebhookHandler
     {
         Log::info('handleNotes', ['text' => $text]);
         
+        $notes = trim($text);
+        
+        // Авто-пропуск для фраз означающих "нет"
+        $skipWords = ['нет', 'нечего', 'нету', 'пропустить', 'skip', '-', 'н'];
+        if (empty($notes) || in_array(mb_strtolower($notes), $skipWords)) {
+            $data = $state->data;
+            TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, $business->id, 'confirm_appointment', $data);
+            $this->showAppointmentConfirmation($business, $data);
+            return;
+        }
+        
+        if (mb_strlen($notes) > 200) {
+            $keyboard = Keyboard::make()->row([
+                Button::make('Пропустить')->action('skip_notes'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage(
+                "❌ Слишком длинно ({$notes} символов, макс. 200)\n\n" .
+                "Сократите:", 
+                $keyboard
+            );
+            return;
+        }
+        
         $data = $state->data;
-        $data['client_data']['notes'] = $text;
+        $data['client_data']['notes'] = $notes;
 
-        TelegramUserState::updateState($state->telegram_user_id, $business->id, 'confirm_appointment', $data);
+        TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, $business->id, 'confirm_appointment', $data);
         $this->showAppointmentConfirmation($business, $data);
     }
 
@@ -276,26 +444,32 @@ class Handler extends WebhookHandler
         }
         $time = Carbon::parse($time)->format('H:i');
 
-        $message = "📋 Подтвердите запись:\n\n" .
-            "🏢 Локация: {$location->name}\n" .
+        $message = "✅ ПОДТВЕРЖДЕНИЕ\n\n" .
+            "📍 Локация: {$location->name}\n" .
             "💇‍♀️ Услуга: {$service->name}\n" .
             "👨‍💼 Мастер: {$master->first_name} {$master->last_name}\n" .
             "📅 Дата: {$date}\n" .
-            "🕐 Время: {$time}\n" .
-            "👤 Имя: {$data['client_data']['first_name']}\n" .
+            "⏰ Время: {$time}\n" .
+            "👤 Клиент: {$data['client_data']['first_name']}\n" .
             "📱 Телефон: {$data['client_data']['phone']}\n";
-
-        if (isset($data['client_data']['email']) && !empty($data['client_data']['email'])) {
-            $message .= "📧 Email: {$data['client_data']['email']}\n";
-        }
 
         if (isset($data['client_data']['notes']) && !empty($data['client_data']['notes'])) {
             $message .= "📝 Примечание: {$data['client_data']['notes']}\n";
         }
 
-        $keyboard = Keyboard::make();
-        $keyboard->button('✅ Подтвердить')->action('confirm_appointment');
-        $keyboard->button('❌ Отмена')->action('cancel');
+        $keyboard = Keyboard::make()
+            ->row([
+                Button::make('✅ Подтвердить')->action('confirm_appointment'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ])
+            ->row([
+                Button::make('Имя')->action('edit_name'),
+                Button::make('Телефон')->action('edit_phone'),
+                Button::make('Примечание')->action('edit_notes'),
+            ])
+            ->row([
+                Button::make('⬅️ Назад')->action('back_to_time'),
+            ]);
 
         $this->replyWithMessage($message, $keyboard);
     }
@@ -325,22 +499,30 @@ class Handler extends WebhookHandler
         $locations = $business->locations()->orderBy('name')->get();
 
         if ($locations->isEmpty()) {
-            $this->replyWithMessage('❌ У этого бизнеса нет доступных локаций для записи.');
+            $this->replyWithMessage('❌ Нет доступных локаций.');
             return;
         }
 
-        $keyboard = Keyboard::make();
-
+        // Создаем кнопки локаций
+        $locationButtons = [];
         foreach ($locations as $location) {
-            $keyboard->button($location->name)->action("location_{$location->id}");
+            $locationButtons[] = Button::make($location->name)->action("location_{$location->id}");
         }
 
-        $keyboard->button('❌ Отмена')->action('cancel');
+        // Создаем клавиатуру: сначала локации сеткой 2 в строку, потом отмена
+        $keyboard = Keyboard::make()
+            ->row($locationButtons)  // Добавляем все кнопки локаций
+            ->chunk(2)               // Разбиваем на сетку 2×N
+            ->row([                  // Добавляем отмену отдельной строкой
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
-        $this->replyWithMessage('🏢 Выберите локацию:', $keyboard);
+        $message = "📍 Выберите локацию:";
+        
+        $this->replyWithMessage($message, $keyboard);
 
         // Сохраняем состояние
-        TelegramUserState::updateState($userId, $business->id, 'select_location');
+        TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_location');
     }
 
     /**
@@ -352,7 +534,7 @@ class Handler extends WebhookHandler
         
         $location = $business->locations()->find($locationId);
         if (!$location) {
-            $this->replyWithMessage('❌ Локация не найдена.');
+            $this->replyWithMessage('Локация не найдена.');
             return;
         }
 
@@ -373,19 +555,27 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $keyboard = Keyboard::make();
-
+        // Создаем кнопки услуг
+        $serviceButtons = [];
         foreach ($services as $service) {
-            $keyboard->button("{$service->name} ({$service->duration} мин)")->action("service_{$service->id}");
+            $serviceButtons[] = Button::make("{$service->name} ({$service->duration} мин)")->action("service_{$service->id}");
         }
 
-        $keyboard->button('⬅️ Назад')->action('back_to_location');
-        $keyboard->button('❌ Отмена')->action('cancel');
+        // Создаем клавиатуру: сначала услуги сеткой 2 в строку, потом навигация
+        $keyboard = Keyboard::make()
+            ->row($serviceButtons)  // Добавляем все кнопки услуг
+            ->chunk(2)              // Разбиваем на сетку 2×N
+            ->row([                 // Добавляем навигацию отдельной строкой
+                Button::make('⬅️ Назад')->action('back_to_location'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
-        $this->replyWithMessage("💇‍♀️ Выберите услугу для локации \"{$location->name}\":", $keyboard);
+        $message = "💇‍♀️ Выберите услугу для \"{$location->name}\":";
+        
+        $this->replyWithMessage($message, $keyboard);
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
-        TelegramUserState::updateState($userId, $business->id, 'select_service', [
+        TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_service', [
             'location_id' => $locationId,
         ]);
     }
@@ -401,7 +591,7 @@ class Handler extends WebhookHandler
         $service = $business->services()->find($serviceId);
 
         if (!$location || !$service) {
-            $this->replyWithMessage('❌ Локация или услуга не найдены.');
+            $this->replyWithMessage('❌ Данные не найдены.');
             return;
         }
 
@@ -435,19 +625,27 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $keyboard = Keyboard::make();
-
+        // Создаем кнопки мастеров
+        $masterButtons = [];
         foreach ($masters as $master) {
-            $keyboard->button($master->first_name . ' ' . $master->last_name)->action("master_{$master->id}");
+            $masterButtons[] = Button::make($master->first_name . ' ' . $master->last_name)->action("master_{$master->id}");
         }
 
-        $keyboard->button('⬅️ Назад')->action('back_to_service');
-        $keyboard->button('❌ Отмена')->action('cancel');
+        // Создаем клавиатуру: сначала мастера сеткой 2 в строку, потом навигация
+        $keyboard = Keyboard::make()
+            ->row($masterButtons)  // Добавляем все кнопки мастеров
+            ->chunk(2)             // Разбиваем на сетку 2×N
+            ->row([                // Добавляем навигацию отдельной строкой
+                Button::make('⬅️ Назад')->action('back_to_service'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
-        $this->replyWithMessage("👨‍💼 Выберите мастера для услуги \"{$service->name}\":", $keyboard);
+        $message = "👨‍💼 Выберите мастера для \"{$service->name}\":";
+        
+        $this->replyWithMessage($message, $keyboard);
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
-        TelegramUserState::updateState($userId, $business->id, 'select_master', [
+        TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_master', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
         ]);
@@ -486,7 +684,7 @@ class Handler extends WebhookHandler
         
         if (!$action) {
             Log::error('No action found in callback data', ['callback_data' => $callbackData->toArray()]);
-            $this->replyWithMessage('❌ Ошибка: не найден action в callback данных.');
+            $this->replyWithMessage('❌ Ошибка данных. Попробуйте снова.');
             return;
         }
 
@@ -496,7 +694,7 @@ class Handler extends WebhookHandler
         
         if ($states->isEmpty()) {
             Log::warning('No states found for user: ' . $userId);
-            $this->replyWithMessage('❌ Сессия не найдена. Начните заново.');
+            $this->replyWithMessage('❌ Сессия не найдена.');
             return;
         }
 
@@ -525,7 +723,7 @@ class Handler extends WebhookHandler
                 $this->showMasterSelection($business, $locationId, $serviceId);
             } else {
                 Log::error('Location ID not found in state data');
-                $this->replyWithMessage('❌ Ошибка: не найдена информация о локации.');
+                $this->replyWithMessage('❌ Не найдена локация.');
             }
         } elseif (str_starts_with($action, 'master_')) {
             $masterId = str_replace('master_', '', $action);
@@ -540,7 +738,7 @@ class Handler extends WebhookHandler
                 $this->showTimeSelection($business, $locationId, $serviceId, $masterId);
             } else {
                 Log::error('Location or Service ID not found in state data');
-                $this->replyWithMessage('❌ Ошибка: не найдена информация о локации или услуге.');
+                $this->replyWithMessage('❌ Не найдены данные.');
             }
         } elseif (str_starts_with($action, 'date_')) {
             $date = str_replace('date_', '', $action);
@@ -549,18 +747,14 @@ class Handler extends WebhookHandler
         } elseif (str_starts_with($action, 'time_')) {
             $time = str_replace('time_', '', $action);
             Log::info('Time selected:', ['time' => $time]);
+            Log::info('Before handleTimeSelection', [
+                'lastMessageId' => $this->lastMessageId,
+                'messageId_from_callback' => $messageId
+            ]);
             $this->handleTimeSelection($business, $time, $state);
-        } elseif ($action === 'skip_email') {
-            $data = $state->data;
-            TelegramUserState::updateState($userId, $business->id, 'enter_notes', $data);
-
-            $keyboard = Keyboard::make();
-            $keyboard->button('Пропустить')->action('skip_notes');
-
-            $this->replyWithMessage('📝 Добавьте примечание к записи (или нажмите "Пропустить"):', $keyboard);
         } elseif ($action === 'skip_notes') {
             $data = $state->data;
-            TelegramUserState::updateState($userId, $business->id, 'confirm_appointment', $data);
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'confirm_appointment', $data);
             $this->showAppointmentConfirmation($business, $data);
         } elseif ($action === 'confirm_appointment') {
             $this->createAppointment($business, $state);
@@ -584,13 +778,56 @@ class Handler extends WebhookHandler
             if ($locationId && $serviceId && $masterId) {
                 $this->showTimeSelection($business, $locationId, $serviceId, $masterId);
             }
+        } elseif ($action === 'back_to_date') {
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
+            $masterId = $state?->data['master_id'] ?? null;
+            $date = $state?->data['date'] ?? null;
+            if ($locationId && $serviceId && $masterId && $date) {
+                $this->showTimeSlots($business, $date, $state);
+            }
+        } elseif ($action === 'edit_name') {
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_client_info', $state->data);
+            $keyboard = Keyboard::make()->row([
+                Button::make('⬅️ Назад')->action('back_to_time'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('Имя:', $keyboard);
+            
+        } elseif ($action === 'edit_phone') {
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_phone', $state->data);
+            $keyboard = Keyboard::make()->row([
+                Button::make('⬅️ Назад')->action('back_to_name'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('Телефон:', $keyboard);
+            
+        } elseif ($action === 'edit_notes') {
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_notes', $state->data);
+            $keyboard = Keyboard::make()->row([
+                Button::make('Пропустить')->action('skip_notes'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('Примечание:', $keyboard);
+            
+        } elseif ($action === 'back_to_name') {
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_client_info', $state->data);
+            $keyboard = Keyboard::make()->row([
+                Button::make('⬅️ Назад')->action('back_to_time'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
+            $this->replyWithMessage('Имя:', $keyboard);
+            
         } elseif ($action === 'cancel') {
+            // Удаляем старое сообщение с кнопками
+            $this->deleteBotMessage($messageId);
+            
             TelegramUserState::clearState($userId, $business->id);
-            $this->replyWithMessage('✅ Запись отменена.');
+            $this->replyWithMessage('❌ Отменено.');
             $this->lastMessageId = null;
         } else {
             Log::warning('Unknown action: ' . $action);
-            $this->replyWithMessage('❌ Неизвестная команда. Попробуйте снова.');
+            $this->replyWithMessage('❌ Неизвестная команда.');
         }
         
         Log::info('=== handleCallbackQuery END ===');
@@ -616,22 +853,30 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $keyboard = Keyboard::make();
-
-        for ($i = 0; $i < 7; $i++) {
+        // Создаем кнопки дат
+        $dateButtons = [];
+        for ($i = 0; $i < 6; $i++) {
             $date = Carbon::today()->addDays($i);
             $dayName = $date->locale('ru')->dayName;
             $formattedDate = $date->format('d.m');
-            $keyboard->button("{$dayName} {$formattedDate}")->action("date_{$date->format('Y-m-d')}");
+            $dateButtons[] = Button::make("{$dayName} {$formattedDate}")->action("date_{$date->format('Y-m-d')}");
         }
 
-        $keyboard->button('⬅️ Назад')->action('back_to_master');
-        $keyboard->button('❌ Отмена')->action('cancel');
+        // Создаем клавиатуру: сначала даты сеткой 3 в строку, потом навигация
+        $keyboard = Keyboard::make()
+            ->row($dateButtons)  // Добавляем все кнопки дат
+            ->chunk(3)           // Разбиваем на сетку 3×N
+            ->row([              // Добавляем навигацию отдельной строкой
+                Button::make('⬅️ Назад')->action('back_to_master'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
-        $this->replyWithMessage("📅 Выберите дату для записи к {$master->first_name} {$master->last_name}:", $keyboard);
+        $message = "📅 Выберите дату для {$master->first_name} {$master->last_name}:";
+        
+        $this->replyWithMessage($message, $keyboard);
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
-        TelegramUserState::updateState($userId, $business->id, 'select_date', [
+        TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_date', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
             'master_id' => $masterId,
@@ -650,7 +895,7 @@ class Handler extends WebhookHandler
         $masterId = $state?->data['master_id'] ?? null;
 
         if (!$locationId || !$serviceId || !$masterId) {
-            $this->replyWithMessage('❌ Отсутствуют данные о выборе.');
+            $this->replyWithMessage('❌ Отсутствуют данные.');
             return;
         }
 
@@ -667,35 +912,45 @@ class Handler extends WebhookHandler
 
         if (empty($availableSlots)) {
             $keyboard = Keyboard::make();
-            $keyboard->button('⬅️ Другая дата')->action('back_to_time');
-            $keyboard->button('❌ Отмена')->action('cancel');
+            $keyboard = $keyboard->row([
+                Button::make('⬅️ Другая дата')->action('back_to_time'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
-            $this->replyWithMessage("❌ На выбранную дату нет свободного времени.", $keyboard);
+            $this->replyWithMessage("❌ Нет свободного времени.", $keyboard);
             return;
         }
 
-        $keyboard = Keyboard::make();
-
+        // Создаем кнопки времени
+        $timeButtons = [];
         foreach ($availableSlots as $slot) {
             // Убедимся, что слот в правильном формате
             if (str_contains($slot, ':')) {
                 $slot = trim($slot);
-                $keyboard->button($slot)->action("time_{$slot}");
+                $timeButtons[] = Button::make($slot)->action("time_{$slot}");
             } else {
                 $displayTime = $slot . ':00';
                 $callbackTime = $slot;
-                $keyboard->button($displayTime)->action("time_{$callbackTime}");
+                $timeButtons[] = Button::make($displayTime)->action("time_{$callbackTime}");
             }
         }
 
-        $keyboard->button('⬅️ Другая дата')->action('back_to_time');
-        $keyboard->button('❌ Отмена')->action('cancel');
+        // Создаем клавиатуру: сначала время сеткой 3 в строку, потом навигация
+        $keyboard = Keyboard::make()
+            ->row($timeButtons)  // Добавляем все кнопки времени
+            ->chunk(3)           // Разбиваем на сетку 3×N
+            ->row([              // Добавляем навигацию отдельной строкой
+                Button::make('⬅️ Другая дата')->action('back_to_time'),
+                Button::make('❌ Отмена')->action('cancel'),
+            ]);
 
         $formattedDate = Carbon::parse($date)->locale('ru')->format('d.m.Y (l)');
-        $this->replyWithMessage("🕐 Выберите время на {$formattedDate}:", $keyboard);
+        $message = "⏰ Выберите время на <b>{$formattedDate}</b>:";
+        
+        $this->replyWithMessage($message, $keyboard);
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
-        TelegramUserState::updateState($userId, $business->id, 'select_time', [
+        TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_time', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
             'master_id' => $masterId,
@@ -708,14 +963,15 @@ class Handler extends WebhookHandler
      */
     protected function handleTimeSelection(Business $business, $time, $state)
     {
-        Log::info('handleTimeSelection called', [
+        Log::info('=== handleTimeSelection START ===');
+        Log::info('Input', [
             'time' => $time,
-            'time_type' => gettype($time),
-            'time_class' => is_object($time) ? get_class($time) : 'not object'
+            'state_step' => $state->step,
+            'last_message_id_before' => $this->lastMessageId
         ]);
         
         if (!$state) {
-            $this->replyWithMessage('❌ Сессия истекла. Начните заново.');
+            $this->replyWithMessage('⏳ Сессия истекла. Начните запись заново.');
             return;
         }
 
@@ -742,8 +998,20 @@ class Handler extends WebhookHandler
         
         $data['time'] = $time;
 
-        TelegramUserState::updateState($state->telegram_user_id, $business->id, 'enter_client_info', $data);
-        $this->replyWithMessage('👤 Введите ваше имя:');
+        Log::info('Updating state to enter_client_info');
+        TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, $business->id, 'enter_client_info', $data);
+        
+        $keyboard = Keyboard::make()->row([
+            Button::make('⬅️ Назад')->action('back_to_date'),
+            Button::make('❌ Отмена')->action('cancel'),
+        ]);
+        
+        $message = "👤 Введите ваше имя:";
+        
+        Log::info('Calling replyWithMessage', ['lastMessageId' => $this->lastMessageId]);
+        $this->replyWithMessage($message, $keyboard);
+        
+        Log::info('=== handleTimeSelection END ===');
     }
 
     /**
@@ -801,6 +1069,9 @@ class Handler extends WebhookHandler
                 'notes' => $data['client_data']['notes'] ?? null,
             ]);
 
+            // Удаляем старое сообщение с кнопками подтверждения
+            $this->deleteBotMessage($this->lastMessageId);
+            
             TelegramUserState::clearState($state->telegram_user_id, $business->id);
             TelegramNotificationService::sendAppointmentCreated($appointment);
 
@@ -808,18 +1079,58 @@ class Handler extends WebhookHandler
             $formattedDate = $appointment->date->format('d.m.Y');
             $formattedTime = $appointment->time;
             
-            $this->replyWithMessage("✅ Запись успешно создана!\n\n" .
+            // Сбрасываем lastMessageId чтобы отправить новое сообщение
+            $this->lastMessageId = null;
+            
+            $this->replyWithMessage("✅ Запись создана!\n\n" .
                 "📅 Дата: {$formattedDate}\n" .
-                "🕐 Время: {$formattedTime}\n" .
+                "⏰ Время: {$formattedTime}\n" .
                 "💇‍♀️ Услуга: {$appointment->service->name}\n" .
                 "👨‍💼 Мастер: {$appointment->master->first_name} {$appointment->master->last_name}\n" .
-                "🏢 Локация: {$appointment->location->name}\n\n" .
-                "Мы свяжемся с вами для подтверждения.");
+                "📍 Локация: {$appointment->location->name}\n\n" .
+                "Свяжемся для подтверждения.");
                 
+            // Очищаем ID после отправки финального сообщения
             $this->lastMessageId = null;
         } catch (\Exception $e) {
             Log::error('Error creating appointment: ' . $e->getMessage());
-            $this->replyWithMessage('❌ Произошла ошибка при создании записи. Попробуйте еще раз.');
+            $this->replyWithMessage('❌ Ошибка при создании записи. Попробуйте снова.');
         }
+    }
+
+    /**
+     * Удаляет сообщение пользователя
+     */
+    protected function deleteUserMessage(int $messageId): void
+    {
+        Log::info('=== deleteUserMessage START ===', ['message_id' => $messageId]);
+        try {
+            // Метод delete() в DefStudio\Telegraph возвращает true, но не удаляет
+            // Нужно использовать deleteMessage() и вызвать send()
+            $result = $this->chat->deleteMessage($messageId)->send();
+            Log::info('✓ User message deleted', ['message_id' => $messageId, 'result' => $result]);
+        } catch (\Exception $e) {
+            Log::error('✗ Failed to delete user message: ' . $e->getMessage());
+        }
+        Log::info('=== deleteUserMessage END ===');
+    }
+
+    /**
+     * Удаляет сообщение бота
+     */
+    protected function deleteBotMessage(?int $messageId): void
+    {
+        if (!$messageId) {
+            Log::warning('✗ Skipping bot message deletion - messageId is null');
+            return;
+        }
+        Log::info('=== deleteBotMessage START ===', ['message_id' => $messageId]);
+        try {
+            $this->chat->deleteMessage($messageId)->send();
+            Log::info('✓ Bot message deleted', ['message_id' => $messageId]);
+        } catch (\Exception $e) {
+            Log::warning('✗ Failed to delete bot message: ' . $e->getMessage());
+        }
+        Log::info('=== deleteBotMessage END ===');
     }
 }

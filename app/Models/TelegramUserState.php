@@ -12,10 +12,12 @@ class TelegramUserState extends Model
         'step',
         'data',
         'business_id',
+        'last_message_id',
     ];
 
     protected $casts = [
         'data' => 'array',
+        'last_message_id' => 'integer',
     ];
 
     public function business(): BelongsTo
@@ -51,6 +53,31 @@ class TelegramUserState extends Model
     }
 
     /**
+     * Обновить состояние, сохраняя last_message_id
+     */
+    public static function updateStateKeepMessageId(string $telegramUserId, int $businessId, string $step, array $data = []): self
+    {
+        $state = self::where('telegram_user_id', $telegramUserId)
+            ->where('business_id', $businessId)
+            ->first();
+            
+        if ($state) {
+            $state->update([
+                'step' => $step,
+                'data' => $data,
+            ]);
+            return $state;
+        }
+        
+        return self::create([
+            'telegram_user_id' => $telegramUserId,
+            'business_id' => $businessId,
+            'step' => $step,
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * Очистить состояние пользователя
      */
     public static function clearState(string $telegramUserId, int $businessId): bool
@@ -58,5 +85,44 @@ class TelegramUserState extends Model
         return self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
             ->delete() > 0;
+    }
+
+    /**
+     * Сохранить ID последнего сообщения бота
+     */
+    public static function setMessageId(string $telegramUserId, int $businessId, int $messageId): void
+    {
+        self::where('telegram_user_id', $telegramUserId)
+            ->where('business_id', $businessId)
+            ->update(['last_message_id' => $messageId]);
+    }
+
+    /**
+     * Получить ID последнего сообщения бота
+     */
+    public static function getMessageId(string $telegramUserId, int $businessId): ?int
+    {
+        $state = self::where('telegram_user_id', $telegramUserId)
+            ->where('business_id', $businessId)
+            ->first();
+        return $state?->last_message_id;
+    }
+
+    /**
+     * Обновить состояние с сохранением message_id
+     */
+    public static function updateStateWithMessageId(string $telegramUserId, int $businessId, string $step, array $data = [], ?int $messageId = null): self
+    {
+        return self::updateOrCreate(
+            [
+                'telegram_user_id' => $telegramUserId,
+                'business_id' => $businessId,
+            ],
+            [
+                'step' => $step,
+                'data' => $data,
+                'last_message_id' => $messageId,
+            ]
+        );
     }
 }
