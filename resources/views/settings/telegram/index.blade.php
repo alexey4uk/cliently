@@ -2,202 +2,306 @@
 
 @section('title', 'Telegram - Cliently')
 @section('page-title', 'Telegram')
-@section('page-description', 'Управление уведомлениями и онлайн-записью через Telegram')
+@section('page-description', 'Управление уведомлениями и онлайн-записью')
 
 @push('breadcrumbs')
-    <x-breadcrumbs :items="[['title' => 'Настройки', 'url' => route('settings.index')], ['title' => 'Telegram', 'url' => null]]" />
+    <x-breadcrumbs :items="[
+        ['title' => 'Настройки', 'url' => route('settings.index')],
+        ['title' => 'Telegram', 'url' => null],
+    ]" />
 @endpush
 
 @section('content')
-    <div class="w-full px-2 sm:px-0 pb-10 space-y-6">
+    <div class="space-y-6">
+        @php
+            $botUsername = $bot ? $bot->name : 'Bot';
+            $isConnected = $business->telegram_chat_id;
+        @endphp
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            @if (!$business)
-                <div class="text-center py-10">
-                    <p>Бизнес не найден.</p>
+        <!-- Шапка страницы -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-500 to-teal-600 flex items-center justify-center">
+                    <i class="fa-brands fa-telegram text-white"></i>
                 </div>
-                @php return; @endphp
-            @endif
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Telegram интеграция</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Уведомления и запись через бота</p>
+                </div>
+            </div>
+        </div>
 
-            @php
-                $botUsername = $bot ? $bot->name : 'Bot';
-            @endphp
-
-            <!-- КАРТОЧКА: МАСТЕР (Уведомления) -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col transition-all">
-                <div class="p-6 flex-1">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600">
-                                <i class="fa-solid fa-bell text-lg"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-900 dark:text-white text-base">Уведомления</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Карточка: Уведомления -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                            <i class="fa-solid fa-bell text-white"></i>
                         </div>
-
-                        @if ($business->telegram_chat_id)
-                            <span
-                                class="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold rounded-full border border-emerald-100 dark:border-emerald-800/50">
-                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                Связь активна
-                            </span>
-                        @else
-                            <span
-                                class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-bold rounded-full border border-transparent">
-                                Не подключен
-                            </span>
-                        @endif
+                        <div>
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Уведомления</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Получайте уведомления в Telegram</p>
+                        </div>
                     </div>
-
-                    @if (!$business->telegram_chat_id)
-                        <!-- Состояние: Нужно подключить -->
-                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">
-                            Подключите нашего бота, чтобы получать мгновенные уведомления о новых записях и других событиях.
-                        </p>
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700">
-                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ссылка активации
-                            </div>
-                            <div class="flex items-center justify-between gap-2 overflow-hidden">
-                                <code
-                                    class="text-indigo-600 dark:text-indigo-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}</code>
-                                <button
-                                    onclick="copyText('https://t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}', this)"
-                                    class="shrink-0 text-slate-400 hover:text-indigo-600 transition-colors p-1">
-                                    <i class="fa-regular fa-copy text-base"></i>
-                                </button>
-                            </div>
-                        </div>
+                    
+                    @if($isConnected)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded-full">
+                            <i class="fa-solid fa-circle-check text-[10px]"></i>
+                            Подключено
+                        </span>
                     @else
-                        <!-- Состояние: Уже подключен (Доработанное) -->
-                        <div class="space-y-4">
-                            <div
-                                class="flex items-center gap-4 p-4 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-2xl border border-emerald-100/50 dark:border-emerald-800/20">
-                                <div
-                                    class="w-12 h-12 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100 dark:border-emerald-700">
-                                    <i class="fa-solid fa-check-double text-lg"></i>
-                                </div>
-                                <div class="overflow-hidden">
-                                    <p class="text-sm font-bold text-slate-900 dark:text-white truncate">Вы успешно
-                                        авторизованы</p>
-                                    <p class="text-[11px] text-slate-500 leading-none mt-1">ID:
-                                        {{ $business->telegram_chat_id }} (Ваш профиль)</p>
-                                </div>
-                            </div>
-
-                            <!-- Простые настройки уведомлений для подключенного мастера -->
-                            <div class="space-y-2">
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-                                    <span class="text-sm text-slate-600 dark:text-slate-400">Звуковые уведомления</span>
-                                    <div class="w-8 h-4 bg-indigo-600 rounded-full relative">
-                                        <div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-50 dark:border-slate-800">
-                                    <span class="text-sm text-slate-600 dark:text-slate-400">Ежедневные отчеты</span>
-                                    <div class="w-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-full relative">
-                                        <div class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-full">
+                            Не подключено
+                        </span>
                     @endif
                 </div>
 
-                <div class="p-6 pt-0 mt-auto">
-                    @if (!$business->telegram_chat_id)
+                @if(!$isConnected)
+                    <!-- Состояние: не подключено -->
+                    <div class="space-y-4">
+                        <p class="text-sm text-slate-600 dark:text-slate-400">
+                            Подключите бота, чтобы получать мгновенные уведомления.
+                        </p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Ссылка подключения</span>
+                                <button onclick="copyText('https://t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}')"
+                                    class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                                    <i class="fa-solid fa-copy mr-1"></i>
+                                    Копировать
+                                </button>
+                            </div>
+                            <code class="text-sm font-mono text-slate-700 dark:text-slate-300 break-all">
+                                t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}
+                            </code>
+                        </div>
+                        
                         <a href="https://t.me/{{ $botUsername }}?start=auth_{{ $business->telegram_token }}"
                             target="_blank"
-                            class="w-full flex items-center justify-center gap-2 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all active:scale-[0.98] shadow-lg shadow-indigo-100 dark:shadow-none">
-                            <i class="fa-brands fa-telegram text-lg"></i>
-                            <span>Подключить Telegram</span>
+                            class="w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg transition-colors">
+                            <i class="fa-brands fa-telegram"></i>
+                            Подключить Telegram
                         </a>
-                    @else
+                    </div>
+                @else
+                    <!-- Состояние: подключено -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-800/20">
+                            <div class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                <i class="fa-solid fa-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Подключено успешно</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">ID: {{ $business->telegram_chat_id }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-bell text-slate-400 dark:text-slate-500 text-sm"></i>
+                                    <span class="text-sm text-slate-600 dark:text-slate-400">Звуковые уведомления</span>
+                                </div>
+                                <div class="relative inline-block w-10 h-5">
+                                    <input type="checkbox" class="sr-only" checked>
+                                    <div class="block w-10 h-5 bg-indigo-600 rounded-full"></div>
+                                    <div class="absolute right-1 top-1 bg-white w-3 h-3 rounded-full transition transform"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-bar text-slate-400 dark:text-slate-500 text-sm"></i>
+                                    <span class="text-sm text-slate-600 dark:text-slate-400">Ежедневные отчеты</span>
+                                </div>
+                                <div class="relative inline-block w-10 h-5">
+                                    <input type="checkbox" class="sr-only">
+                                    <div class="block w-10 h-5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
+                                    <div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition transform"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <form action="{{ route('settings.telegram.disconnect') }}" method="POST"
                             onsubmit="return confirm('Вы уверены, что хотите отключить уведомления?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
-                                class="w-full py-3.5 text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50/50 dark:bg-rose-900/10 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-all border border-rose-100 dark:border-rose-900/20">
-                                <i class="fa-solid fa-link-slash mr-2"></i>
-                                Отвязать аккаунт мастера
+                                class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors">
+                                <i class="fa-solid fa-link-slash"></i>
+                                Отключить уведомления
                             </button>
                         </form>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
 
-            <!-- КАРТОЧКА: КЛИЕНТЫ (Запись) -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col transition-all group">
-                <div class="p-6 flex-1">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-calendar-check text-lg"></i>
+            <!-- Карточка: Онлайн-запись для клиентов -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-500 to-teal-600 flex items-center justify-center">
+                            <i class="fa-solid fa-calendar-check text-white"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-slate-900 dark:text-white text-base">Онлайн-запись</h3>
-                            @if (!empty($bot))
-                                <span
-                                    class="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold rounded-full border border-emerald-100 dark:border-emerald-800/50">
-                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                    Бот активен
-                                </span>
-                            @else
-                                <span
-                                    class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-bold rounded-full border border-transparent">
-                                    Бот не настроен
-                                </span>
-                            @endif
+                            <h3 class="font-semibold text-slate-900 dark:text-white">Запись для клиентов</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Клиенты записываются через бота</p>
                         </div>
                     </div>
-
-                    <p class="text-slate-500 text-sm mb-6 leading-relaxed">
-                        Поделитесь этой ссылкой с клиентами. Бот автоматически проведет их через процесс записи к вам.
-                    </p>
-
-                    <div
-                        class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700 group-hover:border-sky-200 dark:group-hover:border-sky-900 transition-colors">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Публичная ссылка
-                        </div>
-                        <div class="flex items-center justify-between gap-2 overflow-hidden">
-                            <code
-                                class="text-sky-600 dark:text-sky-400 font-mono font-bold truncate text-sm">t.me/{{ $botUsername }}?start={{ $business->slug }}</code>
-                            <button
-                                onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}', this)"
-                                class="shrink-0 text-slate-400 hover:text-sky-600 transition-colors p-1">
-                                <i class="fa-regular fa-copy text-base"></i>
-                            </button>
-                        </div>
-                    </div>
+                    
+                    @if($bot)
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded-full">
+                            <i class="fa-solid fa-circle-check text-[10px]"></i>
+                            Доступно
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-full">
+                            Недоступно
+                        </span>
+                    @endif
                 </div>
 
-                <div class="p-6 pt-0 mt-auto">
-                    <button onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}', this)"
-                        class="w-full flex items-center justify-center gap-2 py-4 bg-white dark:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all active:scale-[0.98] shadow-sm">
-                        <i class="fa-solid fa-share-nodes text-sky-500"></i>
-                        <span>Скопировать ссылку</span>
-                    </button>
+                @if($bot)
+                    <div class="space-y-4">
+                        <p class="text-sm text-slate-600 dark:text-slate-400">
+                            Поделитесь ссылкой с клиентами. Бот проведет их через процесс записи.
+                        </p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="text-xs font-medium text-slate-600 dark:text-slate-400">Ссылка для записи</span>
+                                <button onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}')"
+                                    class="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
+                                    <i class="fa-solid fa-copy mr-1"></i>
+                                    Копировать
+                                </button>
+                            </div>
+                            <code class="text-sm font-mono text-slate-700 dark:text-slate-300 break-all">
+                                t.me/{{ $botUsername }}?start={{ $business->slug }}
+                            </code>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button onclick="copyText('https://t.me/{{ $botUsername }}?start={{ $business->slug }}')"
+                                class="flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 rounded-lg border border-sky-200 dark:border-sky-800 transition-colors">
+                                <i class="fa-solid fa-copy text-sky-600 dark:text-sky-400"></i>
+                                Копировать ссылку
+                            </button>
+                            
+                            <a href="https://t.me/{{ $botUsername }}?start={{ $business->slug }}"
+                                target="_blank"
+                                class="flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                                <i class="fa-solid fa-external-link text-slate-500 dark:text-slate-400"></i>
+                                Открыть бота
+                            </a>
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center py-6">
+                        <div class="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
+                            <i class="fa-solid fa-robot text-amber-600 dark:text-amber-400"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Telegram бот не настроен</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-4">
+                            Для работы онлайн-записи через Telegram необходимо настроить бота.
+                        </p>
+                        <a href="#"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors">
+                            <i class="fa-solid fa-gear"></i>
+                            Настроить бота
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Преимущества Telegram -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+            <div class="flex items-center gap-3 mb-4">
+                <i class="fa-solid fa-star text-amber-500 dark:text-amber-400 text-lg"></i>
+                <h3 class="font-semibold text-slate-900 dark:text-white">Преимущества Telegram</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="flex items-start gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <i class="fa-solid fa-bolt text-sky-500 dark:text-sky-400 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">Мгновенные уведомления</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Узнавайте о новых записях сразу
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <i class="fa-solid fa-mobile-screen text-sky-500 dark:text-sky-400 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">Удобство для клиентов</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Запись прямо в мессенджере
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <i class="fa-solid fa-robot text-sky-500 dark:text-sky-400 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">Автоматизация</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Бот отвечает на вопросы клиентов
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-sky-500 dark:text-sky-400 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-1">Надежность</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Стабильная работа и безопасность
+                        </p>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        function copyText(text, btn) {
-            navigator.clipboard.writeText(text);
-            const icon = btn.querySelector('i');
-            const originalClass = icon.className;
-            icon.className = 'fa-solid fa-check text-emerald-500';
-            setTimeout(() => {
-                icon.className = originalClass;
-            }, 2000);
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Можно добавить уведомление о копировании
+                const button = event.target.closest('button');
+                if (button) {
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Скопировано';
+                    button.classList.add('text-green-600', 'dark:text-green-400');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                        button.classList.remove('text-green-600', 'dark:text-green-400');
+                    }, 2000);
+                }
+            });
         }
+        
+        // Обработка переключателей
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const container = this.parentElement;
+                if (this.checked) {
+                    container.querySelector('div:first-child').classList.remove('bg-slate-300', 'dark:bg-slate-700');
+                    container.querySelector('div:first-child').classList.add('bg-indigo-600');
+                    container.querySelector('div:last-child').classList.remove('left-1');
+                    container.querySelector('div:last-child').classList.add('right-1');
+                } else {
+                    container.querySelector('div:first-child').classList.add('bg-slate-300', 'dark:bg-slate-700');
+                    container.querySelector('div:first-child').classList.remove('bg-indigo-600');
+                    container.querySelector('div:last-child').classList.remove('right-1');
+                    container.querySelector('div:last-child').classList.add('left-1');
+                }
+            });
+        });
     </script>
 @endsection
