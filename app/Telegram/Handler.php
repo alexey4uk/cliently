@@ -318,7 +318,7 @@ class Handler extends WebhookHandler
         $message = TelegramMessages::format(TelegramMessages::MSG_STATUS_NAME, ['name' => $name]) . "\n\n" .
             TelegramMessages::MSG_ENTER_PHONE;
         
-        $this->replyWithMessage($message, TelegramKeyboards::backAndCancel('back_to_time'));
+        $this->replyWithMessage($message, TelegramKeyboards::restartAndCancel());
     }
 
     /**
@@ -567,6 +567,7 @@ class Handler extends WebhookHandler
         ]);
     }
 
+
     /**
      * Обработка callback запросов
      */
@@ -658,8 +659,63 @@ class Handler extends WebhookHandler
             }
         } elseif (str_starts_with($action, 'date_')) {
             $date = str_replace('date_', '', $action);
+            Log::info('Date selected:', ['date' => $date, 'state_step' => $state->step]);
+            
+            // Проверяем, что это не недоступная дата
+            if (str_starts_with($date, 'disabled_')) {
+                Log::info('Disabled date clicked, ignoring');
+                return;
+            }
+            
+            // Обработка специальной кнопки "След. месяц"
+            if ($date === 'next_month') {
+                $locationId = $state?->data['location_id'] ?? null;
+                $serviceId = $state?->data['service_id'] ?? null;
+                $masterId = $state?->data['master_id'] ?? null;
+                $currentMonth = $state?->data['month'] ?? null;
+                
+                if ($locationId && $serviceId && $masterId) {
+                    $monthDate = $currentMonth ? Carbon::parse($currentMonth . '-01') : Carbon::today();
+                    $nextMonth = $monthDate->addMonth()->format('Y-m');
+                    $this->showTimeSelection($business, $locationId, $serviceId, $masterId, $nextMonth);
+                }
+                return;
+            }
+            
             Log::info('Date selected:', ['date' => $date]);
             $this->showTimeSlots($business, $date, $state);
+        } elseif (str_starts_with($action, 'calendar_prev_')) {
+            $month = str_replace('calendar_prev_', '', $action);
+            $monthDate = Carbon::parse($month . '-01');
+            $prevMonth = $monthDate->subMonth()->format('Y-m');
+            
+            Log::info('Calendar prev month:', ['current' => $month, 'prev' => $prevMonth]);
+            
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
+            $masterId = $state?->data['master_id'] ?? null;
+            
+            if ($locationId && $serviceId && $masterId) {
+                $this->showTimeSelection($business, $locationId, $serviceId, $masterId, $prevMonth);
+            }
+        } elseif (str_starts_with($action, 'calendar_next_')) {
+            $month = str_replace('calendar_next_', '', $action);
+            $monthDate = Carbon::parse($month . '-01');
+            $nextMonth = $monthDate->addMonth()->format('Y-m');
+            
+            Log::info('Calendar next month:', ['current' => $month, 'next' => $nextMonth]);
+            
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
+            $masterId = $state?->data['master_id'] ?? null;
+            
+            if ($locationId && $serviceId && $masterId) {
+                $this->showTimeSelection($business, $locationId, $serviceId, $masterId, $nextMonth);
+            }
+        } elseif (str_starts_with($action, 'disabled_')) {
+            // Недоступная дата или заголовок - игнорируем
+            Log::info('Disabled element clicked:', ['action' => $action]);
+            return;
         } elseif (str_starts_with($action, 'time_')) {
             $time = str_replace('time_', '', $action);
             Log::info('Time selected:', ['time' => $time]);
@@ -674,57 +730,31 @@ class Handler extends WebhookHandler
             $this->showAppointmentConfirmation($business, $data);
         } elseif ($action === 'confirm_appointment') {
             $this->createAppointment($business, $state);
-        } elseif ($action === 'back_to_location') {
-            $this->showLocationSelection($business);
-        } elseif ($action === 'back_to_service') {
-            $locationId = $state?->data['location_id'] ?? null;
-            if ($locationId) {
-                $this->showServiceSelection($business, $locationId);
-            }
-        } elseif ($action === 'back_to_master') {
-            $locationId = $state?->data['location_id'] ?? null;
-            $serviceId = $state?->data['service_id'] ?? null;
-            if ($locationId && $serviceId) {
-                $this->showMasterSelection($business, $locationId, $serviceId);
-            }
-        } elseif ($action === 'back_to_time') {
-            $locationId = $state?->data['location_id'] ?? null;
-            $serviceId = $state?->data['service_id'] ?? null;
-            $masterId = $state?->data['master_id'] ?? null;
-            if ($locationId && $serviceId && $masterId) {
-                $this->showTimeSelection($business, $locationId, $serviceId, $masterId);
-            }
-        } elseif ($action === 'back_to_date') {
-            $locationId = $state?->data['location_id'] ?? null;
-            $serviceId = $state?->data['service_id'] ?? null;
-            $masterId = $state?->data['master_id'] ?? null;
-            $date = $state?->data['date'] ?? null;
-            if ($locationId && $serviceId && $masterId && $date) {
-                $this->showTimeSlots($business, $date, $state);
-            }
-        } elseif ($action === 'edit_name') {
-            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_client_info', $state->data);
-            $this->replyWithMessage(TelegramMessages::MSG_EDIT_NAME, TelegramKeyboards::editName());
-            
-        } elseif ($action === 'edit_phone') {
-            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_phone', $state->data);
-            $this->replyWithMessage(TelegramMessages::MSG_EDIT_PHONE, TelegramKeyboards::editPhone());
-            
-        } elseif ($action === 'edit_notes') {
-            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_notes', $state->data);
-            $this->replyWithMessage(TelegramMessages::MSG_EDIT_NOTES, TelegramKeyboards::editNotes());
-            
-        } elseif ($action === 'back_to_name') {
-            TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'enter_client_info', $state->data);
-            $this->replyWithMessage(TelegramMessages::MSG_EDIT_NAME, TelegramKeyboards::editName());
-            
         } elseif ($action === 'cancel') {
+            Log::info('Cancel action called', ['message_id' => $messageId]);
+            
             // Удаляем старое сообщение с кнопками
             $this->deleteBotMessage($messageId);
             
             TelegramUserState::clearState($userId, $business->id);
-            $this->replyWithMessage(TelegramMessages::MSG_CANCEL);
+            
+            // Сбрасываем lastMessageId чтобы отправить новое сообщение
             $this->lastMessageId = null;
+            
+            $this->replyWithMessage(TelegramMessages::MSG_CANCEL);
+        } elseif ($action === 'restart') {
+            Log::info('Restart action called', ['message_id' => $messageId]);
+            
+            // Удаляем старое сообщение с кнопками
+            $this->deleteBotMessage($messageId);
+            
+            TelegramUserState::clearState($userId, $business->id);
+            
+            // Сбрасываем lastMessageId чтобы отправить новое сообщение
+            $this->lastMessageId = null;
+            
+            // Начинаем с самого начала
+            $this->showLocationSelection($business);
         } else {
             Log::warning('Unknown action: ' . $action);
             $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
@@ -734,14 +764,15 @@ class Handler extends WebhookHandler
     }
 
     /**
-     * Показ выбора даты
+     * Показ выбора даты (календарь)
      */
-    protected function showTimeSelection(Business $business, $locationId, $serviceId, $masterId)
+    protected function showTimeSelection(Business $business, $locationId, $serviceId, $masterId, ?string $month = null)
     {
         Log::info('showTimeSelection called', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
-            'master_id' => $masterId
+            'master_id' => $masterId,
+            'month' => $month
         ]);
         
         $location = $business->locations()->find($locationId);
@@ -753,27 +784,42 @@ class Handler extends WebhookHandler
             return;
         }
 
-        // Создаем кнопки дат
-        $dates = [];
-        for ($i = 0; $i < 6; $i++) {
-            $date = Carbon::today()->addDays($i);
-            $dates[] = [
-                'display' => $date->locale('ru')->dayName . ' ' . $date->format('d.m'),
-                'value' => $date->format('Y-m-d')
-            ];
+        // Определяем месяц для отображения
+        if (!$month) {
+            $month = Carbon::today()->format('Y-m');
         }
+        
+        // Получаем доступные даты для месяца
+        $availableDates = TelegramKeyboards::getAvailableDatesForMonth(
+            $this->slotService,
+            $serviceId,
+            $masterId,
+            $locationId,
+            $month
+        );
 
+        // Формируем сообщение
         $message = TelegramMessages::format(TelegramMessages::MSG_SELECT_DATE, [
             'master' => $master->first_name . ' ' . $master->last_name
-        ]);
+        ]) . "\n\n📅 " . Carbon::parse($month . '-01')->locale('ru')->isoFormat('MMMM YYYY');
         
-        $this->replyWithMessage($message, TelegramKeyboards::dates($dates));
+        // Проверяем возможность перехода к предыдущему месяцу
+        $hasPrevMonth = TelegramKeyboards::hasPrevMonth($month);
+        
+        // Создаем клавиатуру календаря
+        $keyboard = TelegramKeyboards::calendar($month, $availableDates, null, $hasPrevMonth);
+        
+        $this->replyWithMessage($message, $keyboard);
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+        
+        // Сохраняем доступные даты и месяц в состояние
         TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_date', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
             'master_id' => $masterId,
+            'month' => $month,
+            'available_dates' => $availableDates,
         ]);
     }
 
@@ -817,11 +863,16 @@ class Handler extends WebhookHandler
         $this->replyWithMessage($message, TelegramKeyboards::times($availableSlots));
 
         $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+        
+        // Сохраняем месяц для возврата из выбора времени
+        $month = Carbon::parse($date)->format('Y-m');
+        
         TelegramUserState::updateStateKeepMessageId($userId, $business->id, 'select_time', [
             'location_id' => $locationId,
             'service_id' => $serviceId,
             'master_id' => $masterId,
             'date' => $date,
+            'month' => $month,
         ]);
     }
 
@@ -869,7 +920,7 @@ class Handler extends WebhookHandler
         $message = TelegramMessages::MSG_ENTER_NAME;
         
         Log::info('Calling replyWithMessage', ['lastMessageId' => $this->lastMessageId]);
-        $this->replyWithMessage($message, TelegramKeyboards::backAndCancel('back_to_date'));
+        $this->replyWithMessage($message, TelegramKeyboards::restartAndCancel());
         
         Log::info('=== handleTimeSelection END ===');
     }

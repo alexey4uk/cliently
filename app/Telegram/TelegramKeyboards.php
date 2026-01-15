@@ -25,12 +25,12 @@ class TelegramKeyboards
     }
 
     /**
-     * Кнопки "Назад" и "Отмена" в одной строке
+     * Кнопки "Начать заново" и "Отмена" в одной строке
      */
-    public static function backAndCancel(string $backAction): Keyboard
+    public static function restartAndCancel(): Keyboard
     {
         return Keyboard::make()->row([
-            Button::make(TelegramMessages::BTN_BACK)->action($backAction),
+            Button::make('🔄 Начать заново')->action('restart'),
             Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
         ]);
     }
@@ -53,15 +53,14 @@ class TelegramKeyboards
      * 
      * @param Button[] $buttons Массив кнопок выбора
      * @param int $chunkSize Количество кнопок в строке
-     * @param string $backAction Действие для кнопки "Назад"
      */
-    public static function selectionGrid(array $buttons, int $chunkSize, string $backAction): Keyboard
+    public static function selectionGrid(array $buttons, int $chunkSize): Keyboard
     {
         return Keyboard::make()
             ->row($buttons)
             ->chunk($chunkSize)
             ->row([
-                Button::make(TelegramMessages::BTN_BACK)->action($backAction),
+                Button::make('🔄 Начать заново')->action('restart'),
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ]);
     }
@@ -76,7 +75,13 @@ class TelegramKeyboards
         foreach ($locations as $location) {
             $buttons[] = Button::make($location->name)->action("location_{$location->id}");
         }
-        return self::selectionGrid($buttons, 2, 'back_to_location');
+        // Локация - первый шаг, кнопка "Назад" не нужна
+        return Keyboard::make()
+            ->row($buttons)
+            ->chunk(1)
+            ->row([
+                Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
+            ]);
     }
 
     /**
@@ -89,7 +94,7 @@ class TelegramKeyboards
         foreach ($services as $service) {
             $buttons[] = Button::make("{$service->name} ({$service->duration} мин)")->action("service_{$service->id}");
         }
-        return self::selectionGrid($buttons, 2, 'back_to_service');
+        return self::selectionGrid($buttons, 1);
     }
 
     /**
@@ -102,19 +107,114 @@ class TelegramKeyboards
         foreach ($masters as $master) {
             $buttons[] = Button::make($master->first_name . ' ' . $master->last_name)->action("master_{$master->id}");
         }
-        return self::selectionGrid($buttons, 2, 'back_to_master');
+        return self::selectionGrid($buttons, 1);
     }
 
     /**
-     * Клавиатура для выбора дат
+     * Клавиатура для выбора дат (календарь как в веб-версии)
+     * @param string $month Год и месяц в формате 'Y-m'
+     * @param array $availableDates Массив доступных дат (формат 'Y-m-d')
+     * @param \Carbon\Carbon|null $selectedDate Выбранная дата
+     * @param bool $hasPrevMonth Можно ли перейти к предыдущему месяцу
      */
-    public static function dates(array $dates): Keyboard
+    public static function calendar(string $month, array $availableDates = [], ?\Carbon\Carbon $selectedDate = null, bool $hasPrevMonth = true): Keyboard
+    {
+        $keyboard = Keyboard::make();
+        
+        // Заголовок календаря - дни недели (как недоступные кнопки)
+        $weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        $weekDayButtons = [];
+        foreach ($weekDays as $day) {
+            $weekDayButtons[] = Button::make($day)->action('disabled_weekday');
+        }
+        $keyboard = $keyboard->row($weekDayButtons);
+        
+        // Генерируем календарь
+        $startDate = \Carbon\Carbon::parse($month . '-01');
+        $endDate = $startDate->copy()->endOfMonth();
+        
+        // Определяем первый день недели (понедельник = 1, воскресенье = 0)
+        $firstDayOfWeek = $startDate->dayOfWeek; // 1 = Monday, 7 = Sunday
+        $daysToSubtract = $firstDayOfWeek === 1 ? 0 : ($firstDayOfWeek === 0 ? 6 : $firstDayOfWeek - 1);
+        
+        // Начинаем с понедельника
+        $currentDate = $startDate->copy()->subDays($daysToSubtract);
+        $today = \Carbon\Carbon::today();
+        
+        // Генерируем 6 недель (42 дня)
+        $weekButtons = [];
+        for ($i = 0; $i < 42; $i++) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $dayNum = $currentDate->day;
+            $isCurrentMonth = $currentDate->month === $startDate->month;
+            $isPast = $currentDate->lt($today);
+            $isToday = $currentDate->isSameDay($today);
+            $isSelected = $selectedDate && $currentDate->isSameDay($selectedDate);
+            $isAvailable = in_array($dateStr, $availableDates);
+            
+            // Определяем callback action
+            // Только даты текущего месяца, не прошедшие и с доступными слотами - кликабельны
+            if ($isCurrentMonth && !$isPast && $isAvailable) {
+                $action = "date_{$dateStr}";
+                // Формируем текст кнопки для кликабельной даты
+                $displayText = (string)$dayNum;
+                
+                // Добавляем оформление
+                if ($isSelected) {
+                    $displayText = '✅ ' . $displayText;
+                } elseif ($isToday) {
+                    $displayText = '•' . $displayText . '•';
+                }
+            } else {
+                $action = "disabled_{$dateStr}"; // Пустая ячейка
+                $displayText = ' . '; // Пустая ячейка с точкой для визуального разделения
+            }
+            
+            $weekButtons[] = Button::make($displayText)->action($action);
+            
+            // Каждые 7 дней - новая строка
+            if (count($weekButtons) === 7) {
+                $keyboard = $keyboard->row($weekButtons);
+                $weekButtons = [];
+            }
+            
+            $currentDate->addDay();
+        }
+        
+        // Добавляем навигацию по месяцам (3 кнопки в ряд)
+        $navButtons = [];
+        
+        if ($hasPrevMonth) {
+            $navButtons[] = Button::make('⬅️')->action("calendar_prev_{$month}");
+        }
+        
+        $navButtons[] = Button::make('➡️')->action("calendar_next_{$month}");
+        
+        // Если нет предыдущего месяца, добавляем пустую кнопку для выравнивания
+        if (!$hasPrevMonth) {
+            $navButtons = [Button::make('➖')->action('disabled_empty'), ...$navButtons];
+        }
+        
+        $keyboard = $keyboard->row($navButtons);
+        
+        // Кнопки навигации
+        return $keyboard
+            ->row([
+                Button::make('🔄 Начать заново')->action('restart'),
+                Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
+            ]);
+    }
+    
+    /**
+     * Клавиатура для выбора дат (простой вариант - 6 дней вперед)
+     */
+    public static function datesSimple(array $dates): Keyboard
     {
         $buttons = [];
         foreach ($dates as $date) {
             $buttons[] = Button::make($date['display'])->action("date_{$date['value']}");
         }
-        return self::selectionGrid($buttons, 3, 'back_to_time');
+        return self::selectionGrid($buttons, 3);
     }
 
     /**
@@ -133,7 +233,64 @@ class TelegramKeyboards
             }
             $buttons[] = Button::make($display)->action("time_{$callback}");
         }
-        return self::selectionGrid($buttons, 3, 'back_to_date');
+        return self::selectionGrid($buttons, 3);
+    }
+
+
+    /**
+     * Получает доступные даты для месяца
+     * @param \App\Services\AppointmentSlotService $slotService
+     * @param int $serviceId
+     * @param int $masterId
+     * @param int $locationId
+     * @param string $month Год и месяц в формате 'Y-m'
+     * @return array Массив доступных дат (формат 'Y-m-d')
+     */
+    public static function getAvailableDatesForMonth($slotService, int $serviceId, int $masterId, int $locationId, string $month): array
+    {
+        $availableDates = [];
+        $startDate = \Carbon\Carbon::parse($month . '-01');
+        $endDate = $startDate->copy()->endOfMonth();
+        $today = \Carbon\Carbon::today();
+        
+        $current = $startDate->copy();
+        while ($current->lte($endDate)) {
+            // Пропускаем прошедшие даты
+            if ($current->lt($today)) {
+                $current->addDay();
+                continue;
+            }
+            
+            // Проверяем наличие слотов
+            $debugInfo = [];
+            $availableSlots = $slotService->getAvailableSlots(
+                $serviceId,
+                $current->format('Y-m-d'),
+                $masterId,
+                $locationId,
+                $debugInfo
+            );
+            
+            if (!empty($availableSlots)) {
+                $availableDates[] = $current->format('Y-m-d');
+            }
+            
+            $current->addDay();
+        }
+        
+        return $availableDates;
+    }
+
+    /**
+     * Проверяет, есть ли предыдущий месяц (не раньше сегодня)
+     * @param string $month Год и месяц в формате 'Y-m'
+     * @return bool
+     */
+    public static function hasPrevMonth(string $month): bool
+    {
+        $monthDate = \Carbon\Carbon::parse($month . '-01');
+        $today = \Carbon\Carbon::today();
+        return $monthDate->gt($today->startOfMonth());
     }
 
     /**
@@ -142,7 +299,7 @@ class TelegramKeyboards
     public static function timesEmpty(): Keyboard
     {
         return Keyboard::make()->row([
-            Button::make('⬅️ Другая дата')->action('back_to_time'),
+            Button::make('🔄 Начать заново')->action('restart'),
             Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
         ]);
     }
@@ -160,55 +317,8 @@ class TelegramKeyboards
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ])
             ->row([
-                Button::make('Имя')->action('edit_name'),
-                Button::make('Телефон')->action('edit_phone'),
-                Button::make('Примечание')->action('edit_notes'),
-            ])
-            ->row([
-                Button::make(TelegramMessages::BTN_BACK)->action('back_to_time'),
+                Button::make('🔄 Начать заново')->action('restart'),
             ]);
     }
 
-    // ==================== РЕДАКТИРОВАНИЕ ====================
-    
-    /**
-     * Клавиатура для редактирования поля
-     */
-    public static function editField(string $field, string $backAction): Keyboard
-    {
-        $buttons = [
-            Button::make(TelegramMessages::BTN_BACK)->action($backAction),
-            Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
-        ];
-        
-        if ($field === 'notes') {
-            array_unshift($buttons, Button::make(TelegramMessages::BTN_SKIP)->action('skip_notes'));
-        }
-        
-        return Keyboard::make()->row($buttons);
-    }
-
-    /**
-     * Клавиатура для редактирования имени
-     */
-    public static function editName(): Keyboard
-    {
-        return self::editField('name', 'back_to_time');
-    }
-
-    /**
-     * Клавиатура для редактирования телефона
-     */
-    public static function editPhone(): Keyboard
-    {
-        return self::editField('phone', 'back_to_name');
-    }
-
-    /**
-     * Клавиатура для редактирования заметки
-     */
-    public static function editNotes(): Keyboard
-    {
-        return self::editField('notes', 'back_to_time');
-    }
 }
