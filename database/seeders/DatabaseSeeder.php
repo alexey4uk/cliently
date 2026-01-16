@@ -28,6 +28,6 @@ class DatabaseSeeder extends Seeder
             OnboardingSeeder::class,
         ]);
 
-        Business::factory(10)->create();
+        //Business::factory(10)->create();
     }
 }
