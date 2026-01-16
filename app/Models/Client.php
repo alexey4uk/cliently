@@ -16,6 +16,7 @@ class Client extends Model
         'last_name',
         'email',
         'phone',
+        'telegram_user_id',
     ];
 
     public function business(): BelongsTo

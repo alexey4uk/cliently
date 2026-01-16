@@ -1227,6 +1227,7 @@ class Handler extends WebhookHandler
                     'first_name' => $data['client_data']['first_name'],
                     'last_name' => $data['client_data']['last_name'] ?? null,
                     'email' => $data['client_data']['email'] ?? null,
+                    'telegram_user_id' => $this->callbackQuery->from()->id(),
                 ]
             );
 
@@ -1245,6 +1246,7 @@ class Handler extends WebhookHandler
                 'location_id' => $data['location_id'],
                 'date' => $data['date'],
                 'time' => $time,
+                'source' => 'telegram',
                 'status' => 'pending',
                 'notes' => $data['client_data']['notes'] ?? null,
             ]);

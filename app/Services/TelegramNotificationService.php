@@ -26,7 +26,7 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить уведомление об изменении статуса назначения
+     * Отправить уведомление об изменении статуса назначения для мастера
      */
     public static function sendAppointmentStatusChanged(Appointment $appointment, ?string $oldStatus = null)
     {
@@ -46,6 +46,29 @@ class TelegramNotificationService
         $message = self::formatAppointmentMessage($appointment, "запись {$statusText}");
 
         self::sendMessage($business, $message);
+    }
+
+    /**
+     * Отправить уведомление об изменении статуса назначения для мастера
+     */
+    public static function sendAppointmentStatusChangedForClient(Appointment $appointment, ?string $oldStatus = null)
+    {
+        // $business = $appointment->business;
+
+        // if (! $business->telegram_chat_id) {
+        //     return;
+        // }
+
+        $statusText = match ($appointment->status) {
+            'confirmed' => 'подтверждена',
+            'cancelled' => 'отменена',
+            'completed' => 'завершена',
+            default => 'обновлена',
+        };
+
+        $message = self::formatAppointmentMessage($appointment, "запись {$statusText}");
+
+        self::sendMessageForClient($appointment->client->telegram_user_id, $message);
     }
 
     /**
@@ -102,6 +125,31 @@ class TelegramNotificationService
             if (! $chat) {
                 $chat = $bot->chats()->create([
                     'chat_id' => $business->telegram_chat_id,
+                    'name' => 'Business Notifications',
+                ]);
+            }
+
+            $chat->message($message)->send();
+        } catch (\Exception $e) {
+            // Логируем ошибку, но не прерываем выполнение
+            Log::error('Telegram notification failed: '.$e->getMessage());
+        }
+    }
+
+    private static function sendMessageForClient(int $id, string $message)
+    {
+        try {
+            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+
+            if (! $bot) {
+                return;
+            }
+
+            $chat = TelegraphChat::where('chat_id', $id)->first();
+
+            if (! $chat) {
+                $chat = $bot->chats()->create([
+                    'chat_id' => $id,
                     'name' => 'Business Notifications',
                 ]);
             }
