@@ -8,15 +8,11 @@ use App\Models\Master;
 use App\Models\Service;
 use App\Models\TelegramUserState;
 use App\Telegram\Handler;
-use App\Telegram\TelegramMessages;
 use App\Telegram\TelegramKeyboards;
 use App\Telegram\TelegramValidators;
 use Carbon\Carbon;
-use DefStudio\Telegraph\Handlers\WebhookHandler;
-use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Mockery;
 use Tests\TestCase;
 
@@ -25,12 +21,13 @@ class TelegramBotTest extends TestCase
     use RefreshDatabase;
 
     protected $telegramUserId = '123456789';
+
     protected $chatId = '987654321';
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Мокаем Telegram API
         $this->mockTelegramApi();
     }
@@ -41,31 +38,31 @@ class TelegramBotTest extends TestCase
         $chatMock = Mockery::mock(\DefStudio\Telegraph\Models\TelegraphChat::class);
         $chatMock->shouldReceive('chat_id')->andReturn($this->chatId);
         $chatMock->shouldReceive('getAttribute')->with('chat_id')->andReturn($this->chatId);
-        
+
         // Мокаем метод message() который возвращает Telegraph
         $telegraphMock = Mockery::mock(\DefStudio\Telegraph\Telegraph::class);
         $telegraphMock->shouldReceive('message')->andReturnSelf();
         $telegraphMock->shouldReceive('keyboard')->andReturnSelf();
-        
+
         // Мокаем response для send()
         $responseMock = Mockery::mock(\DefStudio\Telegraph\Client\TelegraphResponse::class);
         $responseMock->shouldReceive('telegraphMessageId')->andReturn(123);
-        
+
         $telegraphMock->shouldReceive('send')->andReturn($responseMock);
         $telegraphMock->shouldReceive('edit')->andReturnSelf();
         $telegraphMock->shouldReceive('replaceKeyboard')->andReturnSelf();
         $telegraphMock->shouldReceive('deleteMessage')->andReturnSelf();
-        
+
         $chatMock->shouldReceive('message')->andReturn($telegraphMock);
 
         // Создаем handler с моками
         $this->handler = new Handler(
             app(\App\Services\AppointmentSlotService::class)
         );
-        
+
         // Устанавливаем моки через reflection
         $reflection = new \ReflectionClass($this->handler);
-        
+
         $chatProperty = $reflection->getProperty('chat');
         $chatProperty->setAccessible(true);
         $chatProperty->setValue($this->handler, $chatMock);
@@ -185,7 +182,7 @@ class TelegramBotTest extends TestCase
         // Arrange
         $token = 'test-token-123';
         $business = Business::factory()->create(['telegram_token' => $token]);
-        $this->setMessage('/start auth_' . $token);
+        $this->setMessage('/start auth_'.$token);
 
         // Act
         $this->handler->start();
@@ -247,7 +244,7 @@ class TelegramBotTest extends TestCase
             ->search()
             ->forUser($this->telegramUserId)
             ->create();
-        
+
         $this->setMessage('test-business');
 
         // Act
@@ -267,7 +264,7 @@ class TelegramBotTest extends TestCase
             ->booking($business, TelegramUserState::STEP_ENTER_CLIENT_INFO, [])
             ->forUser($this->telegramUserId)
             ->create();
-        
+
         $this->setMessage('John Doe');
 
         // Act
@@ -288,7 +285,7 @@ class TelegramBotTest extends TestCase
             ->booking($business, TelegramUserState::STEP_ENTER_CLIENT_INFO, [])
             ->forUser($this->telegramUserId)
             ->create();
-        
+
         $this->setMessage('отмена');
 
         // Act
@@ -474,13 +471,13 @@ class TelegramBotTest extends TestCase
     {
         // Arrange
         $business = Business::factory()->create();
-        
+
         // Создаем состояние поиска
         TelegramUserState::factory()
             ->search()
             ->forUser($this->telegramUserId)
             ->create();
-        
+
         // Создаем состояние записи
         TelegramUserState::factory()
             ->booking($business, TelegramUserState::STEP_SELECT_LOCATION, [])
@@ -515,7 +512,7 @@ class TelegramBotTest extends TestCase
         // Act
         $result = \App\Telegram\TelegramMessages::format($template, [
             'name' => 'John',
-            'code' => '12345'
+            'code' => '12345',
         ]);
 
         // Assert
@@ -665,7 +662,7 @@ class TelegramBotTest extends TestCase
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
         $master = Master::factory()->create(['business_id' => $business->id]);
-        
+
         // Привязываем услугу к мастеру
         $master->services()->attach($service->id);
 
@@ -763,7 +760,7 @@ class TelegramBotTest extends TestCase
             ->booking($business, TelegramUserState::STEP_SELECT_LOCATION, [])
             ->forUser($this->telegramUserId)
             ->create();
-        
+
         TelegramUserState::factory()
             ->search()
             ->forUser($this->telegramUserId)

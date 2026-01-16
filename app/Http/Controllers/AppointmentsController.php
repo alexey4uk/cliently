@@ -29,7 +29,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }

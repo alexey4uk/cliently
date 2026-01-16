@@ -16,7 +16,7 @@ class TelegramNotificationService
     {
         $business = $appointment->business;
 
-        if (!$business->telegram_chat_id) {
+        if (! $business->telegram_chat_id) {
             return;
         }
 
@@ -28,11 +28,11 @@ class TelegramNotificationService
     /**
      * Отправить уведомление об изменении статуса назначения
      */
-    public static function sendAppointmentStatusChanged(Appointment $appointment, string $oldStatus = null)
+    public static function sendAppointmentStatusChanged(Appointment $appointment, ?string $oldStatus = null)
     {
         $business = $appointment->business;
 
-        if (!$business->telegram_chat_id) {
+        if (! $business->telegram_chat_id) {
             return;
         }
 
@@ -93,13 +93,13 @@ class TelegramNotificationService
         try {
             $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-            if (!$bot) {
+            if (! $bot) {
                 return;
             }
 
             $chat = TelegraphChat::where('chat_id', $business->telegram_chat_id)->first();
 
-            if (!$chat) {
+            if (! $chat) {
                 $chat = $bot->chats()->create([
                     'chat_id' => $business->telegram_chat_id,
                     'name' => 'Business Notifications',
@@ -109,7 +109,7 @@ class TelegramNotificationService
             $chat->message($message)->send();
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
-            Log::error('Telegram notification failed: ' . $e->getMessage());
+            Log::error('Telegram notification failed: '.$e->getMessage());
         }
     }
 }

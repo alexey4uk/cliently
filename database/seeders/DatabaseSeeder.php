@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Business;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -28,6 +28,6 @@ class DatabaseSeeder extends Seeder
             OnboardingSeeder::class,
         ]);
 
-        //Business::factory(10)->create();
+        // Business::factory(10)->create();
     }
 }

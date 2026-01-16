@@ -4,7 +4,6 @@ namespace App\Telegram;
 
 use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
-use App\Telegram\TelegramMessages;
 
 /**
  * Фабрика клавиатур для Telegram бота
@@ -13,7 +12,7 @@ use App\Telegram\TelegramMessages;
 class TelegramKeyboards
 {
     // ==================== БАЗОВЫЕ КЛАВИАТУРЫ ====================
-    
+
     /**
      * Только кнопка "Отмена"
      */
@@ -47,12 +46,12 @@ class TelegramKeyboards
     }
 
     // ==================== ВЫБОР ДАННЫХ ====================
-    
+
     /**
      * Сетка выбора с навигацией
-     * 
-     * @param Button[] $buttons Массив кнопок выбора
-     * @param int $chunkSize Количество кнопок в строке
+     *
+     * @param  Button[]  $buttons  Массив кнопок выбора
+     * @param  int  $chunkSize  Количество кнопок в строке
      */
     public static function selectionGrid(array $buttons, int $chunkSize): Keyboard
     {
@@ -67,7 +66,8 @@ class TelegramKeyboards
 
     /**
      * Клавиатура для выбора локаций
-     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Location[] $locations
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Location[]  $locations
      */
     public static function locations($locations): Keyboard
     {
@@ -75,6 +75,7 @@ class TelegramKeyboards
         foreach ($locations as $location) {
             $buttons[] = Button::make($location->name)->action("location_{$location->id}");
         }
+
         // Локация - первый шаг, кнопка "Назад" не нужна
         return Keyboard::make()
             ->row($buttons)
@@ -86,7 +87,8 @@ class TelegramKeyboards
 
     /**
      * Клавиатура для выбора услуг
-     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Service[] $services
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Service[]  $services
      */
     public static function services($services): Keyboard
     {
@@ -94,33 +96,37 @@ class TelegramKeyboards
         foreach ($services as $service) {
             $buttons[] = Button::make("{$service->name} ({$service->duration} мин)")->action("service_{$service->id}");
         }
+
         return self::selectionGrid($buttons, 1);
     }
 
     /**
      * Клавиатура для выбора мастеров
-     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Master[] $masters
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Master[]  $masters
      */
     public static function masters($masters): Keyboard
     {
         $buttons = [];
         foreach ($masters as $master) {
-            $buttons[] = Button::make($master->first_name . ' ' . $master->last_name)->action("master_{$master->id}");
+            $buttons[] = Button::make($master->first_name.' '.$master->last_name)->action("master_{$master->id}");
         }
+
         return self::selectionGrid($buttons, 1);
     }
 
     /**
      * Клавиатура для выбора дат (календарь как в веб-версии)
-     * @param string $month Год и месяц в формате 'Y-m'
-     * @param array $availableDates Массив доступных дат (формат 'Y-m-d')
-     * @param \Carbon\Carbon|null $selectedDate Выбранная дата
-     * @param bool $hasPrevMonth Можно ли перейти к предыдущему месяцу
+     *
+     * @param  string  $month  Год и месяц в формате 'Y-m'
+     * @param  array  $availableDates  Массив доступных дат (формат 'Y-m-d')
+     * @param  \Carbon\Carbon|null  $selectedDate  Выбранная дата
+     * @param  bool  $hasPrevMonth  Можно ли перейти к предыдущему месяцу
      */
     public static function calendar(string $month, array $availableDates = [], ?\Carbon\Carbon $selectedDate = null, bool $hasPrevMonth = true): Keyboard
     {
         $keyboard = Keyboard::make();
-        
+
         // Заголовок календаря - дни недели (как недоступные кнопки)
         $weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
         $weekDayButtons = [];
@@ -128,19 +134,19 @@ class TelegramKeyboards
             $weekDayButtons[] = Button::make($day)->action('disabled_weekday');
         }
         $keyboard = $keyboard->row($weekDayButtons);
-        
+
         // Генерируем календарь
-        $startDate = \Carbon\Carbon::parse($month . '-01');
+        $startDate = \Carbon\Carbon::parse($month.'-01');
         $endDate = $startDate->copy()->endOfMonth();
-        
+
         // Определяем первый день недели (понедельник = 1, воскресенье = 0)
         $firstDayOfWeek = $startDate->dayOfWeek; // 1 = Monday, 7 = Sunday
         $daysToSubtract = $firstDayOfWeek === 1 ? 0 : ($firstDayOfWeek === 0 ? 6 : $firstDayOfWeek - 1);
-        
+
         // Начинаем с понедельника
         $currentDate = $startDate->copy()->subDays($daysToSubtract);
         $today = \Carbon\Carbon::today();
-        
+
         // Генерируем 6 недель (42 дня)
         $weekButtons = [];
         for ($i = 0; $i < 42; $i++) {
@@ -151,52 +157,52 @@ class TelegramKeyboards
             $isToday = $currentDate->isSameDay($today);
             $isSelected = $selectedDate && $currentDate->isSameDay($selectedDate);
             $isAvailable = in_array($dateStr, $availableDates);
-            
+
             // Определяем callback action
             // Только даты текущего месяца, не прошедшие и с доступными слотами - кликабельны
-            if ($isCurrentMonth && !$isPast && $isAvailable) {
+            if ($isCurrentMonth && ! $isPast && $isAvailable) {
                 $action = "date_{$dateStr}";
                 // Формируем текст кнопки для кликабельной даты
-                $displayText = (string)$dayNum;
-                
+                $displayText = (string) $dayNum;
+
                 // Добавляем оформление
                 if ($isSelected) {
-                    $displayText = '✅ ' . $displayText;
+                    $displayText = '✅ '.$displayText;
                 } elseif ($isToday) {
-                    $displayText = '•' . $displayText . '•';
+                    $displayText = '•'.$displayText.'•';
                 }
             } else {
                 $action = "disabled_{$dateStr}"; // Пустая ячейка
                 $displayText = ' . '; // Пустая ячейка с точкой для визуального разделения
             }
-            
+
             $weekButtons[] = Button::make($displayText)->action($action);
-            
+
             // Каждые 7 дней - новая строка
             if (count($weekButtons) === 7) {
                 $keyboard = $keyboard->row($weekButtons);
                 $weekButtons = [];
             }
-            
+
             $currentDate->addDay();
         }
-        
+
         // Добавляем навигацию по месяцам (3 кнопки в ряд)
         $navButtons = [];
-        
+
         if ($hasPrevMonth) {
             $navButtons[] = Button::make('⬅️')->action("calendar_prev_{$month}");
         }
-        
+
         $navButtons[] = Button::make('➡️')->action("calendar_next_{$month}");
-        
+
         // Если нет предыдущего месяца, добавляем пустую кнопку для выравнивания
-        if (!$hasPrevMonth) {
+        if (! $hasPrevMonth) {
             $navButtons = [Button::make('➖')->action('disabled_empty'), ...$navButtons];
         }
-        
+
         $keyboard = $keyboard->row($navButtons);
-        
+
         // Кнопки навигации
         return $keyboard
             ->row([
@@ -204,7 +210,7 @@ class TelegramKeyboards
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ]);
     }
-    
+
     /**
      * Клавиатура для выбора дат (простой вариант - 6 дней вперед)
      */
@@ -214,6 +220,7 @@ class TelegramKeyboards
         foreach ($dates as $date) {
             $buttons[] = Button::make($date['display'])->action("date_{$date['value']}");
         }
+
         return self::selectionGrid($buttons, 3);
     }
 
@@ -228,39 +235,38 @@ class TelegramKeyboards
                 $display = $time;
                 $callback = $time;
             } else {
-                $display = $time . ':00';
+                $display = $time.':00';
                 $callback = $time;
             }
             $buttons[] = Button::make($display)->action("time_{$callback}");
         }
+
         return self::selectionGrid($buttons, 3);
     }
 
-
     /**
      * Получает доступные даты для месяца
-     * @param \App\Services\AppointmentSlotService $slotService
-     * @param int $serviceId
-     * @param int $masterId
-     * @param int $locationId
-     * @param string $month Год и месяц в формате 'Y-m'
+     *
+     * @param  \App\Services\AppointmentSlotService  $slotService
+     * @param  string  $month  Год и месяц в формате 'Y-m'
      * @return array Массив доступных дат (формат 'Y-m-d')
      */
     public static function getAvailableDatesForMonth($slotService, int $serviceId, int $masterId, int $locationId, string $month): array
     {
         $availableDates = [];
-        $startDate = \Carbon\Carbon::parse($month . '-01');
+        $startDate = \Carbon\Carbon::parse($month.'-01');
         $endDate = $startDate->copy()->endOfMonth();
         $today = \Carbon\Carbon::today();
-        
+
         $current = $startDate->copy();
         while ($current->lte($endDate)) {
             // Пропускаем прошедшие даты
             if ($current->lt($today)) {
                 $current->addDay();
+
                 continue;
             }
-            
+
             // Проверяем наличие слотов
             $debugInfo = [];
             $availableSlots = $slotService->getAvailableSlots(
@@ -270,26 +276,27 @@ class TelegramKeyboards
                 $locationId,
                 $debugInfo
             );
-            
-            if (!empty($availableSlots)) {
+
+            if (! empty($availableSlots)) {
                 $availableDates[] = $current->format('Y-m-d');
             }
-            
+
             $current->addDay();
         }
-        
+
         return $availableDates;
     }
 
     /**
      * Проверяет, есть ли предыдущий месяц (не раньше сегодня)
-     * @param string $month Год и месяц в формате 'Y-m'
-     * @return bool
+     *
+     * @param  string  $month  Год и месяц в формате 'Y-m'
      */
     public static function hasPrevMonth(string $month): bool
     {
-        $monthDate = \Carbon\Carbon::parse($month . '-01');
+        $monthDate = \Carbon\Carbon::parse($month.'-01');
         $today = \Carbon\Carbon::today();
+
         return $monthDate->gt($today->startOfMonth());
     }
 
@@ -305,7 +312,7 @@ class TelegramKeyboards
     }
 
     // ==================== ПОДТВЕРЖДЕНИЕ ====================
-    
+
     /**
      * Клавиатура подтверждения записи
      */
@@ -322,48 +329,50 @@ class TelegramKeyboards
     }
 
     // ==================== КАТАЛОГ БИЗНЕСОВ ====================
-    
+
     /**
      * Клавиатура для каталога бизнесов с пагинацией
-     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Business[] $businesses
-     * @param int $currentPage Текущая страница
-     * @param int $totalPages Всего страниц
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Business[]  $businesses
+     * @param  int  $currentPage  Текущая страница
+     * @param  int  $totalPages  Всего страниц
      */
     public static function businessCatalog($businesses, int $currentPage = 1, int $totalPages = 1): Keyboard
     {
         $keyboard = Keyboard::make();
-        
+
         foreach ($businesses as $business) {
             $keyboard = $keyboard->row([
                 Button::make("{$business->name}")->action("business_{$business->id}"),
             ]);
         }
-        
+
         // Добавляем кнопки навигации
         $keyboard = self::addPaginationButtons($keyboard, $currentPage, $totalPages);
-        
+
         return $keyboard;
     }
 
     /**
      * Клавиатура для результатов поиска бизнесов
-     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Business[] $businesses
-     * @param int $currentPage Текущая страница
-     * @param int $totalPages Всего страниц
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Business[]  $businesses
+     * @param  int  $currentPage  Текущая страница
+     * @param  int  $totalPages  Всего страниц
      */
     public static function searchResults($businesses, int $currentPage = 1, int $totalPages = 1): Keyboard
     {
         $keyboard = Keyboard::make();
-        
+
         foreach ($businesses as $business) {
             $keyboard = $keyboard->row([
                 Button::make("{$business->name}")->action("business_{$business->id}"),
             ]);
         }
-        
+
         // Добавляем кнопки навигации
         $keyboard = self::addPaginationButtons($keyboard, $currentPage, $totalPages);
-        
+
         return $keyboard;
     }
 
@@ -375,27 +384,26 @@ class TelegramKeyboards
         if ($totalPages <= 1) {
             return $keyboard;
         }
-        
+
         $navButtons = [];
-        
+
         // Кнопка "Назад" (предыдущая страница)
         if ($currentPage > 1) {
             $navButtons[] = Button::make('⬅️ Назад')->action("page_{$currentPage}_prev");
         } else {
             $navButtons[] = Button::make('⬅️')->action('disabled_prev');
         }
-        
+
         // Информация о странице
         $navButtons[] = Button::make("📄 {$currentPage}/{$totalPages}")->action('disabled_page');
-        
+
         // Кнопка "Вперед" (следующая страница)
         if ($currentPage < $totalPages) {
             $navButtons[] = Button::make('Вперед ➡️')->action("page_{$currentPage}_next");
         } else {
             $navButtons[] = Button::make('➡️')->action('disabled_next');
         }
-        
+
         return $keyboard->row($navButtons);
     }
-
 }

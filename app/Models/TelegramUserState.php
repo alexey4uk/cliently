@@ -12,15 +12,25 @@ class TelegramUserState extends Model
 
     // Константы для шагов
     public const STEP_START = 'start';
+
     public const STEP_SEARCH = 'search';
+
     public const STEP_SELECT_LOCATION = 'select_location';
+
     public const STEP_SELECT_SERVICE = 'select_service';
+
     public const STEP_SELECT_MASTER = 'select_master';
+
     public const STEP_SELECT_DATE = 'select_date';
+
     public const STEP_SELECT_TIME = 'select_time';
+
     public const STEP_ENTER_CLIENT_INFO = 'enter_client_info';
+
     public const STEP_ENTER_PHONE = 'enter_phone';
+
     public const STEP_ENTER_NOTES = 'enter_notes';
+
     public const STEP_CONFIRM_APPOINTMENT = 'confirm_appointment';
 
     protected $fillable = [
@@ -61,12 +71,12 @@ class TelegramUserState extends Model
         $state = self::where('telegram_user_id', $telegramUserId)
             ->whereNotNull('business_id')
             ->first();
-        
+
         // Если не найдено, используем любое состояние (может быть поиск)
-        if (!$state) {
+        if (! $state) {
             $state = self::where('telegram_user_id', $telegramUserId)->first();
         }
-        
+
         return $state;
     }
 
@@ -96,15 +106,16 @@ class TelegramUserState extends Model
         $state = self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
             ->first();
-            
+
         if ($state) {
             $state->update([
                 'step' => $step,
                 'data' => $data,
             ]);
+
             return $state;
         }
-        
+
         return self::create([
             'telegram_user_id' => $telegramUserId,
             'business_id' => $businessId,
@@ -120,11 +131,11 @@ class TelegramUserState extends Model
     public static function clearState(string $telegramUserId, ?int $businessId = null): bool
     {
         $query = self::where('telegram_user_id', $telegramUserId);
-        
+
         if ($businessId !== null) {
             $query->where('business_id', $businessId);
         }
-        
+
         return $query->delete() > 0;
     }
 
@@ -146,6 +157,7 @@ class TelegramUserState extends Model
         $state = self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
             ->first();
+
         return $state?->last_message_id;
     }
 

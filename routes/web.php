@@ -79,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
             Route::patch('/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
 
-            //Telegram
+            // Telegram
             Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
             Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
 
@@ -106,4 +106,4 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
