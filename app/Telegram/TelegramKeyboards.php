@@ -324,20 +324,78 @@ class TelegramKeyboards
     // ==================== КАТАЛОГ БИЗНЕСОВ ====================
     
     /**
-     * Клавиатура для каталога бизнесов
+     * Клавиатура для каталога бизнесов с пагинацией
      * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Business[] $businesses
+     * @param int $currentPage Текущая страница
+     * @param int $totalPages Всего страниц
      */
-    public static function businessCatalog($businesses): Keyboard
+    public static function businessCatalog($businesses, int $currentPage = 1, int $totalPages = 1): Keyboard
     {
         $keyboard = Keyboard::make();
         
         foreach ($businesses as $business) {
             $keyboard = $keyboard->row([
-                Button::make("🏢 {$business->name}")->action("business_{$business->id}"),
+                Button::make("{$business->name}")->action("business_{$business->id}"),
             ]);
         }
         
+        // Добавляем кнопки навигации
+        $keyboard = self::addPaginationButtons($keyboard, $currentPage, $totalPages);
+        
         return $keyboard;
+    }
+
+    /**
+     * Клавиатура для результатов поиска бизнесов
+     * @param \Illuminate\Database\Eloquent\Collection|\App\Models\Business[] $businesses
+     * @param int $currentPage Текущая страница
+     * @param int $totalPages Всего страниц
+     */
+    public static function searchResults($businesses, int $currentPage = 1, int $totalPages = 1): Keyboard
+    {
+        $keyboard = Keyboard::make();
+        
+        foreach ($businesses as $business) {
+            $keyboard = $keyboard->row([
+                Button::make("{$business->name}")->action("business_{$business->id}"),
+            ]);
+        }
+        
+        // Добавляем кнопки навигации
+        $keyboard = self::addPaginationButtons($keyboard, $currentPage, $totalPages);
+        
+        return $keyboard;
+    }
+
+    /**
+     * Добавляет кнопки навигации по страницам
+     */
+    private static function addPaginationButtons(Keyboard $keyboard, int $currentPage, int $totalPages): Keyboard
+    {
+        if ($totalPages <= 1) {
+            return $keyboard;
+        }
+        
+        $navButtons = [];
+        
+        // Кнопка "Назад" (предыдущая страница)
+        if ($currentPage > 1) {
+            $navButtons[] = Button::make('⬅️ Назад')->action("page_{$currentPage}_prev");
+        } else {
+            $navButtons[] = Button::make('⬅️')->action('disabled_prev');
+        }
+        
+        // Информация о странице
+        $navButtons[] = Button::make("📄 {$currentPage}/{$totalPages}")->action('disabled_page');
+        
+        // Кнопка "Вперед" (следующая страница)
+        if ($currentPage < $totalPages) {
+            $navButtons[] = Button::make('Вперед ➡️')->action("page_{$currentPage}_next");
+        } else {
+            $navButtons[] = Button::make('➡️')->action('disabled_next');
+        }
+        
+        return $keyboard->row($navButtons);
     }
 
 }

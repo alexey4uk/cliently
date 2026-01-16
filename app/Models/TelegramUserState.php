@@ -28,7 +28,7 @@ class TelegramUserState extends Model
     /**
      * Получить состояние пользователя для конкретного бизнеса
      */
-    public static function getState(string $telegramUserId, int $businessId): ?self
+    public static function getState(string $telegramUserId, ?int $businessId): ?self
     {
         return self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
@@ -38,7 +38,7 @@ class TelegramUserState extends Model
     /**
      * Создать или обновить состояние
      */
-    public static function updateState(string $telegramUserId, int $businessId, string $step, array $data = []): self
+    public static function updateState(string $telegramUserId, ?int $businessId, string $step, array $data = []): self
     {
         return self::updateOrCreate(
             [
@@ -54,8 +54,9 @@ class TelegramUserState extends Model
 
     /**
      * Обновить состояние, сохраняя last_message_id
+     * Если $businessId равен null, используется отдельное состояние без привязки к бизнесу
      */
-    public static function updateStateKeepMessageId(string $telegramUserId, int $businessId, string $step, array $data = []): self
+    public static function updateStateKeepMessageId(string $telegramUserId, ?int $businessId, string $step, array $data = []): self
     {
         $state = self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
@@ -79,18 +80,23 @@ class TelegramUserState extends Model
 
     /**
      * Очистить состояние пользователя
+     * Если $businessId равен null, очищает все состояния пользователя
      */
-    public static function clearState(string $telegramUserId, int $businessId): bool
+    public static function clearState(string $telegramUserId, ?int $businessId = null): bool
     {
-        return self::where('telegram_user_id', $telegramUserId)
-            ->where('business_id', $businessId)
-            ->delete() > 0;
+        $query = self::where('telegram_user_id', $telegramUserId);
+        
+        if ($businessId !== null) {
+            $query->where('business_id', $businessId);
+        }
+        
+        return $query->delete() > 0;
     }
 
     /**
      * Сохранить ID последнего сообщения бота
      */
-    public static function setMessageId(string $telegramUserId, int $businessId, int $messageId): void
+    public static function setMessageId(string $telegramUserId, ?int $businessId, int $messageId): void
     {
         self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
@@ -100,7 +106,7 @@ class TelegramUserState extends Model
     /**
      * Получить ID последнего сообщения бота
      */
-    public static function getMessageId(string $telegramUserId, int $businessId): ?int
+    public static function getMessageId(string $telegramUserId, ?int $businessId): ?int
     {
         $state = self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
@@ -111,7 +117,7 @@ class TelegramUserState extends Model
     /**
      * Обновить состояние с сохранением message_id
      */
-    public static function updateStateWithMessageId(string $telegramUserId, int $businessId, string $step, array $data = [], ?int $messageId = null): self
+    public static function updateStateWithMessageId(string $telegramUserId, ?int $businessId, string $step, array $data = [], ?int $messageId = null): self
     {
         return self::updateOrCreate(
             [

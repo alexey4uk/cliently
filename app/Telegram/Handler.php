@@ -128,7 +128,15 @@ class Handler extends WebhookHandler
             }
             
             // Находим текущее состояние пользователя
-            $state = TelegramUserState::where('telegram_user_id', $userId)->first();
+            // Ищем состояние с конкретным бизнесом (не поисковое)
+            $state = TelegramUserState::where('telegram_user_id', $userId)
+                ->where('business_id', '!=', null)
+                ->first();
+            
+            // Если не нашли состояние с бизнесом, используем первое (может быть поиск)
+            if (!$state) {
+                $state = TelegramUserState::where('telegram_user_id', $userId)->first();
+            }
             
             if ($state) {
                 TelegramUserState::setMessageId($userId, $state->business_id, $this->lastMessageId);
@@ -162,14 +170,21 @@ class Handler extends WebhookHandler
         $messageId = $this->message->id();
         
         if ($states->isNotEmpty()) {
-            $state = $states->first();
+            // Ищем состояние с конкретным бизнесом (не поисковое)
+            $state = $states->firstWhere('business_id', '!=', null);
+            
+            // Если не нашли состояние с бизнесом, используем первое (может быть поиск)
+            if (!$state) {
+                $state = $states->first();
+            }
+            
             $business = $state->business;
             
             Log::info('State found', [
                 'step' => $state->step,
                 'last_message_id_in_db' => $state->last_message_id,
                 'telegram_user_id' => $userId,
-                'business_id' => $business->id
+                'business_id' => $business?->id
             ]);
             
             // Восстанавливаем lastMessageId из состояния
@@ -181,7 +196,12 @@ class Handler extends WebhookHandler
             }
             
             if ($state && $state->step !== 'start') {
-                $this->handleTextMessage($messageText, $state, $business);
+                // Обработка состояния поиска (без бизнеса)
+                if ($state->step === 'search') {
+                    $this->handleSearchQuery($messageText, $state);
+                } else {
+                    $this->handleTextMessage($messageText, $state, $business);
+                }
                 
                 // Удаляем сообщение пользователя после обработки
                 Log::info('About to delete user message', ['message_id' => $messageId]);
@@ -249,15 +269,96 @@ class Handler extends WebhookHandler
      */
     public function list()
     {
-        $businesses = Business::select('id', 'name', 'slug')->get();
+        $userId = $this->message->from()->id();
+        
+        // Очищаем предыдущее состояние
+        TelegramUserState::clearState($userId, null);
+        $this->lastMessageId = null;
+        
+        // Получаем первую страницу
+        $this->showBusinessListPage(1);
+    }
 
+    /**
+     * Показывает страницу списка бизнесов
+     */
+    protected function showBusinessListPage(int $page = 1)
+    {
+        $perPage = 10;
+        $offset = ($page - 1) * $perPage;
+        
+        $businesses = Business::select('id', 'name', 'slug')
+            ->orderBy('name')
+            ->offset($offset)
+            ->limit($perPage)
+            ->get();
+        
+        $total = Business::count();
+        $totalPages = ceil($total / $perPage);
+        
         if ($businesses->isEmpty()) {
             $this->replyWithMessage(TelegramMessages::MSG_NO_BUSINESSES);
             return;
         }
 
         $message = "🏢 Выберите бизнес для записи:\n\n";
-        $this->replyWithMessage($message, TelegramKeyboards::businessCatalog($businesses));
+        $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
+            'current' => $page,
+            'total' => $totalPages
+        ]);
+        
+        $this->replyWithMessage($message, TelegramKeyboards::businessCatalog($businesses, $page, $totalPages));
+    }
+
+    /**
+     * Команда /search - поиск бизнесов по названию
+     */
+    public function search()
+    {
+        $userId = $this->message->from()->id();
+        
+        // Очищаем предыдущее состояние
+        TelegramUserState::clearState($userId, null);
+        $this->lastMessageId = null;
+        
+        // Устанавливаем состояние поиска
+        TelegramUserState::updateStateKeepMessageId($userId, null, 'search', []);
+        
+        $this->replyWithMessage(TelegramMessages::MSG_SEARCH_PROMPT);
+    }
+
+    /**
+     * Показывает страницу результатов поиска
+     */
+    protected function showSearchResultsPage(string $query, int $page = 1)
+    {
+        $perPage = 10;
+        $offset = ($page - 1) * $perPage;
+        
+        $businesses = Business::where('name', 'LIKE', '%' . $query . '%')
+            ->select('id', 'name', 'slug')
+            ->orderBy('name')
+            ->offset($offset)
+            ->limit($perPage)
+            ->get();
+        
+        $total = Business::where('name', 'LIKE', '%' . $query . '%')->count();
+        $totalPages = ceil($total / $perPage);
+        
+        if ($businesses->isEmpty()) {
+            $this->replyWithMessage(TelegramMessages::MSG_SEARCH_NO_RESULTS);
+            return;
+        }
+
+        $message = TelegramMessages::format(TelegramMessages::MSG_SEARCH_RESULTS, [
+            'query' => $query
+        ]) . "\n\n";
+        $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
+            'current' => $page,
+            'total' => $totalPages
+        ]);
+        
+        $this->replyWithMessage($message, TelegramKeyboards::searchResults($businesses, $page, $totalPages));
     }
 
     /**
@@ -285,10 +386,52 @@ class Handler extends WebhookHandler
             case 'enter_notes':
                 $this->handleNotes($business, $text, $state);
                 break;
+            case 'select_location':
+            case 'select_service':
+            case 'select_master':
+            case 'select_date':
+            case 'select_time':
+            case 'confirm_appointment':
+                // На этих шагах нужно использовать кнопки
+                // Показываем сообщение об ошибке отдельно, не редактируя интерфейс записи
+                Log::warning('Text input on step that requires buttons: ' . $state->step);
+                $this->chat->message(TelegramMessages::MSG_USE_BUTTONS)->send();
+                break;
             default:
                 Log::warning('Unknown step in handleTextMessage: ' . $state->step);
                 $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
         }
+    }
+
+    /**
+     * Обработка поискового запроса
+     */
+    protected function handleSearchQuery(string $text, $state)
+    {
+        Log::info('handleSearchQuery', ['text' => $text]);
+        
+        // Проверка на команду отмены
+        if (mb_strtolower(trim($text)) === 'отмена' || mb_strtolower(trim($text)) === 'cancel') {
+            TelegramUserState::clearState($state->telegram_user_id, null);
+            $this->replyWithMessage(TelegramMessages::MSG_CANCEL);
+            $this->lastMessageId = null;
+            return;
+        }
+        
+        // Проверка длины запроса
+        $query = trim($text);
+        if (mb_strlen($query) < 2) {
+            $this->replyWithMessage(TelegramMessages::MSG_SEARCH_TOO_SHORT);
+            return;
+        }
+        
+        // Сохраняем запрос в состояние для пагинации
+        $data = $state->data;
+        $data['search_query'] = $query;
+        TelegramUserState::updateStateKeepMessageId($state->telegram_user_id, null, 'search', $data);
+        
+        // Показываем первую страницу результатов
+        $this->showSearchResultsPage($query, 1);
     }
 
     /**
@@ -434,8 +577,8 @@ class Handler extends WebhookHandler
         // Получаем userId из параметра или из сообщения/колбэка
         $userId = $userId ?? $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
 
-        // Очищаем предыдущее состояние
-        TelegramUserState::clearState($userId, $business->id);
+        // Очищаем все предыдущие состояния (включая состояние поиска)
+        TelegramUserState::clearState($userId);
         $this->lastMessageId = null;
 
         // Начинаем с выбора локации
@@ -622,6 +765,45 @@ class Handler extends WebhookHandler
             return;
         }
 
+        // Обработка пагинации (может быть без состояния)
+        if (str_starts_with($action, 'page_')) {
+            $parts = explode('_', $action);
+            $currentPage = (int)$parts[1];
+            $direction = $parts[2] ?? null;
+            
+            if ($direction === 'prev') {
+                $newPage = $currentPage - 1;
+            } elseif ($direction === 'next') {
+                $newPage = $currentPage + 1;
+            } else {
+                Log::warning('Unknown page action: ' . $action);
+                $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
+                return;
+            }
+            
+            // Находим состояние пользователя для определения типа списка
+            $state = TelegramUserState::where('telegram_user_id', $userId)->first();
+            
+            // Определяем, что показывать - каталог или поиск
+            $searchQuery = $state?->data['search_query'] ?? null;
+            
+            if ($searchQuery) {
+                // Показываем результаты поиска
+                $this->showSearchResultsPage($searchQuery, $newPage);
+            } else {
+                // Показываем каталог бизнесов
+                $this->showBusinessListPage($newPage);
+            }
+            return;
+        }
+
+        // Обработка недоступных кнопок (может быть без состояния)
+        if (str_starts_with($action, 'disabled_')) {
+            // Недоступная кнопка - игнорируем
+            Log::info('Disabled button clicked:', ['action' => $action]);
+            return;
+        }
+
         // Находим состояние пользователя
         $states = TelegramUserState::where('telegram_user_id', $userId)->get();
         Log::info('User states found:', ['count' => $states->count()]);
@@ -632,14 +814,21 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $state = $states->first();
+        // Ищем состояние с конкретным бизнесом (не поисковое)
+        $state = $states->firstWhere('business_id', '!=', null);
+        
+        // Если не нашли состояние с бизнесом, используем первое (может быть поиск)
+        if (!$state) {
+            $state = $states->first();
+        }
+        
         $business = $state->business;
         
         Log::info('Processing action:', [
             'action' => $action,
             'state_step' => $state->step,
-            'business_id' => $business->id,
-            'business_name' => $business->name
+            'business_id' => $business?->id,
+            'business_name' => $business?->name
         ]);
 
         if (str_starts_with($action, 'location_')) {
@@ -753,7 +942,8 @@ class Handler extends WebhookHandler
             // Удаляем старое сообщение с кнопками
             $this->deleteBotMessage($messageId);
             
-            TelegramUserState::clearState($userId, $business->id);
+            // Очищаем все состояния пользователя
+            TelegramUserState::clearState($userId);
             
             // Сбрасываем lastMessageId чтобы отправить новое сообщение
             $this->lastMessageId = null;
@@ -765,13 +955,17 @@ class Handler extends WebhookHandler
             // Удаляем старое сообщение с кнопками
             $this->deleteBotMessage($messageId);
             
-            TelegramUserState::clearState($userId, $business->id);
+            TelegramUserState::clearState($userId, $business?->id);
             
             // Сбрасываем lastMessageId чтобы отправить новое сообщение
             $this->lastMessageId = null;
             
             // Начинаем с самого начала
-            $this->showLocationSelection($business);
+            if ($business) {
+                $this->showLocationSelection($business);
+            } else {
+                $this->replyWithMessage(TelegramMessages::MSG_START);
+            }
         } else {
             Log::warning('Unknown action: ' . $action);
             $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
