@@ -24,6 +24,34 @@ class BusinessFactory extends Factory
             'slug' => fake()->unique()->slug(),
             'description' => fake()->text(200),
             'phone' => '+37529'.fake()->numerify('#######'),
+            'telegram_token' => fake()->uuid(),
+            'telegram_chat_id' => null,
         ];
+    }
+
+    /**
+     * Business с подключенным Telegram
+     */
+    public function withTelegram(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'telegram_chat_id' => fake()->randomNumber(9, true),
+        ]);
+    }
+
+    /**
+     * Business с конкретным slug
+     */
+    public function withSlug(string $slug): static
+    {
+        return $this->state(['slug' => $slug]);
+    }
+
+    /**
+     * Business с конкретным токеном
+     */
+    public function withToken(string $token): static
+    {
+        return $this->state(['telegram_token' => $token]);
     }
 }

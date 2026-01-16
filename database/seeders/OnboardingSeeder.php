@@ -34,8 +34,8 @@ class OnboardingSeeder extends Seeder
 
         // Создаем бизнес
         $business = Business::create([
-            'name' => 'Elite Beauty Salon',
-            'slug' => 'elite-beauty-salon',
+            'name' => 'Elite Beauty',
+            'slug' => 'elite-beauty',
             'description' => 'Премиальный салон красоты с многолетним опытом работы. Мы предлагаем полный спектр услуг по уходу за волосами, ногтями и кожей.',
             'phone' => '+375291234567',
         ]);
@@ -92,11 +92,11 @@ class OnboardingSeeder extends Seeder
         $master->locations()->attach($location->id);
         $master->services()->attach($service->id);
 
-        $this->command->info('Onboarding данные успешно созданы!');
-        $this->command->info("Пользователь: {$user->email} (пароль: lm57iqxz)");
-        $this->command->info("Бизнес: {$business->name} (slug: {$business->slug})");
-        $this->command->info("Локация: {$location->name}");
-        $this->command->info("Услуга: {$service->name}");
-        $this->command->info("Мастер: {$master->first_name} {$master->last_name}");
+        // $this->command->info('Onboarding данные успешно созданы!');
+        // $this->command->info("Пользователь: {$user->email} (пароль: lm57iqxz)");
+        // $this->command->info("Бизнес: {$business->name} (slug: {$business->slug})");
+        // $this->command->info("Локация: {$location->name}");
+        // $this->command->info("Услуга: {$service->name}");
+        // $this->command->info("Мастер: {$master->first_name} {$master->last_name}");
     }
 }

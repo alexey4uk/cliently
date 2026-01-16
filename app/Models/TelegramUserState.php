@@ -2,11 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TelegramUserState extends Model
 {
+    use HasFactory;
+
+    // Константы для шагов
+    public const STEP_START = 'start';
+    public const STEP_SEARCH = 'search';
+    public const STEP_SELECT_LOCATION = 'select_location';
+    public const STEP_SELECT_SERVICE = 'select_service';
+    public const STEP_SELECT_MASTER = 'select_master';
+    public const STEP_SELECT_DATE = 'select_date';
+    public const STEP_SELECT_TIME = 'select_time';
+    public const STEP_ENTER_CLIENT_INFO = 'enter_client_info';
+    public const STEP_ENTER_PHONE = 'enter_phone';
+    public const STEP_ENTER_NOTES = 'enter_notes';
+    public const STEP_CONFIRM_APPOINTMENT = 'confirm_appointment';
+
     protected $fillable = [
         'telegram_user_id',
         'step',
@@ -33,6 +49,25 @@ class TelegramUserState extends Model
         return self::where('telegram_user_id', $telegramUserId)
             ->where('business_id', $businessId)
             ->first();
+    }
+
+    /**
+     * Получить текущее состояние пользователя
+     * Сначала ищет состояние с бизнесом, если не найдено - первое состояние
+     */
+    public static function getCurrentState(string $telegramUserId): ?self
+    {
+        // Сначала пытаемся найти состояние с business_id
+        $state = self::where('telegram_user_id', $telegramUserId)
+            ->whereNotNull('business_id')
+            ->first();
+        
+        // Если не найдено, используем любое состояние (может быть поиск)
+        if (!$state) {
+            $state = self::where('telegram_user_id', $telegramUserId)->first();
+        }
+        
+        return $state;
     }
 
     /**
