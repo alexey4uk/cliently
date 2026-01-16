@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessSettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -73,6 +74,14 @@ Route::middleware(['auth'])->group(function () {
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
+
+            // Онлайн-запись
+            Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
+            Route::patch('/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
+
+            // Telegram
+            Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
+            Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
 
             // Настройки бизнеса
             Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');

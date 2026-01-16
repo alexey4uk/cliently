@@ -5,142 +5,79 @@
 @section('page-description', 'Управление данными вашего бизнеса')
 
 @push('breadcrumbs')
-    <x-breadcrumbs :items="[['title' => 'Настройки', 'url' => route('settings.index')]]" />
+    <x-breadcrumbs :items="[['title' => 'Настройки']]" />
 @endpush
 
 @section('content')
+    <div class="space-y-6 w-full overflow-x-hidden">
+        <!-- Заголовок страницы -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Настройки бизнеса</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управляйте основными параметрами вашей компании</p>
+            </div>
+            
+            <a href="{{ route('settings.business.edit') }}"
+               class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg border border-indigo-200 dark:border-indigo-800 transition-all active:scale-95">
+                <i class="fa-solid fa-pencil text-xs"></i>
+                <span>Редактировать бизнес</span>
+            </a>
+        </div>
 
-    <div class="space-y-4 md:space-y-6 w-full overflow-x-hidden">
-        <!-- Приветственный блок с информацией о бизнесе -->
-        <div
-            class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div class="p-4 md:p-6">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {{-- Акцентная иконка --}}
-                    <div
-                        class="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <i class="fa-solid fa-building text-white text-2xl md:text-3xl"></i>
-                    </div>
-
-                    {{-- Информация о бизнесе --}}
-                    <div class="flex-1 min-w-0">
-                        <h2 class="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-1.5 truncate">
-                            {{ $business->name }}
-                        </h2>
-                        <p class="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-3">
-                            Управляйте настройками вашего бизнеса
-                        </p>
-
-                        @if ($business->phone || $business->email)
-                            <div class="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm">
-                                @if ($business->phone)
-                                    <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                        <i class="fa-solid fa-phone text-indigo-500 dark:text-indigo-400"></i>
-                                        <span>{{ $business->phone }}</span>
-                                    </div>
-                                @endif
-                                @if ($business->email)
-                                    <div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                                        <i class="fa-solid fa-envelope text-indigo-500 dark:text-indigo-400"></i>
-                                        <span class="truncate max-w-[200px]">{{ $business->email }}</span>
-                                    </div>
-                                @endif
+        <!-- Карточка информации о бизнесе -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+            <div class="flex items-start gap-4">
+                <!-- Иконка -->
+                <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-building text-white"></i>
+                </div>
+                
+                <!-- Информация -->
+                <div class="flex-1 min-w-0">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white truncate">
+                        {{ $business->name }}
+                    </h2>
+                    
+                    @if ($business->phone || $business->email)
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-2">
+                            @if ($business->phone)
+                                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                    <i class="fa-solid fa-phone text-slate-400 dark:text-slate-500"></i>
+                                    <span>{{ $business->phone }}</span>
+                                </div>
+                            @endif
+                            
+                            @if ($business->email)
+                                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                    <i class="fa-solid fa-envelope text-slate-400 dark:text-slate-500"></i>
+                                    <span class="truncate max-w-[200px]">{{ $business->email }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                    
+                    {{-- <!-- Slug для доступа -->
+                    @if ($business->slug)
+                        <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                <i class="fa-solid fa-link"></i>
+                                <span>Идентификатор для клиентов:</span>
                             </div>
-                        @endif
-                    </div>
-
-                    {{-- Кнопка "Редактировать" --}}
-                    <a href="{{ route('settings.business.edit') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex-shrink-0 shadow-sm active:scale-95">
-                        <i class="fa-solid fa-pencil text-xs"></i>
-                        <span>Редактировать</span>
-                    </a>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-mono text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded">
+                                    {{ $business->slug }}
+                                </span>
+                                <a href="{{ route('public.appointments.show', ['slug' => $business->slug]) }}" 
+                                   target="_blank"
+                                   class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline">
+                                    Посмотреть страницу →
+                                </a>
+                            </div>
+                        </div>
+                    @endif --}}
                 </div>
             </div>
         </div>
-
-
-        <!-- Публичная ссылка -->
-        @php
-            $fullUrl = route('public.appointments.show', ['slug' => $business->slug]);
-            $displayUrl = str_replace(['http://', 'https://', 'www.'], '', $fullUrl);
-        @endphp
-
-        @if ($business->slug)
-            <div x-data="{
-                copied: false,
-                publicUrl: '{{ $fullUrl }}',
-                async copyUrl() {
-                    try {
-                        if (navigator.clipboard && window.isSecureContext) {
-                            await navigator.clipboard.writeText(this.publicUrl);
-                        } else {
-                            throw new Error();
-                        }
-                    } catch (err) {
-                        const textArea = document.createElement('textarea');
-                        textArea.value = this.publicUrl;
-                        textArea.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                    }
-                    this.copied = true;
-                    setTimeout(() => this.copied = false, 2000);
-                }
-            }"
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div class="p-4 md:p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div
-                            class="h-10 w-10 rounded-xl bg-green-500 dark:bg-green-600 flex items-center justify-center shrink-0 shadow-sm">
-                            <i class="fa-solid fa-share-alt text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-semibold text-slate-900 dark:text-white mb-0.5">
-                                Ваша публичная ссылка
-                            </h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">
-                                Мгновенно поделитесь с клиентами
-                            </p>
-                        </div>
-                    </div>
-
-                    <div
-                        class="bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-2.5 md:p-3">
-                        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
-
-                            {{-- Поле с обрезанной ссылкой (Домен + Путь) --}}
-                            <div class="flex-1 min-w-0 bg-transparent px-1">
-                                <span
-                                    class="text-sm text-slate-700 dark:text-slate-300 font-mono block truncate selection:bg-green-100"
-                                    title="{{ $fullUrl }}">
-                                    {{ $displayUrl }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                {{-- Кнопка "Перейти" (иконка) --}}
-                                <a href="{{ $fullUrl }}" target="_blank" rel="noopener"
-                                    class="p-2.5 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shrink-0 shadow-sm"
-                                    title="Открыть ссылку">
-                                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-                                </a>
-
-                                {{-- Кнопка "Копировать" --}}
-                                <button type="button" @click="copyUrl()" aria-live="polite"
-                                    :class="copied ? 'bg-green-600' : 'bg-indigo-600'"
-                                    class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all active:scale-95 min-w-[130px] shadow-md hover:shadow-lg focus:outline-hidden focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                    <i :class="copied ? 'fa-solid fa-check' : 'fa-solid fa-copy'" class="text-xs"></i>
-                                    <span x-text="copied ? 'Готово!' : 'Копировать'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
 
         <!-- Основные разделы -->
         <div>
@@ -150,7 +87,6 @@
                 </h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
                 <!-- Карточка: Локации -->
                 <a href="{{ route('settings.locations') }}"
                     class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
@@ -225,9 +161,80 @@
                         </div>
                     </div>
                 </a>
+
+                <!-- Карточка: Онлайн-запись -->
+                @php
+                    $isBookingEnabled = $business->online_booking_enabled ?? true;
+                @endphp
+                <a href="{{ route('settings.online-booking') }}"
+                    class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
+                    <div class="relative">
+                        <div
+                            class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+                            <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                        </div>
+                        <h3
+                            class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            Онлайн-запись
+                        </h3>
+
+                        @if ($business->slug)
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                                <span class="font-semibold text-slate-900 dark:text-white">
+                                    @if ($isBookingEnabled)
+                                        <span class="text-emerald-600 dark:text-emerald-400">Включена</span>
+                                    @else
+                                        <span class="text-amber-600 dark:text-amber-400">Выключена</span>
+                                    @endif
+                                </span>
+                            </p>
+                        @else
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                                <span class="font-semibold text-amber-600 dark:text-amber-400">Не настроено</span>
+                            </p>
+                        @endif
+
+                        <div
+                            class="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="mr-1">Управление</span>
+                            <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Карточка: Telegram Бот -->
+                @php
+                    $telegramBotActive = $business->telegram_chat_id;
+                @endphp
+                <a href="{{ route('settings.telegram') }}"
+                    class="group relative bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-5 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all active:scale-[0.98]">
+                    <div class="relative">
+                        <div
+                            class="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors">
+                            <i class="fa-brands fa-telegram text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                        </div>
+                        <h3
+                            class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            Telegram Бот
+                        </h3>
+
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                            @if ($telegramBotActive)
+                                <span class="font-semibold text-emerald-600 dark:text-emerald-400">Подключен</span>
+                            @else
+                                <span class="font-semibold text-amber-600 dark:text-amber-400">Требуется настройка</span>
+                            @endif
+                        </p>
+
+                        <div
+                            class="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="mr-1">Настройка</span>
+                            <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
-
 
         <!-- Информационные подсказки -->
         @if ($business->locations->count() === 0 || $business->services->count() === 0 || $business->masters->count() === 0)
@@ -273,7 +280,5 @@
                 </div>
             </div>
         @endif
-
     </div>
-
 @endsection

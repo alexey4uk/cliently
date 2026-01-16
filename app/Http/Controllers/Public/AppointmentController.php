@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
 use App\Services\AppointmentSlotService;
+use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -308,6 +309,8 @@ class AppointmentController extends Controller
             'status' => 'pending',
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        TelegramNotificationService::sendAppointmentCreated($appointment);
 
         return redirect()
             ->route('public.appointments.success', [$business->slug, $appointment->token])

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Business extends Model
 {
@@ -16,7 +17,20 @@ class Business extends Model
         'phone',
         'description',
         'slug',
+        'telegram_chat_id',
+        'telegram_token',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($business) {
+            if (empty($business->telegram_token)) {
+                $business->telegram_token = Str::random(32);
+            }
+        });
+    }
 
     public function clients()
     {
@@ -48,5 +62,10 @@ class Business extends Model
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function telegramUserStates(): HasMany
+    {
+        return $this->hasMany(\App\Models\TelegramUserState::class);
     }
 }
