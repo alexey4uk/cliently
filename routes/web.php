@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessSettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Settings\DashboardSettingsController;
 use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['auth', 'onboarded'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
         Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
@@ -74,6 +76,10 @@ Route::middleware(['auth'])->group(function () {
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
+
+            // Dashboard settings
+            Route::get('/dashboard', [DashboardSettingsController::class, 'index'])->name('dashboard');
+            Route::post('/dashboard', [DashboardSettingsController::class, 'update'])->name('dashboard.update');
 
             // Онлайн-запись
             Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
