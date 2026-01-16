@@ -14,7 +14,11 @@ class TelegramSettingsController extends Controller
         // Получить первого бота (предполагаем, что бот один)
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-        return view('settings.telegram.index', compact('business', 'bot'));
+        // Проверяем, есть ли настроенный бот для уведомлений
+        // Бот настроен, если у бизнеса есть telegram_token
+        $hasBotForNotifications = !empty($business->telegram_token);
+
+        return view('settings.telegram.index', compact('business', 'bot', 'hasBotForNotifications'));
     }
 
     public function disconnect()

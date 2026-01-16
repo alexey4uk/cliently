@@ -16,6 +16,13 @@
         @php
             $botUsername = $bot ? $bot->name : 'Bot';
             $isConnected = $business->telegram_chat_id;
+            $hasBotForNotifications = $hasBotForNotifications ?? false;
+            
+            // Определяем состояние для уведомлений
+            $notificationsState = 'no-bot'; // По умолчанию
+            if ($hasBotForNotifications) {
+                $notificationsState = $isConnected ? 'connected' : 'disconnected';
+            }
         @endphp
 
         <!-- Шапка страницы -->
@@ -45,20 +52,36 @@
                         </div>
                     </div>
                     
-                    @if($isConnected)
+                    @if($notificationsState === 'connected')
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded-full">
                             <i class="fa-solid fa-circle-check text-[10px]"></i>
                             Подключено
                         </span>
+                    @elseif($notificationsState === 'disconnected')
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium rounded-full">
+                            <i class="fa-solid fa-circle-exclamation text-[10px]"></i>
+                            Не подключено
+                        </span>
                     @else
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-full">
-                            Не подключено
+                            Временно недоступно
                         </span>
                     @endif
                 </div>
 
-                @if(!$isConnected)
-                    <!-- Состояние: не подключено -->
+                @if($notificationsState === 'no-bot')
+                    <!-- Состояние: бот не настроен -->
+                    <div class="text-center py-8">
+                        <div class="h-14 w-14 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-robot text-amber-500 dark:text-amber-400 text-lg"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Упс. Уже чиним.</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Функция временно недоступна. Работаем над этим!
+                        </p>
+                    </div>
+                @elseif($notificationsState === 'disconnected')
+                    <!-- Состояние: бот настроен, но не подключен -->
                     <div class="space-y-4">
                         <p class="text-sm text-slate-600 dark:text-slate-400">
                             Подключите бота, чтобы получать мгновенные уведомления.
@@ -84,6 +107,11 @@
                             <i class="fa-brands fa-telegram"></i>
                             Подключить Telegram
                         </a>
+                        
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            Нажмите "START" в боте для подключения
+                        </div>
                     </div>
                 @else
                     <!-- Состояние: подключено -->
@@ -94,7 +122,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-slate-800 dark:text-slate-200">Подключено успешно</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">ID: {{ $business->telegram_chat_id }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">ID чата: {{ $business->telegram_chat_id }}</p>
                             </div>
                         </div>
                         
@@ -105,9 +133,9 @@
                                     <span class="text-sm text-slate-600 dark:text-slate-400">Звуковые уведомления</span>
                                 </div>
                                 <div class="relative inline-block w-10 h-5">
-                                    <input type="checkbox" class="sr-only" checked>
-                                    <div class="block w-10 h-5 bg-indigo-600 rounded-full"></div>
-                                    <div class="absolute right-1 top-1 bg-white w-3 h-3 rounded-full transition transform"></div>
+                                    <input type="checkbox" id="sound-notifications" class="sr-only" checked>
+                                    <div class="block w-10 h-5 bg-indigo-600 rounded-full transition-colors"></div>
+                                    <div class="absolute right-1 top-1 bg-white w-3 h-3 rounded-full transition-transform"></div>
                                 </div>
                             </div>
                             
@@ -117,21 +145,21 @@
                                     <span class="text-sm text-slate-600 dark:text-slate-400">Ежедневные отчеты</span>
                                 </div>
                                 <div class="relative inline-block w-10 h-5">
-                                    <input type="checkbox" class="sr-only">
-                                    <div class="block w-10 h-5 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
-                                    <div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition transform"></div>
+                                    <input type="checkbox" id="daily-reports" class="sr-only">
+                                    <div class="block w-10 h-5 bg-slate-300 dark:bg-slate-700 rounded-full transition-colors"></div>
+                                    <div class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform"></div>
                                 </div>
                             </div>
                         </div>
                         
-                        <form action="{{ route('settings.telegram.disconnect') }}" method="POST"
-                            onsubmit="return confirm('Вы уверены, что хотите отключить уведомления?')">
+                        <form action="{{ route('settings.telegram.disconnect') }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button type="submit"
+                                onclick="return confirm('Вы уверены, что хотите отключить бота?')"
                                 class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/30 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors">
                                 <i class="fa-solid fa-link-slash"></i>
-                                Отключить уведомления
+                                Отключить
                             </button>
                         </form>
                     </div>
@@ -151,19 +179,19 @@
                         </div>
                     </div>
                     
-                    @if($bot)
+                    @if($hasBotForNotifications)
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium rounded-full">
                             <i class="fa-solid fa-circle-check text-[10px]"></i>
                             Доступно
                         </span>
                     @else
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium rounded-full">
-                            Недоступно
+                            Временно недоступно
                         </span>
                     @endif
                 </div>
 
-                @if($bot)
+                @if($hasBotForNotifications)
                     <div class="space-y-4">
                         <p class="text-sm text-slate-600 dark:text-slate-400">
                             Поделитесь ссылкой с клиентами. Бот проведет их через процесс записи.
@@ -197,21 +225,21 @@
                                 Открыть бота
                             </a>
                         </div>
+                        
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                            <i class="fa-solid fa-info-circle mr-1"></i>
+                            Клиенты нажимают "START" для начала записи
+                        </div>
                     </div>
                 @else
-                    <div class="text-center py-6">
-                        <div class="h-12 w-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-3">
-                            <i class="fa-solid fa-robot text-amber-600 dark:text-amber-400"></i>
+                    <div class="text-center py-8">
+                        <div class="h-14 w-14 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-robot text-amber-500 dark:text-amber-400 text-lg"></i>
                         </div>
-                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Telegram бот не настроен</h4>
-                        <p class="text-xs text-slate-600 dark:text-slate-400 mb-4">
-                            Для работы онлайн-записи через Telegram необходимо настроить бота.
+                        <h4 class="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2">Упс. Уже чиним.</h4>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Функция временно недоступна. Работаем над этим!
                         </p>
-                        <a href="#"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors">
-                            <i class="fa-solid fa-gear"></i>
-                            Настроить бота
-                        </a>
                     </div>
                 @endif
             </div>
@@ -271,16 +299,23 @@
     <script>
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
-                // Можно добавить уведомление о копировании
                 const button = event.target.closest('button');
                 if (button) {
                     const originalHTML = button.innerHTML;
                     button.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Скопировано';
+                    button.classList.remove('text-indigo-600', 'dark:text-indigo-400', 'text-sky-600', 'dark:text-sky-400');
                     button.classList.add('text-green-600', 'dark:text-green-400');
                     
                     setTimeout(() => {
                         button.innerHTML = originalHTML;
                         button.classList.remove('text-green-600', 'dark:text-green-400');
+                        
+                        // Восстанавливаем оригинальный цвет
+                        if (originalHTML.includes('indigo') || button.classList.contains('text-indigo-600')) {
+                            button.classList.add('text-indigo-600', 'dark:text-indigo-400');
+                        } else {
+                            button.classList.add('text-sky-600', 'dark:text-sky-400');
+                        }
                     }, 2000);
                 }
             });
@@ -290,17 +325,23 @@
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const container = this.parentElement;
+                const track = container.querySelector('div:first-child');
+                const thumb = container.querySelector('div:last-child');
+                
                 if (this.checked) {
-                    container.querySelector('div:first-child').classList.remove('bg-slate-300', 'dark:bg-slate-700');
-                    container.querySelector('div:first-child').classList.add('bg-indigo-600');
-                    container.querySelector('div:last-child').classList.remove('left-1');
-                    container.querySelector('div:last-child').classList.add('right-1');
+                    track.classList.remove('bg-slate-300', 'dark:bg-slate-700');
+                    track.classList.add('bg-indigo-600');
+                    thumb.classList.remove('left-1');
+                    thumb.classList.add('right-1');
                 } else {
-                    container.querySelector('div:first-child').classList.add('bg-slate-300', 'dark:bg-slate-700');
-                    container.querySelector('div:first-child').classList.remove('bg-indigo-600');
-                    container.querySelector('div:last-child').classList.remove('right-1');
-                    container.querySelector('div:last-child').classList.add('left-1');
+                    track.classList.add('bg-slate-300', 'dark:bg-slate-700');
+                    track.classList.remove('bg-indigo-600');
+                    thumb.classList.remove('right-1');
+                    thumb.classList.add('left-1');
                 }
+                
+                // Здесь можно добавить отправку AJAX запроса для сохранения настроек
+                console.log(`Setting ${this.id} changed to: ${this.checked}`);
             });
         });
     </script>
