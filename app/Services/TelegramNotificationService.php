@@ -49,15 +49,14 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить уведомление об изменении статуса назначения для мастера
+     * Отправить уведомление об изменении статуса назначения для клиента
      */
     public static function sendAppointmentStatusChangedForClient(Appointment $appointment, ?string $oldStatus = null)
     {
-        // $business = $appointment->business;
-
-        // if (! $business->telegram_chat_id) {
-        //     return;
-        // }
+        // Проверяем, есть ли у клиента telegram_user_id
+        if (! $appointment->client->telegram_user_id) {
+            return;
+        }
 
         $statusText = match ($appointment->status) {
             'confirmed' => 'подтверждена',

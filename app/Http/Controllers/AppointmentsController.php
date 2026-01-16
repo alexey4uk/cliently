@@ -163,7 +163,7 @@ class AppointmentsController extends Controller
         ]);
 
         // Отправить уведомление в Telegram
-        //TelegramNotificationService::sendAppointmentCreated($appointment);
+        TelegramNotificationService::sendAppointmentCreated($appointment);
 
         return redirect()->route('appointments.index')->with('success', 'Запись создана');
     }
@@ -287,10 +287,11 @@ class AppointmentsController extends Controller
             return redirect()->route('appointments.index');
         }
 
+        $oldStatus = $appointment->status;
         $appointment->update(['status' => 'confirmed']);
 
         // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment);
+        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
 
         return redirect()->route('appointments.index')->with('success', 'Запись подтверждена');
     }
@@ -307,10 +308,12 @@ class AppointmentsController extends Controller
             return redirect()->route('appointments.index');
         }
 
+        $oldStatus = $appointment->status;
         $appointment->update(['status' => 'cancelled']);
 
         // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment);
+        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+        TelegramNotificationService::sendAppointmentStatusChanged($appointment, $oldStatus);
 
         return redirect()->route('appointments.index')->with('success', 'Запись отменена');
     }
@@ -328,9 +331,6 @@ class AppointmentsController extends Controller
         }
 
         $appointment->update(['status' => 'completed']);
-
-        // Отправить уведомление в Telegram
-        //TelegramNotificationService::sendAppointmentStatusChanged($appointment);
 
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
     }
