@@ -48,23 +48,11 @@ class DashboardSettingsController extends Controller
     }
 
     /**
-     * Получить настройки пользователя (декодирует JSON если нужно)
+     * Получить настройки пользователя
      */
     private function getSettings($user)
     {
-        $settings = $user->dashboard_settings ?? [];
-
-        // Если settings уже массив, вернём его
-        if (is_array($settings)) {
-            return $settings;
-        }
-
-        // Если settings JSON строка, декодируем
-        if (is_string($settings)) {
-            return json_decode($settings, true) ?? [];
-        }
-
-        return [];
+        return $user->dashboard_settings ?? [];
     }
 
     /**

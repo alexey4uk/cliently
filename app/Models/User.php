@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'name',
         'avatar',
+        'dashboard_settings',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'dashboard_settings' => 'array',
             //            'email_verified_at' => 'datetime',
             //            'password' => 'hashed',
             //            'phone' => E164PhoneNumberCast::class.":BY",
@@ -58,5 +60,36 @@ class User extends Authenticatable
         return $this->belongsToMany(Business::class)
             ->withPivot('role', 'first_name', 'last_name')
             ->withTimestamps();
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (is_null($user->dashboard_settings)) {
+                $user->dashboard_settings = [
+                    'dashboard' => [
+                        'widgets' => [
+                            'stats_header' => true,
+                            'quick_actions' => true,
+                            'next_appointment' => true,
+                            'today_appointments' => true,
+                            'pending_appointments' => true,
+                            'recent_clients' => true,
+                            'weekly_chart' => false,
+                        ],
+                        'widget_order' => [
+                            'next_appointment',
+                            'today_appointments',
+                            'pending_appointments',
+                            'recent_clients',
+                            'weekly_chart',
+                        ],
+                    ],
+                ];
+            }
+        });
     }
 }
