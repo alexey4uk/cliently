@@ -90,7 +90,7 @@ class AppointmentsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
@@ -99,12 +99,15 @@ class AppointmentsController extends Controller
             return redirect()->route('onboarding.business');
         }
 
+        $selectedClientId = $request->get('client_id');
+
         return view('appointments.create', [
             'business' => $business,
             'clients' => $business->clients()->orderBy('first_name')->get(),
             'services' => $business->services()->where('is_active', true)->orderBy('name')->get(),
             'masters' => $business->masters()->where('is_active', true)->orderBy('first_name')->get(),
             'locations' => $business->locations()->orderBy('name')->get(),
+            'selectedClientId' => $selectedClientId,
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
 {
@@ -24,12 +25,17 @@ class Client extends Model
         return $this->belongsTo(Business::class);
     }
 
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
     /**
      * Получить полное имя клиента
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name.' '.($this->last_name ?? ''));
+        return trim($this->first_name . ' ' . ($this->last_name ?? ''));
     }
 
     /**
@@ -40,6 +46,6 @@ class Client extends Model
         $first = mb_substr($this->first_name, 0, 1, 'UTF-8');
         $last = $this->last_name ? mb_substr($this->last_name, 0, 1, 'UTF-8') : '';
 
-        return mb_strtoupper($first.$last, 'UTF-8');
+        return mb_strtoupper($first . $last, 'UTF-8');
     }
 }

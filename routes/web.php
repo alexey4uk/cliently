@@ -71,6 +71,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
+        Route::get('clients-export', [\App\Http\Controllers\ClientController::class, 'export'])->name('clients.export');
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
         Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
         Route::patch('appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
