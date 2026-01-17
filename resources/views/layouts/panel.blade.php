@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Cliently - CRM для мастеров')</title>
+    <title>@yield('title', 'Панель управления - Cliently')</title>
 
     <!-- Theme initialization (must be before styles) -->
     <x-theme-init />
@@ -24,9 +24,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Google Fonts - Inter (основной) и Poppins (для логотипа) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -86,11 +83,10 @@
              :style="transitionsEnabled ? 'transition: margin-left 300ms ease-in-out;' : ''">
             <!-- Верхний header -->
             <x-header 
-                :pageTitle="__('cliently')"
+                :pageTitle="__('Панель управления')"
                 :pageDescription="null"
-                :showNewButton="true"
-                :showAdminButton="!Str::startsWith(Request::path(), 'panel') && Auth::user()->hasRole('admin')"
-                :showNotificationsDropdown="true"
+                :showAdminBadge="true"
+                :showClientButton="true"
                 :showProfile="true"
                 :showMobileMenu="true"
             />

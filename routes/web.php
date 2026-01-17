@@ -63,7 +63,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('complete', [OnboardingController::class, 'complete'])->name('complete');
     });
 
-    Route::middleware(['auth', 'onboarded'])->group(function () {
+    // === КЛИЕНТСКАЯ ЧАСТЬ ===
+    // Для пользователей с доступом к клиентской части
+    Route::middleware(['auth', 'onboarded', 'only.client'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
@@ -108,6 +110,71 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/masters/{master}/edit', [BusinessSettingsController::class, 'editMaster'])->name('masters.edit');
             Route::patch('/masters/{master}', [BusinessSettingsController::class, 'updateMaster'])->name('masters.update');
             Route::delete('/masters/{master}', [BusinessSettingsController::class, 'destroyMaster'])->name('masters.destroy');
+        });
+    });
+
+    // === АДМИНСКАЯ ПАНЕЛЬ ===
+    // Для пользователей с доступом к админке
+    Route::middleware(['auth', 'only.panel'])->prefix('panel')->name('panel.')->group(function () {
+        // Главная панели
+        Route::get('/', [\App\Http\Controllers\Panel\PanelController::class, 'index'])->name('index');
+
+        // Пользователи (только админ)
+        Route::middleware(['check.permission:users.view'])->group(function () {
+            Route::get('/users', [\App\Http\Controllers\Panel\UserController::class, 'index'])->name('users');
+            Route::get('/users/create', [\App\Http\Controllers\Panel\UserController::class, 'create'])->name('users.create');
+            Route::post('/users', [\App\Http\Controllers\Panel\UserController::class, 'store'])->name('users.store');
+            Route::get('/users/{user}/edit', [\App\Http\Controllers\Panel\UserController::class, 'edit'])->name('users.edit');
+            Route::patch('/users/{user}', [\App\Http\Controllers\Panel\UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [\App\Http\Controllers\Panel\UserController::class, 'destroy'])->name('users.destroy');
+        });
+
+        // Роли (только админ)
+        Route::middleware(['check.permission:roles.view'])->group(function () {
+            Route::get('/roles', [\App\Http\Controllers\Panel\RoleController::class, 'index'])->name('roles');
+            Route::get('/roles/create', [\App\Http\Controllers\Panel\RoleController::class, 'create'])->name('roles.create');
+            Route::post('/roles', [\App\Http\Controllers\Panel\RoleController::class, 'store'])->name('roles.store');
+            Route::get('/roles/{role}/edit', [\App\Http\Controllers\Panel\RoleController::class, 'edit'])->name('roles.edit');
+            Route::patch('/roles/{role}', [\App\Http\Controllers\Panel\RoleController::class, 'update'])->name('roles.update');
+            Route::delete('/roles/{role}', [\App\Http\Controllers\Panel\RoleController::class, 'destroy'])->name('roles.destroy');
+        });
+
+        // Права доступа (только админ)
+        Route::middleware(['check.permission:roles.view'])->group(function () {
+            Route::get('/permissions', [\App\Http\Controllers\Panel\PermissionController::class, 'index'])->name('permissions');
+            Route::get('/permissions/create', [\App\Http\Controllers\Panel\PermissionController::class, 'create'])->name('permissions.create');
+            Route::post('/permissions', [\App\Http\Controllers\Panel\PermissionController::class, 'store'])->name('permissions.store');
+            Route::delete('/permissions/{permission}', [\App\Http\Controllers\Panel\PermissionController::class, 'destroy'])->name('permissions.destroy');
+        });
+
+        // Бизнесы (админ и менеджер)
+        Route::middleware(['check.permission:businesses.view'])->group(function () {
+            Route::get('/businesses', [\App\Http\Controllers\Panel\BusinessController::class, 'index'])->name('businesses');
+        });
+
+        // Записи (админ и менеджер)
+        Route::middleware(['check.permission:appointments.view'])->group(function () {
+            Route::get('/appointments', [\App\Http\Controllers\Panel\AppointmentController::class, 'index'])->name('appointments');
+        });
+
+        // Клиенты (админ и менеджер)
+        Route::middleware(['check.permission:clients.view'])->group(function () {
+            Route::get('/clients', [\App\Http\Controllers\Panel\ClientController::class, 'index'])->name('clients');
+        });
+
+        // Услуги (админ и менеджер)
+        Route::middleware(['check.permission:services.view'])->group(function () {
+            Route::get('/services', [\App\Http\Controllers\Panel\ServiceController::class, 'index'])->name('services');
+        });
+
+        // Аналитика (админ, менеджер, поддержка)
+        Route::middleware(['check.permission:analytics.view'])->group(function () {
+            Route::get('/analytics', [\App\Http\Controllers\Panel\AnalyticsController::class, 'index'])->name('analytics');
+        });
+
+        // Поддержка (админ и поддержка)
+        Route::middleware(['check.permission:support.view'])->group(function () {
+            Route::get('/support', [\App\Http\Controllers\Panel\SupportController::class, 'index'])->name('support');
         });
     });
 });
