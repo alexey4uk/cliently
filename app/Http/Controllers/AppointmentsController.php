@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AppointmentRequest;
 use App\Models\Appointment;
-use App\Models\Client;
-use App\Models\Service;
+use App\Repositories\AppointmentRepositoryInterface;
+use App\Repositories\ClientRepositoryInterface;
+use App\Repositories\MasterRepositoryInterface;
+use App\Repositories\ServiceRepositoryInterface;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,6 +15,22 @@ use Illuminate\Support\Facades\Auth;
 
 class AppointmentsController extends Controller
 {
+    private AppointmentRepositoryInterface $appointmentRepository;
+    private ClientRepositoryInterface $clientRepository;
+    private ServiceRepositoryInterface $serviceRepository;
+    private MasterRepositoryInterface $masterRepository;
+
+    public function __construct(
+        AppointmentRepositoryInterface $appointmentRepository,
+        ClientRepositoryInterface $clientRepository,
+        ServiceRepositoryInterface $serviceRepository,
+        MasterRepositoryInterface $masterRepository
+    ) {
+        $this->appointmentRepository = $appointmentRepository;
+        $this->clientRepository = $clientRepository;
+        $this->serviceRepository = $serviceRepository;
+        $this->masterRepository = $masterRepository;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -29,65 +47,30 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth.'-01');
+            $selectedDate = Carbon::parse($currentMonth . '-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
 
-        $query = $business->appointments()
-            ->with(['client', 'service', 'master', 'location']);
+        $filters = [
+            'view' => $view,
+            'month' => $currentMonth,
+            'date' => $request->get('date'),
+            'status' => $request->get('status'),
+            'search' => $request->get('search'),
+        ];
 
-        // Для календаря загружаем все записи месяца
         if ($view === 'calendar') {
-            $startOfMonth = $selectedDate->copy()->startOfMonth();
-            $endOfMonth = $selectedDate->copy()->endOfMonth();
-            $query->whereBetween('date', [$startOfMonth, $endOfMonth])
-                ->orderBy('date', 'asc')
-                ->orderBy('time', 'asc');
-
-            $allAppointments = $query->get();
+            $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
 
             // Группируем по датам
             $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
                 return $appointment->date->format('Y-m-d');
             });
 
-            // Для календаря используем коллекцию без пагинации
             $appointments = $allAppointments;
-
-            // Для календаря пагинация не нужна
-            $appointments = $appointments;
         } else {
-            // Для таблицы используем фильтры
-            $query->orderBy('date', 'desc')
-                ->orderBy('time', 'desc');
-
-            // Фильтр по дате
-            if ($request->has('date') && $request->date) {
-                $query->whereDate('date', $request->date);
-            } else {
-                // По умолчанию показываем сегодня и будущие записи
-                $query->whereDate('date', '>=', Carbon::today());
-            }
-
-            // Фильтр по статусу
-            if ($request->has('status') && $request->status) {
-                $query->where('status', $request->status);
-            }
-
-            // Поиск
-            if ($request->has('search') && $request->search) {
-                $search = $request->search;
-                $query->whereHas('client', function ($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('phone', 'like', "%{$search}%");
-                })->orWhereHas('service', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%");
-                });
-            }
-
-            $appointments = $query->paginate(20)->withQueryString();
+            $appointments = $this->appointmentRepository->getFilteredForBusiness($business->id, $filters, 20);
             $appointmentsByDate = collect();
         }
 
@@ -140,13 +123,15 @@ class AppointmentsController extends Controller
         $validated = $request->validated();
 
         // Проверка, что клиент, услуга принадлежат бизнесу
-        $client = Client::where('id', $validated['client_id'])
-            ->where('business_id', $business->id)
-            ->firstOrFail();
+        $client = $this->clientRepository->findByIdAndBusiness($validated['client_id'], $business->id);
+        if (!$client) {
+            abort(404, 'Клиент не найден');
+        }
 
-        $service = Service::where('id', $validated['service_id'])
-            ->where('business_id', $business->id)
-            ->firstOrFail();
+        $service = $this->serviceRepository->find($validated['service_id']);
+        if (!$service || $service->business_id !== $business->id) {
+            abort(404, 'Услуга не найдена');
+        }
 
         $appointment = Appointment::create([
             'business_id' => $business->id,
@@ -177,7 +162,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -197,7 +182,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -221,7 +206,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -229,13 +214,15 @@ class AppointmentsController extends Controller
         $oldStatus = $appointment->status;
 
         // Проверка, что клиент, услуга принадлежат бизнесу
-        $client = Client::where('id', $validated['client_id'])
-            ->where('business_id', $business->id)
-            ->firstOrFail();
+        $client = $this->clientRepository->findByIdAndBusiness($validated['client_id'], $business->id);
+        if (!$client) {
+            abort(404, 'Клиент не найден');
+        }
 
-        $service = Service::where('id', $validated['service_id'])
-            ->where('business_id', $business->id)
-            ->firstOrFail();
+        $service = $this->serviceRepository->find($validated['service_id']);
+        if (!$service || $service->business_id !== $business->id) {
+            abort(404, 'Услуга не найдена');
+        }
 
         $appointment->update([
             'client_id' => $validated['client_id'],
@@ -266,7 +253,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -283,7 +270,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -304,7 +291,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -326,7 +313,7 @@ class AppointmentsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $appointment->business_id !== $business->id) {
+        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 

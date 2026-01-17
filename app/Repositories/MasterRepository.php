@@ -74,4 +74,18 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
             $q->where('services.id', $serviceId);
         })->where('is_active', true)->orderBy('first_name')->get();
     }
+
+    /**
+     * Проверить, принадлежит ли мастер бизнесу
+     *
+     * @param int $masterId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $masterId, int $businessId): bool
+    {
+        return $this->model->where('id', $masterId)
+            ->where('business_id', $businessId)
+            ->exists();
+    }
 }

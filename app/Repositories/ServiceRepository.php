@@ -46,4 +46,18 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
             ->orderBy('name')
             ->get();
     }
+
+    /**
+     * Проверить, принадлежит ли услуга бизнесу
+     *
+     * @param int $serviceId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $serviceId, int $businessId): bool
+    {
+        return $this->model->where('id', $serviceId)
+            ->where('business_id', $businessId)
+            ->exists();
+    }
 }

@@ -30,4 +30,18 @@ class LocationRepository extends BaseRepository implements LocationRepositoryInt
     {
         return $this->model->where('business_id', $businessId)->orderBy('name')->get();
     }
+
+    /**
+     * Проверить, принадлежит ли локация бизнесу
+     *
+     * @param int $locationId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $locationId, int $businessId): bool
+    {
+        return $this->model->where('id', $locationId)
+            ->where('business_id', $businessId)
+            ->exists();
+    }
 }

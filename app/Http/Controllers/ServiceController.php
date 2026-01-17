@@ -4,10 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ServiceRequest;
 use App\Models\Service;
+use App\Repositories\ServiceRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
+    private ServiceRepositoryInterface $serviceRepository;
+
+    public function __construct(ServiceRepositoryInterface $serviceRepository)
+    {
+        $this->serviceRepository = $serviceRepository;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -57,7 +65,7 @@ class ServiceController extends Controller
 
         $validated = $request->validated();
 
-        Service::create([
+        $this->serviceRepository->create([
             'business_id' => $business->id,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
@@ -85,7 +93,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $service->business_id !== $business->id) {
+        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -103,7 +111,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $service->business_id !== $business->id) {
+        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -128,7 +136,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $service->business_id !== $business->id) {
+        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 

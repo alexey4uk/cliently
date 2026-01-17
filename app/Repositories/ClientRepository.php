@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Client;
+use Carbon\Carbon;
 
 /**
  * Репозиторий для работы с клиентами
@@ -66,5 +67,62 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
     public function getByBusiness(int $businessId)
     {
         return $this->model->where('business_id', $businessId)->get();
+    }
+
+    /**
+     * Получить недавних клиентов для дашборда
+     *
+     * @param int $businessId
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getRecentForDashboard(int $businessId, int $limit = 5)
+    {
+        return $this->model->where('business_id', $businessId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Получить количество новых клиентов за период
+     *
+     * @param int $businessId
+     * @param string $since
+     * @return int
+     */
+    public function getNewClientsCount(int $businessId, string $since): int
+    {
+        return $this->model->where('business_id', $businessId)
+            ->where('created_at', '>=', $since)
+            ->count();
+    }
+
+    /**
+     * Найти клиента по ID и проверить принадлежность бизнесу
+     *
+     * @param int $clientId
+     * @param int $businessId
+     * @return \App\Models\Client|null
+     */
+    public function findByIdAndBusiness(int $clientId, int $businessId)
+    {
+        return $this->model->where('id', $clientId)
+            ->where('business_id', $businessId)
+            ->first();
+    }
+
+    /**
+     * Проверить, принадлежит ли клиент бизнесу
+     *
+     * @param int $clientId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $clientId, int $businessId): bool
+    {
+        return $this->model->where('id', $clientId)
+            ->where('business_id', $businessId)
+            ->exists();
     }
 }

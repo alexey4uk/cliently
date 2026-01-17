@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
+use App\Repositories\ClientRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
+    private ClientRepositoryInterface $clientRepository;
+
+    public function __construct(ClientRepositoryInterface $clientRepository)
+    {
+        $this->clientRepository = $clientRepository;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -87,7 +95,7 @@ class ClientController extends Controller
 
         $validated = $request->validated();
 
-        Client::create([
+        $this->clientRepository->create([
             'business_id' => $business->id,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
@@ -106,7 +114,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $client->business_id !== $business->id) {
+        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -124,7 +132,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $client->business_id !== $business->id) {
+        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -142,7 +150,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $client->business_id !== $business->id) {
+        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -166,7 +174,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || $client->business_id !== $business->id) {
+        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 

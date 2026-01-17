@@ -35,4 +35,13 @@ interface MasterRepositoryInterface extends RepositoryInterface
      * @return Collection
      */
     public function getByService(int $serviceId): Collection;
+
+    /**
+     * Проверить, принадлежит ли мастер бизнесу
+     *
+     * @param int $masterId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $masterId, int $businessId): bool;
 }

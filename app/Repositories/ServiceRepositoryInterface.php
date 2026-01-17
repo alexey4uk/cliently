@@ -25,4 +25,13 @@ interface ServiceRepositoryInterface extends RepositoryInterface
      * @return Collection
      */
     public function getActiveByBusiness(int $businessId): Collection;
+
+    /**
+     * Проверить, принадлежит ли услуга бизнесу
+     *
+     * @param int $serviceId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $serviceId, int $businessId): bool;
 }

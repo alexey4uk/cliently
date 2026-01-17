@@ -35,4 +35,40 @@ interface ClientRepositoryInterface extends RepositoryInterface
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getByBusiness(int $businessId);
+
+    /**
+     * Получить недавних клиентов для дашборда
+     *
+     * @param int $businessId
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getRecentForDashboard(int $businessId, int $limit = 5);
+
+    /**
+     * Получить количество новых клиентов за период
+     *
+     * @param int $businessId
+     * @param string $since
+     * @return int
+     */
+    public function getNewClientsCount(int $businessId, string $since): int;
+
+    /**
+     * Найти клиента по ID и проверить принадлежность бизнесу
+     *
+     * @param int $clientId
+     * @param int $businessId
+     * @return \App\Models\Client|null
+     */
+    public function findByIdAndBusiness(int $clientId, int $businessId);
+
+    /**
+     * Проверить, принадлежит ли клиент бизнесу
+     *
+     * @param int $clientId
+     * @param int $businessId
+     * @return bool
+     */
+    public function belongsToBusiness(int $clientId, int $businessId): bool;
 }

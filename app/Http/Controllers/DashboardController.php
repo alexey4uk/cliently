@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Repositories\AppointmentRepositoryInterface;
+use App\Repositories\ClientRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -9,6 +11,16 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    private AppointmentRepositoryInterface $appointmentRepository;
+    private ClientRepositoryInterface $clientRepository;
+
+    public function __construct(
+        AppointmentRepositoryInterface $appointmentRepository,
+        ClientRepositoryInterface $clientRepository
+    ) {
+        $this->appointmentRepository = $appointmentRepository;
+        $this->clientRepository = $clientRepository;
+    }
     public function index()
     {
         $user = Auth::user()->load('businesses');
@@ -25,15 +37,15 @@ class DashboardController extends Controller
 
         // Кэширование данных (5 минут)
         $stats = Cache::remember('dashboard_stats_' . $user->id, 300, function () use ($business) {
-            return $this->getStats($business);
+            return $this->getStats($business->id);
         });
 
         $appointments = Cache::remember('dashboard_appointments_' . $user->id, 300, function () use ($business) {
-            return $this->getAppointments($business);
+            return $this->getAppointments($business->id);
         });
 
         $clients = Cache::remember('dashboard_clients_' . $user->id, 300, function () use ($business) {
-            return $this->getRecentClients($business, 5);
+            return $this->getRecentClients($business->id, 5);
         });
 
         return view('dashboard', [
@@ -62,88 +74,32 @@ class DashboardController extends Controller
     /**
      * Получить общую статистику
      */
-    private function getStats($business)
+    private function getStats(int $businessId)
     {
-        $today = Carbon::today();
-        $weekAgo = Carbon::now()->subWeek();
         $monthAgo = Carbon::now()->subMonth();
 
-        return [
-            'today' => $business->appointments()
-                ->where('date', $today->format('Y-m-d'))
-                ->where('status', '!=', 'cancelled')
-                ->count(),
-            'completed_week' => $business->appointments()
-                ->where('date', '>=', $weekAgo->format('Y-m-d'))
-                ->where('status', 'completed')
-                ->count(),
-            'new_clients_month' => $business->clients()
-                ->where('created_at', '>=', $monthAgo)
-                ->count(),
-        ];
+        $appointmentStats = $this->appointmentRepository->getDashboardStats($businessId);
+        $newClientsCount = $this->clientRepository->getNewClientsCount($businessId, $monthAgo);
+
+        return array_merge($appointmentStats, [
+            'new_clients_month' => $newClientsCount,
+        ]);
     }
 
     /**
      * Получить записи для dashboard
      */
-    private function getAppointments($business)
+    private function getAppointments(int $businessId)
     {
-        $today = Carbon::today();
-        $currentTime = Carbon::now()->format('H:i');
-
-        // Записи на сегодня
-        $todayAppointments = $business->appointments()
-            ->where('date', $today->format('Y-m-d'))
-            ->whereIn('status', ['confirmed', 'completed'])
-            ->with(['client', 'service', 'master', 'location'])
-            ->orderBy('time', 'asc')
-            ->get();
-
-        // Записи, требующие внимания
-        $pendingAppointments = $business->appointments()
-            ->where('status', 'pending')
-            ->where('date', '>=', $today->format('Y-m-d'))
-            ->with(['client', 'service', 'master', 'location'])
-            ->orderBy('date', 'asc')
-            ->orderBy('time', 'asc')
-            ->limit(5)
-            ->get();
-
-        // Следующая запись
-        $nextAppointment = $todayAppointments
-            ->filter(function ($appointment) use ($currentTime) {
-                return $appointment->time >= $currentTime && $appointment->status === 'confirmed';
-            })
-            ->first();
-
-        // Разделяем записи на выполненные и предстоящие
-        $completedAppointments = $todayAppointments->where('status', 'completed');
-        $upcomingAppointments = $todayAppointments->where('status', 'confirmed');
-
-        // Исключаем следующую запись из основного списка
-        $upcomingAppointmentsWithoutNext = $upcomingAppointments->filter(function ($appointment) use ($nextAppointment) {
-            return ! $nextAppointment || $appointment->id !== $nextAppointment->id;
-        });
-
-        return [
-            'today' => $todayAppointments,
-            'completed' => $completedAppointments,
-            'upcoming' => $upcomingAppointmentsWithoutNext,
-            'pending' => $pendingAppointments,
-            'next' => $nextAppointment,
-            'todayDate' => $today->locale('ru')->isoFormat('D MMMM'),
-        ];
+        return $this->appointmentRepository->getDashboardAppointments($businessId);
     }
 
     /**
      * Получить недавних клиентов
      */
-    private function getRecentClients($business, $limit = 5)
+    private function getRecentClients(int $businessId, int $limit = 5)
     {
-        return $business->clients()
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get();
+        return $this->clientRepository->getRecentForDashboard($businessId, $limit);
     }
 
     /**

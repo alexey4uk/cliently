@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\DashboardSettingsController;
+use App\Http\Controllers\Settings\LocationSettingsController;
+use App\Http\Controllers\Settings\MasterSettingsController;
 use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -96,20 +98,20 @@ Route::middleware(['auth'])->group(function () {
             Route::patch('/business', [BusinessSettingsController::class, 'update'])->name('business.update');
 
             // Локации
-            Route::get('/locations', [BusinessSettingsController::class, 'locations'])->name('locations');
-            Route::get('/locations/create', [BusinessSettingsController::class, 'createLocation'])->name('locations.create');
-            Route::post('/locations', [BusinessSettingsController::class, 'storeLocation'])->name('locations.store');
-            Route::get('/locations/{location}/edit', [BusinessSettingsController::class, 'editLocation'])->name('locations.edit');
-            Route::patch('/locations/{location}', [BusinessSettingsController::class, 'updateLocation'])->name('locations.update');
-            Route::delete('/locations/{location}', [BusinessSettingsController::class, 'destroyLocation'])->name('locations.destroy');
+            Route::get('/locations', [LocationSettingsController::class, 'index'])->name('locations');
+            Route::get('/locations/create', [LocationSettingsController::class, 'create'])->name('locations.create');
+            Route::post('/locations', [LocationSettingsController::class, 'store'])->name('locations.store');
+            Route::get('/locations/{location}/edit', [LocationSettingsController::class, 'edit'])->name('locations.edit');
+            Route::patch('/locations/{location}', [LocationSettingsController::class, 'update'])->name('locations.update');
+            Route::delete('/locations/{location}', [LocationSettingsController::class, 'destroy'])->name('locations.destroy');
 
             // Мастера
-            Route::get('/masters', [BusinessSettingsController::class, 'masters'])->name('masters');
-            Route::get('/masters/create', [BusinessSettingsController::class, 'createMaster'])->name('masters.create');
-            Route::post('/masters', [BusinessSettingsController::class, 'storeMaster'])->name('masters.store');
-            Route::get('/masters/{master}/edit', [BusinessSettingsController::class, 'editMaster'])->name('masters.edit');
-            Route::patch('/masters/{master}', [BusinessSettingsController::class, 'updateMaster'])->name('masters.update');
-            Route::delete('/masters/{master}', [BusinessSettingsController::class, 'destroyMaster'])->name('masters.destroy');
+            Route::get('/masters', [MasterSettingsController::class, 'index'])->name('masters');
+            Route::get('/masters/create', [MasterSettingsController::class, 'create'])->name('masters.create');
+            Route::post('/masters', [MasterSettingsController::class, 'store'])->name('masters.store');
+            Route::get('/masters/{master}/edit', [MasterSettingsController::class, 'edit'])->name('masters.edit');
+            Route::patch('/masters/{master}', [MasterSettingsController::class, 'update'])->name('masters.update');
+            Route::delete('/masters/{master}', [MasterSettingsController::class, 'destroy'])->name('masters.destroy');
         });
     });
 
@@ -179,4 +181,4 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
