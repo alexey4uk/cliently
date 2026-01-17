@@ -14,11 +14,23 @@ class TelegramSettingsController extends Controller
         // Получить первого бота (предполагаем, что бот один)
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-        // Проверяем, есть ли настроенный бот для уведомлений
-        // Бот настроен, если у бизнеса есть telegram_token
-        $hasBotForNotifications = !empty($business->telegram_token);
+        // Определяем состояние бота
+        $botState = 'no-bot'; // бота нет в системе
+        if ($bot) {
+            // Генерируем токен, если отсутствует
+            if (empty($business->telegram_token)) {
+                $business->telegram_token = \Illuminate\Support\Str::random(32);
+                $business->save();
+            }
 
-        return view('settings.telegram.index', compact('business', 'bot', 'hasBotForNotifications'));
+            if (empty($business->telegram_chat_id)) {
+                $botState = 'disconnected'; // пользователь еще не подключил
+            } else {
+                $botState = 'connected'; // все настроено
+            }
+        }
+
+        return view('settings.telegram.index', compact('business', 'bot', 'botState'));
     }
 
     public function disconnect()

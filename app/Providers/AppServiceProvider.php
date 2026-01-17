@@ -11,7 +11,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register repositories
+        $this->app->bind(\App\Repositories\BusinessRepositoryInterface::class, \App\Repositories\BusinessRepository::class);
+        $this->app->bind(\App\Repositories\ClientRepositoryInterface::class, \App\Repositories\ClientRepository::class);
+        $this->app->bind(\App\Repositories\ServiceRepositoryInterface::class, \App\Repositories\ServiceRepository::class);
+        $this->app->bind(\App\Repositories\LocationRepositoryInterface::class, \App\Repositories\LocationRepository::class);
+        $this->app->bind(\App\Repositories\MasterRepositoryInterface::class, \App\Repositories\MasterRepository::class);
+        $this->app->bind(\App\Repositories\AppointmentRepositoryInterface::class, \App\Repositories\AppointmentRepository::class);
+        $this->app->bind(\App\Repositories\TelegramUserStateRepositoryInterface::class, \App\Repositories\TelegramUserStateRepository::class);
     }
 
     /**
