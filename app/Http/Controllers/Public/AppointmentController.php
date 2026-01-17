@@ -151,18 +151,14 @@ class AppointmentController extends Controller
             $debugInfo
         );
 
-        // Получаем даты со слотами с сегодня до конца месяца
-        $endOfMonth = $selectedDate->copy()->endOfMonth();
+        // Получаем даты со слотами с сегодня до конца следующего месяца
+        $endOfNextMonth = Carbon::today()->endOfMonth()->addMonth()->endOfMonth();
         $datesWithSlots = [];
 
         // Начинаем с сегодня
         $checkDate = Carbon::today();
-        if ($checkDate->gt($endOfMonth)) {
-            // Если сегодня уже после конца месяца (редкий случай)
-            $checkDate = $selectedDate->copy();
-        }
 
-        while ($checkDate->lte($endOfMonth)) {
+        while ($checkDate->lte($endOfNextMonth)) {
             // Для текущей даты используем уже полученные слоты
             if ($checkDate->format('Y-m-d') === $date) {
                 $datesWithSlots[$checkDate->format('Y-m-d')] = ! empty($availableSlots);
