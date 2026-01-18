@@ -61,6 +61,19 @@ class ClientController extends Controller
             }
         }
 
+        // Фильтр по активности
+        $activity = $request->get('activity', '');
+        if ($activity) {
+            switch ($activity) {
+                case 'active':
+                    $query->whereHas('appointments');
+                    break;
+                case 'inactive':
+                    $query->whereDoesntHave('appointments');
+                    break;
+            }
+        }
+
         // Сортировка
         $sort = $request->get('sort', 'created_at');
         $direction = $request->get('direction', 'desc');
@@ -76,10 +89,10 @@ class ClientController extends Controller
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [15, 30, 50]) ? $perPage : 15;
 
-        $clients = $query->paginate($perPage)->withQueryString();
-
-        // Общее количество клиентов бизнеса
-        $totalClients = $business->clients()->count();
+        $clients = $query->withCount(['appointments', 'appointments as upcoming_appointments_count' => function ($q) {
+            $q->where('date', '>=', today())
+                ->whereIn('status', ['confirmed', 'pending']);
+        }])->paginate($perPage)->withQueryString();
 
         return view('clients.index', [
             'business' => $business,
@@ -88,8 +101,8 @@ class ClientController extends Controller
             'sort' => $sort,
             'direction' => $direction,
             'period' => $period,
+            'activity' => $activity,
             'perPage' => $perPage,
-            'totalClients' => $totalClients,
         ]);
     }
 
@@ -259,6 +272,18 @@ class ClientController extends Controller
                     break;
                 case 'year':
                     $query->where('created_at', '>=', now()->subYear());
+                    break;
+            }
+        }
+
+        $activity = $request->get('activity', '');
+        if ($activity) {
+            switch ($activity) {
+                case 'active':
+                    $query->whereHas('appointments');
+                    break;
+                case 'inactive':
+                    $query->whereDoesntHave('appointments');
                     break;
             }
         }

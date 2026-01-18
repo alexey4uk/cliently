@@ -31,10 +31,7 @@ class AppointmentsController extends Controller
         $this->serviceRepository = $serviceRepository;
         $this->masterRepository = $masterRepository;
     }
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    private function getCurrentBusiness()
     {
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
@@ -42,6 +39,36 @@ class AppointmentsController extends Controller
         if (! $business) {
             return redirect()->route('onboarding.business');
         }
+
+        return $business;
+    }
+
+    private function checkAppointmentBelongsToBusiness(Appointment $appointment)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
+        }
+
+        if (!$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
+            return redirect()->route('appointments.index');
+        }
+
+        return null;
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
+        }
+
 
         $view = $request->get('view', 'table'); // table или calendar
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
@@ -52,12 +79,22 @@ class AppointmentsController extends Controller
             $selectedDate = Carbon::now()->startOfMonth();
         }
 
+        // Сортировка и пагинация
+        $sort = $request->get('sort', 'date');
+        $direction = $request->get('direction', 'desc');
+        $perPage = $request->get('per_page', 20);
+        $perPage = in_array($perPage, [15, 30, 50]) ? $perPage : 20;
+
         $filters = [
             'view' => $view,
             'month' => $currentMonth,
             'date' => $request->get('date'),
             'status' => $request->get('status'),
             'search' => $request->get('search'),
+            'service_id' => $request->get('service_id'),
+            'master_id' => $request->get('master_id'),
+            'sort' => $sort,
+            'direction' => $direction,
         ];
 
         if ($view === 'calendar') {
@@ -70,7 +107,7 @@ class AppointmentsController extends Controller
 
             $appointments = $allAppointments;
         } else {
-            $appointments = $this->appointmentRepository->getFilteredForBusiness($business->id, $filters, 20);
+            $appointments = $this->appointmentRepository->getFilteredForBusiness($business->id, $filters, $perPage);
             $appointmentsByDate = collect();
         }
 
@@ -84,6 +121,11 @@ class AppointmentsController extends Controller
             'search' => $request->get('search', ''),
             'date' => $request->get('date', ''),
             'status' => $request->get('status', ''),
+            'service_id' => $request->get('service_id', ''),
+            'master_id' => $request->get('master_id', ''),
+            'sort' => $sort,
+            'direction' => $direction,
+            'perPage' => $perPage,
         ]);
     }
 
@@ -92,11 +134,10 @@ class AppointmentsController extends Controller
      */
     public function create(Request $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('onboarding.business');
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
         }
 
         $selectedClientId = $request->get('client_id');
@@ -111,30 +152,33 @@ class AppointmentsController extends Controller
         ]);
     }
 
+    private function validateClientAndService($clientId, $serviceId, $businessId)
+    {
+        $client = $this->clientRepository->findByIdAndBusiness($clientId, $businessId);
+        if (!$client) {
+            abort(404, 'Клиент не найден');
+        }
+
+        $service = $this->serviceRepository->find($serviceId);
+        if (!$service || $service->business_id !== $businessId) {
+            abort(404, 'Услуга не найдена');
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(AppointmentRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('onboarding.business');
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
         }
 
         $validated = $request->validated();
 
-        // Проверка, что клиент, услуга принадлежат бизнесу
-        $client = $this->clientRepository->findByIdAndBusiness($validated['client_id'], $business->id);
-        if (!$client) {
-            abort(404, 'Клиент не найден');
-        }
-
-        $service = $this->serviceRepository->find($validated['service_id']);
-        if (!$service || $service->business_id !== $business->id) {
-            abort(404, 'Услуга не найдена');
-        }
+        $this->validateClientAndService($validated['client_id'], $validated['service_id'], $business->id);
 
         $appointment = Appointment::create([
             'business_id' => $business->id,
@@ -161,13 +205,12 @@ class AppointmentsController extends Controller
      */
     public function show(Appointment $appointment)
     {
-        //dd($appointment->client);
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
+
+        $business = $this->getCurrentBusiness();
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
@@ -182,12 +225,12 @@ class AppointmentsController extends Controller
      */
     public function edit(Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
+
+        $business = $this->getCurrentBusiness();
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
@@ -206,26 +249,16 @@ class AppointmentsController extends Controller
      */
     public function update(AppointmentRequest $request, Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
 
+        $business = $this->getCurrentBusiness();
         $validated = $request->validated();
         $oldStatus = $appointment->status;
 
-        // Проверка, что клиент, услуга принадлежат бизнесу
-        $client = $this->clientRepository->findByIdAndBusiness($validated['client_id'], $business->id);
-        if (!$client) {
-            abort(404, 'Клиент не найден');
-        }
-
-        $service = $this->serviceRepository->find($validated['service_id']);
-        if (!$service || $service->business_id !== $business->id) {
-            abort(404, 'Услуга не найдена');
-        }
+        $this->validateClientAndService($validated['client_id'], $validated['service_id'], $business->id);
 
         $appointment->update([
             'client_id' => $validated['client_id'],
@@ -253,11 +286,9 @@ class AppointmentsController extends Controller
      */
     public function destroy(Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
 
         $appointment->delete();
@@ -270,11 +301,9 @@ class AppointmentsController extends Controller
      */
     public function confirm(Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
 
         $oldStatus = $appointment->status;
@@ -291,11 +320,9 @@ class AppointmentsController extends Controller
      */
     public function cancel(Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
 
         $oldStatus = $appointment->status;
@@ -313,15 +340,82 @@ class AppointmentsController extends Controller
      */
     public function complete(Appointment $appointment)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || !$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
-            return redirect()->route('appointments.index');
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
         }
 
         $appointment->update(['status' => 'completed']);
 
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
+    }
+
+    /**
+     * Export appointments to CSV.
+     */
+    public function export(Request $request)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
+        }
+
+        $view = $request->get('view', 'table');
+        $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
+
+        $filters = [
+            'view' => $view,
+            'month' => $currentMonth,
+            'date' => $request->get('date'),
+            'status' => $request->get('status'),
+            'search' => $request->get('search'),
+            'service_id' => $request->get('service_id'),
+            'master_id' => $request->get('master_id'),
+        ];
+
+        $appointments = $this->appointmentRepository->getAllFilteredForBusiness($business->id, $filters);
+
+        $filename = 'appointments_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=$filename",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $statusLabels = [
+            'pending' => 'Ожидает',
+            'confirmed' => 'Подтверждена',
+            'completed' => 'Завершена',
+            'cancelled' => 'Отменена',
+        ];
+
+        $callback = function () use ($appointments, $statusLabels) {
+            $file = fopen('php://output', 'w');
+
+            // Заголовки CSV
+            fputcsv($file, ['Дата', 'Время', 'Клиент', 'Телефон', 'Услуга', 'Мастер', 'Статус', 'Цена']);
+
+            // Данные записей
+            foreach ($appointments as $appointment) {
+                fputcsv($file, [
+                    $appointment->date->format('d.m.Y'),
+                    \Carbon\Carbon::parse($appointment->time)->format('H:i'),
+                    $appointment->client->full_name,
+                    $appointment->client->phone,
+                    $appointment->service->name,
+                    $appointment->master ? $appointment->master->first_name . ' ' . $appointment->master->last_name : 'Не назначен',
+                    $statusLabels[$appointment->status] ?? $appointment->status,
+                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ') . ' Br' : '',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

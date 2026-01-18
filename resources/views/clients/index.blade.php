@@ -10,6 +10,45 @@
 
 @section('content')
 
+    <!-- Flash сообщения -->
+    @if (session('success'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            class="bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-700/50 rounded-lg p-4 flex items-center gap-3">
+            <div class="flex-shrink-0">
+                <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400"></i>
+            </div>
+            <p class="text-sm font-medium text-emerald-800 dark:text-emerald-300">{{ session('success') }}</p>
+            <button @click="show = false" class="ml-auto flex-shrink-0 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div x-data="{ show: true }" x-show="show"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            class="bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-700/50 rounded-lg p-4 flex items-center gap-3">
+            <div class="flex-shrink-0">
+                <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400"></i>
+            </div>
+            <p class="text-sm font-medium text-rose-800 dark:text-rose-300">{{ session('error') }}</p>
+            <button @click="show = false" class="ml-auto flex-shrink-0 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    @endif
+
     <div x-data="{
         showPhoneModal: false,
         phone: '',
@@ -18,6 +57,8 @@
         showDeleteModal: false,
         clientToDelete: null,
         clientName: '',
+        showFilters: {{ $period || request('activity') || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 15 ? 'true' : 'false' }},
+        mobileShowFilters: false,
         openPhoneModal(phone, phoneDisplay, client) {
             this.phone = phone;
             this.phoneDisplay = phoneDisplay;
@@ -39,11 +80,12 @@
         },
         confirmDelete() {
             if (this.clientToDelete) {
-                const form = document.getElementById('delete-form-' + this.clientToDelete);
-                if (form) {
-                    form.submit();
-                }
+                document.getElementById('delete-form').action = '{{ route('clients.index') }}/' + this.clientToDelete;
+                document.getElementById('delete-form').submit();
             }
+        },
+        toggleFilters() {
+            this.showFilters = !this.showFilters;
         }
     }" class="space-y-4 md:space-y-6">
 
@@ -54,10 +96,7 @@
                     Клиенты
                 </h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Всего клиентов: <span class="font-medium text-slate-900 dark:text-white">{{ $totalClients }}</span>
-                    @if ($clients->total() != $totalClients)
-                        | Показано: <span class="font-medium text-slate-900 dark:text-white">{{ $clients->total() }}</span>
-                    @endif
+                    Управление клиентской базой
                 </p>
             </div>
             <div class="flex items-center gap-3">
@@ -75,92 +114,307 @@
         </div>
 
         <!-- Поиск и фильтры -->
-        <form method="GET" action="{{ route('clients.index') }}" class="flex flex-col sm:flex-row items-end gap-3">
-            <!-- Поиск -->
-            <div class="flex-1 w-full">
-                <label for="client-search" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Поиск
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-search text-slate-400 text-xs sm:text-sm"></i>
+        <div class="space-y-4">
+            <!-- Мобильная версия: поиск и кнопка фильтров -->
+            <div class="md:hidden space-y-3">
+                <!-- Всегда видимый поиск -->
+                <form method="GET" action="{{ route('clients.index') }}" class="flex gap-2">
+                    <input type="hidden" name="view" value="table">
+                    <div class="flex-1 relative">
+                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-slate-400 text-xs sm:text-sm"></i>
+                        </div>
+                        <input type="text" name="search" value="{{ $search }}"
+                            placeholder="Поиск по имени, телефону или email..."
+                            class="pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-200 text-sm text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400">
                     </div>
-                    <input id="client-search" type="text" name="search" value="{{ $search }}"
-                        placeholder="Поиск по имени, телефону или email..."
-                        class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                    <button type="submit"
+                        class="h-10 w-10 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center transition-colors flex-shrink-0">
+                        <i class="fa-solid fa-search text-xs sm:text-sm"></i>
+                    </button>
+                    <button type="button" @click="mobileShowFilters = !mobileShowFilters"
+                        class="h-10 w-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+                        <i class="fa-solid fa-filter text-xs sm:text-sm"></i>
+                    </button>
+                </form>
+
+                <!-- Выпадающая панель дополнительных фильтров -->
+                <div x-show="mobileShowFilters" @click.away="mobileShowFilters = false"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-4 space-y-3"
+                    style="display: none;">
+                    <form method="GET" action="{{ route('clients.index') }}" class="space-y-3">
+                        <input type="hidden" name="view" value="table">
+                        <input type="hidden" name="search" value="{{ $search }}">
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Период</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-calendar text-slate-400 text-xs"></i>
+                                </div>
+                                <select name="period" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="" {{ $period === '' ? 'selected' : '' }}>Все время</option>
+                                    <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Сегодня</option>
+                                    <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Последняя неделя
+                                    </option>
+                                    <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Последний месяц
+                                    </option>
+                                    <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Последний год
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Сортировка</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-sort text-slate-400 text-xs"></i>
+                                </div>
+                                <select name="sort" onchange="updateSortDirection(this); this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="name" data-direction="asc"
+                                        {{ $sort === 'name' && $direction === 'asc' ? 'selected' : '' }}>По имени (А-Я)
+                                    </option>
+                                    <option value="name" data-direction="desc"
+                                        {{ $sort === 'name' && $direction === 'desc' ? 'selected' : '' }}>По имени (Я-А)
+                                    </option>
+                                    <option value="created_at" data-direction="desc"
+                                        {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате
+                                        добавления</option>
+                                </select>
+                                <input type="hidden" name="direction" value="{{ $direction }}" id="sort-direction">
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Активность</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-user-check text-slate-400 text-xs"></i>
+                                </div>
+                                <select name="activity" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="" {{ $activity === '' ? 'selected' : '' }}>Все клиенты</option>
+                                    <option value="active" {{ $activity === 'active' ? 'selected' : '' }}>С записями
+                                    </option>
+                                    <option value="inactive" {{ $activity === 'inactive' ? 'selected' : '' }}>Без записей
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">На
+                                странице</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-list text-slate-400 text-xs"></i>
+                                </div>
+                                <select name="per_page" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                                    <option value="30" {{ $perPage == 30 ? 'selected' : '' }}>30</option>
+                                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Кнопка сброса фильтров -->
+                    @if ($period || request('activity'))
+                        <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <a href="{{ route('clients.index') }}"
+                                class="inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                                <span>Сбросить фильтры</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 
-            <!-- Фильтр по периоду -->
-            <div class="w-full sm:w-56">
-                <label for="client-period" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Период
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-calendar text-slate-400 text-xs sm:text-sm"></i>
+            <!-- Десктопная версия фильтров -->
+            <div class="hidden md:flex flex-col gap-4">
+                <!-- Всегда видимый поиск -->
+                <form method="GET" action="{{ route('clients.index') }}" class="flex items-end gap-3">
+                    <input type="hidden" name="view" value="table">
+                    <!-- Поиск -->
+                    <div class="flex-1 max-w-md">
+                        <label for="search-input"
+                            class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Поиск
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-search text-slate-400 text-xs"></i>
+                            </div>
+                            <input id="search-input" type="text" name="search" value="{{ $search }}"
+                                placeholder="Поиск по имени, телефону или email..."
+                                class="pl-9 pr-4 py-2.5 w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                        </div>
                     </div>
-                    <select id="client-period" name="period" onchange="this.form.submit()"
-                        class="w-full pl-9 sm:pl-10 pr-10 py-2 sm:py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white appearance-none cursor-pointer">
-                        <option value="" {{ $period === '' ? 'selected' : '' }}>Все время</option>
-                        <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Сегодня</option>
-                        <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Последняя неделя</option>
-                        <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Последний месяц</option>
-                        <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Последний год</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Сортировка -->
-            <div class="w-full sm:w-56">
-                <label for="client-sort" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Сортировка
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-sort text-slate-400 text-xs sm:text-sm"></i>
-                    </div>
-                    <select id="client-sort" name="sort" onchange="updateSortDirection(this); this.form.submit()"
-                        class="w-full pl-9 sm:pl-10 pr-10 py-2 sm:py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white appearance-none cursor-pointer">
-                        <option value="name" data-direction="asc"
-                            {{ $sort === 'name' && $direction === 'asc' ? 'selected' : '' }}>По имени (А-Я)</option>
-                        <option value="name" data-direction="desc"
-                            {{ $sort === 'name' && $direction === 'desc' ? 'selected' : '' }}>По имени (Я-А)</option>
-                        <option value="created_at" data-direction="desc"
-                            {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате добавления
-                        </option>
-                    </select>
-                    <input type="hidden" name="direction" value="{{ $direction }}" id="sort-direction">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                    </div>
-                </div>
-            </div>
+                    <!-- Кнопка поиска -->
+                    <button type="submit"
+                        class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex-shrink-0">
+                        <i class="fa-solid fa-search text-xs"></i>
+                    </button>
 
-            <!-- Количество на страницу -->
-            <div class="w-full sm:w-56">
-                <label for="client-per-page" class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    На странице
-                </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-list text-slate-400 text-xs sm:text-sm"></i>
-                    </div>
-                    <select id="client-per-page" name="per_page" onchange="this.form.submit()"
-                        class="w-full pl-9 sm:pl-10 pr-10 py-2 sm:py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-slate-900 dark:text-white appearance-none cursor-pointer">
-                        <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
-                        <option value="30" {{ $perPage == 30 ? 'selected' : '' }}>30</option>
-                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                    </div>
+                    <!-- Кнопка фильтров -->
+                    <button @click="toggleFilters()" type="button"
+                        class="inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex-shrink-0 ml-auto">
+                        <i class="fa-solid fa-filter text-xs"></i>
+                        <span x-text="showFilters ? 'Скрыть фильтры' : 'Показать фильтры'"></span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
+                            :class="showFilters ? 'rotate-180' : ''"></i>
+                    </button>
+                </form>
+
+
+
+                <!-- Панель дополнительных фильтров -->
+                <div x-show="showFilters" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                    class="bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4"
+                    style="display: none;">
+                    <!-- Дополнительные фильтры -->
+                    <form method="GET" action="{{ route('clients.index') }}"
+                        class="flex flex-wrap items-end gap-3">
+                        <input type="hidden" name="view" value="table">
+                        <input type="hidden" name="search" value="{{ $search }}">
+
+                        <!-- Фильтр по периоду -->
+                        <div class="min-w-[140px]">
+                            <label for="period-filter"
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                                Период
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-calendar text-slate-400 text-xs"></i>
+                                </div>
+                                <select id="period-filter" name="period" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="" {{ $period === '' ? 'selected' : '' }}>Все время</option>
+                                    <option value="today" {{ $period === 'today' ? 'selected' : '' }}>Сегодня</option>
+                                    <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Последняя неделя
+                                    </option>
+                                    <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Последний месяц
+                                    </option>
+                                    <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Последний год
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Фильтр по активности -->
+                        <div class="min-w-[140px]">
+                            <label for="activity-filter"
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Активность</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-user-check text-slate-400 text-xs"></i>
+                                </div>
+                                <select id="activity-filter" name="activity" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="" {{ $activity === '' ? 'selected' : '' }}>Все клиенты</option>
+                                    <option value="active" {{ $activity === 'active' ? 'selected' : '' }}>С записями
+                                    </option>
+                                    <option value="inactive" {{ $activity === 'inactive' ? 'selected' : '' }}>Без записей
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Сортировка -->
+                        <div class="min-w-[160px]">
+                            <label for="sort-filter"
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Сортировка</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-sort text-slate-400 text-xs"></i>
+                                </div>
+                                <select id="sort-filter" name="sort" onchange="updateSortDirection(this); this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="created_at" data-direction="desc"
+                                        {{ $sort === 'created_at' && $direction === 'desc' ? 'selected' : '' }}>По дате (новые)</option>
+                                    <option value="created_at" data-direction="asc"
+                                        {{ $sort === 'created_at' && $direction === 'asc' ? 'selected' : '' }}>По дате (старые)</option>
+                                    <option value="name" data-direction="asc"
+                                        {{ $sort === 'name' && $direction === 'asc' ? 'selected' : '' }}>По имени (А-Я)</option>
+                                    <option value="name" data-direction="desc"
+                                        {{ $sort === 'name' && $direction === 'desc' ? 'selected' : '' }}>По имени (Я-А)</option>
+                                </select>
+                                <input type="hidden" name="direction" value="{{ $direction }}" id="sort-direction-desktop">
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- На странице -->
+                        <div class="min-w-[100px]">
+                            <label for="per-page-filter"
+                                class="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">На странице</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-list text-slate-400 text-xs"></i>
+                                </div>
+                                <select id="per-page-filter" name="per_page" onchange="this.form.submit()"
+                                    class="w-full pl-9 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white appearance-none cursor-pointer">
+                                    <option value="15" {{ $perPage == 15 ? 'selected' : '' }}>15</option>
+                                    <option value="30" {{ $perPage == 30 ? 'selected' : '' }}>30</option>
+                                    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка сброса фильтров -->
+                        @if ($period || $activity || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 15)
+                            <div class="ml-auto">
+                                <a href="{{ route('clients.index', ['search' => $search]) }}"
+                                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                    <span>Сбросить фильтры</span>
+                                </a>
+                            </div>
+                        @endif
+                    </form>
                 </div>
             </div>
-        </form>
+        </div>
 
         <!-- Список клиентов -->
         @if ($clients->count() > 0)
@@ -190,18 +444,36 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
                             @foreach ($clients as $client)
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $totalAppointments = $client->appointments_count;
+                                            $hasActivity = $totalAppointments > 0;
+                                        @endphp
                                         <a href="{{ route('clients.show', $client) }}"
                                             class="flex items-center gap-3 group">
                                             <div
-                                                class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-sm">
+                                                class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-sm relative">
                                                 {{ $client->initials }}
+                                                @if ($hasActivity)
+                                                    <div class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900"
+                                                        title="{{ $totalAppointments }} {{ $totalAppointments === 1 ? 'запись' : ($totalAppointments < 5 ? 'записи' : 'записей') }}">
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="min-w-0 flex-1">
-                                                <div
-                                                    class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                                    {{ $client->full_name }}
+                                                <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                        {{ $client->full_name }}
+                                                    </div>
+                                                    @if ($hasActivity)
+                                                        <span
+                                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                                                            <i class="fa-solid fa-calendar-check text-xs"></i>
+                                                            {{ $totalAppointments }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <div class="text-xs text-slate-500 dark:text-slate-400">
                                                     ID: {{ $client->id }}
@@ -252,11 +524,6 @@
                                                 <i class="fa-solid fa-trash text-xs"></i>
                                                 <span class="hidden lg:inline">Удалить</span>
                                             </button>
-                                            <form method="POST" action="{{ route('clients.destroy', $client) }}"
-                                                id="delete-form-{{ $client->id }}" class="hidden">
-                                                @csrf
-                                                @method('DELETE')
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -269,6 +536,11 @@
             <!-- Карточки для мобильных -->
             <div class="md:hidden grid grid-cols-1 gap-4">
                 @foreach ($clients as $client)
+                    @php
+                        $totalAppointments = $client->appointments_count;
+                        $upcomingAppointments = $client->upcoming_appointments_count;
+                        $hasActivity = $totalAppointments > 0;
+                    @endphp
                     <div
                         class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
                         <!-- Заголовок карточки -->
@@ -278,16 +550,29 @@
                                 <a href="{{ route('clients.show', $client) }}"
                                     class="flex items-center gap-3 min-w-0 flex-1 group">
                                     <div
-                                        class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-sm">
+                                        class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-sm relative">
                                         {{ $client->initials }}
+                                        @if ($hasActivity)
+                                            <div
+                                                class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900">
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <h3
                                             class="text-sm font-semibold text-slate-900 dark:text-white truncate mb-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                             {{ $client->full_name }}
                                         </h3>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                                            Клиент с {{ $client->created_at->format('d.m.Y') }}
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                                            <span>Клиент с {{ $client->created_at->format('d.m.Y') }}</span>
+                                            @if ($totalAppointments > 0)
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                                                    <i class="fa-solid fa-calendar-check text-xs"></i>
+                                                    {{ $totalAppointments }}
+                                                    {{ $totalAppointments === 1 ? 'запись' : ($totalAppointments < 5 ? 'записи' : 'записей') }}
+                                                </span>
+                                            @endif
                                         </p>
                                     </div>
                                 </a>
@@ -350,11 +635,6 @@
                                         <i class="fa-solid fa-trash text-xs"></i>
                                         <span>Удалить</span>
                                     </button>
-                                    <form method="POST" action="{{ route('clients.destroy', $client) }}"
-                                        id="delete-form-{{ $client->id }}" class="hidden">
-                                        @csrf
-                                        @method('DELETE')
-                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -362,8 +642,31 @@
                 @endforeach
             </div>
 
+            <!-- Единая форма удаления -->
+            <form method="POST" id="delete-form" class="hidden">
+                @csrf
+                @method('DELETE')
+            </form>
+
             <!-- Пагинация -->
             @if ($clients->hasPages())
+                @php
+                    $currentPage = $clients->currentPage();
+                    $lastPage = $clients->lastPage();
+                    
+                    // Вычисляем диапазон страниц для отображения
+                    $startPage = max(1, $currentPage - 2);
+                    $endPage = min($lastPage, $currentPage + 2);
+                    
+                    // Корректируем, чтобы всегда показывать 5 страниц (если возможно)
+                    if ($endPage - $startPage < 4) {
+                        if ($startPage == 1) {
+                            $endPage = min($lastPage, $startPage + 4);
+                        } else {
+                            $startPage = max(1, $endPage - 4);
+                        }
+                    }
+                @endphp
                 <div
                     class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm px-4 py-3">
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -376,6 +679,22 @@
                         </div>
 
                         <div class="flex items-center space-x-1">
+                            <!-- Кнопка "В начало" -->
+                            @if ($currentPage > 1)
+                                <a href="{{ $clients->url(1) }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300"
+                                    title="В начало">
+                                    <i class="fa-solid fa-angles-left text-xs"></i>
+                                </a>
+                            @else
+                                <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400"
+                                    title="В начало">
+                                    <i class="fa-solid fa-angles-left text-xs"></i>
+                                </button>
+                            @endif
+
+                            <!-- Кнопка "Назад" -->
                             @if ($clients->onFirstPage())
                                 <button disabled
                                     class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
@@ -388,8 +707,9 @@
                                 </a>
                             @endif
 
-                            @foreach ($clients->getUrlRange(1, min(5, $clients->lastPage())) as $page => $url)
-                                @if ($page == $clients->currentPage())
+                            <!-- Номера страниц -->
+                            @foreach ($clients->getUrlRange($startPage, $endPage) as $page => $url)
+                                @if ($page == $currentPage)
                                     <button disabled
                                         class="w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg font-medium cursor-default text-xs sm:text-sm">
                                         {{ $page }}
@@ -402,6 +722,7 @@
                                 @endif
                             @endforeach
 
+                            <!-- Кнопка "Вперед" -->
                             @if ($clients->hasMorePages())
                                 <a href="{{ $clients->nextPageUrl() }}"
                                     class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300">
@@ -411,6 +732,21 @@
                                 <button disabled
                                     class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400">
                                     <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </button>
+                            @endif
+
+                            <!-- Кнопка "В конец" -->
+                            @if ($currentPage < $lastPage)
+                                <a href="{{ $clients->url($lastPage) }}"
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-slate-700 dark:text-slate-300"
+                                    title="В конец">
+                                    <i class="fa-solid fa-angles-right text-xs"></i>
+                                </a>
+                            @else
+                                <button disabled
+                                    class="w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg opacity-50 cursor-not-allowed text-slate-400"
+                                    title="В конец">
+                                    <i class="fa-solid fa-angles-right text-xs"></i>
                                 </button>
                             @endif
                         </div>
@@ -566,7 +902,11 @@
         function updateSortDirection(select) {
             const selectedOption = select.options[select.selectedIndex];
             const direction = selectedOption.getAttribute('data-direction');
-            document.getElementById('sort-direction').value = direction;
+            // Обновляем оба скрытых поля (мобильное и десктопное)
+            const mobileInput = document.getElementById('sort-direction');
+            const desktopInput = document.getElementById('sort-direction-desktop');
+            if (mobileInput) mobileInput.value = direction;
+            if (desktopInput) desktopInput.value = direction;
         }
     </script>
 

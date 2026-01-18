@@ -149,6 +149,113 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $query->where('status', $filters['status']);
         }
 
+        // Фильтр по услуге
+        if (isset($filters['service_id']) && $filters['service_id']) {
+            $query->where('service_id', $filters['service_id']);
+        }
+
+        // Фильтр по мастеру
+        if (isset($filters['master_id']) && $filters['master_id']) {
+            $query->where('master_id', $filters['master_id']);
+        }
+
+        // Поиск
+        if (isset($filters['search']) && $filters['search']) {
+            $search = $filters['search'];
+            $query->whereHas('client', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+            })->orWhereHas('service', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        // Для календаря - сортировка по дате и времени
+        if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
+            $startOfMonth = Carbon::parse($filters['month'] . '-01')->startOfMonth();
+            $endOfMonth = Carbon::parse($filters['month'] . '-01')->endOfMonth();
+            $query->whereBetween('date', [$startOfMonth, $endOfMonth])
+                ->orderBy('date', 'asc')
+                ->orderBy('time', 'asc');
+        } else {
+            // Сортировка
+            $sort = $filters['sort'] ?? 'date';
+            $direction = $filters['direction'] ?? 'desc';
+            
+            if ($sort === 'date') {
+                $query->orderBy('date', $direction)
+                    ->orderBy('time', $direction);
+            } elseif ($sort === 'client') {
+                $query->join('clients', 'appointments.client_id', '=', 'clients.id')
+                    ->orderBy('clients.first_name', $direction)
+                    ->orderBy('clients.last_name', $direction)
+                    ->select('appointments.*');
+            } elseif ($sort === 'status') {
+                $query->orderBy('status', $direction);
+            } else {
+                $query->orderBy('date', 'desc')
+                    ->orderBy('time', 'desc');
+            }
+        }
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Получить записи для календаря
+     *
+     * @param int $businessId
+     * @param string $month
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getForCalendar(int $businessId, string $month)
+    {
+        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
+        $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
+
+        return $this->model->where('business_id', $businessId)
+            ->whereBetween('date', [$startOfMonth, $endOfMonth])
+            ->with(['client', 'service', 'master', 'location'])
+            ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc')
+            ->get();
+    }
+
+    /**
+     * Получить все записи бизнеса с фильтрами без пагинации (для экспорта)
+     *
+     * @param int $businessId
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllFilteredForBusiness(int $businessId, array $filters = [])
+    {
+        $query = $this->model->where('business_id', $businessId)
+            ->with(['client', 'service', 'master', 'location']);
+
+        // Фильтр по дате
+        if (isset($filters['date']) && $filters['date']) {
+            $query->whereDate('date', $filters['date']);
+        } elseif (!isset($filters['view']) || $filters['view'] !== 'calendar') {
+            // Для экспорта показываем все записи, не только будущие
+        }
+
+        // Фильтр по статусу
+        if (isset($filters['status']) && $filters['status']) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Фильтр по услуге
+        if (isset($filters['service_id']) && $filters['service_id']) {
+            $query->where('service_id', $filters['service_id']);
+        }
+
+        // Фильтр по мастеру
+        if (isset($filters['master_id']) && $filters['master_id']) {
+            $query->where('master_id', $filters['master_id']);
+        }
+
         // Поиск
         if (isset($filters['search']) && $filters['search']) {
             $search = $filters['search'];
@@ -173,27 +280,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
                 ->orderBy('time', 'desc');
         }
 
-        return $query->paginate($perPage)->withQueryString();
-    }
-
-    /**
-     * Получить записи для календаря
-     *
-     * @param int $businessId
-     * @param string $month
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getForCalendar(int $businessId, string $month)
-    {
-        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
-        $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
-
-        return $this->model->where('business_id', $businessId)
-            ->whereBetween('date', [$startOfMonth, $endOfMonth])
-            ->with(['client', 'service', 'master', 'location'])
-            ->orderBy('date', 'asc')
-            ->orderBy('time', 'asc')
-            ->get();
+        return $query->get();
     }
 
     /**

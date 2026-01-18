@@ -53,6 +53,15 @@ interface AppointmentRepositoryInterface extends RepositoryInterface
     public function getFilteredForBusiness(int $businessId, array $filters = [], int $perPage = 20);
 
     /**
+     * Получить все записи бизнеса с фильтрами без пагинации (для экспорта)
+     *
+     * @param int $businessId
+     * @param array $filters
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllFilteredForBusiness(int $businessId, array $filters = []);
+
+    /**
      * Получить записи для календаря
      *
      * @param int $businessId

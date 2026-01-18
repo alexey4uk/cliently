@@ -73,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::get('clients-export', [\App\Http\Controllers\ClientController::class, 'export'])->name('clients.export');
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
+        Route::get('appointments-export', [\App\Http\Controllers\AppointmentsController::class, 'export'])->name('appointments.export');
         Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
         Route::patch('appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
         Route::patch('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
