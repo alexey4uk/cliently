@@ -859,7 +859,71 @@
                                             title="Контакт">
                                             <i class="fa-solid fa-phone text-xs"></i>
                                         </button>
-                                        <div x-data="{ open: false }" class="relative">
+                                        <div x-data="{
+                                            open: false,
+                                            updatePosition() {
+                                                if (!this.open) return;
+                                                $nextTick(() => {
+                                                    const button = this.$el.querySelector('button');
+                                                    const menu = this.$el.querySelector('[x-show]');
+                                                    if (!button || !menu) return;
+                                        
+                                                    const rect = button.getBoundingClientRect();
+                                                    const menuHeight = 300; // Approximate menu height
+                                                    const menuWidth = 192; // 48 * 4 (w-48 in rem)
+                                        
+                                                    // Get scroll positions
+                                                    const scrollY = window.scrollY;
+                                                    const scrollX = window.scrollX;
+                                        
+                                                    // Get viewport dimensions
+                                                    const viewportHeight = window.innerHeight;
+                                                    const viewportWidth = window.innerWidth;
+                                        
+                                                    // Set menu to fixed positioning
+                                                    menu.style.position = 'fixed';
+                                                    menu.style.zIndex = '1000';
+                                        
+                                                    // Calculate available space
+                                                    const spaceAbove = rect.top - scrollY;
+                                                    const spaceBelow = viewportHeight - (rect.bottom - scrollY);
+                                                    const spaceLeft = rect.left - scrollX;
+                                                    const spaceRight = viewportWidth - (rect.right - scrollX);
+                                        
+                                                    // Reset positions
+                                                    menu.style.top = '';
+                                                    menu.style.bottom = '';
+                                                    menu.style.left = '';
+                                                    menu.style.right = '';
+                                        
+                                                    // Position vertically - prefer below, then above
+                                                    if (spaceBelow >= menuHeight) {
+                                                        // Place below button
+                                                        menu.style.top = (rect.bottom + 8 + scrollY) + 'px';
+                                                    } else if (spaceAbove >= menuHeight) {
+                                                        // Place above button
+                                                        menu.style.bottom = (viewportHeight - rect.top + 8) + 'px';
+                                                    } else {
+                                                        // Default to below if not enough space anywhere
+                                                        menu.style.top = (rect.bottom + 8 + scrollY) + 'px';
+                                                    }
+                                        
+                                                    // Position horizontally - prefer left, then right
+                                                    if (spaceLeft >= menuWidth) {
+                                                        // Place to the left of button
+                                                        menu.style.left = (rect.right - menuWidth + scrollX) + 'px';
+                                                    } else if (spaceRight >= menuWidth) {
+                                                        // Place to the right of button
+                                                        menu.style.left = (rect.left + scrollX) + 'px';
+                                                    } else {
+                                                        // Default to left if not enough space anywhere
+                                                        menu.style.left = (rect.right - menuWidth + scrollX) + 'px';
+                                                    }
+                                                });
+                                            }
+                                        }" x-init="$watch('open', () => updatePosition())"
+                                            @resize.window="updatePosition()" @scroll.window="updatePosition()"
+                                            class="relative">
                                             <button @click="open = !open"
                                                 class="h-9 w-9 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center"
                                                 title="Действия">
@@ -872,8 +936,8 @@
                                                 x-transition:leave="transition ease-in duration-75"
                                                 x-transition:leave-start="transform opacity-100 scale-100"
                                                 x-transition:leave-end="transform opacity-0 scale-95"
-                                                class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50 py-1"
-                                                style="display: none;">
+                                                class="w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-50 py-1"
+                                                style="display: none; position: fixed;">
                                                 <a href="{{ route('appointments.show', $appointment) }}"
                                                     class="flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                                     <i class="fa-regular fa-eye w-4 text-center"></i>
@@ -1057,45 +1121,57 @@
                                                                 const button = this.$el.querySelector('button');
                                                                 const menu = this.$el.querySelector('[x-show]');
                                                                 if (!button || !menu) return;
+                                                    
                                                                 const rect = button.getBoundingClientRect();
                                                                 const menuHeight = 300; // Approximate menu height
                                                                 const menuWidth = 208; // 52 * 4 (w-52 in rem)
+                                                    
+                                                                // Get scroll positions
+                                                                const scrollY = window.scrollY;
+                                                                const scrollX = window.scrollX;
+                                                    
+                                                                // Get viewport dimensions
                                                                 const viewportHeight = window.innerHeight;
                                                                 const viewportWidth = window.innerWidth;
-                                                                const scrollY = window.scrollY;
                                                     
+                                                                // Set menu to fixed positioning
                                                                 menu.style.position = 'fixed';
+                                                                menu.style.zIndex = '1000';
                                                     
-                                                                // Check vertical space
-                                                                const spaceBelow = viewportHeight - (rect.bottom - scrollY);
+                                                                // Calculate available space
                                                                 const spaceAbove = rect.top - scrollY;
+                                                                const spaceBelow = viewportHeight - (rect.bottom - scrollY);
+                                                                const spaceLeft = rect.left - scrollX;
+                                                                const spaceRight = viewportWidth - (rect.right - scrollX);
                                                     
+                                                                // Reset positions
+                                                                menu.style.top = '';
+                                                                menu.style.bottom = '';
+                                                                menu.style.left = '';
+                                                                menu.style.right = '';
+                                                    
+                                                                // Position vertically - prefer below, then above
                                                                 if (spaceBelow >= menuHeight) {
-                                                                    menu.style.top = (rect.bottom + 8) + 'px';
-                                                                    menu.style.bottom = 'auto';
+                                                                    // Place below button
+                                                                    menu.style.top = (rect.bottom + 8 + scrollY) + 'px';
                                                                 } else if (spaceAbove >= menuHeight) {
+                                                                    // Place above button
                                                                     menu.style.bottom = (viewportHeight - rect.top + 8) + 'px';
-                                                                    menu.style.top = 'auto';
                                                                 } else {
                                                                     // Default to below if not enough space anywhere
-                                                                    menu.style.top = (rect.bottom + 8) + 'px';
-                                                                    menu.style.bottom = 'auto';
+                                                                    menu.style.top = (rect.bottom + 8 + scrollY) + 'px';
                                                                 }
                                                     
-                                                                // Check horizontal space
-                                                                const spaceRight = viewportWidth - rect.right;
-                                                                const spaceLeft = rect.left;
-                                                    
-                                                                if (spaceRight >= menuWidth) {
-                                                                    menu.style.right = (viewportWidth - rect.right) + 'px';
-                                                                    menu.style.left = 'auto';
-                                                                } else if (spaceLeft >= menuWidth) {
-                                                                    menu.style.left = rect.left + 'px';
-                                                                    menu.style.right = 'auto';
+                                                                // Position horizontally - prefer left, then right
+                                                                if (spaceLeft >= menuWidth) {
+                                                                    // Place to the left of button
+                                                                    menu.style.left = (rect.right - menuWidth + scrollX) + 'px';
+                                                                } else if (spaceRight >= menuWidth) {
+                                                                    // Place to the right of button
+                                                                    menu.style.left = (rect.left + scrollX) + 'px';
                                                                 } else {
-                                                                    // Default to right if not enough space anywhere
-                                                                    menu.style.right = (viewportWidth - rect.right) + 'px';
-                                                                    menu.style.left = 'auto';
+                                                                    // Default to left if not enough space anywhere
+                                                                    menu.style.left = (rect.right - menuWidth + scrollX) + 'px';
                                                                 }
                                                             });
                                                         }
