@@ -3,6 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -18,6 +20,11 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        // Создаем право и роль для теста
+        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $role->givePermissionTo('client.access');
+
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
