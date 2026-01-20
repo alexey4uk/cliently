@@ -167,7 +167,7 @@
                                 class="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all duration-150 text-xs text-slate-900 dark:text-white"
                                 onchange="this.form.submit()">
                                 <option value="">Все мастера</option>
-                                @foreach(\App\Models\Master::where('business_id', $business->id)->orderBy('name')->get() as $master)
+                                @foreach(\App\Models\Master::where('business_id', $business->id)->orderBy('first_name')->get() as $master)
                                     <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>
                                         {{ $master->name }}
                                     </option>
