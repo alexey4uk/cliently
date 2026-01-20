@@ -42,10 +42,16 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_settings_can_be_rendered()
     {
+        // Создаем право и роль для теста
+        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $role->givePermissionTo('client.access');
+
         $user = User::factory()->create();
+        $user->assignRole('user');
         $business = Business::factory()->create();
         $user->businesses()->attach($business->id);
-        
+
         // Создаём полный onboarding
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
@@ -61,10 +67,16 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_settings_can_be_updated()
     {
+        // Создаем право и роль для теста
+        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $role->givePermissionTo('client.access');
+
         $user = User::factory()->create();
+        $user->assignRole('user');
         $business = Business::factory()->create();
         $user->businesses()->attach($business->id);
-        
+
         // Создаём полный onboarding
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
@@ -95,16 +107,21 @@ class DashboardTest extends TestCase
         // Проверяем, что настройки сохранены
         $user->refresh();
         $this->assertNotNull($user->dashboard_settings);
-        $settings = json_decode($user->dashboard_settings, true);
-        $this->assertTrue($settings['dashboard']['widgets']['stats_header']);
+        $this->assertTrue($user->dashboard_settings['dashboard']['widgets']['stats_header']);
     }
 
     public function test_dashboard_refresh_clears_cache()
     {
+        // Создаем право и роль для теста
+        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $role->givePermissionTo('client.access');
+
         $user = User::factory()->create();
+        $user->assignRole('user');
         $business = Business::factory()->create();
         $user->businesses()->attach($business->id);
-        
+
         // Создаём полный onboarding
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);
