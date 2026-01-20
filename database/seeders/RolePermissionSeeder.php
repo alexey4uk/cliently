@@ -57,6 +57,9 @@ class RolePermissionSeeder extends Seeder
             // Поддержка
             'support.view' => 'Доступ к разделу поддержки',
 
+            // Telegram
+            'telegram.manage' => 'Управление Telegram ботом',
+
             // Доступ к админке
             'panel.access' => 'Доступ к админ-панели',
 
@@ -76,6 +79,9 @@ class RolePermissionSeeder extends Seeder
         foreach ($permissions as $name => $description) {
             $adminRole->givePermissionTo($name);
         }
+
+        // Дополнительно добавляем права управления Telegram только для админа
+        $adminRole->givePermissionTo('telegram.manage');
 
         // Создание роли Менеджер
         $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);

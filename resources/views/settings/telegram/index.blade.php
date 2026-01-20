@@ -257,6 +257,7 @@
             </div>
         </div>
 
+
         <!-- Преимущества Telegram -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
             <div class="flex items-center gap-3 mb-4">

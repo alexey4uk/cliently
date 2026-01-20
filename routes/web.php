@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\DashboardSettingsController;
 use App\Http\Controllers\Settings\LocationSettingsController;
 use App\Http\Controllers\Settings\MasterSettingsController;
+use App\Http\Controllers\TelegramManagementController;
 use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -166,7 +167,17 @@ Route::middleware(['auth'])->group(function () {
         Route::middleware(['check.permission:support.view'])->group(function () {
             Route::get('/support', [\App\Http\Controllers\Panel\SupportController::class, 'index'])->name('support');
         });
+
+        // Управление Telegram ботом
+        Route::middleware(['check.permission:telegram.manage'])->group(function () {
+            Route::get('/telegram-management', [TelegramManagementController::class, 'index'])->name('telegram.management');
+            Route::get('/telegram-management/create', [TelegramManagementController::class, 'create'])->name('telegram.management.create');
+            Route::post('/telegram-management', [TelegramManagementController::class, 'store'])->name('telegram.management.store');
+            Route::get('/telegram-management/{bot}/edit', [TelegramManagementController::class, 'edit'])->name('telegram.management.edit');
+            Route::patch('/telegram-management/{bot}', [TelegramManagementController::class, 'update'])->name('telegram.management.update');
+            Route::delete('/telegram-management/{bot}', [TelegramManagementController::class, 'destroy'])->name('telegram.management.destroy');
+        });
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

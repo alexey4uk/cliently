@@ -1,5 +1,5 @@
 <div class="sidebar-container hidden lg:flex lg:flex-shrink-0 fixed left-0 top-0 bottom-0 z-20" x-data="{
-    managementOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }},
+    managementOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') || Request::routeIs('panel.telegram.*') ? 'true' : 'false' }},
     analyticsOpen: {{ Request::routeIs('finance.*') || Request::routeIs('reports.*') || Request::routeIs('panel.analytics.*') ? 'true' : 'false' }},
     collapsed: (() => {
         try {
@@ -288,6 +288,22 @@
                                         </div>
                                         <span x-show="!collapsed" x-cloak
                                             class="sidebar-text ml-3 whitespace-nowrap">Услуги</span>
+                                    </a>
+                                @endcan
+
+                                @can('telegram.manage')
+                                    <a href="{{ route('panel.telegram.management') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.telegram.management')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Telegram Bot' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-brands fa-telegram" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Telegram Bot</span>
                                     </a>
                                 @endcan
                             @else
