@@ -178,7 +178,7 @@ class AppointmentsController extends Controller
 
         $appointments = $allAppointments;
 
-        return view('appointments.index', [
+        return view('appointments.calendar', [
             'business' => $business,
             'appointments' => $appointments,
             'appointmentsByDate' => $appointmentsByDate,
