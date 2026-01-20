@@ -159,7 +159,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -185,7 +185,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -203,7 +203,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -227,7 +227,7 @@ class ClientController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -304,14 +304,14 @@ class ClientController extends Controller
 
         $clients = $query->get();
 
-        $filename = 'clients_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=$filename",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
         $callback = function () use ($clients) {
@@ -327,7 +327,7 @@ class ClientController extends Controller
                     $client->last_name ?? '',
                     $client->phone,
                     $client->email ?? '',
-                    $client->created_at->format('d.m.Y H:i:s')
+                    $client->created_at->format('d.m.Y H:i:s'),
                 ]);
             }
 

@@ -7,11 +7,11 @@ use App\Repositories\ClientRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     private AppointmentRepositoryInterface $appointmentRepository;
+
     private ClientRepositoryInterface $clientRepository;
 
     public function __construct(
@@ -21,13 +21,14 @@ class DashboardController extends Controller
         $this->appointmentRepository = $appointmentRepository;
         $this->clientRepository = $clientRepository;
     }
+
     public function index()
     {
         $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
         $business = $user->businesses->first();
 
         // Проверяем наличие бизнеса
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('settings.business.create')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
         }
@@ -56,15 +57,15 @@ class DashboardController extends Controller
         $widgetOrder = $this->getWidgetOrder($settings);
 
         // Кэширование данных (5 минут)
-        $stats = Cache::remember('dashboard_stats_' . $user->id, 300, function () use ($business) {
+        $stats = Cache::remember('dashboard_stats_'.$user->id, 300, function () use ($business) {
             return $this->getStats($business->id);
         });
 
-        $appointments = Cache::remember('dashboard_appointments_' . $user->id, 300, function () use ($business) {
+        $appointments = Cache::remember('dashboard_appointments_'.$user->id, 300, function () use ($business) {
             return $this->getAppointments($business->id);
         });
 
-        $clients = Cache::remember('dashboard_clients_' . $user->id, 300, function () use ($business) {
+        $clients = Cache::remember('dashboard_clients_'.$user->id, 300, function () use ($business) {
             return $this->getRecentClients($business->id, 5);
         });
 
@@ -84,9 +85,9 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Очистка кэша
-        Cache::forget('dashboard_stats_' . $user->id);
-        Cache::forget('dashboard_appointments_' . $user->id);
-        Cache::forget('dashboard_clients_' . $user->id);
+        Cache::forget('dashboard_stats_'.$user->id);
+        Cache::forget('dashboard_appointments_'.$user->id);
+        Cache::forget('dashboard_clients_'.$user->id);
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }

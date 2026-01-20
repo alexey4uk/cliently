@@ -12,26 +12,16 @@ interface ServiceRepositoryInterface extends RepositoryInterface
 {
     /**
      * Получить активные услуги для локации
-     *
-     * @param int $locationId
-     * @return Collection
      */
     public function getActiveByLocation(int $locationId): Collection;
 
     /**
      * Получить активные услуги для бизнеса
-     *
-     * @param int $businessId
-     * @return Collection
      */
     public function getActiveByBusiness(int $businessId): Collection;
 
     /**
      * Проверить, принадлежит ли услуга бизнесу
-     *
-     * @param int $serviceId
-     * @param int $businessId
-     * @return bool
      */
     public function belongsToBusiness(int $serviceId, int $businessId): bool;
 }

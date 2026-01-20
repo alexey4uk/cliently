@@ -7,10 +7,15 @@ use Livewire\Component;
 class WidgetGrid extends Component
 {
     public $widgets = [];
+
     public $widgetOrder = [];
+
     public $appointments = [];
+
     public $clients = [];
+
     public $stats = [];
+
     public $business = null;
 
     public function mount($widgets, $widgetOrder, $appointments, $clients, $stats, $business = null)

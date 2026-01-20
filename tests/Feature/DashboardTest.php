@@ -27,7 +27,7 @@ class DashboardTest extends TestCase
         $user->assignRole('user');
         $business = Business::factory()->create();
         $user->businesses()->attach($business->id);
-        
+
         // Создаём полный onboarding
         $location = Location::factory()->create(['business_id' => $business->id]);
         $service = Service::factory()->create(['business_id' => $business->id]);

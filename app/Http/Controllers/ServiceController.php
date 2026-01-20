@@ -96,7 +96,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -114,7 +114,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -139,7 +139,7 @@ class ServiceController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
