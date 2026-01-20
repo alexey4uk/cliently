@@ -23,11 +23,31 @@ class DashboardController extends Controller
     }
     public function index()
     {
-        $user = Auth::user()->load('businesses');
+        $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
         $business = $user->businesses->first();
 
-        if (! $business) {
-            return redirect()->route('onboarding.business');
+        // Проверяем наличие бизнеса
+        if (!$business) {
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
+        }
+
+        // Проверяем наличие локаций
+        if ($business->locations->isEmpty()) {
+            return redirect()->route('settings.locations.create')
+                ->with('info', 'Добавьте локацию для записи клиентов.');
+        }
+
+        // Проверяем наличие услуг
+        if ($business->services->isEmpty()) {
+            return redirect()->route('services.create')
+                ->with('info', 'Добавьте услуги, которые вы предлагаете.');
+        }
+
+        // Проверяем наличие мастеров
+        if ($business->masters->isEmpty()) {
+            return redirect()->route('settings.masters.create')
+                ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
         // Получаем настройки виджетов

@@ -26,7 +26,8 @@ class ClientController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $query = $business->clients();
@@ -115,7 +116,8 @@ class ClientController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('clients.create', [
@@ -132,7 +134,8 @@ class ClientController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $validated = $request->validated();
@@ -242,7 +245,8 @@ class ClientController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $query = $business->clients();

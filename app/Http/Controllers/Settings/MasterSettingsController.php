@@ -27,7 +27,8 @@ class MasterSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('settings.masters.index', [
@@ -45,7 +46,8 @@ class MasterSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('settings.masters.create', [
@@ -64,7 +66,8 @@ class MasterSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $validated = $request->validated();

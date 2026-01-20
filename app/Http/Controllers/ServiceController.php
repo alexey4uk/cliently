@@ -25,7 +25,8 @@ class ServiceController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('services.index', [
@@ -43,7 +44,8 @@ class ServiceController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('services.create', [
@@ -60,7 +62,8 @@ class ServiceController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $validated = $request->validated();
