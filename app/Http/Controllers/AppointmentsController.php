@@ -414,6 +414,9 @@ class AppointmentsController extends Controller
 
         $appointment->update(['status' => 'completed']);
 
+        // Отправить уведомление в Telegram
+        TelegramNotificationService::sendAppointmentStatusChanged($appointment);
+
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
     }
 
