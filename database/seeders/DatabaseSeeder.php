@@ -24,10 +24,11 @@ class DatabaseSeeder extends Seeder
         //        ]);
 
         $this->call([
+            RolePermissionSeeder::class,
             UserSeeder::class,
             OnboardingSeeder::class,
         ]);
 
-        // Business::factory(10)->create();
+        //Business::factory(20)->create();
     }
 }

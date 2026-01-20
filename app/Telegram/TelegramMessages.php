@@ -47,14 +47,14 @@ class TelegramMessages
     public const MSG_SELECT_CONFIRM = '✅ Подтвердите запись:';
 
     // ==================== ВАЛИДАЦИЯ ====================
-    public const MSG_PHONE_INVALID = "❌ Неверный формат\n\nПравильно: +79001234567\nИли: 89001234567\n\nВведите номер:";
+    public const MSG_PHONE_INVALID = "❌ Неверный формат\n\nПравильно: +375291234567\nИли: 375291234567\n\nВведите номер:";
 
     public const MSG_NOTES_TOO_LONG = "❌ Слишком длинно (макс. 200 символов)\n\nСократите:";
 
     // ==================== ВВОД ДАННЫХ ====================
     public const MSG_ENTER_NAME = '👤 Введите ваше имя:';
 
-    public const MSG_ENTER_PHONE = "📱 Введите телефон:\nПример: +79001234567";
+    public const MSG_ENTER_PHONE = "📱 Введите телефон:\nПример: +375291234567";
 
     public const MSG_ENTER_NOTES = "📝 Примечание (необязательно):\nАллергия, предпочтения и т.д.\n\nИли нажмите Пропустить";
 
@@ -87,7 +87,7 @@ class TelegramMessages
     public const MSG_EDIT_NOTES = 'Примечание:';
 
     // ==================== СТАРТ ====================
-    public const MSG_START = 'Привет! Для записи используйте ссылку с сайта бизнеса.';
+    public const MSG_START = 'Здравствуйте. Воспользуйтесь меню или введите /help для списка доступных команд.';
 
     public const MSG_BUSINESS_NOT_FOUND = 'Бизнес не найден.';
 

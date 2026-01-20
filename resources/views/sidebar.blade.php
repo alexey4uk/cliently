@@ -1,6 +1,6 @@
 <div class="sidebar-container hidden lg:flex lg:flex-shrink-0 fixed left-0 top-0 bottom-0 z-20" x-data="{
     managementOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }},
-    analyticsOpen: {{ Request::routeIs('finance.*') || Request::routeIs('reports.*') ? 'true' : 'false' }},
+    analyticsOpen: {{ Request::routeIs('finance.*') || Request::routeIs('reports.*') || Request::routeIs('panel.analytics.*') ? 'true' : 'false' }},
     collapsed: (() => {
         try {
             return localStorage.getItem('sidebarCollapsed') === 'true';
@@ -49,7 +49,7 @@
             <!-- Логотип -->
             <div class="flex items-center flex-shrink-0 px-4 lg:px-6 mb-8"
                 :class="collapsed ? 'justify-center px-2' : 'justify-start'">
-                <a href="{{ route('dashboard') }}"
+                <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.index') : route('dashboard') }}"
                     class="flex items-center gap-3 group cursor-pointer hover:opacity-80 transition-opacity"
                     :class="collapsed ? 'flex-col gap-2' : 'flex-row'">
                     <x-logo size="sidebar" />
@@ -70,49 +70,133 @@
                             Основное
                         </h3>
                         <nav class="space-y-1.5">
-                            <!-- Панель управления -->
-                            <a href="{{ route('dashboard') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('dashboard')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Главная' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
-                                    <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Главная</span>
-                            </a>
+                            <!-- Панель управления / Главная -->
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('analytics.view')
+                                    <a href="{{ route('panel.index') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.index')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Главная' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
+                                            <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Главная</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <a href="{{ route('dashboard') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('dashboard')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Главная' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
+                                        <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Главная</span>
+                                </a>
+                            @endif
+
+                            <!-- Календарь -->
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('appointments.view')
+                                    <a href="{{ route('panel.appointments') }}?view=calendar"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.appointments') && request('view') === 'calendar'
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <a href="{{ route('appointments.calendar') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.calendar')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
+                                </a>
+                            @endif
 
                             <!-- Клиенты -->
-                            <a href="{{ route('clients.index') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('clients.*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Клиенты' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-users" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Клиенты</span>
-                            </a>
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('clients.view')
+                                    <a href="{{ route('panel.clients') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.clients')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Клиенты' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-users" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Клиенты</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <a href="{{ route('clients.index') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('clients.*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Клиенты' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-users" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Клиенты</span>
+                                </a>
+                            @endif
 
                             <!-- Записи -->
-                            <a href="{{ route('appointments.index') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Записи' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-calendar-check"
-                                        :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Записи</span>
-                            </a>
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('appointments.view')
+                                    <a href="{{ route('panel.appointments') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.appointments')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Записи' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-calendar-check"
+                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Записи</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <a href="{{ route('appointments.index') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Записи' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-calendar-check"
+                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Записи</span>
+                                </a>
+                            @endif
                         </nav>
                     </div>
 
@@ -125,96 +209,180 @@
                                 :class="{ 'rotate-180': managementOpen }"></i>
                         </button>
                         <nav x-show="managementOpen || collapsed" class="space-y-1.5 overflow-hidden">
-                            <!-- Настройки бизнеса -->
-                            <a href="{{ route('settings.index') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.index')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Бизнес' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-building" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Бизнес</span>
-                            </a>
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                <!-- Админские разделы -->
+                                @can('users.view')
+                                    <a href="{{ route('panel.users') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.users')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Пользователи' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-users-gear" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Пользователи</span>
+                                    </a>
+                                @endcan
 
-                            <!-- Локации -->
-                            <a href="{{ route('settings.locations') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.locations*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Локации' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-location-dot"
-                                        :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Локации</span>
-                            </a>
+                                @can('roles.view')
+                                    <a href="{{ route('panel.roles') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.roles')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Роли' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-shield-halved" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Роли</span>
+                                    </a>
+                                @endcan
 
-                            <!-- Услуги -->
-                            <a href="{{ route('services.index') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('services.*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Услуги' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-scissors" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Услуги</span>
-                            </a>
+                                @can('roles.view')
+                                    <a href="{{ route('panel.permissions') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.permissions')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Права' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-key" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Права</span>
+                                    </a>
+                                @endcan
 
-                            <!-- Мастера -->
-                            <a href="{{ route('settings.masters') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.masters*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Мастера' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-user-tie" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Мастера</span>
-                            </a>
+                                @can('businesses.view')
+                                    <a href="{{ route('panel.businesses') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.businesses')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Бизнесы' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-building" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Бизнесы</span>
+                                    </a>
+                                @endcan
 
-                            <!-- Онлайн запись -->
-                            <a href="{{ route('settings.online-booking') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.online-booking*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Мастера' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-link" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Онлайн запись</span>
-                            </a>
+                                @can('services.view')
+                                    <a href="{{ route('panel.services') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.services')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Услуги' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-scissors" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Услуги</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <!-- Пользовательские разделы -->
+                                <!-- Настройки бизнеса -->
+                                <a href="{{ route('settings.index') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.index')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Бизнес' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-building" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Бизнес</span>
+                                </a>
 
-                            <!-- Telrgram -->
-                            <a href="{{ route('settings.telegram') }}"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.telegram*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Мастера' : ''">
-                                <div class="flex items-center justify-center shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-brands fa-telegram" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak class="sidebar-text ml-3 whitespace-nowrap">Telegram
-                                    Bot</span>
-                            </a>
+                                <!-- Локации -->
+                                <a href="{{ route('settings.locations') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.locations*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Локации' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-location-dot"
+                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Локации</span>
+                                </a>
+
+                                <!-- Услуги -->
+                                <a href="{{ route('services.index') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('services.*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Услуги' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-scissors" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Услуги</span>
+                                </a>
+
+                                <!-- Мастера -->
+                                <a href="{{ route('settings.masters') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.masters*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Мастера' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-user-tie" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Мастера</span>
+                                </a>
+
+                                <!-- Онлайн запись -->
+                                <a href="{{ route('settings.online-booking') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.online-booking*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Мастера' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-link" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Онлайн запись</span>
+                                </a>
+
+                                <!-- Telrgram -->
+                                <a href="{{ route('settings.telegram') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('settings.telegram*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Мастера' : ''">
+                                    <div class="flex items-center justify-center shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-brands fa-telegram" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak class="sidebar-text ml-3 whitespace-nowrap">Telegram
+                                        Bot</span>
+                                </a>
+                            @endif
                         </nav>
                     </div>
 
@@ -227,35 +395,69 @@
                                 :class="{ 'rotate-180': analyticsOpen }"></i>
                         </button>
                         <nav x-show="analyticsOpen || collapsed" class="space-y-1.5 overflow-hidden">
-                            <!-- Финансы -->
-                            <a href="#"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('finance.*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Финансы' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
-                                    <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Финансы</span>
-                            </a>
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('analytics.view')
+                                    <a href="{{ route('panel.analytics') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.analytics')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Аналитика' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
+                                            <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Аналитика</span>
+                                    </a>
+                                @endcan
 
-                            <!-- Отчеты -->
-                            <a href="#"
-                                class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('reports.*')
-                                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-4'"
-                                :title="collapsed ? 'Отчеты' : ''">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                    <i class="fa-solid fa-chart-bar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak
-                                    class="sidebar-text ml-3 whitespace-nowrap">Отчеты</span>
-                            </a>
+                                @can('support.view')
+                                    <a href="{{ route('panel.support') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.support')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Поддержка' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-headset" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Поддержка</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <!-- Финансы -->
+                                <a href="#"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('finance.*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Финансы' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6 mr-0'">
+                                        <i class="fa-solid fa-chart-line" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Финансы</span>
+                                </a>
+
+                                <!-- Отчеты -->
+                                <a href="#"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('reports.*')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                    :title="collapsed ? 'Отчеты' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-chart-bar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Отчеты</span>
+                                </a>
+                            @endif
                         </nav>
                     </div>
                 </div>

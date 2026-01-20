@@ -30,6 +30,14 @@ class Master extends Model
         'working_hours' => 'array',
     ];
 
+    /**
+     * Get the master's full name
+     */
+    public function getNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
+    }
+
     public function locations(): BelongsToMany
     {
         return $this->belongsToMany(Location::class, 'master_location')

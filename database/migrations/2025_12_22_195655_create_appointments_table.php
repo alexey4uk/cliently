@@ -21,6 +21,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('time');
             $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
+            $table->string('source')->nullable();
             $table->text('notes')->nullable();
             $table->integer('duration')->nullable(); // Переопределение длительности услуги
             $table->decimal('price', 10, 2)->nullable(); // Переопределение цены услуги

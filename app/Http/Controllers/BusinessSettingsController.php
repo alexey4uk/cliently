@@ -3,16 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\BusinessRequest;
-use App\Http\Requests\LocationRequest;
-use App\Http\Requests\MasterRequest;
-use App\Models\Location;
-use App\Models\Master;
-use App\Services\WorkingHoursService;
+use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class BusinessSettingsController extends Controller
 {
+    /**
+     * Страница создания бизнеса
+     */
+    public function create()
+    {
+        $user = Auth::user();
+
+        // Если у пользователя уже есть бизнес, перенаправляем в настройки
+        if ($user->businesses->isNotEmpty()) {
+            return redirect()->route('settings.index');
+        }
+
+        return view('settings.business.create');
+    }
+
+    /**
+     * Создание бизнеса
+     *
+     * @throws Throwable
+     */
+    public function store(BusinessRequest $request)
+    {
+        $user = Auth::user();
+
+        // Если у пользователя уже есть бизнес, перенаправляем в настройки
+        if ($user->businesses->isNotEmpty()) {
+            return redirect()->route('settings.index');
+        }
+
+        $businessData = $request->validated();
+
+        // Дополнительная валидация для имени и фамилии владельца
+        $ownerData = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+        ], [
+            'first_name.required' => 'Поле "Имя" обязательно для заполнения.',
+            'first_name.max' => 'Поле "Имя" не может быть длиннее 255 символов.',
+            'last_name.max' => 'Поле "Фамилия" не может быть длиннее 255 символов.',
+        ]);
+
+        DB::transaction(function () use ($businessData, $ownerData, $user) {
+            $business = Business::create($businessData);
+
+            $business->users()->attach($user, [
+                'role' => 'owner',
+                'first_name' => $ownerData['first_name'],
+                'last_name' => $ownerData['last_name'],
+            ]);
+        });
+
+        return redirect()->route('settings.index')->with('success', 'Бизнес успешно создан!');
+    }
+
     /**
      * Главная страница настроек бизнеса
      */
@@ -22,7 +74,8 @@ class BusinessSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
@@ -42,7 +95,8 @@ class BusinessSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
@@ -62,7 +116,8 @@ class BusinessSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $business->update([
@@ -81,7 +136,8 @@ class BusinessSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         return view('settings.business.edit', [
@@ -98,289 +154,12 @@ class BusinessSettingsController extends Controller
         $business = $user->businesses->first();
 
         if (! $business) {
-            return redirect()->route('onboarding.business');
+            return redirect()->route('settings.business.create')
+                ->with('info', 'Сначала создайте бизнес.');
         }
 
         $business->update($request->validated());
 
         return redirect()->route('settings.index')->with('success', 'Данные бизнеса обновлены');
-    }
-
-    /**
-     * Список локаций
-     */
-    public function locations()
-    {
-        $user = Auth::user()->load('businesses.locations');
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        return view('settings.locations.index', [
-            'business' => $business,
-            'locations' => $business->locations,
-        ]);
-    }
-
-    /**
-     * Страница создания новой локации
-     */
-    public function createLocation()
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        return view('settings.locations.create', [
-            'business' => $business,
-        ]);
-    }
-
-    /**
-     * Сохранение новой локации
-     */
-    public function storeLocation(LocationRequest $request)
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        $validated = $request->validated();
-
-        Location::create([
-            'business_id' => $business->id,
-            'name' => $validated['name'],
-            'city' => $validated['city'],
-            'street' => $validated['street'],
-            'house' => $validated['house'],
-            'building' => $validated['building'] ?? null,
-            'apartment' => $validated['apartment'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'phone' => $validated['phone'],
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
-        ]);
-
-        return redirect()->route('settings.locations')->with('success', 'Локация добавлена');
-    }
-
-    /**
-     * Страница редактирования локации
-     */
-    public function editLocation(Location $location)
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || $location->business_id !== $business->id) {
-            return redirect()->route('settings.locations');
-        }
-
-        return view('settings.locations.edit', [
-            'business' => $business,
-            'location' => $location,
-        ]);
-    }
-
-    /**
-     * Обновление локации
-     */
-    public function updateLocation(LocationRequest $request, Location $location)
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || $location->business_id !== $business->id) {
-            return redirect()->route('settings.locations');
-        }
-
-        $validated = $request->validated();
-
-        $location->update([
-            'name' => $validated['name'],
-            'city' => $validated['city'],
-            'street' => $validated['street'],
-            'house' => $validated['house'],
-            'building' => $validated['building'] ?? null,
-            'apartment' => $validated['apartment'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'phone' => $validated['phone'],
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
-        ]);
-
-        return redirect()->route('settings.locations')->with('success', 'Локация обновлена');
-    }
-
-    /**
-     * Удаление локации
-     */
-    public function destroyLocation(Location $location)
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || $location->business_id !== $business->id) {
-            return redirect()->route('settings.locations');
-        }
-
-        $location->delete();
-
-        return redirect()->route('settings.locations')->with('success', 'Локация удалена');
-    }
-
-    /**
-     * Список мастеров
-     */
-    public function masters()
-    {
-        $user = Auth::user()->load('businesses.masters');
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        return view('settings.masters.index', [
-            'business' => $business,
-            'masters' => $business->masters,
-        ]);
-    }
-
-    /**
-     * Страница создания нового мастера
-     */
-    public function createMaster()
-    {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        return view('settings.masters.create', [
-            'business' => $business,
-            'locations' => $business->locations,
-            'services' => $business->services,
-        ]);
-    }
-
-    /**
-     * Сохранение нового мастера
-     */
-    public function storeMaster(MasterRequest $request)
-    {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('onboarding.business');
-        }
-
-        $validated = $request->validated();
-
-        $master = Master::create([
-            'business_id' => $business->id,
-            'user_id' => $user->id,
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'specialization' => $validated['specialization'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? null,
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
-        ]);
-
-        if (! empty($validated['location_ids'])) {
-            $master->locations()->attach($validated['location_ids']);
-        }
-
-        if (! empty($validated['service_ids'])) {
-            $master->services()->attach($validated['service_ids']);
-        }
-
-        return redirect()->route('settings.masters')->with('success', 'Мастер добавлен');
-    }
-
-    /**
-     * Страница редактирования мастера
-     */
-    public function editMaster(Master $master)
-    {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
-
-        if (! $business || $master->business_id !== $business->id) {
-            return redirect()->route('settings.masters');
-        }
-
-        $master->load(['locations', 'services']);
-
-        return view('settings.masters.edit', [
-            'business' => $business,
-            'master' => $master,
-            'locations' => $business->locations,
-            'services' => $business->services,
-        ]);
-    }
-
-    /**
-     * Обновление мастера
-     */
-    public function updateMaster(MasterRequest $request, Master $master)
-    {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
-
-        if (! $business || $master->business_id !== $business->id) {
-            return redirect()->route('settings.masters');
-        }
-
-        $validated = $request->validated();
-
-        $master->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'] ?? null,
-            'description' => $validated['description'] ?? null,
-            'specialization' => $validated['specialization'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'] ?? null,
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
-            'is_active' => $validated['is_active'] ?? $master->is_active,
-        ]);
-
-        if (isset($validated['location_ids'])) {
-            $master->locations()->sync($validated['location_ids']);
-        }
-
-        if (isset($validated['service_ids'])) {
-            $master->services()->sync($validated['service_ids']);
-        }
-
-        return redirect()->route('settings.masters')->with('success', 'Мастер обновлен');
-    }
-
-    /**
-     * Удаление мастера
-     */
-    public function destroyMaster(Master $master)
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business || $master->business_id !== $business->id) {
-            return redirect()->route('settings.masters');
-        }
-
-        $master->delete();
-
-        return redirect()->route('settings.masters')->with('success', 'Мастер удален');
     }
 }

@@ -229,6 +229,18 @@
                         </a>
                     @endauth
 
+                    <!-- Админка (только для админов) -->
+                    @if(!Str::startsWith(Request::path(), 'panel') && Auth::user()->hasRole('admin'))
+                        <a href="{{ route('panel.index') }}" @click="open = false"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 bg-amber-500 hover:bg-amber-600 text-white">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-shield-halved text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Админка</span>
+                        </a>
+                        <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+                    @endif
+
                     <!-- Выход -->
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf

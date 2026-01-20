@@ -24,6 +24,9 @@ class UserSeeder extends Seeder
             ]
         );
 
+        // Назначаем роль админа
+        $user->assignRole('admin');
+
         // $user->businesses()->create([
         //     'name' => 'ИП Иванов',
         //     'slug' => fake()->slug(),

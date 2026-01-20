@@ -13,8 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'onboarded' => \App\Http\Middleware\EnsureUserOnboarded::class,
-            'no.onboarded' => \App\Http\Middleware\EnsureUserNoOnboarded::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
