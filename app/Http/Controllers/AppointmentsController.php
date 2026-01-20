@@ -16,8 +16,11 @@ use Illuminate\Support\Facades\Auth;
 class AppointmentsController extends Controller
 {
     private AppointmentRepositoryInterface $appointmentRepository;
+
     private ClientRepositoryInterface $clientRepository;
+
     private ServiceRepositoryInterface $serviceRepository;
+
     private MasterRepositoryInterface $masterRepository;
 
     public function __construct(
@@ -31,6 +34,7 @@ class AppointmentsController extends Controller
         $this->serviceRepository = $serviceRepository;
         $this->masterRepository = $masterRepository;
     }
+
     private function getCurrentBusiness()
     {
         $user = Auth::user()->load('businesses');
@@ -52,7 +56,7 @@ class AppointmentsController extends Controller
             return $business;
         }
 
-        if (!$this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
+        if (! $this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
             return redirect()->route('appointments.index');
         }
 
@@ -70,12 +74,11 @@ class AppointmentsController extends Controller
             return $business;
         }
 
-
         $view = $request->get('view', 'table'); // table или calendar
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -145,7 +148,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -222,12 +225,12 @@ class AppointmentsController extends Controller
     private function validateClientAndService($clientId, $serviceId, $businessId)
     {
         $client = $this->clientRepository->findByIdAndBusiness($clientId, $businessId);
-        if (!$client) {
+        if (! $client) {
             abort(404, 'Клиент не найден');
         }
 
         $service = $this->serviceRepository->find($serviceId);
-        if (!$service || $service->business_id !== $businessId) {
+        if (! $service || $service->business_id !== $businessId) {
             abort(404, 'Услуга не найдена');
         }
     }
@@ -446,14 +449,14 @@ class AppointmentsController extends Controller
 
         $appointments = $this->appointmentRepository->getAllFilteredForBusiness($business->id, $filters);
 
-        $filename = 'appointments_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'appointments_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=$filename",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
         $statusLabels = [
@@ -477,9 +480,9 @@ class AppointmentsController extends Controller
                     $appointment->client->full_name,
                     $appointment->client->phone,
                     $appointment->service->name,
-                    $appointment->master ? $appointment->master->first_name . ' ' . $appointment->master->last_name : 'Не назначен',
+                    $appointment->master ? $appointment->master->first_name.' '.$appointment->master->last_name : 'Не назначен',
                     $statusLabels[$appointment->status] ?? $appointment->status,
-                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ') . ' Br' : '',
+                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' Br' : '',
                 ]);
             }
 

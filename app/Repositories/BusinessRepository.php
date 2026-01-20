@@ -12,19 +12,14 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 {
     /**
      * Получить модель для репозитория
-     *
-     * @return Business
      */
     public function getModel(): Business
     {
-        return new Business();
+        return new Business;
     }
 
     /**
      * Найти бизнес по токену Telegram
-     *
-     * @param string $token
-     * @return Business|null
      */
     public function findByTelegramToken(string $token): ?Business
     {
@@ -33,9 +28,6 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Найти бизнес по slug
-     *
-     * @param string $slug
-     * @return Business|null
      */
     public function findBySlug(string $slug): ?Business
     {
@@ -44,10 +36,6 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить список бизнесов для каталога с пагинацией
-     *
-     * @param int $page
-     * @param int $perPage
-     * @return Collection
      */
     public function getPaginated(int $page = 1, int $perPage = 10): Collection
     {
@@ -62,8 +50,6 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить общее количество бизнесов
-     *
-     * @return int
      */
     public function getTotalCount(): int
     {
@@ -72,17 +58,12 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Поиск бизнесов по названию с пагинацией
-     *
-     * @param string $query
-     * @param int $page
-     * @param int $perPage
-     * @return Collection
      */
     public function searchByNamePaginated(string $query, int $page = 1, int $perPage = 10): Collection
     {
         $offset = ($page - 1) * $perPage;
 
-        return $this->model->where('name', 'LIKE', '%' . $query . '%')
+        return $this->model->where('name', 'LIKE', '%'.$query.'%')
             ->select('id', 'name', 'slug')
             ->orderBy('name')
             ->offset($offset)
@@ -92,21 +73,14 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить количество бизнесов по поисковому запросу
-     *
-     * @param string $query
-     * @return int
      */
     public function getSearchCount(string $query): int
     {
-        return $this->model->where('name', 'LIKE', '%' . $query . '%')->count();
+        return $this->model->where('name', 'LIKE', '%'.$query.'%')->count();
     }
 
     /**
      * Обновить чат ID Telegram для бизнеса
-     *
-     * @param Business $business
-     * @param int $chatId
-     * @return bool
      */
     public function updateTelegramChatId(Business $business, int $chatId): bool
     {

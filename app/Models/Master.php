@@ -35,7 +35,7 @@ class Master extends Model
      */
     public function getNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return trim($this->first_name.' '.$this->last_name);
     }
 
     public function locations(): BelongsToMany

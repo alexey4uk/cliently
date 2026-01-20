@@ -10,7 +10,6 @@ use App\Repositories\LocationRepositoryInterface;
 use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
 use App\Repositories\TelegramUserStateRepositoryInterface;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -19,11 +18,17 @@ use Illuminate\Database\Eloquent\Collection;
 class TelegramBotService
 {
     private BusinessRepositoryInterface $businessRepository;
+
     private ClientRepositoryInterface $clientRepository;
+
     private ServiceRepositoryInterface $serviceRepository;
+
     private LocationRepositoryInterface $locationRepository;
+
     private MasterRepositoryInterface $masterRepository;
+
     private AppointmentRepositoryInterface $appointmentRepository;
+
     private TelegramUserStateRepositoryInterface $stateRepository;
 
     public function __construct(
@@ -46,9 +51,6 @@ class TelegramBotService
 
     /**
      * Найти бизнес по токену
-     *
-     * @param string $token
-     * @return Business|null
      */
     public function findBusinessByToken(string $token): ?Business
     {
@@ -57,9 +59,6 @@ class TelegramBotService
 
     /**
      * Найти бизнес по slug
-     *
-     * @param string $slug
-     * @return Business|null
      */
     public function findBusinessBySlug(string $slug): ?Business
     {
@@ -68,10 +67,6 @@ class TelegramBotService
 
     /**
      * Получить пагинированный список бизнесов
-     *
-     * @param int $page
-     * @param int $perPage
-     * @return Collection
      */
     public function getBusinessesPaginated(int $page = 1, int $perPage = 10): Collection
     {
@@ -80,8 +75,6 @@ class TelegramBotService
 
     /**
      * Получить общее количество бизнесов
-     *
-     * @return int
      */
     public function getTotalBusinesses(): int
     {
@@ -90,11 +83,6 @@ class TelegramBotService
 
     /**
      * Поиск бизнесов по названию
-     *
-     * @param string $query
-     * @param int $page
-     * @param int $perPage
-     * @return Collection
      */
     public function searchBusinesses(string $query, int $page = 1, int $perPage = 10): Collection
     {
@@ -103,9 +91,6 @@ class TelegramBotService
 
     /**
      * Получить количество результатов поиска
-     *
-     * @param string $query
-     * @return int
      */
     public function getSearchCount(string $query): int
     {
@@ -114,10 +99,6 @@ class TelegramBotService
 
     /**
      * Обновить чат ID для бизнеса
-     *
-     * @param Business $business
-     * @param int $chatId
-     * @return bool
      */
     public function updateBusinessChatId(Business $business, int $chatId): bool
     {
@@ -126,9 +107,6 @@ class TelegramBotService
 
     /**
      * Получить локации для бизнеса
-     *
-     * @param int $businessId
-     * @return Collection
      */
     public function getLocationsForBusiness(int $businessId): Collection
     {
@@ -137,9 +115,6 @@ class TelegramBotService
 
     /**
      * Получить услуги для локации
-     *
-     * @param int $locationId
-     * @return Collection
      */
     public function getServicesForLocation(int $locationId): Collection
     {
@@ -148,9 +123,6 @@ class TelegramBotService
 
     /**
      * Получить услуги для бизнеса
-     *
-     * @param int $businessId
-     * @return Collection
      */
     public function getServicesForBusiness(int $businessId): Collection
     {
@@ -159,10 +131,6 @@ class TelegramBotService
 
     /**
      * Получить мастеров для локации и услуги
-     *
-     * @param int $locationId
-     * @param int|null $serviceId
-     * @return Collection
      */
     public function getMastersForLocationAndService(int $locationId, ?int $serviceId = null): Collection
     {
@@ -171,10 +139,6 @@ class TelegramBotService
 
     /**
      * Получить мастеров для бизнеса и услуги
-     *
-     * @param int $businessId
-     * @param int|null $serviceId
-     * @return Collection
      */
     public function getMastersForBusinessAndService(int $businessId, ?int $serviceId = null): Collection
     {
@@ -184,9 +148,6 @@ class TelegramBotService
     /**
      * Найти или создать клиента
      *
-     * @param int $businessId
-     * @param string $phone
-     * @param array $attributes
      * @return \App\Models\Client
      */
     public function findOrCreateClient(int $businessId, string $phone, array $attributes = [])
@@ -197,7 +158,6 @@ class TelegramBotService
     /**
      * Создать запись на прием
      *
-     * @param array $data
      * @return \App\Models\Appointment
      */
     public function createAppointment(array $data)
@@ -208,8 +168,6 @@ class TelegramBotService
     /**
      * Получить запись с отношениями
      *
-     * @param int $id
-     * @param array $relations
      * @return \App\Models\Appointment|null
      */
     public function getAppointmentWithRelations(int $id, array $relations = ['client', 'service', 'master', 'location'])
@@ -220,7 +178,6 @@ class TelegramBotService
     /**
      * Получить текущее состояние пользователя
      *
-     * @param string $telegramUserId
      * @return \App\Models\TelegramUserState|null
      */
     public function getCurrentUserState(string $telegramUserId)
@@ -231,8 +188,6 @@ class TelegramBotService
     /**
      * Получить состояние для бизнеса
      *
-     * @param string $telegramUserId
-     * @param int|null $businessId
      * @return \App\Models\TelegramUserState|null
      */
     public function getUserState(string $telegramUserId, ?int $businessId)
@@ -243,10 +198,6 @@ class TelegramBotService
     /**
      * Обновить состояние пользователя
      *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param string $step
-     * @param array $data
      * @return \App\Models\TelegramUserState
      */
     public function updateUserState(string $telegramUserId, ?int $businessId, string $step, array $data = [])
@@ -257,10 +208,6 @@ class TelegramBotService
     /**
      * Обновить состояние, сохраняя message_id
      *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param string $step
-     * @param array $data
      * @return \App\Models\TelegramUserState
      */
     public function updateUserStateKeepMessageId(string $telegramUserId, ?int $businessId, string $step, array $data = [])
@@ -270,10 +217,6 @@ class TelegramBotService
 
     /**
      * Очистить состояние пользователя
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @return bool
      */
     public function clearUserState(string $telegramUserId, ?int $businessId = null): bool
     {
@@ -282,10 +225,6 @@ class TelegramBotService
 
     /**
      * Сохранить ID последнего сообщения
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param int $messageId
      */
     public function setUserMessageId(string $telegramUserId, ?int $businessId, int $messageId): void
     {
@@ -294,10 +233,6 @@ class TelegramBotService
 
     /**
      * Получить ID последнего сообщения
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @return int|null
      */
     public function getUserMessageId(string $telegramUserId, ?int $businessId): ?int
     {
@@ -306,9 +241,6 @@ class TelegramBotService
 
     /**
      * Найти локацию по ID
-     *
-     * @param int $id
-     * @return \App\Models\Location|null
      */
     public function findLocation(int $id): ?\App\Models\Location
     {
@@ -317,9 +249,6 @@ class TelegramBotService
 
     /**
      * Найти услугу по ID
-     *
-     * @param int $id
-     * @return \App\Models\Service|null
      */
     public function findService(int $id): ?\App\Models\Service
     {
@@ -328,9 +257,6 @@ class TelegramBotService
 
     /**
      * Найти мастера по ID
-     *
-     * @param int $id
-     * @return \App\Models\Master|null
      */
     public function findMaster(int $id): ?\App\Models\Master
     {

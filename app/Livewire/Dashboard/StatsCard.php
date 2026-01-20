@@ -7,8 +7,11 @@ use Livewire\Component;
 class StatsCard extends Component
 {
     public $label;
+
     public $value;
+
     public $icon;
+
     public $color;
 
     public function mount($label, $value, $icon, $color)

@@ -35,7 +35,7 @@ class Client extends Model
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name . ' ' . ($this->last_name ?? ''));
+        return trim($this->first_name.' '.($this->last_name ?? ''));
     }
 
     /**
@@ -46,6 +46,6 @@ class Client extends Model
         $first = mb_substr($this->first_name, 0, 1, 'UTF-8');
         $last = $this->last_name ? mb_substr($this->last_name, 0, 1, 'UTF-8') : '';
 
-        return mb_strtoupper($first . $last, 'UTF-8');
+        return mb_strtoupper($first.$last, 'UTF-8');
     }
 }

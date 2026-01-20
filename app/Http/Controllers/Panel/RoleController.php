@@ -15,7 +15,7 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::with('permissions')->paginate(20);
-        
+
         return view('panel.roles.index', compact('roles'));
     }
 
@@ -25,7 +25,7 @@ class RoleController extends Controller
     public function create()
     {
         $permissions = Permission::all();
-        
+
         return view('panel.roles.create', compact('permissions'));
     }
 
@@ -40,7 +40,7 @@ class RoleController extends Controller
         ]);
 
         $role = Role::create(['name' => $request->name]);
-        
+
         if ($request->has('permissions')) {
             $role->syncPermissions($request->permissions);
         }
@@ -54,7 +54,7 @@ class RoleController extends Controller
     public function edit(Role $role)
     {
         $permissions = Permission::all();
-        
+
         return view('panel.roles.edit', compact('role', 'permissions'));
     }
 
@@ -64,12 +64,12 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
             'permissions' => 'array',
         ]);
 
         $role->update(['name' => $request->name]);
-        
+
         if ($request->has('permissions')) {
             $role->syncPermissions($request->permissions);
         }

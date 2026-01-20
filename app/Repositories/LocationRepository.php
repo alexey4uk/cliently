@@ -12,19 +12,14 @@ class LocationRepository extends BaseRepository implements LocationRepositoryInt
 {
     /**
      * Получить модель для репозитория
-     *
-     * @return Location
      */
     public function getModel(): Location
     {
-        return new Location();
+        return new Location;
     }
 
     /**
      * Получить локации для бизнеса
-     *
-     * @param int $businessId
-     * @return Collection
      */
     public function getByBusiness(int $businessId): Collection
     {
@@ -33,10 +28,6 @@ class LocationRepository extends BaseRepository implements LocationRepositoryInt
 
     /**
      * Проверить, принадлежит ли локация бизнесу
-     *
-     * @param int $locationId
-     * @param int $businessId
-     * @return bool
      */
     public function belongsToBusiness(int $locationId, int $businessId): bool
     {

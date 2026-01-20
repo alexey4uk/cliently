@@ -103,7 +103,7 @@ class MasterSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (! $business || !$this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
             return redirect()->route('settings.masters');
         }
 
@@ -125,7 +125,7 @@ class MasterSettingsController extends Controller
         $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
         $business = $user->businesses->first();
 
-        if (! $business || !$this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
             return redirect()->route('settings.masters');
         }
 
@@ -161,7 +161,7 @@ class MasterSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
             return redirect()->route('settings.masters');
         }
 

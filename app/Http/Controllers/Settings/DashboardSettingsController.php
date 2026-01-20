@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Validator;
 
 class DashboardSettingsController extends Controller
 {
@@ -40,9 +39,9 @@ class DashboardSettingsController extends Controller
         $user->save();
 
         // Очистка кэша
-        Cache::forget('dashboard_stats_' . $user->id);
-        Cache::forget('dashboard_appointments_' . $user->id);
-        Cache::forget('dashboard_clients_' . $user->id);
+        Cache::forget('dashboard_stats_'.$user->id);
+        Cache::forget('dashboard_appointments_'.$user->id);
+        Cache::forget('dashboard_clients_'.$user->id);
 
         return response()->json(['success' => true]);
     }

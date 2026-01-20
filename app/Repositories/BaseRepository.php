@@ -24,8 +24,6 @@ abstract class BaseRepository implements RepositoryInterface
 
     /**
      * Получить модель для репозитория
-     *
-     * @return Model
      */
     abstract public function getModel(): Model;
 
@@ -50,7 +48,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Найти запись по ID
      *
-     * @param int $id
+     * @param  int  $id
      * @return Model|null
      */
     public function find($id)
@@ -61,7 +59,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Найти запись по ID или выбросить исключение
      *
-     * @param int $id
+     * @param  int  $id
      * @return Model
      */
     public function findOrFail($id)
@@ -72,7 +70,6 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Создать новую запись
      *
-     * @param array $attributes
      * @return Model
      */
     public function create(array $attributes)
@@ -83,8 +80,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Обновить запись
      *
-     * @param int $id
-     * @param array $attributes
+     * @param  int  $id
      * @return bool
      */
     public function update($id, array $attributes)
@@ -101,7 +97,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Удалить запись
      *
-     * @param int $id
+     * @param  int  $id
      * @return bool
      */
     public function delete($id)
@@ -118,7 +114,6 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Получить модель с отношениями
      *
-     * @param array $relations
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function with(array $relations)
@@ -129,8 +124,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Получить запись с отношениями
      *
-     * @param int $id
-     * @param array $relations
+     * @param  int  $id
      * @return Model|null
      */
     public function findWith($id, array $relations = [])

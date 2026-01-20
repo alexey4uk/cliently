@@ -11,67 +11,36 @@ interface TelegramUserStateRepositoryInterface extends RepositoryInterface
 {
     /**
      * Получить текущее состояние пользователя
-     *
-     * @param string $telegramUserId
-     * @return TelegramUserState|null
      */
     public function getCurrentState(string $telegramUserId): ?TelegramUserState;
 
     /**
      * Получить состояние для конкретного бизнеса
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @return TelegramUserState|null
      */
     public function getState(string $telegramUserId, ?int $businessId): ?TelegramUserState;
 
     /**
      * Обновить или создать состояние
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param string $step
-     * @param array $data
-     * @return TelegramUserState
      */
     public function updateState(string $telegramUserId, ?int $businessId, string $step, array $data = []): TelegramUserState;
 
     /**
      * Обновить состояние, сохраняя message_id
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param string $step
-     * @param array $data
-     * @return TelegramUserState
      */
     public function updateStateKeepMessageId(string $telegramUserId, ?int $businessId, string $step, array $data = []): TelegramUserState;
 
     /**
      * Очистить состояние пользователя
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @return bool
      */
     public function clearState(string $telegramUserId, ?int $businessId = null): bool;
 
     /**
      * Сохранить ID последнего сообщения
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @param int $messageId
      */
     public function setMessageId(string $telegramUserId, ?int $businessId, int $messageId): void;
 
     /**
      * Получить ID последнего сообщения
-     *
-     * @param string $telegramUserId
-     * @param int|null $businessId
-     * @return int|null
      */
     public function getMessageId(string $telegramUserId, ?int $businessId): ?int;
 }
