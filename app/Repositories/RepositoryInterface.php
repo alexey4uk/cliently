@@ -17,7 +17,7 @@ interface RepositoryInterface
     /**
      * Найти запись по ID
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function find($id);
@@ -25,7 +25,7 @@ interface RepositoryInterface
     /**
      * Найти запись по ID или выбросить исключение
      *
-     * @param int $id
+     * @param  int  $id
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function findOrFail($id);
@@ -33,7 +33,6 @@ interface RepositoryInterface
     /**
      * Создать новую запись
      *
-     * @param array $attributes
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function create(array $attributes);
@@ -41,8 +40,7 @@ interface RepositoryInterface
     /**
      * Обновить запись
      *
-     * @param int $id
-     * @param array $attributes
+     * @param  int  $id
      * @return bool
      */
     public function update($id, array $attributes);
@@ -50,7 +48,7 @@ interface RepositoryInterface
     /**
      * Удалить запись
      *
-     * @param int $id
+     * @param  int  $id
      * @return bool
      */
     public function delete($id);
@@ -58,7 +56,6 @@ interface RepositoryInterface
     /**
      * Получить модель с отношениями
      *
-     * @param array $relations
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function with(array $relations);
@@ -66,8 +63,7 @@ interface RepositoryInterface
     /**
      * Получить запись с отношениями
      *
-     * @param int $id
-     * @param array $relations
+     * @param  int  $id
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function findWith($id, array $relations = []);

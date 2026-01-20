@@ -20,46 +20,46 @@ class RolePermissionSeeder extends Seeder
             'users.create' => 'Создание новых пользователей',
             'users.update' => 'Редактирование пользователей',
             'users.delete' => 'Удаление пользователей',
-            
+
             // Роли
             'roles.view' => 'Просмотр списка ролей',
             'roles.create' => 'Создание новых ролей',
             'roles.update' => 'Редактирование ролей',
             'roles.delete' => 'Удаление ролей',
-            
+
             // Бизнесы
             'businesses.view' => 'Просмотр списка бизнесов',
             'businesses.create' => 'Создание новых бизнесов',
             'businesses.update' => 'Редактирование бизнесов',
             'businesses.delete' => 'Удаление бизнесов',
-            
+
             // Записи
             'appointments.view' => 'Просмотр списка записей',
             'appointments.create' => 'Создание новых записей',
             'appointments.update' => 'Редактирование записей',
             'appointments.delete' => 'Удаление записей',
-            
+
             // Клиенты
             'clients.view' => 'Просмотр списка клиентов',
             'clients.create' => 'Создание новых клиентов',
             'clients.update' => 'Редактирование клиентов',
             'clients.delete' => 'Удаление клиентов',
-            
+
             // Услуги
             'services.view' => 'Просмотр списка услуг',
             'services.create' => 'Создание новых услуг',
             'services.update' => 'Редактирование услуг',
             'services.delete' => 'Удаление услуг',
-            
+
             // Аналитика
             'analytics.view' => 'Просмотр аналитики',
-            
+
             // Поддержка
             'support.view' => 'Доступ к разделу поддержки',
-            
+
             // Доступ к админке
             'panel.access' => 'Доступ к админ-панели',
-            
+
             // Доступ к клиентской части
             'client.access' => 'Доступ к клиентской части',
         ];

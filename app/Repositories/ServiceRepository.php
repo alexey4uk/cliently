@@ -12,19 +12,14 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
 {
     /**
      * Получить модель для репозитория
-     *
-     * @return Service
      */
     public function getModel(): Service
     {
-        return new Service();
+        return new Service;
     }
 
     /**
      * Получить активные услуги для локации
-     *
-     * @param int $locationId
-     * @return Collection
      */
     public function getActiveByLocation(int $locationId): Collection
     {
@@ -35,9 +30,6 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
 
     /**
      * Получить активные услуги для бизнеса
-     *
-     * @param int $businessId
-     * @return Collection
      */
     public function getActiveByBusiness(int $businessId): Collection
     {
@@ -49,10 +41,6 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
 
     /**
      * Проверить, принадлежит ли услуга бизнесу
-     *
-     * @param int $serviceId
-     * @param int $businessId
-     * @return bool
      */
     public function belongsToBusiness(int $serviceId, int $businessId): bool
     {

@@ -48,7 +48,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
     });
 
-
     // === КЛИЕНТСКАЯ ЧАСТЬ ===
     // Для пользователей с доступом к клиентской части
     Route::middleware(['auth', 'only.client'])->group(function () {
@@ -170,4 +169,4 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

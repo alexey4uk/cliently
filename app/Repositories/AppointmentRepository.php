@@ -13,19 +13,14 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 {
     /**
      * Получить модель для репозитория
-     *
-     * @return Appointment
      */
     public function getModel(): Appointment
     {
-        return new Appointment();
+        return new Appointment;
     }
 
     /**
      * Создать новую запись
-     *
-     * @param array $data
-     * @return Appointment
      */
     public function createAppointment(array $data): Appointment
     {
@@ -34,10 +29,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
     /**
      * Найти запись с отношениями
-     *
-     * @param int $id
-     * @param array $relations
-     * @return Appointment|null
      */
     public function findWithRelations(int $id, array $relations = ['client', 'service', 'master', 'location']): ?Appointment
     {
@@ -46,9 +37,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
     /**
      * Получить статистику для дашборда бизнеса
-     *
-     * @param int $businessId
-     * @return array
      */
     public function getDashboardStats(int $businessId): array
     {
@@ -70,9 +58,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
     /**
      * Получить записи для дашборда бизнеса
-     *
-     * @param int $businessId
-     * @return array
      */
     public function getDashboardAppointments(int $businessId): array
     {
@@ -125,11 +110,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
     /**
      * Получить записи бизнеса с фильтрами и пагинацией
-     *
-     * @param int $businessId
-     * @param array $filters
-     * @param int $perPage
-     * @return LengthAwarePaginator
      */
     public function getFilteredForBusiness(int $businessId, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
@@ -139,7 +119,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
         // Фильтр по дате
         if (isset($filters['date']) && $filters['date']) {
             $query->whereDate('date', $filters['date']);
-        } elseif (!isset($filters['view']) || $filters['view'] !== 'calendar') {
+        } elseif (! isset($filters['view']) || $filters['view'] !== 'calendar') {
             // По умолчанию показываем сегодня и будущие записи для таблицы
             $query->whereDate('date', '>=', Carbon::today());
         }
@@ -173,8 +153,8 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
         // Для календаря - сортировка по дате и времени
         if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
-            $startOfMonth = Carbon::parse($filters['month'] . '-01')->startOfMonth();
-            $endOfMonth = Carbon::parse($filters['month'] . '-01')->endOfMonth();
+            $startOfMonth = Carbon::parse($filters['month'].'-01')->startOfMonth();
+            $endOfMonth = Carbon::parse($filters['month'].'-01')->endOfMonth();
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc');
@@ -182,7 +162,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             // Сортировка
             $sort = $filters['sort'] ?? 'date';
             $direction = $filters['direction'] ?? 'desc';
-            
+
             if ($sort === 'date') {
                 $query->orderBy('date', $direction)
                     ->orderBy('time', $direction);
@@ -205,14 +185,12 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
     /**
      * Получить записи для календаря
      *
-     * @param int $businessId
-     * @param string $month
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getForCalendar(int $businessId, string $month)
     {
-        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
-        $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
+        $startOfMonth = Carbon::parse($month.'-01')->startOfMonth();
+        $endOfMonth = Carbon::parse($month.'-01')->endOfMonth();
 
         return $this->model->where('business_id', $businessId)
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
@@ -225,8 +203,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
     /**
      * Получить все записи бизнеса с фильтрами без пагинации (для экспорта)
      *
-     * @param int $businessId
-     * @param array $filters
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getAllFilteredForBusiness(int $businessId, array $filters = [])
@@ -237,7 +213,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
         // Фильтр по дате
         if (isset($filters['date']) && $filters['date']) {
             $query->whereDate('date', $filters['date']);
-        } elseif (!isset($filters['view']) || $filters['view'] !== 'calendar') {
+        } elseif (! isset($filters['view']) || $filters['view'] !== 'calendar') {
             // Для экспорта показываем все записи, не только будущие
         }
 
@@ -270,8 +246,8 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
         // Для календаря - сортировка по дате и времени
         if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
-            $startOfMonth = Carbon::parse($filters['month'] . '-01')->startOfMonth();
-            $endOfMonth = Carbon::parse($filters['month'] . '-01')->endOfMonth();
+            $startOfMonth = Carbon::parse($filters['month'].'-01')->startOfMonth();
+            $endOfMonth = Carbon::parse($filters['month'].'-01')->endOfMonth();
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc');
@@ -285,10 +261,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
     /**
      * Проверить, принадлежит ли запись бизнесу
-     *
-     * @param int $appointmentId
-     * @param int $businessId
-     * @return bool
      */
     public function belongsToBusiness(int $appointmentId, int $businessId): bool
     {

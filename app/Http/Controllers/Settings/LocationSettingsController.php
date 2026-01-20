@@ -94,7 +94,7 @@ class LocationSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->locationRepository->belongsToBusiness($location->id, $business->id)) {
+        if (! $business || ! $this->locationRepository->belongsToBusiness($location->id, $business->id)) {
             return redirect()->route('settings.locations');
         }
 
@@ -112,7 +112,7 @@ class LocationSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->locationRepository->belongsToBusiness($location->id, $business->id)) {
+        if (! $business || ! $this->locationRepository->belongsToBusiness($location->id, $business->id)) {
             return redirect()->route('settings.locations');
         }
 
@@ -141,7 +141,7 @@ class LocationSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || !$this->locationRepository->belongsToBusiness($location->id, $business->id)) {
+        if (! $business || ! $this->locationRepository->belongsToBusiness($location->id, $business->id)) {
             return redirect()->route('settings.locations');
         }
 

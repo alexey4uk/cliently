@@ -12,20 +12,14 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
 {
     /**
      * Получить модель для репозитория
-     *
-     * @return Master
      */
     public function getModel(): Master
     {
-        return new Master();
+        return new Master;
     }
 
     /**
      * Получить активных мастеров для локации
-     *
-     * @param int $locationId
-     * @param int|null $serviceId
-     * @return Collection
      */
     public function getActiveByLocation(int $locationId, ?int $serviceId = null): Collection
     {
@@ -44,10 +38,6 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
 
     /**
      * Получить активных мастеров для бизнеса
-     *
-     * @param int $businessId
-     * @param int|null $serviceId
-     * @return Collection
      */
     public function getActiveByBusiness(int $businessId, ?int $serviceId = null): Collection
     {
@@ -64,9 +54,6 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
 
     /**
      * Получить мастеров, которые предоставляют услугу
-     *
-     * @param int $serviceId
-     * @return Collection
      */
     public function getByService(int $serviceId): Collection
     {
@@ -77,10 +64,6 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
 
     /**
      * Проверить, принадлежит ли мастер бизнесу
-     *
-     * @param int $masterId
-     * @param int $businessId
-     * @return bool
      */
     public function belongsToBusiness(int $masterId, int $businessId): bool
     {

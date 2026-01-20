@@ -29,6 +29,6 @@ class DatabaseSeeder extends Seeder
             OnboardingSeeder::class,
         ]);
 
-        //Business::factory(20)->create();
+        // Business::factory(20)->create();
     }
 }
