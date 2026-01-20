@@ -131,6 +131,72 @@ class AppointmentsController extends Controller
     }
 
     /**
+     * Display the calendar view of appointments.
+     */
+    public function calendar(Request $request)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if ($business instanceof \Illuminate\Http\RedirectResponse) {
+            return $business;
+        }
+
+        $view = 'calendar'; // Всегда используем календарный вид
+        $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
+
+        try {
+            $selectedDate = Carbon::parse($currentMonth . '-01');
+        } catch (\Exception $e) {
+            $selectedDate = Carbon::now()->startOfMonth();
+        }
+
+        // Сортировка и пагинация (для совместимости, хотя в календаре не используется)
+        $sort = $request->get('sort', 'date');
+        $direction = $request->get('direction', 'desc');
+        $perPage = $request->get('per_page', 20);
+        $perPage = in_array($perPage, [15, 30, 50]) ? $perPage : 20;
+
+        $filters = [
+            'view' => $view,
+            'month' => $currentMonth,
+            'date' => $request->get('date'),
+            'status' => $request->get('status'),
+            'search' => $request->get('search'),
+            'service_id' => $request->get('service_id'),
+            'master_id' => $request->get('master_id'),
+            'sort' => $sort,
+            'direction' => $direction,
+        ];
+
+        // Всегда используем календарную логику
+        $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+
+        // Группируем по датам
+        $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
+            return $appointment->date->format('Y-m-d');
+        });
+
+        $appointments = $allAppointments;
+
+        return view('appointments.index', [
+            'business' => $business,
+            'appointments' => $appointments,
+            'appointmentsByDate' => $appointmentsByDate,
+            'view' => $view,
+            'currentMonth' => $currentMonth,
+            'selectedDate' => $selectedDate,
+            'search' => $request->get('search', ''),
+            'date' => $request->get('date', ''),
+            'status' => $request->get('status', ''),
+            'service_id' => $request->get('service_id', ''),
+            'master_id' => $request->get('master_id', ''),
+            'sort' => $sort,
+            'direction' => $direction,
+            'perPage' => $perPage,
+        ]);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create(Request $request)

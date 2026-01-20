@@ -101,6 +101,37 @@
                                 </a>
                             @endif
 
+                            <!-- Календарь -->
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('appointments.view')
+                                    <a href="{{ route('panel.appointments') }}?view=calendar"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.appointments') && request('view') === 'calendar'
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
+                                    </a>
+                                @endcan
+                            @else
+                                <a href="{{ route('appointments.calendar') }}"
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.calendar')
+                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                        <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
+                                </a>
+                            @endif
+
                             <!-- Клиенты -->
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 @can('clients.view')
@@ -152,7 +183,7 @@
                                 @endcan
                             @else
                                 <a href="{{ route('appointments.index') }}"
-                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.*')
+                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
                                         ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-4'"

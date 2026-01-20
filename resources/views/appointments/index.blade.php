@@ -50,7 +50,6 @@
     @endif
 
     <div class="space-y-4 md:space-y-6" x-data="{
-        view: '{{ $view }}',
         showPhoneModal: false,
         phone: '',
         phoneDisplay: '',
@@ -82,29 +81,6 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3 flex-wrap">
-                    <!-- Переключатель вида -->
-                    <div
-                        class="inline-flex rounded-xl border border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 p-1 shadow-lg">
-                        <button
-                            @click="view = 'table'; window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'table'])) }}'"
-                            :class="view === 'table' ?
-                                'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md transform scale-105' :
-                                'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50'"
-                            class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2">
-                            <i class="fa-solid fa-table text-sm"></i>
-                            <span class="hidden sm:inline">Таблица</span>
-                        </button>
-
-                        <button
-                            @click="view = 'calendar'; window.location.href = '{{ route('appointments.index', array_merge(request()->query(), ['view' => 'calendar'])) }}'"
-                            :class="view === 'calendar' ?
-                                'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md transform scale-105' :
-                                'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700/50'"
-                            class="px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2">
-                            <i class="fa-solid fa-calendar text-sm"></i>
-                            <span class="hidden sm:inline">Календарь</span>
-                        </button>
-                    </div>
                     <!-- Кнопка экспорта -->
                     <a href="{{ route('appointments.export', request()->query()) }}"
                         class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900">
@@ -132,88 +108,37 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <!-- Кнопка назад -->
-                            <form method="GET" action="{{ route('appointments.index') }}" class="inline">
-                                <input type="hidden" name="view" value="calendar">
-                                <input type="hidden" name="month"
-                                    value="{{ $selectedDate->copy()->subMonth()->format('Y-m') }}">
-                                @if (request('search'))
-                                    <input type="hidden" name="search" value="{{ request('search') }}">
-                                @endif
-                                @if (request('status'))
-                                    <input type="hidden" name="status" value="{{ request('status') }}">
-                                @endif
-                                @if (request('service_id'))
-                                    <input type="hidden" name="service_id" value="{{ request('service_id') }}">
-                                @endif
-                                @if (request('master_id'))
-                                    <input type="hidden" name="master_id" value="{{ request('master_id') }}">
-                                @endif
-                                <button type="submit"
-                                    class="h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 dark:hover:from-indigo-900/50 dark:hover:to-indigo-800/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-lg hover:shadow-xl flex-shrink-0 transform hover:scale-110">
-                                    <i class="fa-solid fa-chevron-left text-sm md:text-base"></i>
-                                </button>
-                            </form>
+                            <a href="{{ route('appointments.calendar', [
+                                'month' => $selectedDate->copy()->subMonth()->format('Y-m'),
+                                'search' => request('search'),
+                                'status' => request('status'),
+                                'service_id' => request('service_id'),
+                                'master_id' => request('master_id')
+                            ]) }}"
+                                class="h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 dark:hover:from-indigo-900/50 dark:hover:to-indigo-800/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-lg hover:shadow-xl flex-shrink-0 transform hover:scale-110">
+                                <i class="fa-solid fa-chevron-left text-sm md:text-base"></i>
+                            </a>
 
                             <!-- Поле выбора месяца -->
-                            <form method="GET" action="{{ route('appointments.index') }}" id="calendar-month-form"
-                                class="flex-1 sm:flex-initial">
-                                <input type="hidden" name="view" value="calendar">
-                                @if (request('search'))
-                                    <input type="hidden" name="search" value="{{ request('search') }}">
-                                @endif
-                                @if (request('status'))
-                                    <input type="hidden" name="status" value="{{ request('status') }}">
-                                @endif
-                                @if (request('service_id'))
-                                    <input type="hidden" name="service_id" value="{{ request('service_id') }}">
-                                @endif
-                                @if (request('master_id'))
-                                    <input type="hidden" name="master_id" value="{{ request('master_id') }}">
-                                @endif
+                            <div class="flex-1 sm:flex-initial">
                                 <input type="month" name="month" value="{{ $currentMonth }}"
-                                    onchange="this.form.submit()"
+                                    onchange="window.location.href = '{{ route('appointments.calendar') }}' + '?month=' + this.value + '{{ request()->has('search') ? '&search=' . urlencode(request('search')) : '' }}{{ request()->has('status') ? '&status=' . urlencode(request('status')) : '' }}{{ request()->has('service_id') ? '&service_id=' . urlencode(request('service_id')) : '' }}{{ request()->has('master_id') ? '&master_id=' . urlencode(request('master_id')) : '' }}'"
                                     class="w-full sm:w-auto px-4 md:px-5 py-2.5 md:py-3 text-xs md:text-sm bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:focus:ring-indigo-600 dark:focus:border-indigo-600 transition-all text-slate-900 dark:text-white font-semibold cursor-pointer shadow-lg hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-xl">
-                            </form>
+                            </div>
 
                             <!-- Кнопка вперед -->
-                            <form method="GET" action="{{ route('appointments.index') }}" class="inline">
-                                <input type="hidden" name="view" value="calendar">
-                                <input type="hidden" name="month"
-                                    value="{{ $selectedDate->copy()->addMonth()->format('Y-m') }}">
-                                @if (request('search'))
-                                    <input type="hidden" name="search" value="{{ request('search') }}">
-                                @endif
-                                @if (request('status'))
-                                    <input type="hidden" name="status" value="{{ request('status') }}">
-                                @endif
-                                @if (request('service_id'))
-                                    <input type="hidden" name="service_id" value="{{ request('service_id') }}">
-                                @endif
-                                @if (request('master_id'))
-                                    <input type="hidden" name="master_id" value="{{ request('master_id') }}">
-                                @endif
-                                <button type="submit"
-                                    class="h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 dark:hover:from-indigo-900/50 dark:hover:to-indigo-800/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-lg hover:shadow-xl flex-shrink-0 transform hover:scale-110">
-                                    <i class="fa-solid fa-chevron-right text-sm md:text-base"></i>
-                                </button>
-                            </form>
+                            <a href="{{ route('appointments.calendar', [
+                                'month' => $selectedDate->copy()->addMonth()->format('Y-m'),
+                                'search' => request('search'),
+                                'status' => request('status'),
+                                'service_id' => request('service_id'),
+                                'master_id' => request('master_id')
+                            ]) }}"
+                                class="h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-300 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-indigo-100 dark:hover:from-indigo-900/50 dark:hover:to-indigo-800/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-lg hover:shadow-xl flex-shrink-0 transform hover:scale-110">
+                                <i class="fa-solid fa-chevron-right text-sm md:text-base"></i>
+                            </a>
                         </div>
-                        @php
-                            $todayParams = ['view' => 'calendar', 'month' => \Carbon\Carbon::now()->format('Y-m')];
-                            if (request()->has('search') && request()->search) {
-                                $todayParams['search'] = request()->search;
-                            }
-                            if (request()->has('status') && request()->status) {
-                                $todayParams['status'] = request()->status;
-                            }
-                            if (request()->has('service_id') && request()->service_id) {
-                                $todayParams['service_id'] = request()->service_id;
-                            }
-                            if (request()->has('master_id') && request()->master_id) {
-                                $todayParams['master_id'] = request()->master_id;
-                            }
-                        @endphp
-                        <button onclick="window.location.href = '{{ route('appointments.index', $todayParams) }}'"
+                        <button onclick="window.location.href='{{ route('appointments.calendar', ['month' => \Carbon\Carbon::now()->format('Y-m'), 'search' => request('search'), 'status' => request('status'), 'service_id' => request('service_id'), 'master_id' => request('master_id')]) }}'"
                             class="w-full sm:w-auto px-4 md:px-5 py-2.5 md:py-3 text-xs md:text-sm font-semibold text-indigo-700 dark:text-indigo-300 bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/50 dark:to-indigo-800/30 border border-indigo-300 dark:border-indigo-700 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 dark:hover:from-indigo-800/50 dark:hover:to-indigo-700/50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
                             <i class="fa-solid fa-calendar-day mr-2 md:mr-3"></i>
                             <span>Сегодня</span>
