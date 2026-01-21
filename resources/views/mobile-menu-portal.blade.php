@@ -2,9 +2,11 @@
 <div x-data="{ 
     open: false,
     managementOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }},
+    analyticsOpen: {{ Request::routeIs('analytics.*') ? 'true' : 'false' }},
     init() {
         // Инициализируем переменные для корректной работы Alpine
         this.managementOpen = {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }};
+        this.analyticsOpen = {{ Request::routeIs('analytics.*') ? 'true' : 'false' }};
         
         // Слушаем события от кнопки меню
         const self = this;
@@ -92,18 +94,6 @@ style="width: 0; height: 0;">
                             </div>
                             <span class="ml-3 whitespace-nowrap">Главная</span>
                         </a>
-
-                        @if(!Str::startsWith(Request::path(), 'panel'))
-                        <a href="{{ route('analytics.index') }}" @click="closeMenu()"
-                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.*')
-                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                <i class="fa-solid fa-chart-bar text-base"></i>
-                            </div>
-                            <span class="ml-3 whitespace-nowrap">Аналитика</span>
-                        </a>
-                        @endif
 
                         <a href="{{ route('clients.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('clients.*')
@@ -216,15 +206,46 @@ style="width: 0; height: 0;">
                 <!-- Аналитика -->
                 @if(!Str::startsWith(Request::path(), 'panel'))
                 <div>
-                    <a href="{{ route('analytics.index') }}" @click="closeMenu()"
-                        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.*')
-                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                            <i class="fa-solid fa-chart-bar text-base"></i>
-                        </div>
-                        <span class="ml-3 whitespace-nowrap">Аналитика</span>
-                    </a>
+                    <button @click="analyticsOpen = !analyticsOpen"
+                        class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                        <span>Аналитика</span>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
+                            :class="{ 'rotate-180': analyticsOpen }"></i>
+                    </button>
+                    <div x-show="analyticsOpen" x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
+                        <a href="{{ route('analytics.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.index')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-chart-bar text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Обзор</span>
+                        </a>
+                        <a href="{{ route('analytics.financial') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.financial')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-money-bill-wave text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Финансовая</span>
+                        </a>
+                        <a href="{{ route('analytics.general') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.general')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-chart-line text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Общая</span>
+                        </a>
+                    </div>
                 </div>
                 @endif
             </nav>
