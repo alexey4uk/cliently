@@ -3,7 +3,6 @@
 use App\Http\Controllers\BusinessSettingsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Settings\DashboardSettingsController;
 use App\Http\Controllers\Settings\LocationSettingsController;
 use App\Http\Controllers\Settings\MasterSettingsController;
 use App\Http\Controllers\TelegramManagementController;
@@ -67,10 +66,6 @@ Route::middleware(['auth'])->group(function () {
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
-
-            // Dashboard settings
-            Route::get('/dashboard', [DashboardSettingsController::class, 'index'])->name('dashboard');
-            Route::post('/dashboard', [DashboardSettingsController::class, 'update'])->name('dashboard.update');
 
             // Онлайн-запись
             Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
