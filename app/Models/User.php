@@ -73,7 +73,17 @@ class User extends Authenticatable
                     'dashboard' => [
                         'widgets' => [
                             'stats_header' => true,
+                            'stat_today' => true,
+                            'stat_week' => true,
+                            'stat_new_clients' => true,
+                            'stat_total_clients' => true,
+                            'stat_pending' => true,
+                            'stat_completed' => true,
+                            'stat_cancelled' => true,
+                            'stat_avg_per_day' => true,
                             'quick_actions' => true,
+                            'appointments_chart' => true,
+                            'clients_chart' => true,
                             'next_appointment' => true,
                             'today_appointments' => true,
                             'pending_appointments' => true,
@@ -81,6 +91,10 @@ class User extends Authenticatable
                             'weekly_chart' => false,
                         ],
                         'widget_order' => [
+                            'stats_header',
+                            'quick_actions',
+                            'appointments_chart',
+                            'clients_chart',
                             'next_appointment',
                             'today_appointments',
                             'pending_appointments',

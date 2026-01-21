@@ -1,6 +1,6 @@
-@if (session()->hasAny(['success', 'info', 'error', 'warning', 'password_success']))
-    <!-- Toast контейнер для уведомлений -->
-    <div class="fixed bottom-4 right-4 z-50 space-y-3" id="toast-container">
+<!-- Toast контейнер для уведомлений -->
+<div class="fixed bottom-4 right-4 z-50 space-y-3" id="toast-container">
+    @if (session()->hasAny(['success', 'info', 'error', 'warning', 'password_success']))
         @if(session('success'))
             <x-toast-notification type="success" :message="session('success')" />
         @endif
@@ -20,5 +20,5 @@
         @if(session('password_success'))
             <x-toast-notification type="success" :message="session('password_success')" />
         @endif
-    </div>
-@endif
+    @endif
+</div>

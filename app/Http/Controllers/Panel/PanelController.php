@@ -44,42 +44,124 @@ class PanelController extends Controller
             $today = Carbon::today();
             $weekAgo = Carbon::now()->subWeek();
             $monthAgo = Carbon::now()->subMonth();
+            $twoMonthsAgo = Carbon::now()->subMonths(2);
+            
+            // Активные бизнесы (MAU - Monthly Active Businesses)
+            $activeBusinessesMonth = Business::whereHas('appointments', function ($query) use ($monthAgo) {
+                $query->where('created_at', '>=', $monthAgo);
+            })->distinct()->count();
+            
+            // Активные пользователи (MAU)
+            $activeUsersMonth = User::whereHas('businesses.appointments', function ($query) use ($monthAgo) {
+                $query->where('created_at', '>=', $monthAgo);
+            })->distinct()->count();
+            
+            // Активные бизнесы за неделю
+            $activeBusinessesWeek = Business::whereHas('appointments', function ($query) use ($weekAgo) {
+                $query->where('created_at', '>=', $weekAgo);
+            })->distinct()->count();
+            
+            // Неактивные бизнесы (без активности за месяц)
+            $inactiveBusinesses = Business::whereDoesntHave('appointments', function ($query) use ($monthAgo) {
+                $query->where('created_at', '>=', $monthAgo);
+            })->count();
+            
+            // Средние метрики на бизнес
+            $totalBusinesses = Business::count();
+            $avgAppointmentsPerBusiness = $totalBusinesses > 0 
+                ? round(Appointment::count() / $totalBusinesses, 1) 
+                : 0;
+            $avgClientsPerBusiness = $totalBusinesses > 0 
+                ? round(Client::count() / $totalBusinesses, 1) 
+                : 0;
+            
+            // Рост (месяц к месяцу)
+            $newBusinessesLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+            $newBusinessesThisMonth = Business::where('created_at', '>=', $monthAgo)->count();
+            $businessGrowthRate = $newBusinessesLastMonth > 0 
+                ? round((($newBusinessesThisMonth - $newBusinessesLastMonth) / $newBusinessesLastMonth) * 100, 1)
+                : ($newBusinessesThisMonth > 0 ? 100 : 0);
+            
+            $newUsersLastMonth = User::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+            $newUsersThisMonth = User::where('created_at', '>=', $monthAgo)->count();
+            $userGrowthRate = $newUsersLastMonth > 0 
+                ? round((($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100, 1)
+                : ($newUsersThisMonth > 0 ? 100 : 0);
             
             return [
-                // Общая статистика
-                'total_businesses' => Business::count(),
+                // Основные метрики
+                'total_businesses' => $totalBusinesses,
                 'total_users' => User::count(),
                 'total_clients' => Client::count(),
                 'total_appointments' => Appointment::count(),
                 
-                // Статистика за период
-                'appointments_today' => Appointment::where('date', $today->format('Y-m-d'))
-                    ->where('status', '!=', 'cancelled')
-                    ->count(),
-                'appointments_week' => Appointment::where('date', '>=', $weekAgo->format('Y-m-d'))
-                    ->where('status', '!=', 'cancelled')
-                    ->count(),
-                'appointments_month' => Appointment::where('date', '>=', $monthAgo->format('Y-m-d'))
-                    ->where('status', '!=', 'cancelled')
-                    ->count(),
+                // Активность
+                'active_businesses_month' => $activeBusinessesMonth,
+                'active_businesses_week' => $activeBusinessesWeek,
+                'active_users_month' => $activeUsersMonth,
+                'inactive_businesses' => $inactiveBusinesses,
                 
-                // Статистика по статусам
-                'appointments_pending' => Appointment::where('status', 'pending')->count(),
-                'appointments_confirmed' => Appointment::where('status', 'confirmed')->count(),
-                'appointments_completed' => Appointment::where('status', 'completed')->count(),
-                'appointments_cancelled' => Appointment::where('status', 'cancelled')->count(),
-                
-                // Новые пользователи
-                'new_users_week' => User::where('created_at', '>=', $weekAgo)->count(),
-                'new_users_month' => User::where('created_at', '>=', $monthAgo)->count(),
-                
-                // Новые бизнесы
+                // Рост
                 'new_businesses_week' => Business::where('created_at', '>=', $weekAgo)->count(),
-                'new_businesses_month' => Business::where('created_at', '>=', $monthAgo)->count(),
-                
-                // Новые клиенты
+                'new_businesses_month' => $newBusinessesThisMonth,
+                'new_users_week' => User::where('created_at', '>=', $weekAgo)->count(),
+                'new_users_month' => $newUsersThisMonth,
                 'new_clients_week' => Client::where('created_at', '>=', $weekAgo)->count(),
                 'new_clients_month' => Client::where('created_at', '>=', $monthAgo)->count(),
+                
+                // Метрики вовлеченности
+                'business_growth_rate' => $businessGrowthRate,
+                'user_growth_rate' => $userGrowthRate,
+                'avg_appointments_per_business' => $avgAppointmentsPerBusiness,
+                'avg_clients_per_business' => $avgClientsPerBusiness,
+                
+                // Активность за периоды
+                'appointments_month' => Appointment::where('created_at', '>=', $monthAgo)->count(),
+                'appointments_week' => Appointment::where('created_at', '>=', $weekAgo)->count(),
+            ];
+        });
+
+        // Данные для графиков (последние 30 дней)
+        $chartData = Cache::remember($cacheKey.'_charts', 300, function () {
+            $days = 30;
+            
+            $usersData = [];
+            $businessesData = [];
+            $clientsData = [];
+            $appointmentsData = [];
+            $activeBusinessesData = [];
+            $labels = [];
+            
+            for ($i = $days; $i >= 0; $i--) {
+                $date = Carbon::now()->subDays($i);
+                $dateStr = $date->format('Y-m-d');
+                $labels[] = $date->format('d.m');
+                
+                // Новые пользователи за день
+                $usersData[] = User::whereDate('created_at', $dateStr)->count();
+                
+                // Новые бизнесы за день
+                $businessesData[] = Business::whereDate('created_at', $dateStr)->count();
+                
+                // Новые клиенты за день
+                $clientsData[] = Client::whereDate('created_at', $dateStr)->count();
+                
+                // Активность (записи) за день
+                $appointmentsData[] = Appointment::whereDate('created_at', $dateStr)->count();
+                
+                // Активные бизнесы за день (бизнесы, которые создали записи в этот день)
+                $activeBusinessesData[] = Business::whereHas('appointments', function ($query) use ($dateStr) {
+                    $query->whereDate('created_at', $dateStr);
+                })->distinct()->count();
+            }
+            
+            return [
+                'labels' => $labels,
+                'users' => $usersData,
+                'businesses' => $businessesData,
+                'clients' => $clientsData,
+                'appointments' => $appointmentsData,
+                'active_businesses' => $activeBusinessesData,
             ];
         });
 
@@ -103,6 +185,7 @@ class PanelController extends Controller
 
         return view('panel.dashboards.admin', [
             'stats' => $stats,
+            'chartData' => $chartData,
             'recentBusinesses' => $recentBusinesses,
             'recentUsers' => $recentUsers,
             'topBusinesses' => $topBusinesses,

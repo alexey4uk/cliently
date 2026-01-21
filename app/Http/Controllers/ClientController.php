@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Repositories\ClientRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
@@ -166,7 +167,40 @@ class ClientController extends Controller
         // Статистика записей клиента
         $totalAppointments = $client->appointments()->count();
         $completedAppointments = $client->appointments()->where('status', 'completed')->count();
-        $upcomingAppointments = $client->appointments()->where('date', '>=', today())->where('status', 'confirmed')->count();
+        $upcomingAppointments = $client->appointments()->where('date', '>=', today())->whereIn('status', ['confirmed', 'pending'])->count();
+        
+        // Общая сумма потраченных средств
+        $totalSpent = $client->appointments()
+            ->where('status', 'completed')
+            ->get()
+            ->sum(function ($appointment) {
+                return $appointment->final_price ?? 0;
+            });
+        
+        // Средний чек
+        $avgCheck = $completedAppointments > 0 ? round($totalSpent / $completedAppointments, 0) : 0;
+        
+        // Количество отмененных записей
+        $cancelledAppointments = $client->appointments()->where('status', 'cancelled')->count();
+
+        // Предстоящие записи
+        $upcomingAppointmentsList = $client->appointments()
+            ->where('date', '>=', today())
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->with(['service', 'master'])
+            ->orderBy('date')
+            ->orderBy('time')
+            ->limit(5)
+            ->get();
+
+        // История записей (завершенные)
+        $appointmentHistory = $client->appointments()
+            ->where('status', 'completed')
+            ->with(['service', 'master'])
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->limit(10)
+            ->get();
 
         return view('clients.show', [
             'business' => $business,
@@ -174,6 +208,11 @@ class ClientController extends Controller
             'totalAppointments' => $totalAppointments,
             'completedAppointments' => $completedAppointments,
             'upcomingAppointments' => $upcomingAppointments,
+            'totalSpent' => $totalSpent,
+            'avgCheck' => $avgCheck,
+            'cancelledAppointments' => $cancelledAppointments,
+            'upcomingAppointmentsList' => $upcomingAppointmentsList,
+            'appointmentHistory' => $appointmentHistory,
         ]);
     }
 
