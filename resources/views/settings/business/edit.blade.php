@@ -13,156 +13,114 @@
 
 @section('content')
 
-    <form method="POST" action="{{ route('settings.business.update') }}" class="space-y-4 md:space-y-6">
+<div class="max-w-3xl mx-auto">
+    <form method="POST" action="{{ route('settings.business.update') }}">
         @csrf
         @method('PATCH')
 
-        <div class="space-y-4 md:space-y-6">
-            <!-- Основная информация -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <div class="flex items-center gap-2">
-                        <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                            <i class="fa-solid fa-building text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
-                            Основная информация
-                        </h3>
-                    </div>
+        <!-- Основная информация -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Основная информация</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Название -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Название <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           required
+                           value="{{ old('name', $business->name) }}"
+                           class="w-full px-4 py-2.5 border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
+                           placeholder="Введите название вашего бизнеса"
+                           autofocus>
+                    @error('name')
+                        <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="p-4 md:p-6 space-y-5">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Название бизнеса <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="name" name="name" required
-                            value="{{ old('name', $business->name) }}"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                            placeholder="Введите название вашего бизнеса" autofocus>
-                        @error('name')
-                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
 
-                    <div>
-                        <label for="slug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Ссылка на запись <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center bg-white dark:bg-slate-900 rounded-lg border {{ $errors->has('slug') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all"
-                            id="slugContainer">
-                            <!-- Префикс с отображением полного URL -->
-                            <span
-                                class="inline-flex items-center px-2 sm:px-3 py-2 sm:py-2.5 bg-slate-50 dark:bg-slate-800 border-b sm:border-b-0 sm:border-r border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-mono select-none break-all sm:whitespace-nowrap flex-shrink-0">
-                                <span id="slugPrefix">{{ url('/') }}/book/</span><span id="slugDisplay"
-                                    class="text-slate-700 dark:text-slate-300 sm:hidden">{{ old('slug', $business->slug) }}</span>
-                            </span>
-                            <!-- Поле ввода -->
-                            <div class="flex-1 relative min-w-0">
-                                <input type="text" id="slug" name="slug" required
-                                    value="{{ old('slug', $business->slug) }}"
-                                    class="w-full px-3 py-2.5 text-sm border-0 bg-transparent text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                                    placeholder="vash-biznes">
+                <!-- Slug -->
+                <div>
+                    <label for="slug" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Slug <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="slug" 
+                               name="slug" 
+                               required
+                               value="{{ old('slug', $business->slug) }}"
+                               class="w-full px-4 py-2.5 border {{ $errors->has('slug') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono transition-colors"
+                               placeholder="vash-biznes">
 
-                                <!-- Индикаторы проверки -->
-                                <div id="slugChecking" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2">
-                                    <div
-                                        class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full">
-                                    </div>
-                                </div>
-
-                                <div id="slugAvailable"
-                                    class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-500">
-                                    <i class="fa-solid fa-check text-sm"></i>
-                                </div>
-
-                                <div id="slugUnavailable"
-                                    class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-500">
-                                    <i class="fa-solid fa-xmark text-sm"></i>
-                                </div>
+                        <!-- Индикаторы проверки -->
+                        <div id="slugChecking" class="hidden absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <div
+                                class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full">
                             </div>
                         </div>
-                        @error('slug')
-                            <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @else
-                            <p id="slugError" class="mt-2 text-xs text-rose-600 dark:text-rose-400 hidden"></p>
-                        @enderror
-                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                            Используйте только латинские буквы, цифры и дефисы. Минимум 3 символа.
-                        </p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Контактная информация -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                            <i class="fa-solid fa-phone text-emerald-600 dark:text-emerald-400 text-xs"></i>
+                        <div id="slugAvailable"
+                            class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-emerald-500">
+                            <i class="fa-solid fa-check text-sm"></i>
                         </div>
-                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
-                            Контактная информация
-                        </h3>
-                    </div>
-                </div>
-                <div class="p-4 md:p-6">
-                    <div>
-                        <livewire:phone-input name="phone" label="Телефон" :value="$business->phone" required="true" />
-                    </div>
-                </div>
-            </div>
 
-            <!-- Дополнительная информация -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div
-                    class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
-                            <i class="fa-solid fa-align-left text-purple-600 dark:text-purple-400 text-xs"></i>
+                        <div id="slugUnavailable"
+                            class="hidden absolute right-3 top-1/2 transform -translate-y-1/2 text-rose-500">
+                            <i class="fa-solid fa-xmark text-sm"></i>
                         </div>
-                        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
-                            Дополнительная информация
-                        </h3>
                     </div>
+                    @error('slug')
+                        <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @else
+                        <p id="slugError" class="mt-1 text-sm text-rose-600 dark:text-rose-400 hidden"></p>
+                    @enderror
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Используйте только латинские буквы, цифры и дефисы. Минимум 3 символа.
+                    </p>
                 </div>
-                <div class="p-4 md:p-6">
-                    <div>
-                        <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            Описание
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-normal ml-1">(необязательно)</span>
-                        </label>
-                        <textarea id="description" name="description" rows="4" maxlength="500"
-                            class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                            placeholder="Краткое описание вашего бизнеса...">{{ old('description', $business->description) }}</textarea>
-                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                            Максимум 500 символов
-                        </p>
-                    </div>
+
+                <!-- Описание -->
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Описание
+                    </label>
+                    <textarea id="description" 
+                              name="description" 
+                              rows="3" 
+                              maxlength="500"
+                              class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none transition-colors"
+                              placeholder="Краткое описание вашего бизнеса...">{{ old('description', $business->description) }}</textarea>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        Максимум 500 символов
+                    </p>
+                </div>
+
+                <!-- Телефон -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Телефон <span class="text-rose-500">*</span>
+                    </label>
+                    <livewire:phone-input name="phone" label="" :value="$business->phone" required="true" />
                 </div>
             </div>
         </div>
 
         <!-- Кнопки действий -->
-        <div
-            class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
             <a href="{{ route('settings.index') }}"
-                class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                class="inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                 Отмена
             </a>
             <button type="submit"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <i class="fa-solid fa-check text-xs"></i>
+                class="inline-flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fa-solid fa-check text-sm"></i>
                 <span>Сохранить изменения</span>
             </button>
         </div>
     </form>
+</div>
 
 @endsection
 
@@ -254,8 +212,7 @@
             checking: document.getElementById('slugChecking'),
             available: document.getElementById('slugAvailable'),
             unavailable: document.getElementById('slugUnavailable'),
-            error: document.getElementById('slugError'),
-            container: document.getElementById('slugContainer')
+            error: document.getElementById('slugError')
         };
 
         function transliterate(text) {
@@ -459,13 +416,6 @@
             }
         }
 
-        function updateSlugDisplay(value) {
-            const slugDisplay = document.getElementById('slugDisplay');
-            if (slugDisplay) {
-                slugDisplay.textContent = value || '';
-            }
-        }
-
         function handleSlugInput(e) {
             const input = e.target;
             const originalValue = input.value;
@@ -479,9 +429,6 @@
                 input.value = sanitizedValue;
                 setCursorPosition(input, newCursorPosition);
             }
-
-            // Обновляем отображение slug в префиксе
-            updateSlugDisplay(sanitizedValue.trim());
 
             const slug = sanitizedValue.trim();
 
@@ -506,9 +453,6 @@
             if (input.value !== formatted) {
                 input.value = formatted;
             }
-
-            // Обновляем отображение slug в префиксе
-            updateSlugDisplay(formatted.trim());
 
             const slug = formatted.trim();
             if (slug && slug.length >= SLUG_MIN_LENGTH) {

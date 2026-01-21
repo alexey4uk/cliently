@@ -23,7 +23,7 @@ class MasterSettingsController extends Controller
      */
     public function index()
     {
-        $user = Auth::user()->load('businesses.masters');
+        $user = Auth::user()->load('businesses.masters.locations', 'businesses.masters.services');
         $business = $user->businesses->first();
 
         if (! $business) {

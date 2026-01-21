@@ -40,7 +40,7 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load('businesses');
+        $user = Auth::user()->load('businesses.masters');
         $business = $user->businesses->first();
 
         if (! $business) {
@@ -68,7 +68,7 @@ class ServiceController extends Controller
 
         $validated = $request->validated();
 
-        $this->serviceRepository->create([
+        $service = $this->serviceRepository->create([
             'business_id' => $business->id,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
@@ -76,6 +76,11 @@ class ServiceController extends Controller
             'price' => $validated['price'],
             'is_active' => $validated['is_active'] ?? true,
         ]);
+
+        // Привязываем мастеров к услуге
+        if (!empty($validated['masters'])) {
+            $service->masters()->attach($validated['masters']);
+        }
 
         return redirect()->route('services.index')->with('success', 'Услуга добавлена');
     }
@@ -93,12 +98,14 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        $user = Auth::user()->load('businesses');
+        $user = Auth::user()->load('businesses.masters');
         $business = $user->businesses->first();
 
         if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
+
+        $service->load('masters');
 
         return view('services.edit', [
             'business' => $business,
@@ -127,6 +134,13 @@ class ServiceController extends Controller
             'price' => $validated['price'],
             'is_active' => $validated['is_active'] ?? $service->is_active,
         ]);
+
+        // Обновляем привязку мастеров к услуге
+        if (isset($validated['masters'])) {
+            $service->masters()->sync($validated['masters']);
+        } else {
+            $service->masters()->detach();
+        }
 
         return redirect()->route('services.index')->with('success', 'Услуга обновлена');
     }

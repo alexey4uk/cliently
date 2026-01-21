@@ -10,231 +10,314 @@
 
 @section('content')
 
-    <div x-data="{
-        showDeleteModal: false,
-        locationToDelete: null,
-        locationName: '',
-        openDeleteModal(locationId, locationName) {
-            this.locationToDelete = locationId;
-            this.locationName = locationName;
-            this.showDeleteModal = true;
-        },
-        closeDeleteModal() {
-            this.showDeleteModal = false;
-            this.locationToDelete = null;
-            this.locationName = '';
-        },
-        confirmDelete() {
-            if (this.locationToDelete) {
-                const form = document.getElementById('delete-form-' + this.locationToDelete);
-                if (form) {
-                    form.submit();
-                }
+<div x-data="{
+    showDeleteModal: false,
+    locationToDelete: null,
+    locationName: '',
+    openDeleteModal(locationId, locationName) {
+        this.locationToDelete = locationId;
+        this.locationName = locationName;
+        this.showDeleteModal = true;
+    },
+    closeDeleteModal() {
+        this.showDeleteModal = false;
+        this.locationToDelete = null;
+        this.locationName = '';
+    },
+    confirmDelete() {
+        if (this.locationToDelete) {
+            const form = document.getElementById('delete-form-' + this.locationToDelete);
+            if (form) {
+                form.submit();
             }
         }
-    }" class="space-y-4 md:space-y-6">
-
-        <!-- Заголовок с кнопкой -->
+    }
+}">
+    <!-- Заголовок страницы -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white mb-1">
-                    Локации
-                </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Управление адресами и рабочими часами ваших локаций
-                </p>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Локации</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление адресами и рабочими часами ваших локаций</p>
             </div>
             <a href="{{ route('settings.locations.create') }}"
-                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors shadow-sm">
-                <i class="fa-solid fa-plus text-xs"></i>
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
                 <span>Добавить локацию</span>
             </a>
         </div>
+    </div>
 
-        <!-- Список локаций -->
-        @if ($locations->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                @foreach ($locations as $location)
-                    @php
-                        $workingHours = json_decode($location->working_hours, true);
-                        $is24Hours = $workingHours['24_hours'] ?? false;
-                        $timeFrom = $workingHours['from'] ?? '—';
-                        $timeTo = $workingHours['to'] ?? '—';
-                    @endphp
-
-                    <div
-                        class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-all h-full flex flex-col active:scale-[0.99]">
-
-                        <!-- Заголовок карточки -->
-                        <div
-                            class="px-4 md:px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400 text-base"></i>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <h3 class="text-base font-semibold text-slate-900 dark:text-white truncate mb-0.5">
-                                        {{ $location->name }}
-                                    </h3>
-                                    @if ($workingHours)
-                                        <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                            <i class="fa-solid fa-clock text-indigo-500"></i>
-                                            @if ($is24Hours)
-                                                <span
-                                                    class="font-medium text-indigo-600 dark:text-indigo-400">Круглосуточно</span>
-                                            @else
-                                                <span>{{ $timeFrom }} – {{ $timeTo }}</span>
+    <!-- Список локаций -->
+    @if ($locations->count() > 0)
+        <!-- Таблица для больших экранов -->
+        <div class="hidden md:block">
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Название</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Адрес</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Телефон</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Рабочие часы</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                        @foreach ($locations as $location)
+                            @php
+                                $workingHours = json_decode($location->working_hours, true);
+                                $is24Hours = $workingHours['24_hours'] ?? false;
+                                $timeFrom = $workingHours['from'] ?? '—';
+                                $timeTo = $workingHours['to'] ?? '—';
+                            @endphp
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                                            <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-slate-900 dark:text-white">
+                                                {{ $location->name }}
+                                            </div>
+                                            @if ($location->description)
+                                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                                                    {{ $location->description }}
+                                                </div>
                                             @endif
                                         </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-slate-900 dark:text-white">
+                                        {{ $location->full_address }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-slate-600 dark:text-slate-400">
+                                        {{ $location->phone ?? '—' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if ($workingHours)
+                                        @if ($is24Hours)
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-600">
+                                                <i class="fa-solid fa-clock text-xs"></i>
+                                                Круглосуточно
+                                            </span>
+                                        @else
+                                            <div class="text-sm text-slate-600 dark:text-slate-400">
+                                                {{ $timeFrom }} – {{ $timeTo }}
+                                            </div>
+                                        @endif
+                                    @else
+                                        <span class="text-sm text-slate-400 dark:text-slate-500">—</span>
                                     @endif
-                                </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('settings.locations.edit', $location) }}" 
+                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                            title="Редактировать">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                        <form method="POST" action="{{ route('settings.locations.destroy', $location) }}"
+                                            id="delete-form-{{ $location->id }}" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                        <button type="button"
+                                            @click="openDeleteModal({{ $location->id }}, '{{ addslashes($location->name) }}')"
+                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                            title="Удалить">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Карточки для мобильных -->
+        <div class="md:hidden grid grid-cols-1 gap-4">
+            @foreach ($locations as $location)
+                @php
+                    $workingHours = json_decode($location->working_hours, true);
+                    $is24Hours = $workingHours['24_hours'] ?? false;
+                    $timeFrom = $workingHours['from'] ?? '—';
+                    $timeTo = $workingHours['to'] ?? '—';
+                @endphp
+
+                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <!-- Заголовок карточки -->
+                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white flex-1">
+                                {{ $location->name }}
+                            </h3>
+                        </div>
+                        @if ($workingHours)
+                            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                <i class="fa-solid fa-clock text-indigo-500"></i>
+                                @if ($is24Hours)
+                                    <span class="font-medium text-indigo-600 dark:text-indigo-400">Круглосуточно</span>
+                                @else
+                                    <span>{{ $timeFrom }} – {{ $timeTo }}</span>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Содержимое карточки -->
+                    <div class="p-6 space-y-4">
+                        <!-- Адрес -->
+                        <div class="flex items-start gap-3">
+                            <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-map-marker-alt text-slate-600 dark:text-slate-400 text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Адрес</p>
+                                <p class="text-sm text-slate-900 dark:text-white">
+                                    {{ $location->full_address }}
+                                </p>
                             </div>
                         </div>
 
-                        <!-- Содержимое карточки -->
-                        <div class="p-4 md:p-5 space-y-4 flex-1">
-
-                            <!-- Адрес -->
+                        <!-- Телефон -->
+                        @if ($location->phone)
                             <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-map-marker-alt text-indigo-400 text-sm mt-0.5 flex-shrink-0"></i>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Адрес</p>
-                                    <p class="text-sm text-slate-700 dark:text-slate-300 break-words">
-                                        {{ $location->full_address }}
+                                <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-phone text-slate-600 dark:text-slate-400 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Телефон</p>
+                                    <p class="text-sm text-slate-900 dark:text-white">
+                                        {{ $location->phone }}
                                     </p>
                                 </div>
                             </div>
+                        @endif
 
-                            <!-- Телефон -->
-                            @if ($location->phone)
-                                <div class="flex items-start gap-3">
-                                    <i class="fa-solid fa-phone text-indigo-400 text-sm mt-0.5 flex-shrink-0"></i>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Телефон</p>
-                                        <p class="text-sm text-slate-700 dark:text-slate-300">
-                                            {{ $location->phone }}
-                                        </p>
-                                    </div>
+                        <!-- Описание -->
+                        @if ($location->description)
+                            <div class="flex items-start gap-3">
+                                <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-info-circle text-slate-600 dark:text-slate-400 text-xs"></i>
                                 </div>
-                            @endif
-
-                            <!-- Описание -->
-                            @if ($location->description)
-                                <div class="flex items-start gap-3">
-                                    <i class="fa-solid fa-info-circle text-indigo-400 text-sm mt-0.5 flex-shrink-0"></i>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Описание</p>
-                                        <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
-                                            {{ $location->description }}
-                                        </p>
-                                    </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Описание</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                                        {{ $location->description }}
+                                    </p>
                                 </div>
-                            @endif
-                        </div>
-
-                        <!-- Действия -->
-                        <div
-                            class="px-4 md:px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex-shrink-0">
-                            <div class="flex items-center justify-end gap-2">
-
-                                <!-- Кнопка Редактировать -->
-                                <a href="{{ route('settings.locations.edit', $location) }}"
-                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-all active:scale-95 shadow-sm">
-                                    <i class="fa-solid fa-pencil text-xs"></i>
-                                    <span>Редактировать</span>
-                                </a>
-
-                                <!-- Форма удаления -->
-                                <form method="POST" action="{{ route('settings.locations.destroy', $location) }}"
-                                    id="delete-form-{{ $location->id }}" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-
-                                <!-- Кнопка Удалить -->
-                                <button type="button"
-                                    @click="openDeleteModal({{ $location->id }}, '{{ addslashes($location->name) }}')"
-                                    class="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all active:scale-95 shadow-sm">
-                                    <i class="fa-solid fa-trash text-xs"></i>
-                                    <span>Удалить</span>
-                                </button>
                             </div>
+                        @endif
+                    </div>
+
+                    <!-- Действия -->
+                    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                        <div class="flex items-center justify-end gap-3">
+                            <a href="{{ route('settings.locations.edit', $location) }}"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <i class="fa-solid fa-pencil text-xs"></i>
+                                <span>Редактировать</span>
+                            </a>
+
+                            <form method="POST" action="{{ route('settings.locations.destroy', $location) }}"
+                                id="delete-form-{{ $location->id }}" class="inline">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+
+                            <button type="button"
+                                @click="openDeleteModal({{ $location->id }}, '{{ addslashes($location->name) }}')"
+                                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                                <span>Удалить</span>
+                            </button>
                         </div>
                     </div>
-                @endforeach
-            </div>
-        @else
-            <!-- Пустое состояние -->
-            <div
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-8 md:p-12 text-center">
-                <div class="max-w-sm mx-auto">
-                    {{-- Иконка с градиентом --}}
-                    <div
-                        class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-md">
-                        <i class="fa-solid fa-location-dot text-white text-2xl"></i>
-                    </div>
-
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                        Локации не добавлены
-                    </h3>
-
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                        Начните работу с системой, добавив первую локацию с адресом и рабочими часами.
-                    </p>
-
-                    {{-- Кнопка действия --}}
-                    <a href="{{ route('settings.locations.create') }}"
-                        class="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        <span>Добавить локацию</span>
-                    </a>
                 </div>
+            @endforeach
+        </div>
+    @else
+        <!-- Пустое состояние -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
+            <div class="max-w-sm mx-auto">
+                <div class="h-16 w-16 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    Локации не добавлены
+                </h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                    Начните работу с системой, добавив первую локацию с адресом и рабочими часами.
+                </p>
+                <a href="{{ route('settings.locations.create') }}"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить локацию</span>
+                </a>
             </div>
+        </div>
+    @endif
 
-        @endif
-
-        <!-- Модальное окно подтверждения удаления -->
-        <div x-show="showDeleteModal" @click.away="closeDeleteModal()" @keydown.escape.window="closeDeleteModal()"
-            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            style="display: none;">
-            <div @click.stop x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="transform opacity-0 scale-95"
-                x-transition:enter-end="transform opacity-100 scale-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="transform opacity-100 scale-100"
-                x-transition:leave-end="transform opacity-0 scale-95"
-                class="bg-white dark:bg-slate-900 rounded-lg shadow-xl border border-slate-200 dark:border-slate-800 max-w-sm w-full">
-                <div
-                    class="flex items-center justify-between px-4 md:px-6 pt-4 md:pt-5 pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <h3 class="text-base md:text-lg font-semibold text-slate-900 dark:text-white">Подтверждение удаления
-                    </h3>
+    <!-- Модальное окно подтверждения удаления -->
+    <div x-show="showDeleteModal" 
+         @click.away="closeDeleteModal()" 
+         @keydown.escape.window="closeDeleteModal()"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+         style="display: none;">
+        <div @click.stop
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="transform opacity-0 scale-95"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-95"
+            class="bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-slate-200 dark:border-slate-800 max-w-sm w-full overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Подтверждение удаления</h3>
+                <button @click="closeDeleteModal()"
+                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div class="px-6 py-4">
+                <p class="text-sm text-slate-700 dark:text-slate-300 mb-6">
+                    Вы уверены, что хотите удалить локацию <span class="font-semibold" x-text="locationName"></span>?
+                    Это действие нельзя отменить.
+                </p>
+                <div class="flex gap-3">
                     <button @click="closeDeleteModal()"
-                        class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-xmark text-sm"></i>
+                        class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        Отмена
                     </button>
-                </div>
-                <div class="px-4 md:px-6 py-4 md:py-5">
-                    <p class="text-sm md:text-base text-slate-700 dark:text-slate-300 mb-6">
-                        Вы уверены, что хотите удалить локацию <span class="font-semibold" x-text="locationName"></span>?
-                        Это действие нельзя отменить.
-                    </p>
-                    <div class="flex gap-3">
-                        <button @click="closeDeleteModal()"
-                            class="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                            Отмена
-                        </button>
-                        <button @click="confirmDelete()"
-                            class="flex-1 px-4 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium transition-colors">
-                            Удалить
-                        </button>
-                    </div>
+                    <button @click="confirmDelete()"
+                        class="flex-1 px-4 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium transition-colors">
+                        Удалить
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
 @endsection

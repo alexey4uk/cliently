@@ -13,330 +13,226 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('appointments.update', $appointment) }}" class="space-y-4 md:space-y-6">
-    @csrf
-    @method('PATCH')
+<div class="max-w-3xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Редактировать запись</h1>
+                <p class="text-slate-600 dark:text-slate-400 mt-1">
+                    Запись #{{ $appointment->id }} от {{ $appointment->date->format('d.m.Y') }} в {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
+                </p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full
+                {{ $appointment->status === 'completed' ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-600' : '' }}
+                {{ $appointment->status === 'cancelled' ? 'text-rose-700 bg-rose-100 dark:bg-rose-500/20 dark:text-rose-300 border border-rose-200 dark:border-rose-600' : '' }}
+                {{ $appointment->status === 'confirmed' ? 'text-blue-700 bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-200 dark:border-blue-600' : '' }}
+                {{ $appointment->status === 'pending' ? 'text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-600' : '' }}">
+                @if($appointment->status === 'completed')
+                    <i class="fa-solid fa-check-circle text-xs"></i>
+                    Завершено
+                @elseif($appointment->status === 'cancelled')
+                    <i class="fa-solid fa-xmark-circle text-xs"></i>
+                    Отменено
+                @elseif($appointment->status === 'confirmed')
+                    <i class="fa-solid fa-circle-check text-xs"></i>
+                    Подтверждено
+                @else
+                    <i class="fa-solid fa-clock text-xs"></i>
+                    Ожидает подтверждения
+                @endif
+            </span>
+        </div>
+    </div>
 
-        <!-- Основная информация -->
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <div class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    </div>
-                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
-                    Основная информация
-                </h2>
+    <!-- Form -->
+    <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="space-y-6">
+        @csrf
+        @method('PATCH')
+
+        <!-- Client Info (Read Only) -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
+            
+            <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=48" 
+                    class="w-12 h-12 rounded-full" 
+                    alt="{{ $appointment->client->full_name }}">
+                <div class="ml-4 flex-1">
+                    <a href="{{ route('clients.show', $appointment->client) }}" 
+                        class="text-sm font-medium text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        {{ $appointment->client->full_name }}
+                    </a>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                        {{ $appointment->client->phone }}
+                        @if($appointment->client->email)
+                            · {{ $appointment->client->email }}
+                        @endif
+                    </p>
+                </div>
+                <a href="{{ route('clients.show', $appointment->client) }}" 
+                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium transition-colors">
+                    Профиль клиента
+                </a>
             </div>
         </div>
-        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                <div>
-                    <label for="client_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                            Клиент <span class="text-rose-500">*</span>
-                        </label>
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        selectedClient: null,
-                        dropdownPosition: { top: 0, left: 0, width: 0 },
-                        clients: @js($clients->map(function($client) {
-                            return [
-                                'id' => $client->id,
-                                'full_name' => $client->full_name,
-                                'phone' => $client->phone,
-                                'initials' => $client->initials
-                            ];
-                        })),
-                        oldClientId: {{ old('client_id', $appointment->client_id) }},
-                        init() {
-                            if (this.oldClientId) {
-                                const client = this.clients.find(c => c.id === this.oldClientId);
-                                if (client) {
-                                    this.selectedClient = client;
-                                }
-                            }
-                        },
-                        updatePosition() {
-                            if (!this.open) return;
-                            this.$nextTick(() => {
-                                const button = this.$el.querySelector('button');
-                                if (button) {
-                                    const rect = button.getBoundingClientRect();
-                                    this.dropdownPosition = {
-                                        top: rect.bottom + 4,
-                                        left: rect.left,
-                                        width: rect.width
-                                    };
-                                }
-                            });
-                        },
-                        get filteredClients() {
-                            if (!this.search) {
-                                return this.clients;
-                            }
-                            const query = this.search.toLowerCase();
-                            return this.clients.filter(client => 
-                                client.full_name.toLowerCase().includes(query) ||
-                                client.phone.includes(query)
-                            );
-                        },
-                        selectClient(client) {
-                            this.selectedClient = client;
-                            this.search = '';
-                            this.open = false;
-                        },
-                        clearSelection() {
-                            this.selectedClient = null;
-                            this.search = '';
-                        },
-                        toggleOpen() {
-                            this.open = !this.open;
-                            if (this.open) {
-                                setTimeout(() => this.updatePosition(), 10);
-                            }
-                        }
-                    }" 
-                    x-init="$watch('open', () => updatePosition())"
-                    @resize.window="updatePosition()"
-                    @scroll.window="updatePosition()"
-                    class="relative" 
-                    @click.away="open = false">
-                        <!-- Скрытый input для формы -->
-                        <input type="hidden" name="client_id" :value="selectedClient ? selectedClient.id : ''" required>
-                        
-                        <!-- Поле выбора клиента -->
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-user text-slate-400 text-sm"></i>
-                            </div>
-                            <button type="button"
-                                    @click="toggleOpen()"
-                                    class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('client_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <span x-show="selectedClient" x-cloak class="text-slate-900 dark:text-white">
-                                    <span x-text="selectedClient ? selectedClient.full_name : ''"></span> (<span x-text="selectedClient ? selectedClient.phone : ''"></span>)
-                                </span>
-                                <span x-show="!selectedClient" x-cloak class="text-slate-400 dark:text-slate-500">
-                                    Выберите клиента
-                                </span>
-                            </button>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                            </div>
-                        </div>
-                        
-                        <!-- Выпадающий список -->
-                        <div x-show="open"
-                             x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                             :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                             style="display: none;">
-                            <!-- Поиск -->
-                            <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <i class="fa-solid fa-search text-slate-400 text-xs"></i>
-                                    </div>
-                                    <input type="text"
-                                           x-model="search"
-                                           @click.stop
-                                           placeholder="Поиск клиента..."
-                                           class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
-                                </div>
-                            </div>
-                            
-                            <!-- Список клиентов -->
-                            <div class="max-h-80 overflow-y-auto">
-                                <template x-if="filteredClients.length === 0">
-                                    <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                        Клиенты не найдены
-                                    </div>
-                                </template>
-                                <template x-for="client in filteredClients" :key="client.id">
-                                    <button type="button"
-                                            @click="selectClient(client)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 first:rounded-t-lg last:rounded-b-lg"
-                                            :class="selectedClient && selectedClient.id === client.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="client.full_name"></div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="client.phone"></div>
-                                        </div>
-                                        <i x-show="selectedClient && selectedClient.id === client.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
-                                    </button>
-                                </template>
-                            </div>
-                            </div>
-                        </div>
-                        @error('client_id')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                        @enderror
-                    </div>
 
-                <div>
-                    <label for="service_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                            Услуга <span class="text-rose-500">*</span>
-                        </label>
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        selectedService: null,
-                        dropdownPosition: { top: 0, left: 0, width: 0 },
-                        services: @js($services->map(function($service) {
-                            return [
-                                'id' => $service->id,
-                                'name' => $service->name,
-                                'price' => number_format($service->price, 0, ',', ' '),
-                                'duration' => $service->duration
-                            ];
-                        })),
-                        oldServiceId: {{ old('service_id', $appointment->service_id) }},
-                        init() {
-                            if (this.oldServiceId) {
-                                const service = this.services.find(s => s.id === this.oldServiceId);
-                                if (service) {
-                                    this.selectedService = service;
-                                }
-                            }
-                        },
-                        updatePosition() {
-                            if (!this.open) return;
-                            this.$nextTick(() => {
-                                const button = this.$el.querySelector('button');
-                                if (button) {
-                                    const rect = button.getBoundingClientRect();
-                                    this.dropdownPosition = {
-                                        top: rect.bottom + 4,
-                                        left: rect.left,
-                                        width: rect.width
-                                    };
-                                }
-                            });
-                        },
-                        get filteredServices() {
-                            if (!this.search) {
-                                return this.services;
-                            }
-                            const query = this.search.toLowerCase();
-                            return this.services.filter(service => 
-                                service.name.toLowerCase().includes(query)
-                            );
-                        },
-                        selectService(service) {
-                            this.selectedService = service;
-                            this.search = '';
-                            this.open = false;
-                            // Диспатчим событие изменения для скрипта загрузки слотов
-                            const hiddenInput = document.getElementById('service_id');
-                            if (hiddenInput) {
-                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        },
-                        toggleOpen() {
-                            this.open = !this.open;
-                            if (this.open) {
-                                setTimeout(() => this.updatePosition(), 10);
+        <!-- Service Selection -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Услуга</h2>
+            
+            <div>
+                <label for="service_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Выберите услугу <span class="text-rose-500">*</span>
+                </label>
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selectedService: null,
+                    dropdownPosition: { top: 0, left: 0, width: 0 },
+                    services: @js($services->map(function($service) {
+                        return [
+                            'id' => $service->id,
+                            'name' => $service->name,
+                            'price' => number_format($service->price, 0, ',', ' '),
+                            'duration' => $service->duration
+                        ];
+                    })),
+                    oldServiceId: {{ old('service_id', $appointment->service_id) }},
+                    init() {
+                        if (this.oldServiceId) {
+                            const service = this.services.find(s => s.id === this.oldServiceId);
+                            if (service) {
+                                this.selectedService = service;
                             }
                         }
-                    }" 
-                    x-init="$watch('open', () => updatePosition())"
-                    @resize.window="updatePosition()"
-                    @scroll.window="updatePosition()"
-                    class="relative" 
-                    @click.away="open = false">
-                        <!-- Скрытый input для формы -->
-                        <input type="hidden" id="service_id" name="service_id" :value="selectedService ? selectedService.id : ''" required>
-                        
-                        <!-- Поле выбора услуги -->
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-scissors text-slate-400 text-sm"></i>
-                            </div>
-                            <button type="button"
-                                    @click="toggleOpen()"
-                                    class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('service_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <span x-show="selectedService" x-cloak class="text-slate-900 dark:text-white">
-                                    <span x-text="selectedService ? selectedService.name : ''"></span> (<span x-text="selectedService ? selectedService.price : ''"></span> Br, <span x-text="selectedService ? selectedService.duration : ''"></span> мин)
-                                </span>
-                                <span x-show="!selectedService" x-cloak class="text-slate-400 dark:text-slate-500">
-                                    Выберите услугу
-                                </span>
-                            </button>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                            </div>
+                    },
+                    updatePosition() {
+                        if (!this.open) return;
+                        this.$nextTick(() => {
+                            const button = this.$el.querySelector('button');
+                            if (button) {
+                                const rect = button.getBoundingClientRect();
+                                this.dropdownPosition = {
+                                    top: rect.bottom + 4,
+                                    left: rect.left,
+                                    width: rect.width
+                                };
+                            }
+                        });
+                    },
+                    get filteredServices() {
+                        if (!this.search) {
+                            return this.services;
+                        }
+                        const query = this.search.toLowerCase();
+                        return this.services.filter(service => 
+                            service.name.toLowerCase().includes(query)
+                        );
+                    },
+                    selectService(service) {
+                        this.selectedService = service;
+                        this.search = '';
+                        this.open = false;
+                        const hiddenInput = document.getElementById('service_id');
+                        if (hiddenInput) {
+                            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    },
+                    toggleOpen() {
+                        this.open = !this.open;
+                        if (this.open) {
+                            setTimeout(() => this.updatePosition(), 10);
+                        }
+                    }
+                }" 
+                x-init="$watch('open', () => updatePosition())"
+                @resize.window="updatePosition()"
+                @scroll.window="updatePosition()"
+                class="relative" 
+                @click.away="open = false">
+                    <input type="hidden" id="service_id" name="service_id" :value="selectedService ? selectedService.id : ''" required>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                            <i class="fa-solid fa-scissors text-slate-400"></i>
                         </div>
-                        
-                        <!-- Выпадающий список -->
-                        <div x-show="open"
-                             x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                             :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                             style="display: none;">
-                            <!-- Поиск -->
-                            <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <i class="fa-solid fa-search text-slate-400 text-xs"></i>
-                                    </div>
-                                    <input type="text"
-                                           x-model="search"
-                                           @click.stop
-                                           placeholder="Поиск услуги..."
-                                           class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+                        <button type="button"
+                                @click="toggleOpen()"
+                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('service_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                            <span x-show="selectedService" x-cloak class="text-slate-900 dark:text-white">
+                                <span x-text="selectedService ? selectedService.name : ''"></span> - <span x-text="selectedService ? selectedService.price : ''"></span> ₽ (<span x-text="selectedService ? selectedService.duration : ''"></span> мин)
+                            </span>
+                            <span x-show="!selectedService" x-cloak class="text-slate-400 dark:text-slate-500">
+                                Выберите услугу
+                            </span>
+                        </button>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                        </div>
+                    </div>
+                    
+                    <div x-show="open"
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
+                         :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
+                         style="display: none;">
+                        <div class="p-2 border-b border-slate-200 dark:border-slate-800">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-search text-slate-400 text-xs"></i>
                                 </div>
-                            </div>
-                            
-                            <!-- Список услуг -->
-                            <div class="max-h-80 overflow-y-auto">
-                                <template x-if="filteredServices.length === 0">
-                                    <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                        Услуги не найдены
-                                    </div>
-                                </template>
-                                <template x-for="service in filteredServices" :key="service.id">
-                                    <button type="button"
-                                            @click="selectService(service)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 first:rounded-t-lg last:rounded-b-lg"
-                                            :class="selectedService && selectedService.id === service.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="service.name"></div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="`${service.price} Br • ${service.duration} мин`"></div>
-                                        </div>
-                                        <i x-show="selectedService && selectedService.id === service.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
-                                    </button>
-                                </template>
-                            </div>
+                                <input type="text"
+                                       x-model="search"
+                                       @click.stop
+                                       placeholder="Поиск услуги..."
+                                       class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
                             </div>
                         </div>
-                        @error('service_id')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                        @enderror
+                        
+                        <div class="max-h-80 overflow-y-auto">
+                            <template x-if="filteredServices.length === 0">
+                                <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                                    Услуги не найдены
+                                </div>
+                            </template>
+                            <template x-for="service in filteredServices" :key="service.id">
+                                <button type="button"
+                                        @click="selectService(service)"
+                                        class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
+                                        :class="selectedService && selectedService.id === service.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="service.name"></div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="`${service.price} ₽ • ${service.duration} мин`"></div>
+                                    </div>
+                                    <i x-show="selectedService && selectedService.id === service.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
+                @error('service_id')
+                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{{ $message }}</span>
+                    </p>
+                @enderror
+            </div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <!-- Master & Time -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Мастер и время</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                            Мастер
-                        </label>
+                    <label for="master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Мастер</label>
                     <div x-data="{
                         open: false,
                         search: '',
@@ -388,15 +284,10 @@
                             this.selectedMaster = master;
                             this.search = '';
                             this.open = false;
-                            // Диспатчим событие изменения для скрипта загрузки слотов
                             const hiddenInput = document.getElementById('master_id');
                             if (hiddenInput) {
                                 hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
                             }
-                        },
-                        clearSelection() {
-                            this.selectedMaster = null;
-                            this.search = '';
                         },
                         toggleOpen() {
                             this.open = !this.open;
@@ -410,17 +301,15 @@
                     @scroll.window="updatePosition()"
                     class="relative" 
                     @click.away="open = false">
-                        <!-- Скрытый input для формы -->
                         <input type="hidden" id="master_id" name="master_id" :value="selectedMaster ? selectedMaster.id : ''">
                         
-                        <!-- Поле выбора мастера -->
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-user-tie text-slate-400 text-sm"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                <i class="fa-solid fa-user-tie text-slate-400"></i>
                             </div>
                             <button type="button"
                                     @click="toggleOpen()"
-                                    class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('master_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                    class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('master_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                 <span x-show="selectedMaster" x-cloak class="text-slate-900 dark:text-white">
                                     <span x-text="selectedMaster ? selectedMaster.full_name : ''"></span>
                                 </span>
@@ -428,12 +317,11 @@
                                     Не выбран
                                 </span>
                             </button>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </div>
                         </div>
                         
-                        <!-- Выпадающий список -->
                         <div x-show="open"
                              x-cloak
                              x-transition:enter="transition ease-out duration-100"
@@ -445,7 +333,6 @@
                              class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
                              :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
                              style="display: none;">
-                            <!-- Поиск -->
                             <div class="p-2 border-b border-slate-200 dark:border-slate-800">
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
@@ -459,7 +346,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Список мастеров -->
                             <div class="max-h-80 overflow-y-auto">
                                 <template x-if="filteredMasters.length === 0">
                                     <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -469,29 +355,27 @@
                                 <template x-for="master in filteredMasters" :key="master.id">
                                     <button type="button"
                                             @click="selectMaster(master)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 first:rounded-t-lg last:rounded-b-lg"
+                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
                                             :class="selectedMaster && selectedMaster.id === master.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
                                         <div class="flex-1 min-w-0">
                                             <div class="text-sm font-medium text-slate-900 dark:text-white truncate" x-text="master.full_name"></div>
                                         </div>
-                                        <i x-show="selectedMaster && selectedMaster.id === master.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
+                                        <i x-show="selectedMaster && selectedMaster.id === master.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
                                     </button>
                                 </template>
                             </div>
-                            </div>
                         </div>
-                        @error('master_id')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                    </div>
+                    @error('master_id')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
                             <i class="fa-solid fa-circle-exclamation text-xs"></i>
                             <span>{{ $message }}</span>
                         </p>
-                        @enderror
-                    </div>
+                    @enderror
+                </div>
 
                 <div>
-                    <label for="location_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                            Локация
-                        </label>
+                    <label for="location_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Локация</label>
                     <div x-data="{
                         open: false,
                         search: '',
@@ -543,16 +427,6 @@
                             this.selectedLocation = location;
                             this.search = '';
                             this.open = false;
-                            // Диспатчим событие изменения для скрипта загрузки слотов
-                            const hiddenInput = document.getElementById('location_id');
-                            if (hiddenInput) {
-                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        },
-                        clearSelection() {
-                            this.selectedLocation = null;
-                            this.search = '';
-                            // Диспатчим событие изменения для скрипта загрузки слотов
                             const hiddenInput = document.getElementById('location_id');
                             if (hiddenInput) {
                                 hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -570,33 +444,27 @@
                     @scroll.window="updatePosition()"
                     class="relative" 
                     @click.away="open = false">
-                        <!-- Скрытый input для формы -->
                         <input type="hidden" id="location_id" name="location_id" :value="selectedLocation ? selectedLocation.id : ''">
                         
-                        <!-- Поле выбора локации -->
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-location-dot text-slate-400 text-sm"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                                <i class="fa-solid fa-location-dot text-slate-400"></i>
                             </div>
                             <button type="button"
                                     @click="toggleOpen()"
-                                    class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                    class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                 <span x-show="selectedLocation" x-cloak class="text-slate-900 dark:text-white">
                                     <span x-text="selectedLocation ? selectedLocation.name : ''"></span>
-                                    <span x-show="selectedLocation && selectedLocation.full_address" x-cloak class="text-slate-500 dark:text-slate-400 text-xs ml-1">
-                                        (<span x-text="selectedLocation ? (selectedLocation.full_address || '') : ''"></span>)
-                                    </span>
                                 </span>
                                 <span x-show="!selectedLocation" x-cloak class="text-slate-400 dark:text-slate-500">
                                     Не выбрана
                                 </span>
                             </button>
-                            <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
                             </div>
                         </div>
                         
-                        <!-- Выпадающий список -->
                         <div x-show="open"
                              x-cloak
                              x-transition:enter="transition ease-out duration-100"
@@ -608,7 +476,6 @@
                              class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
                              :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
                              style="display: none;">
-                            <!-- Поиск -->
                             <div class="p-2 border-b border-slate-200 dark:border-slate-800">
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
@@ -622,7 +489,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Список локаций -->
                             <div class="max-h-80 overflow-y-auto">
                                 <template x-if="filteredLocations.length === 0">
                                     <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
@@ -632,77 +498,59 @@
                                 <template x-for="location in filteredLocations" :key="location.id">
                                     <button type="button"
                                             @click="selectLocation(location)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3 first:rounded-t-lg last:rounded-b-lg"
+                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
                                             :class="selectedLocation && selectedLocation.id === location.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
                                         <div class="flex-1 min-w-0">
                                             <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="location.name"></div>
                                             <div x-show="location.full_address" class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="location.full_address"></div>
                                         </div>
-                                        <i x-show="selectedLocation && selectedLocation.id === location.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
+                                        <i x-show="selectedLocation && selectedLocation.id === location.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
                                     </button>
                                 </template>
                             </div>
-                            </div>
                         </div>
-                        @error('location_id')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                    </div>
+                    @error('location_id')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
                             <i class="fa-solid fa-circle-exclamation text-xs"></i>
                             <span>{{ $message }}</span>
                         </p>
-                        @enderror
-                    </div>
+                    @enderror
                 </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Дата и время -->
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <div class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-clock text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    </div>
-                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
-                    Дата и время
-                </h2>
-            </div>
-        </div>
-        <div class="p-4 md:p-6 space-y-4 md:space-y-5">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                    <div>
-                    <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                <div>
+                    <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                         Дата <span class="text-rose-500">*</span>
-                        </label>
+                    </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-calendar text-slate-400 text-sm"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-calendar text-slate-400"></i>
                         </div>
-                        <input type="date" id="date" name="date" required value="{{ old('date', $appointment->date->format('Y-m-d')) }}"
+                        <input type="date" id="date" name="date" required 
+                               value="{{ old('date', $appointment->date->format('Y-m-d')) }}"
                                min="{{ date('Y-m-d') }}"
-                               class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('date') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
+                               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border {{ $errors->has('date') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                     </div>
-                        @error('date')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                        @enderror
-                    </div>
+                    @error('date')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                    @enderror
+                </div>
 
-                    <div>
-                    <label for="time" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+                <div>
+                    <label for="time" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                         Время <span class="text-rose-500">*</span>
-                        </label>
+                    </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-clock text-slate-400 text-sm"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-clock text-slate-400"></i>
                         </div>
                         <select id="time" name="time" required
-                                class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('time') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors appearance-none cursor-pointer">
+                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('time') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
                             @php
                                 $currentTime = old('time', $appointment->time);
-                                // Нормализуем формат времени (убираем секунды, если есть)
                                 if ($currentTime && strpos($currentTime, ':') !== false) {
                                     $timeParts = explode(':', $currentTime);
                                     if (count($timeParts) >= 2) {
@@ -712,7 +560,7 @@
                             @endphp
                             <option value="">{{ $currentTime ?: 'Загрузка...' }}</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
                         </div>
                     </div>
@@ -724,88 +572,85 @@
                         <i class="fa-solid fa-circle-exclamation text-xs"></i>
                         <span></span>
                     </div>
-                        @error('time')
-                    <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                        @enderror
+                    @error('time')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <!-- Status & Notes -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Статус и заметки</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Статус</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-info-circle text-slate-400"></i>
+                        </div>
+                        <select id="status" name="status"
+                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('status') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
+                            <option value="pending" {{ old('status', $appointment->status) === 'pending' ? 'selected' : '' }}>Ожидает подтверждения</option>
+                            <option value="confirmed" {{ old('status', $appointment->status) === 'confirmed' ? 'selected' : '' }}>Подтверждено</option>
+                            <option value="completed" {{ old('status', $appointment->status) === 'completed' ? 'selected' : '' }}>Завершено</option>
+                            <option value="cancelled" {{ old('status', $appointment->status) === 'cancelled' ? 'selected' : '' }}>Отменено</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+                        </div>
                     </div>
+                    @error('status')
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
+                    @enderror
                 </div>
 
                 <div>
-                <label for="status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                    Статус
-                    </label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-info-circle text-slate-400 text-sm"></i>
-                    </div>
-                    <select id="status" name="status"
-                            class="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-sm rounded-lg border {{ $errors->has('status') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors appearance-none cursor-pointer">
-                        <option value="pending" {{ old('status', $appointment->status) === 'pending' ? 'selected' : '' }}>Ожидает</option>
-                        <option value="confirmed" {{ old('status', $appointment->status) === 'confirmed' ? 'selected' : '' }}>Подтверждена</option>
-                        <option value="completed" {{ old('status', $appointment->status) === 'completed' ? 'selected' : '' }}>Завершена</option>
-                        <option value="cancelled" {{ old('status', $appointment->status) === 'cancelled' ? 'selected' : '' }}>Отменена</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                    </div>
-                </div>
-                    @error('status')
-                <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                    <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                    <span>{{ $message }}</span>
-                </p>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <!-- Дополнительная информация -->
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <div class="flex items-center gap-2">
-                <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                    <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                    </div>
-                <h2 class="text-sm font-semibold text-slate-900 dark:text-white">
-                    Дополнительная информация
-                </h2>
-            </div>
-            </div>
-            <div class="p-4 md:p-6">
-            <div>
-                <label for="notes" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
-                        Заметки
-                    </label>
-                    <textarea id="notes" name="notes" rows="4"
-                          class="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors resize-none"
-                              placeholder="Дополнительная информация о записи...">{{ old('notes', $appointment->notes) }}</textarea>
+                    <label for="notes" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Заметки</label>
+                    <textarea id="notes" name="notes" rows="3"
+                              class="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                              placeholder="Любые заметки к записи...">{{ old('notes', $appointment->notes) }}</textarea>
                     @error('notes')
-                <p class="mt-1.5 sm:mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
+                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
+                            <span>{{ $message }}</span>
+                        </p>
                     @enderror
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Кнопки действий -->
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-        <a href="{{ route('appointments.index') }}"
-           class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-            <i class="fa-solid fa-arrow-left text-xs"></i>
-            <span>Отмена</span>
-        </a>
-        <button type="submit"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 md:py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm">
-            <i class="fa-solid fa-check text-xs"></i>
-            <span>Сохранить изменения</span>
-        </button>
-    </div>
-</form>
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" 
+                  onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"
+                  class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-6 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors">
+                    Удалить запись
+                </button>
+            </form>
+            <div class="flex items-center gap-4">
+                <a href="{{ route('appointments.index') }}" 
+                   class="px-6 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Отмена
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                    Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
 
 @push('scripts')
 <script>
@@ -823,12 +668,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Нормализуем формат времени (убираем секунды, если есть)
     let currentOldTime = '{{ old("time", $appointment->time) }}';
     if (currentOldTime && currentOldTime.includes(':')) {
         const timeParts = currentOldTime.split(':');
         if (timeParts.length === 3) {
-            // Формат HH:MM:SS -> HH:MM
             currentOldTime = timeParts[0] + ':' + timeParts[1];
         }
     }
@@ -840,7 +683,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const masterId = masterSelect ? (masterSelect.value || null) : null;
         const locationId = locationSelect ? (locationSelect.value || null) : null;
 
-        // Очищаем предыдущие опции
         timeSelect.innerHTML = '<option value="">Загрузка...</option>';
         timeSelect.disabled = true;
         timeLoading.classList.remove('hidden');
@@ -853,7 +695,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Формируем URL для API (используем публичный роут)
         const url = '{{ route("api.public.appointments.available-slots", $business->slug) }}';
         const params = new URLSearchParams({
             service_id: serviceId,
@@ -868,12 +709,10 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('location_id', locationId);
         }
 
-        // Исключаем текущую запись из расчета слотов при редактировании
         if (appointmentId) {
             params.append('appointment_id', appointmentId);
         }
 
-        // Выполняем AJAX запрос
         fetch(`${url}?${params.toString()}`, {
             method: 'GET',
             headers: {
@@ -904,7 +743,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const option = document.createElement('option');
                     option.value = slot;
                     option.textContent = slot;
-                    // Выбираем текущее время записи, если оно совпадает со слотом
                     if (currentOldTime && currentOldTime === slot) {
                         option.selected = true;
                         currentTimeFound = true;
@@ -912,28 +750,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     timeSelect.appendChild(option);
                 });
                 
-                // Если текущее время не в списке доступных (например, изменили дату/услугу/мастера), добавляем его
                 if (currentOldTime && !currentTimeFound) {
                     const currentOption = document.createElement('option');
                     currentOption.value = currentOldTime;
                     currentOption.textContent = currentOldTime + ' (текущее)';
                     currentOption.selected = true;
-                    // Вставляем после первого option (после "Выберите время")
                     timeSelect.insertBefore(currentOption, timeSelect.children[1]);
                 }
                 timeError.classList.add('hidden');
             } else {
-                // Если нет доступных слотов, но есть текущее время, оставляем его
                 if (currentOldTime) {
                     timeSelect.innerHTML = `<option value="${currentOldTime}" selected>${currentOldTime} (текущее)</option>`;
                 } else {
                     timeSelect.innerHTML = '<option value="">Нет доступных слотов</option>';
                 }
                 
-                // Более информативное сообщение об ошибке
                 let errorMessage = data.message || 'На выбранную дату нет доступных временных слотов.';
                 
-                // Проверяем, сегодня ли это
                 const today = new Date().toISOString().split('T')[0];
                 const isToday = date === today;
                 
@@ -953,7 +786,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Ошибка при загрузке слотов:', error);
             timeLoading.classList.add('hidden');
             timeSelect.disabled = false;
-            // В случае ошибки оставляем текущее время
             if (currentOldTime) {
                 timeSelect.innerHTML = `<option value="${currentOldTime}" selected>${currentOldTime} (текущее)</option>`;
             } else {
@@ -965,23 +797,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Обработчики событий
     if (serviceSelect) {
-    serviceSelect.addEventListener('change', loadAvailableSlots);
+        serviceSelect.addEventListener('change', loadAvailableSlots);
     }
     if (masterSelect) {
-    masterSelect.addEventListener('change', loadAvailableSlots);
+        masterSelect.addEventListener('change', loadAvailableSlots);
     }
     if (dateInput) {
-    dateInput.addEventListener('change', loadAvailableSlots);
+        dateInput.addEventListener('change', loadAvailableSlots);
     }
     if (locationSelect) {
-    locationSelect.addEventListener('change', loadAvailableSlots);
+        locationSelect.addEventListener('change', loadAvailableSlots);
     }
 
-    // Загружаем слоты при загрузке страницы, если уже выбраны услуга и дата
     if (serviceSelect && serviceSelect.value && dateInput && dateInput.value) {
-    loadAvailableSlots();
+        loadAvailableSlots();
     }
 });
 </script>
