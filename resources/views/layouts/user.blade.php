@@ -105,6 +105,9 @@
         </div>
     </div>
     @include('alerts')
+    
+    <!-- Мобильное меню (вынесено за пределы header для корректного отображения) -->
+    @include('mobile-menu-portal')
 
     @stack('scripts')
     
