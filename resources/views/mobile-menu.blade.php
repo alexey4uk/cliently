@@ -6,9 +6,9 @@
 }" @keydown.escape.window="open = false" class="lg:hidden">
     <!-- Кнопка открытия меню (в header) -->
     <button @click="open = true"
-        class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
+        class="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 flex-shrink-0 group"
         aria-label="Открыть меню">
-        <i class="fa-solid fa-bars text-lg"></i>
+        <i class="fa-solid fa-bars text-base group-hover:scale-110 transition-transform duration-200"></i>
     </button>
 
     <!-- Overlay -->
@@ -24,12 +24,12 @@
         x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
         x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0"
         x-transition:leave-end="-translate-x-full" @click.away="open = false"
-        class="fixed left-0 top-0 bottom-0 w-72 bg-white dark:bg-slate-900 shadow-xl z-50 overflow-y-auto border-r border-slate-200 dark:border-slate-800"
+        class="fixed left-0 top-0 bottom-0 w-72 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-xl z-50 overflow-y-auto border-r border-slate-200/50 dark:border-slate-800/50"
         style="display: none;">
         <div class="flex flex-col h-full">
             <!-- Заголовок с кнопкой закрытия -->
             <div
-                class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
+                class="flex items-center justify-between px-6 py-4 border-b border-slate-200/50 dark:border-slate-800/50 flex-shrink-0">
                 <a href="{{ route('dashboard') }}" @click="open = false"
                     class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <x-logo size="sm" />
@@ -37,9 +37,9 @@
                         class="text-xl font-bold text-slate-900 dark:text-white tracking-tight uppercase font-display">CLIENTLY</span>
                 </a>
                 <button @click="open = false"
-                    class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    class="h-8 w-8 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group"
                     aria-label="Закрыть меню">
-                    <i class="fa-solid fa-times text-lg"></i>
+                    <i class="fa-solid fa-times text-base group-hover:scale-110 transition-transform duration-200"></i>
                 </button>
             </div>
 
@@ -198,7 +198,7 @@
             </nav>
 
             <!-- Нижняя часть: Профиль -->
-            <div class="border-t border-slate-200 dark:border-slate-800 pt-4 mt-4 flex-shrink-0">
+            <div class="border-t border-slate-200/50 dark:border-slate-800/50 pt-4 mt-4 flex-shrink-0">
                 <div class="px-3">
                     @auth
                         <!-- Информация о пользователе (кликабельная, ведет на профиль) -->
@@ -238,7 +238,7 @@
                             </div>
                             <span class="ml-3 whitespace-nowrap">Админка</span>
                         </a>
-                        <div class="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+                        <div class="border-t border-slate-200/50 dark:border-slate-800/50 my-2"></div>
                     @endif
 
                     <!-- Выход -->

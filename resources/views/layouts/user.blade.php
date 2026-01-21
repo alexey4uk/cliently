@@ -88,8 +88,6 @@
             <x-header 
                 :pageTitle="__('cliently')"
                 :pageDescription="null"
-                :showNewButton="true"
-                :showAdminButton="!Str::startsWith(Request::path(), 'panel') && Auth::user()->hasRole('admin')"
                 :showNotificationsDropdown="true"
                 :showProfile="true"
                 :showMobileMenu="true"

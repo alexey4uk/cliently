@@ -88,8 +88,7 @@
             <x-header 
                 :pageTitle="__('Панель управления')"
                 :pageDescription="null"
-                :showAdminBadge="true"
-                :showClientButton="true"
+                :showRoleBadge="true"
                 :showProfile="true"
                 :showMobileMenu="true"
             />
