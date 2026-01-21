@@ -22,8 +22,7 @@
             Str::startsWith(Request::path(), 'panel/support')
         )) || 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'finance') ||
-            Str::startsWith(Request::path(), 'reports')
+            Str::startsWith(Request::path(), 'analytics')
         )) 
         ? 'true' : 'false' 
     }},
@@ -149,7 +148,6 @@
                                     </div>
                                 </a>
                             @endif
-
 
                             <!-- Клиенты -->
                             @if(Str::startsWith(Request::path(), 'panel'))
@@ -652,7 +650,7 @@
                         <button @click="analyticsOpen = !analyticsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-chart-pie text-[10px] opacity-60"></i>
+                                <i class="fa-solid fa-chart-bar text-[10px] opacity-60"></i>
                                 <span>Аналитика</span>
                             </div>
                             <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
@@ -717,51 +715,71 @@
                                     </a>
                                 @endcan
                             @else
-                                <!-- Финансы -->
-                                <a href="#"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('finance.*')
+                                <!-- Клиентская часть -->
+                                <a href="{{ route('analytics.index') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.index')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Финансы' : ''"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                    :title="collapsed ? 'Обзор' : ''"
                                     x-data="{ tooltip: false }"
                                     @mouseenter="if (collapsed) tooltip = true"
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-chart-line transition-transform duration-200 {{ Request::routeIs('finance.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-chart-bar transition-transform duration-200 {{ Request::routeIs('analytics.index') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Финансы</span>
+                                        class="sidebar-text whitespace-nowrap font-medium">Обзор</span>
                                     <div x-show="tooltip && collapsed" 
                                          x-transition
                                          class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Финансы
+                                        Обзор
                                     </div>
                                 </a>
-
-                                <!-- Отчеты -->
-                                <a href="#"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('reports.*')
+                                <a href="{{ route('analytics.financial') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.financial')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Отчеты' : ''"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                    :title="collapsed ? 'Финансовая' : ''"
                                     x-data="{ tooltip: false }"
                                     @mouseenter="if (collapsed) tooltip = true"
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-chart-bar transition-transform duration-200 {{ Request::routeIs('reports.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-money-bill-wave transition-transform duration-200 {{ Request::routeIs('analytics.financial') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Отчеты</span>
+                                        class="sidebar-text whitespace-nowrap font-medium">Финансовая</span>
                                     <div x-show="tooltip && collapsed" 
                                          x-transition
                                          class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Отчеты
+                                        Финансовая
+                                    </div>
+                                </a>
+                                <a href="{{ route('analytics.general') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.general')
+                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                    :title="collapsed ? 'Общая' : ''"
+                                    x-data="{ tooltip: false }"
+                                    @mouseenter="if (collapsed) tooltip = true"
+                                    @mouseleave="tooltip = false">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                        <i class="fa-solid fa-chart-line transition-transform duration-200 {{ Request::routeIs('analytics.general') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                           :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text whitespace-nowrap font-medium">Общая</span>
+                                    <div x-show="tooltip && collapsed" 
+                                         x-transition
+                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                        Общая
                                     </div>
                                 </a>
                             @endif
