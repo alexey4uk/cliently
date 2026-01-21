@@ -172,163 +172,15 @@ select {
     background-size: 200% 100%;
 }
 
-/* Drag & Drop styles */
-.sortable-ghost {
-    opacity: 0.4;
-    background-color: rgb(238 242 246) !important;
-}
-
-.dark .sortable-ghost {
-    background-color: rgb(30 41 59) !important;
-}
-
-.sortable-chosen {
-    background-color: rgb(241 245 249) !important;
-    border-color: rgb(99 102 241) !important;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
-}
-
-.dark .sortable-chosen {
-    background-color: rgb(30 41 59) !important;
-    border-color: rgb(99 102 241) !important;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
-}
-
-/* Smooth transitions for dashboard widgets */
-.widget-transition {
-    transition: all 0.3s ease;
-}
-
-/* Widget drag styles */
-.widget-item {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.widget-item.sortable-ghost {
-    opacity: 0.4;
-}
-
-.widget-item.sortable-chosen {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-    z-index: 10;
-}
-
-.widget-item.sortable-dragging {
-    opacity: 0.5;
-    cursor: grabbing !important;
-}
-
-.widget-item.sortable-dragging * {
-    pointer-events: none !important;
-}
-
-.widget-item .drag-handle {
-    pointer-events: auto !important;
-}
-
-/* Улучшенная прокрутка при перетаскивании */
-.sortable-drag-active {
-    scroll-behavior: auto !important;
-}
-
-/* Визуальная индикация зоны перетаскивания */
-.widget-item.sortable-ghost {
-    opacity: 0.4;
-    transform: scale(0.95);
-}
-
-/* Улучшенная видимость при перетаскивании */
-.widget-item.sortable-chosen {
-    z-index: 1000;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
-}
-
+/* Drag handle для settings/dashboard */
 .drag-handle {
     transition: opacity 0.2s ease;
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    min-width: 2.5rem !important;
-    max-width: 2.5rem !important;
-    flex-shrink: 0 !important;
+    cursor: move;
 }
 
 .drag-handle:hover {
     opacity: 1 !important;
     background-color: rgb(99 102 241 / 0.1) !important;
-}
-
-/* На мобильных устройствах все виджеты на всю ширину */
-@media (max-width: 1023px) {
-    #dashboard-widgets-container .widget-item {
-        width: 100% !important;
-    }
-}
-
-/* Автоматическое размещение grid-виджетов по 2 в ряд */
-#dashboard-widgets-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-    #dashboard-widgets-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    #dashboard-widgets-container .widget-full {
-        grid-column: 1 / -1;
-    }
-    
-    #dashboard-widgets-container .widget-grid {
-        grid-column: span 1;
-    }
-}
-
-/* Одинаковая высота для grid-виджетов */
-.widget-grid {
-    min-height: 400px;
-}
-
-@media (min-width: 1024px) {
-    #dashboard-widgets-container .widget-grid {
-        min-height: 500px;
-    }
-}
-
-/* Блок метрик на всю ширину */
-.widget-full[data-widget-key="stats_header"] {
-    grid-column: 1 / -1 !important;
-    width: 100%;
-}
-
-/* Виджеты должны растягиваться на всю высоту */
-.widget-grid > div:first-child {
-    height: 100%;
-}
-
-/* Кастомный scrollbar для виджетов */
-.widget-grid .overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
-}
-
-.widget-grid .overflow-y-auto::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.widget-grid .overflow-y-auto::-webkit-scrollbar-thumb {
-    background: rgb(203 213 225);
-    border-radius: 3px;
-}
-
-.dark .widget-grid .overflow-y-auto::-webkit-scrollbar-thumb {
-    background: rgb(51 65 85);
-}
-
-.widget-transition:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1);
 }
 
 /* Focus states for accessibility */
@@ -372,68 +224,17 @@ textarea:focus-visible {
     }
 }
 
-/* Предотвращаем растягивание кнопок и ссылок в виджетах */
-.widget-item a:not([class*="block"]):not([class*="w-full"]):not([class*="flex"]),
-.widget-item button:not([class*="block"]):not([class*="w-full"]):not([class*="flex"]) {
-    display: inline-flex;
-    width: auto;
-    max-width: 100%;
+
+/* Hover эффект для карточек статистики */
+.card-hover {
+    transition: all 0.2s ease;
 }
 
-/* Ссылки с flex внутри виджетов не должны растягиваться за пределы контента */
-.widget-item .flex.items-center.justify-between {
-    width: 100%;
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Кнопки-иконки не должны растягиваться */
-.widget-item a[class*="h-8"],
-.widget-item a[class*="h-9"],
-.widget-item button[class*="h-8"],
-.widget-item button[class*="h-9"] {
-    flex-shrink: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Фиксированные размеры для кнопок-иконок с h-8 */
-.widget-item a[class*="h-8"][class*="w-8"],
-.widget-item button[class*="h-8"][class*="w-8"] {
-    width: 2rem !important;
-    height: 2rem !important;
-    min-width: 2rem !important;
-    max-width: 2rem !important;
-}
-
-/* Фиксированные размеры для кнопок-иконок с h-9 */
-.widget-item a[class*="h-9"][class*="w-9"],
-.widget-item button[class*="h-9"][class*="w-9"] {
-    width: 2.25rem !important;
-    height: 2.25rem !important;
-    min-width: 2.25rem !important;
-    max-width: 2.25rem !important;
-}
-
-/* На больших экранах для md:h-9 md:w-9 */
-@media (min-width: 768px) {
-    .widget-item a[class*="md:h-9"][class*="md:w-9"],
-    .widget-item button[class*="md:h-9"][class*="md:w-9"] {
-        width: 2.25rem !important;
-        height: 2.25rem !important;
-        min-width: 2.25rem !important;
-        max-width: 2.25rem !important;
-    }
-}
-
-/* Предотвращаем растягивание кнопок при наведении */
-.widget-item a[class*="h-8"]:hover,
-.widget-item a[class*="h-9"]:hover,
-.widget-item button[class*="h-8"]:hover,
-.widget-item button[class*="h-9"]:hover {
-    flex-shrink: 0 !important;
-}
-
-/* Элементы списка в виджетах не должны растягиваться */
-.widget-item .flex.flex-col > div:not([class*="flex-1"]):not([class*="empty"]) {
-    flex-shrink: 0;
+.dark .card-hover:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

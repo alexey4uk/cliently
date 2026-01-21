@@ -51,34 +51,17 @@ class DashboardController extends Controller
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
-        // Получаем настройки виджетов
-        $settings = $this->getSettings($user);
-        $widgets = $this->getWidgetSettings($settings);
-        $widgetOrder = $this->getWidgetOrder($settings);
-        
-        // Отладочный вывод для проверки порядка
-        \Log::debug('Dashboard - widgetOrder', [
-            'user_id' => $user->id,
-            'widget_order_from_db' => $settings['dashboard']['widget_order'] ?? null,
-            'widget_order_processed' => $widgetOrder,
-        ]);
-
         // Кэширование данных (5 минут)
-        $stats = Cache::remember('dashboard_stats_'.$user->id, 300, function () use ($business) {
+        $stats = Cache::remember('dashboard_stats_' . $user->id, 300, function () use ($business) {
             return $this->getStats($business->id);
         });
 
-        $appointments = Cache::remember('dashboard_appointments_'.$user->id, 300, function () use ($business) {
+        $appointments = Cache::remember('dashboard_appointments_' . $user->id, 300, function () use ($business) {
             return $this->getAppointments($business->id);
         });
 
-        $clients = Cache::remember('dashboard_clients_'.$user->id, 300, function () use ($business) {
+        $clients = Cache::remember('dashboard_clients_' . $user->id, 300, function () use ($business) {
             return $this->getRecentClients($business->id, 5);
-        });
-
-        // Данные для графиков (последние 7 дней)
-        $chartData = Cache::remember('dashboard_charts_'.$user->id, 300, function () use ($business) {
-            return $this->getChartData($business->id);
         });
 
         return view('dashboard', [
@@ -86,10 +69,6 @@ class DashboardController extends Controller
             'stats' => $stats,
             'appointments' => $appointments,
             'clients' => $clients,
-            'chartData' => $chartData,
-            'widgets' => $widgets,
-            'widgetOrder' => $widgetOrder,
-            'lastUpdated' => now(),
         ]);
     }
 
@@ -98,10 +77,9 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Очистка кэша
-        Cache::forget('dashboard_stats_'.$user->id);
-        Cache::forget('dashboard_appointments_'.$user->id);
-        Cache::forget('dashboard_clients_'.$user->id);
-        Cache::forget('dashboard_charts_'.$user->id);
+        Cache::forget('dashboard_stats_' . $user->id);
+        Cache::forget('dashboard_appointments_' . $user->id);
+        Cache::forget('dashboard_clients_' . $user->id);
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }
@@ -122,13 +100,13 @@ class DashboardController extends Controller
         // Дополнительные метрики
         $totalAppointments = \App\Models\Appointment::where('business_id', $businessId)->count();
         $totalClients = \App\Models\Client::where('business_id', $businessId)->count();
-        
+
         // Рост клиентов
         $newClientsLastMonth = \App\Models\Client::where('business_id', $businessId)
             ->whereBetween('created_at', [$twoMonthsAgo, $monthAgo])
             ->count();
         $newClientsThisMonth = $newClientsCount;
-        $clientsGrowthRate = $newClientsLastMonth > 0 
+        $clientsGrowthRate = $newClientsLastMonth > 0
             ? round((($newClientsThisMonth - $newClientsLastMonth) / $newClientsLastMonth) * 100, 1)
             : ($newClientsThisMonth > 0 ? 100 : 0);
 
@@ -139,7 +117,7 @@ class DashboardController extends Controller
         $appointmentsThisMonth = \App\Models\Appointment::where('business_id', $businessId)
             ->where('created_at', '>=', $monthAgo)
             ->count();
-        $appointmentsGrowthRate = $appointmentsLastMonth > 0 
+        $appointmentsGrowthRate = $appointmentsLastMonth > 0
             ? round((($appointmentsThisMonth - $appointmentsLastMonth) / $appointmentsLastMonth) * 100, 1)
             : ($appointmentsThisMonth > 0 ? 100 : 0);
 
@@ -158,21 +136,21 @@ class DashboardController extends Controller
             ->count();
 
         // Процентные показатели
-        $completionRate = $totalAppointments > 0 
-            ? round(($completedCount / $totalAppointments) * 100, 1) 
+        $completionRate = $totalAppointments > 0
+            ? round(($completedCount / $totalAppointments) * 100, 1)
             : 0;
-        $cancellationRate = $totalAppointments > 0 
-            ? round(($cancelledCount / $totalAppointments) * 100, 1) 
+        $cancellationRate = $totalAppointments > 0
+            ? round(($cancelledCount / $totalAppointments) * 100, 1)
             : 0;
-        $confirmationRate = $totalAppointments > 0 
-            ? round(($confirmedCount / $totalAppointments) * 100, 1) 
+        $confirmationRate = $totalAppointments > 0
+            ? round(($confirmedCount / $totalAppointments) * 100, 1)
             : 0;
 
         // Средние значения
-        $avgAppointmentsPerDay = $totalAppointments > 0 
+        $avgAppointmentsPerDay = $totalAppointments > 0
             ? round($totalAppointments / max(1, \Carbon\Carbon::parse(\App\Models\Appointment::where('business_id', $businessId)->min('created_at'))->diffInDays(now())), 1)
             : 0;
-        $avgClientsPerAppointment = $totalAppointments > 0 
+        $avgClientsPerAppointment = $totalAppointments > 0
             ? round($totalClients / $totalAppointments, 2)
             : 0;
 
@@ -202,7 +180,7 @@ class DashboardController extends Controller
             ->where('date', '>=', $monthAgo->format('Y-m-d'))
             ->where('status', '!=', 'cancelled')
             ->count();
-        
+
         $completedWeek = \App\Models\Appointment::where('business_id', $businessId)
             ->where('date', '>=', $weekAgo->format('Y-m-d'))
             ->where('status', 'completed')
@@ -226,8 +204,8 @@ class DashboardController extends Controller
             ->count();
 
         // Процент активных клиентов
-        $activeClientsRate = $totalClients > 0 
-            ? round(($activeClients / $totalClients) * 100, 1) 
+        $activeClientsRate = $totalClients > 0
+            ? round(($activeClients / $totalClients) * 100, 1)
             : 0;
 
         return array_merge($appointmentStats, [
@@ -256,75 +234,6 @@ class DashboardController extends Controller
             'completed_week' => $completedWeek,
             'completed_month' => $completedMonth,
         ]);
-    }
-
-    /**
-     * Получить данные для графиков
-     */
-    private function getChartData(int $businessId)
-    {
-        $days = 7;
-        $appointmentsData = [];
-        $clientsData = [];
-        $completedData = [];
-        $cancelledData = [];
-        $labels = [];
-
-        // Данные по дням недели
-        $weekdayData = [];
-        $weekdayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-        for ($i = 0; $i < 7; $i++) {
-            $weekdayData[] = 0;
-        }
-
-        for ($i = $days; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $dateStr = $date->format('Y-m-d');
-            $labels[] = $date->format('d.m');
-
-            // Записи за день
-            $appointmentsData[] = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('date', $dateStr)
-                ->where('status', '!=', 'cancelled')
-                ->count();
-
-            // Завершенные за день
-            $completedData[] = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('date', $dateStr)
-                ->where('status', 'completed')
-                ->count();
-
-            // Отмененные за день
-            $cancelledData[] = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('date', $dateStr)
-                ->where('status', 'cancelled')
-                ->count();
-
-            // Новые клиенты за день
-            $clientsData[] = \App\Models\Client::where('business_id', $businessId)
-                ->whereDate('created_at', $dateStr)
-                ->count();
-
-            // Статистика по дням недели (за последнюю неделю)
-            $weekdayIndex = $date->dayOfWeek - 1; // 0 = Понедельник
-            if ($weekdayIndex < 0) $weekdayIndex = 6; // Воскресенье = 6
-            if ($i <= 7) { // Последние 7 дней для статистики по дням недели
-                $weekdayData[$weekdayIndex] += \App\Models\Appointment::where('business_id', $businessId)
-                    ->where('date', $dateStr)
-                    ->where('status', '!=', 'cancelled')
-                    ->count();
-            }
-        }
-
-        return [
-            'labels' => $labels,
-            'appointments' => $appointmentsData,
-            'clients' => $clientsData,
-            'completed' => $completedData,
-            'cancelled' => $cancelledData,
-            'weekday_labels' => $weekdayLabels,
-            'weekday_data' => $weekdayData,
-        ];
     }
 
     /**
