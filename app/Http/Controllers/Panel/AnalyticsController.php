@@ -19,7 +19,6 @@ class AnalyticsController extends Controller
         $totalUsers = User::count();
 
         $recentAppointments = Appointment::with(['client', 'master', 'service'])
-            ->orderBy('start_time', 'desc')
             ->limit(10)
             ->get();
 

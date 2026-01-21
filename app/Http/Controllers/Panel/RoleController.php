@@ -14,9 +14,35 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions')->paginate(20);
+        $search = request('search', '');
+        $sort = request('sort', 'name');
+        $direction = request('direction', 'asc');
+        $perPage = request('per_page', 20);
 
-        return view('panel.roles.index', compact('roles'));
+        $query = Role::withCount(['permissions', 'users']);
+
+        // Поиск
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Сортировка
+        $allowedSorts = ['name', 'created_at'];
+        if (in_array($sort, $allowedSorts)) {
+            $query->orderBy($sort, $direction);
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+
+        $roles = $query->with('permissions')->paginate($perPage)->withQueryString();
+
+        return view('panel.roles.index', compact(
+            'roles',
+            'search',
+            'sort',
+            'direction',
+            'perPage'
+        ));
     }
 
     /**
@@ -53,7 +79,8 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        $permissions = Permission::all();
+        $permissions = Permission::orderBy('name')->get();
+        $role->loadCount('users');
 
         return view('panel.roles.edit', compact('role', 'permissions'));
     }
@@ -82,9 +109,9 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        // Запрещаем удаление системных ролей
-        if (in_array($role->name, ['admin', 'manager', 'support', 'user'])) {
-            return redirect()->route('panel.roles')->with('error', 'Нельзя удалить системную роль');
+        // Запрещаем удаление роли admin
+        if ($role->name === 'admin') {
+            return redirect()->route('panel.roles')->with('error', 'Нельзя удалить роль администратора');
         }
 
         $role->delete();

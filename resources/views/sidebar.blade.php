@@ -1,6 +1,32 @@
 <div class="sidebar-container hidden lg:flex lg:flex-shrink-0 fixed left-0 top-0 bottom-0 z-20" x-data="{
-    managementOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') || Request::routeIs('panel.telegram.*') ? 'true' : 'false' }},
-    analyticsOpen: {{ Request::routeIs('finance.*') || Request::routeIs('reports.*') || Request::routeIs('panel.analytics.*') ? 'true' : 'false' }},
+    managementOpen: {{ 
+        (Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'panel/users') ||
+            Str::startsWith(Request::path(), 'panel/roles') ||
+            Str::startsWith(Request::path(), 'panel/permissions') ||
+            Str::startsWith(Request::path(), 'panel/businesses') ||
+            Str::startsWith(Request::path(), 'panel/services') ||
+            Str::startsWith(Request::path(), 'panel/locations') ||
+            Str::startsWith(Request::path(), 'panel/masters') ||
+            Str::startsWith(Request::path(), 'panel/telegram-management')
+        )) || 
+        (!Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'settings') ||
+            (Request::path() === 'services' || Str::startsWith(Request::path(), 'services/'))
+        )) 
+        ? 'true' : 'false' 
+    }},
+    analyticsOpen: {{ 
+        (Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'panel/analytics') ||
+            Str::startsWith(Request::path(), 'panel/support')
+        )) || 
+        (!Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'finance') ||
+            Str::startsWith(Request::path(), 'reports')
+        )) 
+        ? 'true' : 'false' 
+    }},
     collapsed: (() => {
         try {
             return localStorage.getItem('sidebarCollapsed') === 'true';
@@ -101,36 +127,6 @@
                                 </a>
                             @endif
 
-                            <!-- Календарь -->
-                            @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('appointments.view')
-                                    <a href="{{ route('panel.appointments') }}?view=calendar"
-                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.appointments') && request('view') === 'calendar'
-                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                            <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
-                                    </a>
-                                @endcan
-                            @else
-                                <a href="{{ route('appointments.calendar') }}"
-                                    class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('appointments.calendar')
-                                        ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-4'" :title="collapsed ? 'Календарь' : ''">
-                                    <div class="flex items-center justify-center flex-shrink-0"
-                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
-                                        <i class="fa-solid fa-calendar" :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                    </div>
-                                    <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text ml-3 whitespace-nowrap">Календарь</span>
-                                </a>
-                            @endif
 
                             <!-- Клиенты -->
                             @if(Str::startsWith(Request::path(), 'panel'))
@@ -288,6 +284,38 @@
                                         </div>
                                         <span x-show="!collapsed" x-cloak
                                             class="sidebar-text ml-3 whitespace-nowrap">Услуги</span>
+                                    </a>
+                                @endcan
+
+                                @can('locations.view')
+                                    <a href="{{ route('panel.locations') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.locations')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Локации' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-location-dot" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Локации</span>
+                                    </a>
+                                @endcan
+
+                                @can('masters.view')
+                                    <a href="{{ route('panel.masters') }}"
+                                        class="group flex items-center py-3 text-sm font-medium rounded-xl transition-colors duration-200 {{ Request::routeIs('panel.masters')
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-4'"
+                                        :title="collapsed ? 'Мастера' : ''">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-6 h-6'">
+                                            <i class="fa-solid fa-user-tie" :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text ml-3 whitespace-nowrap">Мастера</span>
                                     </a>
                                 @endcan
 

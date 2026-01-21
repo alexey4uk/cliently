@@ -14,9 +14,51 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('roles')->paginate(20);
+        $search = request('search', '');
+        $sort = request('sort', 'created_at');
+        $direction = request('direction', 'desc');
+        $perPage = request('per_page', 20);
+        $roleFilter = request('role', '');
 
-        return view('panel.users.index', compact('users'));
+        $query = User::with('roles');
+
+        // Поиск
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Фильтр по роли
+        if ($roleFilter) {
+            $query->whereHas('roles', function ($q) use ($roleFilter) {
+                $q->where('name', $roleFilter);
+            });
+        }
+
+        // Сортировка
+        $allowedSorts = ['created_at', 'name', 'email'];
+        if (in_array($sort, $allowedSorts)) {
+            $query->orderBy($sort, $direction);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $users = $query->paginate($perPage)->withQueryString();
+
+        // Получаем список ролей для фильтра
+        $roles = Role::orderBy('name')->get();
+
+        return view('panel.users.index', compact(
+            'users',
+            'search',
+            'sort',
+            'direction',
+            'perPage',
+            'roleFilter',
+            'roles'
+        ));
     }
 
     /**
@@ -84,8 +126,18 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // Защита от удаления текущего пользователя
+        if ($user->id === auth()->id()) {
+            return redirect()->route('panel.users')->with('error', 'Вы не можете удалить свой собственный аккаунт');
+        }
+
+        // Защита от удаления админа
+        if ($user->hasRole('admin')) {
+            return redirect()->route('panel.users')->with('error', 'Нельзя удалить пользователя с ролью администратора');
+        }
+
         $user->delete();
 
-        return redirect()->route('panel.users')->with('success', 'Пользователь удален');
+        return redirect()->route('panel.users')->with('success', 'Пользователь удален успешно');
     }
 }

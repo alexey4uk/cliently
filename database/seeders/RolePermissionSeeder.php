@@ -51,6 +51,18 @@ class RolePermissionSeeder extends Seeder
             'services.update' => 'Редактирование услуг',
             'services.delete' => 'Удаление услуг',
 
+            // Локации
+            'locations.view' => 'Просмотр списка локаций',
+            'locations.create' => 'Создание новых локаций',
+            'locations.update' => 'Редактирование локаций',
+            'locations.delete' => 'Удаление локаций',
+
+            // Мастера
+            'masters.view' => 'Просмотр списка мастеров',
+            'masters.create' => 'Создание новых мастеров',
+            'masters.update' => 'Редактирование мастеров',
+            'masters.delete' => 'Удаление мастеров',
+
             // Аналитика
             'analytics.view' => 'Просмотр аналитики',
 
@@ -99,6 +111,8 @@ class RolePermissionSeeder extends Seeder
             'services.create',
             'services.update',
             'services.delete',
+            'locations.view',
+            'masters.view',
             'analytics.view',
             'panel.access',
         ];
