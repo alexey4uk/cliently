@@ -168,7 +168,7 @@ class ClientController extends Controller
         $totalAppointments = $client->appointments()->count();
         $completedAppointments = $client->appointments()->where('status', 'completed')->count();
         $upcomingAppointments = $client->appointments()->where('date', '>=', today())->whereIn('status', ['confirmed', 'pending'])->count();
-        
+
         // Общая сумма потраченных средств
         $totalSpent = $client->appointments()
             ->where('status', 'completed')
@@ -176,10 +176,10 @@ class ClientController extends Controller
             ->sum(function ($appointment) {
                 return $appointment->final_price ?? 0;
             });
-        
+
         // Средний чек
         $avgCheck = $completedAppointments > 0 ? round($totalSpent / $completedAppointments, 0) : 0;
-        
+
         // Количество отмененных записей
         $cancelledAppointments = $client->appointments()->where('status', 'cancelled')->count();
 
@@ -343,7 +343,7 @@ class ClientController extends Controller
 
         $clients = $query->get();
 
-        $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
+        $filename = 'clients_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         $headers = [
             'Content-type' => 'text/csv',
