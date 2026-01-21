@@ -28,11 +28,11 @@ class MasterController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('specialization', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('specialization', 'like', "%{$search}%");
             });
         }
 
@@ -83,11 +83,11 @@ class MasterController extends Controller
     {
         $master->load(['business', 'locations', 'services']);
         $businesses = Business::orderBy('name')->get();
-        
+
         // Загружаем локации и услуги для текущего бизнеса мастера
         $locations = collect();
         $services = collect();
-        
+
         if ($master->business_id) {
             $locations = Location::where('business_id', $master->business_id)->orderBy('name')->get();
             $services = Service::where('business_id', $master->business_id)->orderBy('name')->get();

@@ -109,34 +109,62 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['auth', 'only.panel'])->prefix('panel')->name('panel.')->group(function () {
         // Главная панели
         Route::get('/', [\App\Http\Controllers\Panel\PanelController::class, 'index'])->name('index');
+        Route::post('/refresh', [\App\Http\Controllers\Panel\PanelController::class, 'refresh'])->name('refresh');
 
         // Пользователи (только админ)
         Route::middleware(['check.permission:users.view'])->group(function () {
             Route::get('/users', [\App\Http\Controllers\Panel\UserController::class, 'index'])->name('users');
+        });
+
+        Route::middleware(['check.permission:users.create'])->group(function () {
             Route::get('/users/create', [\App\Http\Controllers\Panel\UserController::class, 'create'])->name('users.create');
             Route::post('/users', [\App\Http\Controllers\Panel\UserController::class, 'store'])->name('users.store');
+        });
+
+        Route::middleware(['check.permission:users.update'])->group(function () {
             Route::get('/users/{user}/edit', [\App\Http\Controllers\Panel\UserController::class, 'edit'])->name('users.edit');
             Route::patch('/users/{user}', [\App\Http\Controllers\Panel\UserController::class, 'update'])->name('users.update');
+        });
+
+        Route::middleware(['check.permission:users.delete'])->group(function () {
             Route::delete('/users/{user}', [\App\Http\Controllers\Panel\UserController::class, 'destroy'])->name('users.destroy');
         });
 
         // Роли (только админ)
         Route::middleware(['check.permission:roles.view'])->group(function () {
             Route::get('/roles', [\App\Http\Controllers\Panel\RoleController::class, 'index'])->name('roles');
+        });
+
+        Route::middleware(['check.permission:roles.create'])->group(function () {
             Route::get('/roles/create', [\App\Http\Controllers\Panel\RoleController::class, 'create'])->name('roles.create');
             Route::post('/roles', [\App\Http\Controllers\Panel\RoleController::class, 'store'])->name('roles.store');
+        });
+
+        Route::middleware(['check.permission:roles.update'])->group(function () {
             Route::get('/roles/{role}/edit', [\App\Http\Controllers\Panel\RoleController::class, 'edit'])->name('roles.edit');
             Route::patch('/roles/{role}', [\App\Http\Controllers\Panel\RoleController::class, 'update'])->name('roles.update');
+        });
+
+        Route::middleware(['check.permission:roles.delete'])->group(function () {
             Route::delete('/roles/{role}', [\App\Http\Controllers\Panel\RoleController::class, 'destroy'])->name('roles.destroy');
         });
 
         // Права доступа (только админ)
-        Route::middleware(['check.permission:roles.view'])->group(function () {
+        Route::middleware(['check.permission:permissions.view'])->group(function () {
             Route::get('/permissions', [\App\Http\Controllers\Panel\PermissionController::class, 'index'])->name('permissions');
+        });
+
+        Route::middleware(['check.permission:permissions.create'])->group(function () {
             Route::get('/permissions/create', [\App\Http\Controllers\Panel\PermissionController::class, 'create'])->name('permissions.create');
             Route::post('/permissions', [\App\Http\Controllers\Panel\PermissionController::class, 'store'])->name('permissions.store');
+        });
+
+        Route::middleware(['check.permission:permissions.update'])->group(function () {
             Route::get('/permissions/{permission}/edit', [\App\Http\Controllers\Panel\PermissionController::class, 'edit'])->name('permissions.edit');
             Route::patch('/permissions/{permission}', [\App\Http\Controllers\Panel\PermissionController::class, 'update'])->name('permissions.update');
+        });
+
+        Route::middleware(['check.permission:permissions.delete'])->group(function () {
             Route::delete('/permissions/{permission}', [\App\Http\Controllers\Panel\PermissionController::class, 'destroy'])->name('permissions.destroy');
         });
 

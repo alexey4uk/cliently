@@ -27,6 +27,12 @@ class RolePermissionSeeder extends Seeder
             'roles.update' => 'Редактирование ролей',
             'roles.delete' => 'Удаление ролей',
 
+            // Права доступа
+            'permissions.view' => 'Просмотр списка прав доступа',
+            'permissions.create' => 'Создание новых прав доступа',
+            'permissions.update' => 'Редактирование прав доступа',
+            'permissions.delete' => 'Удаление прав доступа',
+
             // Бизнесы
             'businesses.view' => 'Просмотр списка бизнесов',
             'businesses.create' => 'Создание новых бизнесов',
@@ -87,33 +93,48 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Создание роли Админ
+        // Админ имеет все права доступа
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         foreach ($permissions as $name => $description) {
             $adminRole->givePermissionTo($name);
         }
 
-        // Дополнительно добавляем права управления Telegram только для админа
-        $adminRole->givePermissionTo('telegram.manage');
-
         // Создание роли Менеджер
         $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
         $managerPermissions = [
+            // Бизнесы - только просмотр
             'businesses.view',
+            
+            // Записи - полный доступ
             'appointments.view',
-            'appointments.create',
             'appointments.update',
             'appointments.delete',
+            
+            // Клиенты - полный доступ
             'clients.view',
             'clients.create',
             'clients.update',
             'clients.delete',
+            
+            // Услуги - только просмотр и редактирование (создание в клиентской части)
             'services.view',
-            'services.create',
             'services.update',
             'services.delete',
+            
+            // Локации - только просмотр и редактирование (создание в клиентской части)
             'locations.view',
+            'locations.update',
+            'locations.delete',
+            
+            // Мастера - только просмотр и редактирование (создание в клиентской части)
             'masters.view',
+            'masters.update',
+            'masters.delete',
+            
+            // Аналитика
             'analytics.view',
+            
+            // Доступ к панели
             'panel.access',
         ];
         foreach ($managerPermissions as $permission) {
