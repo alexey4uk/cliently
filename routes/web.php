@@ -176,6 +176,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/telegram-management/{bot}/edit', [TelegramManagementController::class, 'edit'])->name('telegram.management.edit');
             Route::patch('/telegram-management/{bot}', [TelegramManagementController::class, 'update'])->name('telegram.management.update');
             Route::delete('/telegram-management/{bot}', [TelegramManagementController::class, 'destroy'])->name('telegram.management.destroy');
+            Route::post('/telegram-management/{bot}/set-webhook', [TelegramManagementController::class, 'setWebhook'])->name('telegram.management.set-webhook');
+            Route::post('/telegram-management/{bot}/delete-webhook', [TelegramManagementController::class, 'deleteWebhook'])->name('telegram.management.delete-webhook');
+            Route::post('/telegram-management/{bot}/bot-info', [TelegramManagementController::class, 'getBotInfo'])->name('telegram.management.bot-info');
         });
     });
 });
