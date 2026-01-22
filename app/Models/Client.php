@@ -30,6 +30,11 @@ class Client extends Model
         return $this->hasMany(Appointment::class);
     }
 
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     /**
      * Получить полное имя клиента
      */

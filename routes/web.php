@@ -69,6 +69,16 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
         Route::patch('appointments/{appointment}/complete', [\App\Http\Controllers\AppointmentsController::class, 'complete'])->name('appointments.complete');
 
+        // Тикеты (явные роуты без route model binding, используем {id} вместо {ticket})
+        Route::get('tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+        Route::get('tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
+        Route::post('tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+        Route::get('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+        Route::get('tickets/{id}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
+        Route::patch('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
+        Route::delete('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
+        Route::post('tickets/{id}/comments', [\App\Http\Controllers\TicketController::class, 'addComment'])->name('tickets.comments.store');
+
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
@@ -102,6 +112,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/masters/{master}/edit', [MasterSettingsController::class, 'edit'])->name('masters.edit');
             Route::patch('/masters/{master}', [MasterSettingsController::class, 'update'])->name('masters.update');
             Route::delete('/masters/{master}', [MasterSettingsController::class, 'destroy'])->name('masters.destroy');
+
         });
     });
 
@@ -270,6 +281,35 @@ Route::middleware(['auth'])->group(function () {
         // Поддержка (админ и поддержка)
         Route::middleware(['check.permission:support.view'])->group(function () {
             Route::get('/support', [\App\Http\Controllers\Panel\SupportController::class, 'index'])->name('support');
+        });
+
+        // Настройки тикетов (админ) - должно быть ПЕРЕД resource роутом тикетов
+        Route::middleware(['check.permission:tickets.settings'])->group(function () {
+            Route::get('/tickets/settings', [\App\Http\Controllers\Settings\TicketSettingsController::class, 'index'])->name('tickets.settings');
+            Route::patch('/tickets/settings', [\App\Http\Controllers\Settings\TicketSettingsController::class, 'update'])->name('tickets.settings.update');
+        });
+
+        // Тикеты (админ, менеджер, поддержка)
+        Route::middleware(['check.permission:tickets.view'])->group(function () {
+            Route::get('/tickets', [\App\Http\Controllers\Panel\TicketController::class, 'index'])->name('tickets');
+            Route::get('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'show'])->name('tickets.show');
+        });
+
+        Route::middleware(['check.permission:tickets.update'])->group(function () {
+            Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\Panel\TicketController::class, 'edit'])->name('tickets.edit');
+            Route::patch('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'update'])->name('tickets.update');
+            Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\Panel\TicketController::class, 'assign'])->name('tickets.assign');
+            Route::post('/tickets/{ticket}/status', [\App\Http\Controllers\Panel\TicketController::class, 'updateStatus'])->name('tickets.status');
+            Route::post('/tickets/{ticket}/comments', [\App\Http\Controllers\Panel\TicketController::class, 'addComment'])->name('tickets.comments.store');
+        });
+
+        Route::middleware(['check.permission:tickets.delete'])->group(function () {
+            Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'destroy'])->name('tickets.destroy');
+        });
+
+        // Категории тикетов (админ)
+        Route::middleware(['check.permission:tickets.categories.manage'])->group(function () {
+            Route::resource('ticket-categories', \App\Http\Controllers\Panel\TicketCategoryController::class);
         });
 
         // Управление Telegram ботом

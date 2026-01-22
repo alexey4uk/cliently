@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Business extends Model
@@ -67,5 +68,15 @@ class Business extends Model
     public function telegramUserStates(): HasMany
     {
         return $this->hasMany(\App\Models\TelegramUserState::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    public function ticketSettings(): HasOne
+    {
+        return $this->hasOne(TicketSettings::class);
     }
 }

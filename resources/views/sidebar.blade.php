@@ -16,6 +16,16 @@
         )) 
         ? 'true' : 'false' 
     }},
+    ticketsOpen: {{ 
+        (Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'panel/tickets') ||
+            Str::startsWith(Request::path(), 'panel/ticket-categories')
+        )) || 
+        (!Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'tickets')
+        )) 
+        ? 'true' : 'false' 
+    }},
     analyticsOpen: {{ 
         (Str::startsWith(Request::path(), 'panel') && (
             Str::startsWith(Request::path(), 'panel/analytics') ||
@@ -274,6 +284,7 @@
                                     </div>
                                 </a>
                             @endif
+
                         </nav>
                     </div>
 
@@ -497,6 +508,7 @@
                                         </div>
                                     </a>
                                 @endcan
+
                             @else
                                 <!-- Пользовательские разделы -->
                                 <!-- Настройки бизнеса -->
@@ -645,6 +657,152 @@
                         </nav>
                     </div>
 
+                    <!-- Тикеты -->
+                    <div>
+                        <button @click="ticketsOpen = !ticketsOpen" x-show="!collapsed" x-cloak
+                            class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-ticket text-[10px] opacity-60"></i>
+                                <span>Тикеты</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
+                                :class="{ 'rotate-180': ticketsOpen }"></i>
+                        </button>
+                        <nav x-show="ticketsOpen || collapsed" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 -translate-y-1"
+                             class="space-y-1 overflow-hidden">
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                <!-- Админские разделы -->
+                                @can('tickets.view')
+                                    <a href="{{ route('panel.tickets') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ (Request::routeIs('panel.tickets') || Request::routeIs('panel.tickets.*')) && !Request::routeIs('panel.tickets.settings*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Тикеты' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-ticket transition-transform duration-200 {{ (Request::routeIs('panel.tickets') || Request::routeIs('panel.tickets.*')) && !Request::routeIs('panel.tickets.settings*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Все тикеты</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Все тикеты
+                                        </div>
+                                    </a>
+                                @endcan
+
+                                @can('tickets.categories.manage')
+                                    <a href="{{ route('panel.ticket-categories.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.ticket-categories.*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Категории' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-tags transition-transform duration-200 {{ Request::routeIs('panel.ticket-categories.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Категории</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Категории
+                                        </div>
+                                    </a>
+                                @endcan
+
+                                @can('tickets.settings')
+                                    <a href="{{ route('panel.tickets.settings') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.tickets.settings*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Настройки' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-gear transition-transform duration-200 {{ Request::routeIs('panel.tickets.settings*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Настройки</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Настройки
+                                        </div>
+                                    </a>
+                                @endcan
+                            @else
+                                <!-- Клиентская часть -->
+                                <a href="{{ route('tickets.create') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.create')
+                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                    :title="collapsed ? 'Создать тикет' : ''"
+                                    x-data="{ tooltip: false }"
+                                    @mouseenter="if (collapsed) tooltip = true"
+                                    @mouseleave="tooltip = false">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                        <i class="fa-solid fa-plus transition-transform duration-200 {{ Request::routeIs('tickets.create') ? 'scale-110' : 'group-hover:scale-110' }}"
+                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text whitespace-nowrap font-medium">Создать тикет</span>
+                                    <div x-show="tooltip && collapsed" 
+                                         x-transition
+                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                        Создать тикет
+                                    </div>
+                                </a>
+                                
+                                <a href="{{ route('tickets.index') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.index') || Request::routeIs('tickets.show') || Request::routeIs('tickets.edit')
+                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                    :title="collapsed ? 'Мои тикеты' : ''"
+                                    x-data="{ tooltip: false }"
+                                    @mouseenter="if (collapsed) tooltip = true"
+                                    @mouseleave="tooltip = false">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                        <i class="fa-solid fa-ticket transition-transform duration-200 {{ Request::routeIs('tickets.index') || Request::routeIs('tickets.show') || Request::routeIs('tickets.edit') ? 'scale-110' : 'group-hover:scale-110' }}"
+                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak
+                                        class="sidebar-text whitespace-nowrap font-medium">Мои тикеты</span>
+                                    <div x-show="tooltip && collapsed" 
+                                         x-transition
+                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                        Мои тикеты
+                                    </div>
+                                </a>
+                            @endif
+                        </nav>
+                    </div>
+
                     <!-- Аналитика -->
                     <div>
                         <button @click="analyticsOpen = !analyticsOpen" x-show="!collapsed" x-cloak
@@ -686,31 +844,6 @@
                                              x-transition
                                              class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
                                             Аналитика
-                                        </div>
-                                    </a>
-                                @endcan
-
-                                @can('support.view')
-                                    <a href="{{ route('panel.support') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.support')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                        :title="collapsed ? 'Поддержка' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-headset transition-transform duration-200 {{ Request::routeIs('panel.support') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Поддержка</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Поддержка
                                         </div>
                                     </a>
                                 @endcan

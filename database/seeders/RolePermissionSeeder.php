@@ -75,6 +75,15 @@ class RolePermissionSeeder extends Seeder
             // Поддержка
             'support.view' => 'Доступ к разделу поддержки',
 
+            // Тикеты
+            'tickets.view' => 'Просмотр тикетов',
+            'tickets.create' => 'Создание тикетов',
+            'tickets.update' => 'Редактирование тикетов',
+            'tickets.delete' => 'Удаление тикетов',
+            'tickets.assign' => 'Назначение тикетов',
+            'tickets.settings' => 'Настройка тикет-системы',
+            'tickets.categories.manage' => 'Управление категориями тикетов',
+
             // Telegram
             'telegram.manage' => 'Управление Telegram ботом',
 
@@ -134,6 +143,14 @@ class RolePermissionSeeder extends Seeder
             // Аналитика
             'analytics.view',
             
+            // Тикеты - полный доступ
+            'tickets.view',
+            'tickets.create',
+            'tickets.update',
+            'tickets.delete',
+            'tickets.assign',
+            'tickets.categories.manage',
+            
             // Доступ к панели
             'panel.access',
         ];
@@ -146,6 +163,10 @@ class RolePermissionSeeder extends Seeder
         $supportPermissions = [
             'analytics.view',
             'support.view',
+            'tickets.view',
+            'tickets.create',
+            'tickets.update',
+            'tickets.assign',
             'panel.access',
         ];
         foreach ($supportPermissions as $permission) {
@@ -156,6 +177,8 @@ class RolePermissionSeeder extends Seeder
         $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $userPermissions = [
             'client.access',
+            'tickets.view',
+            'tickets.create',
         ];
         foreach ($userPermissions as $permission) {
             $userRole->givePermissionTo($permission);
