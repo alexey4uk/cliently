@@ -9,45 +9,90 @@ class SubscriptionMetricSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * 
+     * Примечание: Метрики теперь управляются через админ-панель.
+     * Этот сидер создает только базовые метрики для первоначальной настройки.
      */
     public function run(): void
     {
-        $features = config('subscription.features', []);
-
         $sortOrder = 0;
 
         // Integer метрики
-        if (isset($features['integer'])) {
-            foreach ($features['integer'] as $key => $feature) {
-                SubscriptionMetric::firstOrCreate(
-                    ['key' => $key],
-                    [
-                        'label' => $feature['label'] ?? $key,
-                        'description' => $feature['description'] ?? null,
-                        'icon' => $feature['icon'] ?? null,
-                        'type' => 'integer',
-                        'is_active' => true,
-                        'sort_order' => $sortOrder++,
-                    ]
-                );
-            }
+        $integerMetrics = [
+            [
+                'key' => 'max_locations',
+                'label' => 'Максимальное количество локаций',
+                'description' => 'Лимит на количество локаций',
+                'icon' => 'fa-location-dot',
+            ],
+            [
+                'key' => 'max_masters',
+                'label' => 'Максимальное количество мастеров',
+                'description' => 'Лимит на количество мастеров',
+                'icon' => 'fa-user-tie',
+            ],
+            [
+                'key' => 'max_services',
+                'label' => 'Максимальное количество услуг',
+                'description' => 'Лимит на количество услуг',
+                'icon' => 'fa-scissors',
+            ],
+            [
+                'key' => 'max_clients',
+                'label' => 'Максимальное количество клиентов',
+                'description' => 'Лимит на количество клиентов в базе',
+                'icon' => 'fa-users',
+            ],
+            [
+                'key' => 'max_appointments_per_month',
+                'label' => 'Записей в месяц',
+                'description' => 'Максимальное количество записей в месяц',
+                'icon' => 'fa-calendar-check',
+            ],
+        ];
+
+        foreach ($integerMetrics as $metric) {
+            SubscriptionMetric::firstOrCreate(
+                ['key' => $metric['key']],
+                [
+                    'label' => $metric['label'],
+                    'description' => $metric['description'],
+                    'icon' => $metric['icon'],
+                    'type' => 'integer',
+                    'is_active' => true,
+                    'sort_order' => $sortOrder++,
+                ]
+            );
         }
 
         // Boolean метрики
-        if (isset($features['boolean'])) {
-            foreach ($features['boolean'] as $key => $feature) {
-                SubscriptionMetric::firstOrCreate(
-                    ['key' => $key],
-                    [
-                        'label' => $feature['label'] ?? $key,
-                        'description' => $feature['description'] ?? null,
-                        'icon' => $feature['icon'] ?? null,
-                        'type' => 'boolean',
-                        'is_active' => true,
-                        'sort_order' => $sortOrder++,
-                    ]
-                );
-            }
+        $booleanMetrics = [
+            [
+                'key' => 'telegram_bot_enabled',
+                'label' => 'Telegram бот',
+                'description' => 'Включить интеграцию с Telegram ботом',
+                'icon' => 'fa-brands fa-telegram',
+            ],
+            [
+                'key' => 'analytics_enabled',
+                'label' => 'Аналитика',
+                'description' => 'Включить расширенную аналитику и отчеты',
+                'icon' => 'fa-chart-line',
+            ],
+        ];
+
+        foreach ($booleanMetrics as $metric) {
+            SubscriptionMetric::firstOrCreate(
+                ['key' => $metric['key']],
+                [
+                    'label' => $metric['label'],
+                    'description' => $metric['description'],
+                    'icon' => $metric['icon'],
+                    'type' => 'boolean',
+                    'is_active' => true,
+                    'sort_order' => $sortOrder++,
+                ]
+            );
         }
     }
 }

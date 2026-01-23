@@ -53,12 +53,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['auth', 'only.client'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
-        
+
         // Аналитика
         Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('/analytics/financial', [\App\Http\Controllers\AnalyticsController::class, 'financial'])->name('analytics.financial');
         Route::get('/analytics/general', [\App\Http\Controllers\AnalyticsController::class, 'general'])->name('analytics.general');
-        
+
         Route::resource('clients', \App\Http\Controllers\ClientController::class);
         Route::get('clients-export', [\App\Http\Controllers\ClientController::class, 'export'])->name('clients.export');
         Route::resource('services', \App\Http\Controllers\ServiceController::class);
@@ -118,7 +118,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/masters/{master}/edit', [MasterSettingsController::class, 'edit'])->name('masters.edit');
             Route::patch('/masters/{master}', [MasterSettingsController::class, 'update'])->name('masters.update');
             Route::delete('/masters/{master}', [MasterSettingsController::class, 'destroy'])->name('masters.destroy');
-
         });
     });
 
