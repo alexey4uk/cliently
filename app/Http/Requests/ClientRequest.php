@@ -2,22 +2,38 @@
 
 namespace App\Http\Requests;
 
+use App\Services\BusinessRolePermissionService;
+use App\Traits\HasCurrentBusiness;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ClientRequest extends FormRequest
 {
+    use HasCurrentBusiness;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         $client = $this->route('client');
+        $business = $this->getCurrentBusiness();
         
-        if ($client) {
-            return $this->user()->can('clients.update');
+        if (!$business) {
+            return false;
         }
         
-        return $this->user()->can('clients.create');
+        $role = $this->getCurrentBusinessRole();
+        if (!$role) {
+            return false;
+        }
+        
+        $service = app(BusinessRolePermissionService::class);
+        
+        if ($client) {
+            return $service->hasPermission($business->id, $role, 'clients.update');
+        }
+        
+        return $service->hasPermission($business->id, $role, 'clients.create');
     }
 
     /**

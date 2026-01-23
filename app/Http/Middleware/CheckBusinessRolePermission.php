@@ -1,28 +1,29 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Middleware;
 
 use App\Services\BusinessRolePermissionService;
 use App\Traits\HasCurrentBusiness;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-abstract class Controller
+class CheckBusinessRolePermission
 {
-    use AuthorizesRequests, HasCurrentBusiness;
+    use HasCurrentBusiness;
 
     /**
-     * Authorize a business permission for the current user.
+     * Handle an incoming request.
      *
-     * @param string $permission
-     * @return void
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    protected function authorizeBusinessPermission(string $permission): void
+    public function handle(Request $request, Closure $next, string $permission): Response
     {
         $business = $this->getCurrentBusiness();
 
         if (!$business) {
-            abort(403, 'У вас нет бизнеса.');
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $role = $this->getCurrentBusinessRole();
@@ -36,5 +37,7 @@ abstract class Controller
         if (!$service->hasPermission($business->id, $role, $permission)) {
             abort(403, 'У вас нет прав для выполнения этого действия.');
         }
+
+        return $next($request);
     }
 }

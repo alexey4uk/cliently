@@ -22,14 +22,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'first_name',
-        'last_name',
         'phone',
         'email',
         'password',
         'name',
         'avatar',
         'dashboard_settings',
+        'must_change_password',
     ];
 
     /**
@@ -51,6 +50,7 @@ class User extends Authenticatable
     {
         return [
             'dashboard_settings' => 'array',
+            'must_change_password' => 'boolean',
             //            'email_verified_at' => 'datetime',
             //            'password' => 'hashed',
             //            'phone' => E164PhoneNumberCast::class.":BY",

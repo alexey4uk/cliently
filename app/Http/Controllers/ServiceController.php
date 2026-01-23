@@ -22,13 +22,14 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $user = Auth::user()->load('businesses.services');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $business->load('services');
 
         return view('services.index', [
             'business' => $business,
@@ -41,12 +42,11 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load('businesses.masters');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         return view('services.create', [
@@ -59,13 +59,14 @@ class ServiceController extends Controller
      */
     public function store(ServiceRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Проверка лимита услуг
         $subscriptionService = app(SubscriptionService::class);
@@ -107,10 +108,9 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        $user = Auth::user()->load('businesses.masters');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -127,10 +127,9 @@ class ServiceController extends Controller
      */
     public function update(ServiceRequest $request, Service $service)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -159,10 +158,9 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 

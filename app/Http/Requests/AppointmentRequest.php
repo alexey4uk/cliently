@@ -5,6 +5,8 @@ namespace App\Http\Requests;
 use App\Models\Appointment;
 use App\Models\Master;
 use App\Models\Service;
+use App\Services\BusinessRolePermissionService;
+use App\Traits\HasCurrentBusiness;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -12,18 +14,32 @@ use Illuminate\Validation\Validator;
 
 class AppointmentRequest extends FormRequest
 {
+    use HasCurrentBusiness;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         $appointment = $this->route('appointment');
+        $business = $this->getCurrentBusiness();
         
-        if ($appointment) {
-            return $this->user()->can('appointments.update');
+        if (!$business) {
+            return false;
         }
         
-        return $this->user()->can('appointments.create');
+        $role = $this->getCurrentBusinessRole();
+        if (!$role) {
+            return false;
+        }
+        
+        $service = app(BusinessRolePermissionService::class);
+        
+        if ($appointment) {
+            return $service->hasPermission($business->id, $role, 'appointments.update');
+        }
+        
+        return $service->hasPermission($business->id, $role, 'appointments.create');
     }
 
     /**

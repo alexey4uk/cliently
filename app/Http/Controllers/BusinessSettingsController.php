@@ -70,13 +70,14 @@ class BusinessSettingsController extends Controller
      */
     public function index()
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters', 'businesses.clients']);
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $business->load(['locations', 'services', 'masters', 'clients']);
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
@@ -91,12 +92,11 @@ class BusinessSettingsController extends Controller
      */
     public function onlineBooking()
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
@@ -112,12 +112,11 @@ class BusinessSettingsController extends Controller
      */
     public function updateOnlineBooking(Request $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $business->update([
@@ -132,12 +131,11 @@ class BusinessSettingsController extends Controller
      */
     public function edit()
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         return view('settings.business.edit', [
@@ -150,12 +148,11 @@ class BusinessSettingsController extends Controller
      */
     public function update(BusinessRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $business->update($request->validated());

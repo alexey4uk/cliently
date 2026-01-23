@@ -13,6 +13,33 @@
 
 @section('content')
 
+@php
+    // Получаем бизнес и роль для проверки прав доступа
+    $user = Auth::user();
+    $currentBusiness = null;
+    $currentBusinessRole = null;
+    $permissionService = null;
+    if ($user) {
+        $user->load('businesses');
+        $currentBusiness = $user->businesses->first();
+        if ($currentBusiness) {
+            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
+            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            if ($currentBusinessRole) {
+                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+            }
+        }
+    }
+
+    // Функция для проверки бизнес-прав
+    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
+        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+            return false;
+        }
+        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+    };
+@endphp
+
 <div class="max-w-4xl mx-auto">
     <div x-data="{ 
         showPhoneModal: false, 
@@ -190,22 +217,25 @@
         <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
-                    <a href="{{ route('appointments.edit', $appointment) }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                        <i class="fa-solid fa-pen text-sm"></i>
-                        <span>Редактировать</span>
-                    </a>
+                    @if($hasBusinessPermission('appointments.update'))
+                        <a href="{{ route('appointments.edit', $appointment) }}"
+                           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-pen text-sm"></i>
+                            <span>Редактировать</span>
+                        </a>
 
-                    @if($appointment->status === 'pending')
-                        <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-600 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
-                                <i class="fa-solid fa-check-circle text-sm"></i>
-                                <span>Подтвердить</span>
-                            </button>
-                        </form>
+                        @if($appointment->status === 'pending')
+                            <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/20 border border-blue-200 dark:border-blue-600 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/30 transition-colors">
+                                    <i class="fa-solid fa-check-circle text-sm"></i>
+                                    <span>Подтвердить</span>
+                                </button>
+                            </form>
+                        @endif
+
                         <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline"
                               onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
                             @csrf
@@ -217,15 +247,18 @@
                             </button>
                         </form>
                     @elseif($appointment->status === 'confirmed')
-                        <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-600 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition-colors">
-                                <i class="fa-solid fa-check-double text-sm"></i>
-                                <span>Завершить</span>
-                            </button>
-                        </form>
+                        @if($hasBusinessPermission('appointments.update'))
+                            <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-600 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition-colors">
+                                    <i class="fa-solid fa-check-double text-sm"></i>
+                                    <span>Завершить</span>
+                                </button>
+                            </form>
+                        @endif
+
                         <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline"
                               onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
                             @csrf

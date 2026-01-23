@@ -20,13 +20,14 @@ class TicketController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
         
@@ -94,13 +95,14 @@ class TicketController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
         
@@ -124,13 +126,14 @@ class TicketController extends Controller
      */
     public function store(TicketRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
         
@@ -186,13 +189,14 @@ class TicketController extends Controller
                 ->with('error', 'Неверный идентификатор тикета.');
         }
 
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
         $ticket = Ticket::where('id', (int)$id)
@@ -223,13 +227,14 @@ class TicketController extends Controller
      */
     public function edit($id)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
         $ticket = Ticket::where('id', $id)
@@ -259,13 +264,14 @@ class TicketController extends Controller
      */
     public function update(TicketRequest $request, $id)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
         $ticket = Ticket::where('id', $id)
@@ -314,13 +320,14 @@ class TicketController extends Controller
      */
     public function destroy($id)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
         $ticket = Ticket::where('id', $id)
@@ -345,13 +352,14 @@ class TicketController extends Controller
      */
     public function addComment(TicketCommentRequest $request, $id)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
         $ticket = Ticket::where('id', $id)

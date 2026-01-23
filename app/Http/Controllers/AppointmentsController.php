@@ -36,25 +36,13 @@ class AppointmentsController extends Controller
         $this->masterRepository = $masterRepository;
     }
 
-    private function getCurrentBusiness()
-    {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
-
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
-        }
-
-        return $business;
-    }
-
     private function checkAppointmentBelongsToBusiness(Appointment $appointment)
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         if (! $this->appointmentRepository->belongsToBusiness($appointment->id, $business->id)) {
@@ -71,8 +59,9 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $view = $request->get('view', 'table'); // table или calendar
@@ -141,8 +130,9 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $view = 'calendar'; // Всегда используем календарный вид
@@ -207,8 +197,9 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $selectedClientId = $request->get('client_id');
@@ -243,8 +234,9 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $user = Auth::user();
@@ -452,8 +444,9 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if ($business instanceof \Illuminate\Http\RedirectResponse) {
-            return $business;
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $view = $request->get('view', 'table');

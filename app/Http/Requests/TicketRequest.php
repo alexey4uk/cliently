@@ -2,23 +2,40 @@
 
 namespace App\Http\Requests;
 
+use App\Services\BusinessRolePermissionService;
+use App\Traits\HasCurrentBusiness;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TicketRequest extends FormRequest
 {
+    use HasCurrentBusiness;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
+        $business = $this->getCurrentBusiness();
+        
+        if (!$business) {
+            return false;
+        }
+        
+        $role = $this->getCurrentBusinessRole();
+        if (!$role) {
+            return false;
+        }
+        
+        $service = app(BusinessRolePermissionService::class);
+        
         // Для тикетов используется {id} вместо {ticket} в маршрутах
         // Проверяем по методу запроса
         if ($this->isMethod('post')) {
-            return $this->user()->can('tickets.create');
+            return $service->hasPermission($business->id, $role, 'tickets.create');
         }
         
         // Для PATCH/PUT это обновление
-        return $this->user()->can('tickets.update');
+        return $service->hasPermission($business->id, $role, 'tickets.update');
     }
 
     /**

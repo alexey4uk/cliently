@@ -133,6 +133,16 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.update' => 'Редактирование тикетов (админ-панель)',
             'panel.tickets.delete' => 'Удаление тикетов (админ-панель)',
             'panel.tickets.assign' => 'Назначение тикетов (админ-панель)',
+            
+            // Управление пользователями бизнеса (клиентская часть)
+            'business.users.view' => 'Просмотр пользователей бизнеса',
+            'business.users.create' => 'Добавление пользователей в бизнес',
+            'business.users.update' => 'Изменение роли пользователя в бизнесе',
+            'business.users.delete' => 'Удаление пользователя из бизнеса',
+            'business.roles.manage' => 'Управление правами ролей бизнеса (настройка прав для ролей в своем бизнесе)',
+            
+            // Управление базовыми правами ролей бизнеса (админ-панель)
+            'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',
         ];
 
         foreach ($permissions as $name => $description) {
@@ -190,6 +200,9 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.assign',
             'tickets.categories.manage',
             
+            // Управление базовыми правами ролей бизнеса
+            'panel.business.roles.manage',
+            
             // Доступ к панели
             'panel.access',
         ];
@@ -212,57 +225,10 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Создание роли Пользователь (для обычных пользователей)
+        // Теперь роль user имеет только client.access - конкретные права проверяются через роль в бизнесе
         $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $userPermissions = [
             'client.access',
-            
-            // Клиенты - полный доступ для работы в клиентской части
-            'clients.view',
-            'clients.create',
-            'clients.update',
-            'clients.delete',
-            'clients.export',
-            
-            // Услуги - полный доступ
-            'services.view',
-            'services.create',
-            'services.update',
-            'services.delete',
-            
-            // Локации - полный доступ
-            'locations.view',
-            'locations.create',
-            'locations.update',
-            'locations.delete',
-            
-            // Мастера - полный доступ
-            'masters.view',
-            'masters.create',
-            'masters.update',
-            'masters.delete',
-            
-            // Записи - полный доступ
-            'appointments.view',
-            'appointments.create',
-            'appointments.update',
-            'appointments.delete',
-            'appointments.export',
-            
-            // Бизнесы - создание и редактирование своего бизнеса
-            'businesses.create',
-            'businesses.update',
-            
-            // Аналитика
-            'analytics.view',
-            
-            // Тикеты
-            'tickets.view',
-            'tickets.create',
-            'tickets.update',
-            'tickets.delete',
-            
-            // Telegram настройки
-            'telegram.manage',
         ];
         foreach ($userPermissions as $permission) {
             $userRole->givePermissionTo($permission);

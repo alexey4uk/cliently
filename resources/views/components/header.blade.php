@@ -29,7 +29,7 @@
 
             <!-- Правая часть: Действия -->
             <div class="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
-                <!-- Бейдж роли пользователя -->
+                <!-- Бейдж роли пользователя (системная роль) -->
                 @if($showRoleBadge && Auth::check() && Auth::user()->roles->isNotEmpty())
                     @php
                         $primaryRole = Auth::user()->roles->first();
@@ -55,6 +55,50 @@
                         <i class="fa-solid {{ $icon }} text-[9px]"></i>
                         <span class="hidden lg:inline">{{ $roleDisplayName }}</span>
                     </span>
+                @endif
+
+                <!-- Бейдж роли работника в бизнесе (только для клиентской части) -->
+                @if(!Str::startsWith(Request::path(), 'panel') && Auth::check())
+                    @php
+                        $user = Auth::user();
+                        $businessRole = null;
+                        if ($user) {
+                            $user->load('businesses');
+                            $business = $user->businesses->first();
+                            if ($business) {
+                                $pivot = $user->businesses()->where('business_id', $business->id)->first();
+                                $businessRole = $pivot?->pivot->role ?? null;
+                            }
+                        }
+                    @endphp
+                    @if($businessRole)
+                        @php
+                            $bgColor = match($businessRole) {
+                                'owner' => 'bg-amber-100/80 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-600/30',
+                                'admin' => 'bg-indigo-100/80 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-600/30',
+                                'master' => 'bg-purple-100/80 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-200/50 dark:border-purple-600/30',
+                                default => 'bg-slate-100/80 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400 border-slate-200/50 dark:border-slate-600/30',
+                            };
+                            
+                            $icon = match($businessRole) {
+                                'owner' => 'fa-crown',
+                                'admin' => 'fa-user-shield',
+                                'master' => 'fa-user',
+                                default => 'fa-user',
+                            };
+                            
+                            $roleDisplayName = match($businessRole) {
+                                'owner' => 'Владелец',
+                                'admin' => 'Администратор',
+                                'master' => 'Мастер',
+                                default => ucfirst($businessRole),
+                            };
+                        @endphp
+                        <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold {{ $bgColor }} rounded-full border">
+                            <i class="fa-solid {{ $icon }} text-[9px]"></i>
+                            <span class="hidden lg:inline">{{ $roleDisplayName }}</span>
+                        </span>
+                    @endif
                 @endif
 
                 <!-- Переключатель темы -->

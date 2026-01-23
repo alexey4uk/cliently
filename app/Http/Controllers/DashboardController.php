@@ -24,34 +24,40 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services', 'businesses.masters']);
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
         // Проверяем наличие бизнеса
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
 
-        // Проверяем наличие локаций
-        if ($business->locations->isEmpty()) {
+        $business->load(['locations', 'services', 'masters']);
+
+        // Получаем роль пользователя для проверки прав
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+
+        // Проверяем наличие локаций (только если есть право на создание)
+        if ($business->locations->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'locations.create')) {
             return redirect()->route('settings.locations.create')
                 ->with('info', 'Добавьте локацию для записи клиентов.');
         }
 
-        // Проверяем наличие услуг
-        if ($business->services->isEmpty()) {
+        // Проверяем наличие услуг (только если есть право на создание)
+        if ($business->services->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'services.create')) {
             return redirect()->route('services.create')
                 ->with('info', 'Добавьте услуги, которые вы предлагаете.');
         }
 
-        // Проверяем наличие мастеров
-        if ($business->masters->isEmpty()) {
+        // Проверяем наличие мастеров (только если есть право на создание)
+        if ($business->masters->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'masters.create')) {
             return redirect()->route('settings.masters.create')
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
         // Кэширование данных (5 минут)
+        $user = Auth::user();
         $stats = Cache::remember('dashboard_stats_' . $user->id, 300, function () use ($business) {
             return $this->getStats($business->id);
         });

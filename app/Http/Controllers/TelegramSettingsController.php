@@ -9,10 +9,19 @@ class TelegramSettingsController extends Controller
 {
     public function index()
     {
-        Gate::authorize('telegram.manage');
+        $business = $this->getCurrentBusiness();
         
-        $user = Auth::user();
-        $business = $user->businesses()->first(); // Предполагаем, что пользователь имеет один бизнес
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        }
+        
+        $this->authorizeBusinessPermission('telegram.manage');
+
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        }
 
         // Получить первого бота (предполагаем, что бот один)
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
@@ -38,10 +47,19 @@ class TelegramSettingsController extends Controller
 
     public function disconnect()
     {
-        Gate::authorize('telegram.manage');
+        $business = $this->getCurrentBusiness();
         
-        $user = Auth::user();
-        $business = $user->businesses()->first();
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        }
+        
+        $this->authorizeBusinessPermission('telegram.manage');
+
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        }
 
         if ($business) {
             $business->update(['telegram_chat_id' => null]);

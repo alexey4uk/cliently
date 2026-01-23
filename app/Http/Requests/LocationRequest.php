@@ -2,22 +2,38 @@
 
 namespace App\Http\Requests;
 
+use App\Services\BusinessRolePermissionService;
+use App\Traits\HasCurrentBusiness;
 use Illuminate\Foundation\Http\FormRequest;
 
 class LocationRequest extends FormRequest
 {
+    use HasCurrentBusiness;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         $location = $this->route('location');
+        $business = $this->getCurrentBusiness();
         
-        if ($location) {
-            return $this->user()->can('locations.update');
+        if (!$business) {
+            return false;
         }
         
-        return $this->user()->can('locations.create');
+        $role = $this->getCurrentBusinessRole();
+        if (!$role) {
+            return false;
+        }
+        
+        $service = app(BusinessRolePermissionService::class);
+        
+        if ($location) {
+            return $service->hasPermission($business->id, $role, 'locations.update');
+        }
+        
+        return $service->hasPermission($business->id, $role, 'locations.create');
     }
 
     /**

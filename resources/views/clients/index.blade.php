@@ -10,6 +10,33 @@
 
 @section('content')
 
+@php
+    // Получаем бизнес и роль для проверки прав доступа
+    $user = Auth::user();
+    $currentBusiness = null;
+    $currentBusinessRole = null;
+    $permissionService = null;
+    if ($user) {
+        $user->load('businesses');
+        $currentBusiness = $user->businesses->first();
+        if ($currentBusiness) {
+            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
+            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            if ($currentBusinessRole) {
+                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+            }
+        }
+    }
+
+    // Функция для проверки бизнес-прав
+    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
+        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+            return false;
+        }
+        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+    };
+@endphp
+
     <!-- Flash сообщения -->
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
@@ -116,16 +143,20 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('clients.export', request()->query()) }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-file-csv text-sm"></i>
-                        <span>Экспорт</span>
-                    </a>
-                    <a href="{{ route('clients.create') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fa-solid fa-user-plus text-sm"></i>
-                        <span>Добавить</span>
-                    </a>
+                    @if($hasBusinessPermission('clients.export'))
+                        <a href="{{ route('clients.export', request()->query()) }}"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <i class="fa-solid fa-file-csv text-sm"></i>
+                            <span>Экспорт</span>
+                        </a>
+                    @endif
+                    @if($hasBusinessPermission('clients.create'))
+                        <a href="{{ route('clients.create') }}"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>Добавить</span>
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -543,29 +574,35 @@
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('clients.show', $client->id) }}" 
-                                                class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                            <a href="{{ route('clients.show', $client->id) }}"
+                                                class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                 title="Просмотр">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
                                             </a>
-                                            <a href="{{ route('clients.edit', $client->id) }}" 
-                                                class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
-                                                title="Редактировать">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                            </a>
-                                            <button
-                                                @click="openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')"
-                                                class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
-                                                title="Удалить">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                            </button>
+
+                                            @if($hasBusinessPermission('clients.update'))
+                                                <a href="{{ route('clients.edit', $client->id) }}"
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                    title="Редактировать">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                </a>
+                                            @endif
+
+                                            @if($hasBusinessPermission('clients.delete'))
+                                                <button
+                                                    @click="openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')"
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                    title="Удалить">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -641,10 +678,13 @@
                                     class="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                                     Просмотр
                                 </a>
-                                <a href="{{ route('clients.edit', $client) }}"
-                                    class="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                                    Изменить
-                                </a>
+
+                                @if($hasBusinessPermission('clients.update'))
+                                    <a href="{{ route('clients.edit', $client) }}"
+                                        class="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                                        Изменить
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>

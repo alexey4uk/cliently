@@ -24,12 +24,11 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $query = $business->clients();
@@ -114,12 +113,11 @@ class ClientController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         return view('clients.create', [
@@ -132,13 +130,14 @@ class ClientController extends Controller
      */
     public function store(ClientRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $user = Auth::user();
 
         // Проверка лимита клиентов
         $subscriptionService = app(SubscriptionService::class);
@@ -166,10 +165,9 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -230,10 +228,9 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -248,10 +245,9 @@ class ClientController extends Controller
      */
     public function update(ClientRequest $request, Client $client)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -272,10 +268,9 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
@@ -291,12 +286,11 @@ class ClientController extends Controller
      */
     public function export(Request $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $query = $business->clients();

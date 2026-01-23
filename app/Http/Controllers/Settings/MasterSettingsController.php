@@ -24,13 +24,14 @@ class MasterSettingsController extends Controller
      */
     public function index()
     {
-        $user = Auth::user()->load('businesses.masters.locations', 'businesses.masters.services');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $business->load('masters.locations', 'masters.services');
 
         return view('settings.masters.index', [
             'business' => $business,
@@ -43,13 +44,14 @@ class MasterSettingsController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $business->load(['locations', 'services']);
 
         return view('settings.masters.create', [
             'business' => $business,
@@ -63,15 +65,17 @@ class MasterSettingsController extends Controller
      */
     public function store(MasterRequest $request)
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
+        $business->load(['locations', 'services']);
+
         // Проверка лимита мастеров
+        $user = Auth::user();
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateMaster($user)) {
             return redirect()->back()

@@ -2,32 +2,59 @@
 
 namespace App\Http\Requests;
 
+use App\Services\BusinessRolePermissionService;
+use App\Traits\HasCurrentBusiness;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class BusinessRequest extends FormRequest
 {
+    use HasCurrentBusiness;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        // Для бизнеса проверяем по маршруту
-        // Если маршрут /settings/business (без параметра), то это update
-        // Если маршрут /settings/business/create, то это create
-        $business = $this->route('business');
-        
-        if ($business) {
-            return $this->user()->can('businesses.update');
+        // Определяем, это создание или редактирование по маршруту
+        $routeName = $this->route()?->getName();
+        $isCreate = str_contains($routeName ?? '', 'create') ||
+            str_contains($routeName ?? '', 'store');
+
+        // Для создания бизнеса не нужен текущий бизнес
+        if ($isCreate) {
+            // Проверяем, есть ли у пользователя уже бизнес
+            $business = $this->getCurrentBusiness();
+
+            // Если бизнеса нет - разрешаем создание
+            if (!$business) {
+                return true;
+            }
+
+            // Если бизнес есть - проверяем права на создание нового бизнеса
+            // (для будущей поддержки нескольких бизнесов)
+            $role = $this->getCurrentBusinessRole();
+            if (!$role) {
+                return false;
+            }
+
+            $service = app(BusinessRolePermissionService::class);
+            return $service->hasPermission($business->id, $role, 'businesses.create');
         }
-        
-        // Проверяем, это создание или редактирование по URL
-        $routeName = $this->route()->getName();
-        if (str_contains($routeName, 'create') || $this->isMethod('post')) {
-            return $this->user()->can('businesses.create');
+
+        // Для редактирования бизнеса нужен текущий бизнес
+        $business = $this->getCurrentBusiness();
+        if (!$business) {
+            return false;
         }
-        
-        return $this->user()->can('businesses.update');
+
+        $role = $this->getCurrentBusinessRole();
+        if (!$role) {
+            return false;
+        }
+
+        $service = app(BusinessRolePermissionService::class);
+        return $service->hasPermission($business->id, $role, 'businesses.update');
     }
 
     /**

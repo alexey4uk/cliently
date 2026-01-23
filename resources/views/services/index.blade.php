@@ -13,6 +13,33 @@
 
 @section('content')
 
+@php
+    // Получаем бизнес и роль для проверки прав доступа
+    $user = Auth::user();
+    $currentBusiness = null;
+    $currentBusinessRole = null;
+    $permissionService = null;
+    if ($user) {
+        $user->load('businesses');
+        $currentBusiness = $user->businesses->first();
+        if ($currentBusiness) {
+            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
+            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            if ($currentBusinessRole) {
+                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+            }
+        }
+    }
+
+    // Функция для проверки бизнес-прав
+    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
+        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+            return false;
+        }
+        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+    };
+@endphp
+
 <div x-data="{ 
     showDeleteModal: false,
     serviceToDelete: null,
@@ -43,11 +70,13 @@
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Услуги</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление услугами и прайс-листом вашего бизнеса</p>
             </div>
-            <a href="{{ route('services.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                <i class="fa-solid fa-plus text-sm"></i>
-                <span>Добавить услугу</span>
-            </a>
+            @if($hasBusinessPermission('services.create'))
+                <a href="{{ route('services.create') }}"
+                   class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить услугу</span>
+                </a>
+            @endif
         </div>
     </div>
 
@@ -201,24 +230,28 @@
                     <!-- Действия -->
                     <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
                         <div class="flex items-center justify-end gap-3">
-                            <a href="{{ route('services.edit', $service) }}"
-                               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <i class="fa-solid fa-pencil text-xs"></i>
-                                <span>Редактировать</span>
-                            </a>
+                            @if($hasBusinessPermission('services.update'))
+                                <a href="{{ route('services.edit', $service) }}"
+                                   class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                    <i class="fa-solid fa-pencil text-xs"></i>
+                                    <span>Редактировать</span>
+                                </a>
+                            @endif
 
-                            <form method="POST" action="{{ route('services.destroy', $service) }}" 
-                                  id="delete-form-{{ $service->id }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                            </form>
+                            @if($hasBusinessPermission('services.delete'))
+                                <form method="POST" action="{{ route('services.destroy', $service) }}"
+                                      id="delete-form-{{ $service->id }}" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
 
-                            <button type="button"
-                                    @click="openDeleteModal({{ $service->id }}, '{{ addslashes($service->name) }}')"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                                <span>Удалить</span>
-                            </button>
+                                <button type="button"
+                                        @click="openDeleteModal({{ $service->id }}, '{{ addslashes($service->name) }}')"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 border border-rose-300 dark:border-rose-700/50 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                    <span>Удалить</span>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

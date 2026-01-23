@@ -13,7 +13,7 @@ class AnalyticsController extends Controller
 {
     public function index()
     {
-        Gate::authorize('analytics.view');
+        $this->authorizeBusinessPermission('analytics.view');
         
         $user = Auth::user();
 
@@ -25,11 +25,11 @@ class AnalyticsController extends Controller
                 ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
         }
 
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
 
         return view('analytics.index', [
@@ -39,7 +39,7 @@ class AnalyticsController extends Controller
 
     public function financial(Request $request)
     {
-        Gate::authorize('analytics.view');
+        $this->authorizeBusinessPermission('analytics.view');
         
         $user = Auth::user();
 
@@ -51,11 +51,11 @@ class AnalyticsController extends Controller
                 ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
         }
 
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
 
         $filters = $this->getFilters($request);
@@ -70,7 +70,7 @@ class AnalyticsController extends Controller
 
     public function general(Request $request)
     {
-        Gate::authorize('analytics.view');
+        $this->authorizeBusinessPermission('analytics.view');
         
         $user = Auth::user();
 
@@ -82,11 +82,11 @@ class AnalyticsController extends Controller
                 ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
         }
 
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
 
         $filters = $this->getFilters($request);

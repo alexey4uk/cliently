@@ -24,13 +24,14 @@ class LocationSettingsController extends Controller
      */
     public function index()
     {
-        $user = Auth::user()->load('businesses.locations');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
+
+        $business->load('locations');
 
         return view('settings.locations.index', [
             'business' => $business,
@@ -43,12 +44,11 @@ class LocationSettingsController extends Controller
      */
     public function create()
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         return view('settings.locations.create', [
@@ -61,15 +61,15 @@ class LocationSettingsController extends Controller
      */
     public function store(LocationRequest $request)
     {
-        $user = Auth::user()->load('businesses');
-        $business = $user->businesses->first();
+        $business = $this->getCurrentBusiness();
 
-        if (! $business) {
-            return redirect()->route('settings.business.create')
-                ->with('info', 'Сначала создайте бизнес.');
+        if (!$business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         // Проверка лимита локаций
+        $user = Auth::user();
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateLocation($user)) {
             return redirect()->back()
