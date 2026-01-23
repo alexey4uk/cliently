@@ -16,12 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.plan.limit' => \App\Http\Middleware\CheckPlanLimit::class,
             'check.business.permission' => \App\Http\Middleware\CheckBusinessRolePermission::class,
         ]);
-        
-        // Добавляем middleware для принудительной смены пароля в начало группы web
-        // Это важно, чтобы он выполнялся до других middleware, которые могут перенаправлять
-        $middleware->web(prepend: [
-            \App\Http\Middleware\RequirePasswordChange::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

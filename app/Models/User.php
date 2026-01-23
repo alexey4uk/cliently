@@ -28,7 +28,6 @@ class User extends Authenticatable
         'name',
         'avatar',
         'dashboard_settings',
-        'must_change_password',
     ];
 
     /**
@@ -50,7 +49,6 @@ class User extends Authenticatable
     {
         return [
             'dashboard_settings' => 'array',
-            'must_change_password' => 'boolean',
             //            'email_verified_at' => 'datetime',
             //            'password' => 'hashed',
             //            'phone' => E164PhoneNumberCast::class.":BY",

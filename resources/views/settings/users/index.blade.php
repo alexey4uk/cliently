@@ -14,20 +14,6 @@
     showDeleteModal: false,
     userToDelete: null,
     userName: '',
-    showPasswordModal: {{ session('temporary_password') ? 'true' : 'false' }},
-    temporaryPassword: '{{ session('temporary_password') ?? '' }}',
-    newUserEmail: '{{ session('new_user_email') ?? '' }}',
-    passwordCopied: false,
-    copyPassword() {
-        if (this.temporaryPassword) {
-            navigator.clipboard.writeText(this.temporaryPassword).then(() => {
-                this.passwordCopied = true;
-                setTimeout(() => {
-                    this.passwordCopied = false;
-                }, 2000);
-            });
-        }
-    },
     openDeleteModal(userId, userName) {
         this.userToDelete = userId;
         this.userName = userName;
@@ -37,9 +23,6 @@
         this.showDeleteModal = false;
         this.userToDelete = null;
         this.userName = '';
-    },
-    closePasswordModal() {
-        this.showPasswordModal = false;
     },
     confirmDelete() {
         if (this.userToDelete) {
@@ -132,17 +115,10 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if($user->must_change_password)
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
-                                            <i class="fa-solid fa-key text-xs"></i>
-                                            Смена пароля
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full">
-                                            <i class="fa-solid fa-check-circle text-xs"></i>
-                                            Активен
-                                        </span>
-                                    @endif
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full">
+                                        <i class="fa-solid fa-check-circle text-xs"></i>
+                                        Активен
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
@@ -274,11 +250,6 @@
                                     @endif
                                 </span>
                             @endif
-                            @if($user->must_change_password)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
-                                    Смена пароля
-                                </span>
-                            @endif
                         </div>
                         <div class="flex gap-2">
                             <a href="{{ route('settings.users.edit', $user) }}"
@@ -365,65 +336,6 @@
             </div>
         </div>
     @endif
-
-    <!-- Модальное окно с временным паролем -->
-    <div x-show="showPasswordModal" 
-         @keydown.escape.window="closePasswordModal()"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-         style="display: {{ session('temporary_password') ? 'flex' : 'none' }};">
-        <div @click.stop
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="transform opacity-0 scale-95"
-             x-transition:enter-end="transform opacity-100 scale-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="transform opacity-100 scale-100"
-             x-transition:leave-end="transform opacity-0 scale-95"
-             class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 max-w-md w-full overflow-hidden">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-key text-amber-600 dark:text-amber-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Временный пароль создан</h3>
-                </div>
-                <button @click="closePasswordModal()"
-                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-            <div class="px-6 py-6">
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                    Для пользователя <span class="font-semibold text-slate-900 dark:text-white" x-text="newUserEmail"></span> был создан временный пароль. Сохраните его и передайте пользователю. Пароль не был отправлен по email.
-                </p>
-                <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 mb-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <p class="text-lg font-mono text-slate-900 dark:text-white break-all select-all" x-text="temporaryPassword"></p>
-                        <button @click="copyPassword()"
-                            class="flex-shrink-0 p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                            :title="passwordCopied ? 'Скопировано!' : 'Скопировать пароль'">
-                            <i :class="passwordCopied ? 'fa-solid fa-check text-emerald-600 dark:text-emerald-400' : 'fa-regular fa-copy'" class="text-base"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4">
-                    <p class="text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
-                        <i class="fa-solid fa-exclamation-triangle text-amber-600 dark:text-amber-400 mt-0.5"></i>
-                        <span>Пользователь должен будет сменить пароль при первом входе в систему.</span>
-                    </p>
-                </div>
-                <button @click="closePasswordModal()"
-                    class="w-full px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors">
-                    Понятно
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Модальное окно подтверждения удаления -->
     <div x-show="showDeleteModal" 

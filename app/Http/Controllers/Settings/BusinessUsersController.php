@@ -205,7 +205,6 @@ class BusinessUsersController extends Controller
             'name' => trim(($request->first_name ?? '') . ' ' . ($request->last_name ?? '')),
             'email' => $request->email,
             'password' => Hash::make($temporaryPassword),
-            'must_change_password' => true,
         ]);
 
         // Назначаем роль user
