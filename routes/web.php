@@ -38,21 +38,19 @@ Route::prefix('book/{slug}')->name('public.appointments.')->group(function () {
     Route::get('/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'success'])->name('success');
 });
 
+// Business invitations (guest and auth routes)
+Route::middleware('guest')->group(function () {
+    Route::get('/invite/{token}', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'accept'])->name('invite.accept');
+    Route::post('/invite/{token}/activate', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'activate'])->name('invite.activate');
+});
+
 Route::middleware(['auth'])->group(function () {
     // Welcome/Onboarding page
     Route::middleware(['only.client'])->group(function () {
         Route::get('/welcome', [\App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');
     });
 
-    // Business invitations (guest and auth routes)
-    Route::middleware('guest')->group(function () {
-        Route::get('/invite/{token}', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'accept'])->name('invite.accept');
-        Route::post('/invite/{token}/activate', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'activate'])->name('invite.activate');
-    });
-
-    Route::middleware('auth')->group(function () {
-        Route::post('/invite/{token}/accept', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'store'])->name('invite.store');
-    });
+    Route::post('/invite/{token}/accept', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'store'])->name('invite.store');
 
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
