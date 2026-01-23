@@ -10,6 +10,27 @@
 
 @section('content')
 
+@php
+    $roleLabels = [
+        'owner' => 'Владелец',
+        'admin' => 'Администратор',
+        'master' => 'Мастер',
+    ];
+    $roleBadgeClasses = [
+        'owner' => 'text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300',
+        'admin' => 'text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300',
+        'master' => 'text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300',
+    ];
+    $roleIcons = [
+        'owner' => 'fa-crown',
+        'admin' => 'fa-user-shield',
+        'master' => 'fa-user',
+    ];
+    $getRoleLabel = fn($role) => $roleLabels[$role] ?? ucfirst($role);
+    $getRoleBadgeClass = fn($role) => $roleBadgeClasses[$role] ?? 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
+    $getRoleIcon = fn($role) => $roleIcons[$role] ?? 'fa-user';
+@endphp
+
 <div x-data="{
     showDeleteModal: false,
     userToDelete: null,
@@ -97,20 +118,9 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     @if($role)
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
-                                            @if($role === 'owner') text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300
-                                            @elseif($role === 'admin') text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300
-                                            @else text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300
-                                            @endif">
-                                            <i class="fa-solid 
-                                                @if($role === 'owner') fa-crown
-                                                @elseif($role === 'admin') fa-user-shield
-                                                @else fa-user
-                                                @endif text-xs"></i>
-                                            @if($role === 'owner') Владелец
-                                            @elseif($role === 'admin') Администратор
-                                            @else Мастер
-                                            @endif
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($role) }}">
+                                            <i class="fa-solid {{ $getRoleIcon($role) }} text-xs"></i>
+                                            {{ $getRoleLabel($role) }}
                                         </span>
                                     @endif
                                 </td>
@@ -170,20 +180,9 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
-                                        @if($invitation->role === 'owner') text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300
-                                        @elseif($invitation->role === 'admin') text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300
-                                        @else text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300
-                                        @endif">
-                                        <i class="fa-solid 
-                                            @if($invitation->role === 'owner') fa-crown
-                                            @elseif($invitation->role === 'admin') fa-user-shield
-                                            @else fa-user
-                                            @endif text-xs"></i>
-                                        @if($invitation->role === 'owner') Владелец
-                                        @elseif($invitation->role === 'admin') Администратор
-                                        @else Мастер
-                                        @endif
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
+                                        <i class="fa-solid {{ $getRoleIcon($invitation->role) }} text-xs"></i>
+                                        {{ $getRoleLabel($invitation->role) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
@@ -239,15 +238,8 @@
                         </div>
                         <div class="flex flex-wrap gap-2 mb-4">
                             @if($role)
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
-                                    @if($role === 'owner') text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300
-                                    @elseif($role === 'admin') text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300
-                                    @else text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300
-                                    @endif">
-                                    @if($role === 'owner') Владелец
-                                    @elseif($role === 'admin') Администратор
-                                    @else Мастер
-                                    @endif
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($role) }}">
+                                    {{ $getRoleLabel($role) }}
                                 </span>
                             @endif
                         </div>
@@ -292,15 +284,8 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
-                                @if($invitation->role === 'owner') text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300
-                                @elseif($invitation->role === 'admin') text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300
-                                @else text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300
-                                @endif">
-                                @if($invitation->role === 'owner') Владелец
-                                @elseif($invitation->role === 'admin') Администратор
-                                @else Мастер
-                                @endif
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
+                                {{ $getRoleLabel($invitation->role) }}
                             </span>
                         </div>
                         <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="w-full">

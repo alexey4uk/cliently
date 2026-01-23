@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('business_id')->constrained('businesses')->cascadeOnDelete();
             $table->string('email');
-            $table->enum('role', ['owner', 'admin', 'master']);
+            $table->string('role', 100);
             $table->string('token', 64)->unique();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamp('accepted_at')->nullable();

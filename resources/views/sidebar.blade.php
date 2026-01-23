@@ -1283,48 +1283,57 @@
                         @endif
                         
                         @if($businessRole)
+                            @php
+                                $roleLabels = [
+                                    'owner' => 'Владелец',
+                                    'admin' => 'Администратор',
+                                    'master' => 'Мастер',
+                                ];
+                                $roleLabel = $roleLabels[$businessRole] ?? ucfirst($businessRole);
+                                $roleIcon = match ($businessRole) {
+                                    'owner' => 'fa-crown',
+                                    'admin' => 'fa-user-shield',
+                                    'master' => 'fa-user',
+                                    default => 'fa-user-gear',
+                                };
+                                $roleColor = match ($businessRole) {
+                                    'owner' => 'text-amber-600 dark:text-amber-400',
+                                    'admin' => 'text-indigo-600 dark:text-indigo-400',
+                                    'master' => 'text-purple-600 dark:text-purple-400',
+                                    default => 'text-slate-600 dark:text-slate-300',
+                                };
+                                $roleContainer = match ($businessRole) {
+                                    'owner' => 'bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 border-amber-200 dark:border-amber-500/20',
+                                    'admin' => 'bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border-indigo-200 dark:border-indigo-500/20',
+                                    'master' => 'bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 border-purple-200 dark:border-purple-500/20',
+                                    default => 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
+                                };
+                            @endphp
                             <!-- Информация о роли работника -->
                             <div class="mb-4 p-3 rounded-lg border transition-all duration-200 relative
-                                @if($businessRole === 'owner') bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 border-amber-200 dark:border-amber-500/20
-                                @elseif($businessRole === 'admin') bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border-indigo-200 dark:border-indigo-500/20
-                                @else bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 border-purple-200 dark:border-purple-500/20
-                                @endif"
+                                {{ $roleContainer }}"
                                 :class="collapsed ? 'px-2' : ''"
-                                :title="collapsed ? '@if($businessRole === 'owner') Владелец @elseif($businessRole === 'admin') Администратор @else Мастер @endif' : ''"
+                                :title="collapsed ? '{{ $roleLabel }}' : ''"
                                 x-data="{ tooltip: false }"
                                 @mouseenter="if (collapsed) tooltip = true"
                                 @mouseleave="tooltip = false">
                                 <div x-show="!collapsed" x-cloak class="flex items-center gap-2">
-                                    <i class="fa-solid 
-                                        @if($businessRole === 'owner') fa-crown text-amber-600 dark:text-amber-400
-                                        @elseif($businessRole === 'admin') fa-user-shield text-indigo-600 dark:text-indigo-400
-                                        @else fa-user text-purple-600 dark:text-purple-400
-                                        @endif text-sm"></i>
+                                    <i class="fa-solid {{ $roleIcon }} {{ $roleColor }} text-sm"></i>
                                     <span class="text-xs font-semibold text-slate-900 dark:text-white truncate">
-                                        @if($businessRole === 'owner') Владелец
-                                        @elseif($businessRole === 'admin') Администратор
-                                        @else Мастер
-                                        @endif
+                                        {{ $roleLabel }}
                                     </span>
                                 </div>
                                 
                                 <!-- Иконка при свернутом sidebar -->
                                 <div x-show="collapsed" class="flex justify-center">
-                                    <i class="fa-solid 
-                                        @if($businessRole === 'owner') fa-crown text-amber-600 dark:text-amber-400
-                                        @elseif($businessRole === 'admin') fa-user-shield text-indigo-600 dark:text-indigo-400
-                                        @else fa-user text-purple-600 dark:text-purple-400
-                                        @endif text-lg"></i>
+                                    <i class="fa-solid {{ $roleIcon }} {{ $roleColor }} text-lg"></i>
                                 </div>
                                 
                                 <div x-show="tooltip && collapsed" 
                                      x-transition
                                      class="absolute left-full ml-2 px-2 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
                                     <div class="font-semibold">
-                                        @if($businessRole === 'owner') Владелец
-                                        @elseif($businessRole === 'admin') Администратор
-                                        @else Мастер
-                                        @endif
+                                        {{ $roleLabel }}
                                     </div>
                                 </div>
                             </div>

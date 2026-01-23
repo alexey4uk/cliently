@@ -42,6 +42,14 @@
             <form method="POST" action="{{ route('settings.users.invite') }}" class="space-y-5">
                 @csrf
 
+                @php
+                    $roleLabels = [
+                        'owner' => 'Владелец',
+                        'admin' => 'Администратор',
+                        'master' => 'Мастер',
+                    ];
+                @endphp
+
                 <div>
                     <label for="invite_email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                         Email адрес <span class="text-rose-500">*</span>
@@ -67,8 +75,11 @@
                             required
                             class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Администратор</option>
-                        <option value="master" {{ old('role') === 'master' ? 'selected' : '' }}>Мастер</option>
+                        @foreach($availableRoles as $roleKey)
+                            <option value="{{ $roleKey }}" {{ old('role') === $roleKey ? 'selected' : '' }}>
+                                {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                            </option>
+                        @endforeach
                     </select>
                     @error('role')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -156,8 +167,11 @@
                             required
                             class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Администратор</option>
-                        <option value="master" {{ old('role') === 'master' ? 'selected' : '' }}>Мастер</option>
+                        @foreach($availableRoles as $roleKey)
+                            <option value="{{ $roleKey }}" {{ old('role') === $roleKey ? 'selected' : '' }}>
+                                {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                            </option>
+                        @endforeach
                     </select>
                     @error('role')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>

@@ -18,8 +18,8 @@ class BusinessRolePermissionsController extends Controller
     {
         Gate::authorize('panel.business.roles.manage');
 
-        $roles = ['owner', 'admin', 'master'];
         $service = app(BusinessRolePermissionService::class);
+        $roles = $service->getAvailableRoles();
 
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
@@ -39,11 +39,10 @@ class BusinessRolePermissionsController extends Controller
     {
         Gate::authorize('panel.business.roles.manage');
 
-        if (!in_array($role, ['owner', 'admin', 'master'])) {
+        $service = app(BusinessRolePermissionService::class);
+        if (!in_array($role, $service->getAvailableRoles())) {
             abort(404);
         }
-
-        $service = app(BusinessRolePermissionService::class);
         
         // Получаем базовые права (где business_id = NULL)
         $defaultPermissions = $service->getDefaultPermissionsForRole($role);
@@ -68,6 +67,11 @@ class BusinessRolePermissionsController extends Controller
             'business.users.*',
         ]);
 
+        $allPermissions = array_merge($allPermissions, [
+            'clients.view.own',
+            'appointments.view.own',
+        ]);
+
         return view('panel.business-roles.show', [
             'role' => $role,
             'allPermissions' => $allPermissions,
@@ -82,7 +86,8 @@ class BusinessRolePermissionsController extends Controller
     {
         Gate::authorize('panel.business.roles.manage');
 
-        if (!in_array($role, ['owner', 'admin', 'master'])) {
+        $service = app(BusinessRolePermissionService::class);
+        if (!in_array($role, $service->getAvailableRoles())) {
             abort(404);
         }
 
@@ -110,6 +115,11 @@ class BusinessRolePermissionsController extends Controller
             'business.users.*',
         ]);
 
+        $allPermissions = array_merge($allPermissions, [
+            'clients.view.own',
+            'appointments.view.own',
+        ]);
+
         // Удаляем все существующие базовые права для этой роли
         BusinessRolePermission::whereNull('business_id')
             ->where('role', $role)
@@ -130,4 +140,5 @@ class BusinessRolePermissionsController extends Controller
         return redirect()->route('panel.business-roles.show', ['role' => $role])
             ->with('success', 'Базовые права для роли обновлены.');
     }
+
 }

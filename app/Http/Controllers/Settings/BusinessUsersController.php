@@ -9,12 +9,14 @@ use App\Models\User;
 use App\Notifications\BusinessUserCreated;
 use App\Notifications\BusinessUserCreatedWithPassword;
 use App\Notifications\BusinessUserInvitation as BusinessUserInvitationNotification;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use App\Traits\HasCurrentBusiness;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class BusinessUsersController extends Controller
@@ -70,6 +72,7 @@ class BusinessUsersController extends Controller
 
         return view('settings.users.create', [
             'business' => $business,
+            'availableRoles' => $this->getAvailableRoles(false),
         ]);
     }
 
@@ -87,9 +90,11 @@ class BusinessUsersController extends Controller
 
         $this->authorizeBusinessPermission('business.users.create');
 
+        $availableRoles = $this->getAvailableRoles(false);
+
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', 'in:owner,admin,master'],
+            'role' => ['required', Rule::in($availableRoles)],
         ], [
             'email.required' => 'Email обязателен для заполнения.',
             'email.email' => 'Введите корректный email адрес.',
@@ -157,6 +162,8 @@ class BusinessUsersController extends Controller
 
         $this->authorizeBusinessPermission('business.users.create');
 
+        $availableRoles = $this->getAvailableRoles(false);
+
         // Проверяем, существует ли пользователь
         $existingUser = User::where('email', $request->email)->first();
         
@@ -187,7 +194,7 @@ class BusinessUsersController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:owner,admin,master'],
+            'role' => ['required', Rule::in($availableRoles)],
         ], [
             'first_name.required' => 'Имя обязательно для заполнения.',
             'email.required' => 'Email обязателен для заполнения.',
@@ -263,6 +270,7 @@ class BusinessUsersController extends Controller
             'business' => $business,
             'user' => $user,
             'currentRole' => $currentRole,
+            'availableRoles' => $this->getAvailableRoles(true),
         ]);
     }
 
@@ -285,8 +293,10 @@ class BusinessUsersController extends Controller
             abort(404);
         }
 
+        $availableRoles = $this->getAvailableRoles(true);
+
         $request->validate([
-            'role' => ['required', 'in:owner,admin,master'],
+            'role' => ['required', Rule::in($availableRoles)],
         ], [
             'role.required' => 'Роль обязательна для выбора.',
             'role.in' => 'Выбрана некорректная роль.',
@@ -299,6 +309,12 @@ class BusinessUsersController extends Controller
         if ($currentRole === 'owner' && $request->role !== 'owner') {
             return redirect()->back()
                 ->with('error', 'Нельзя изменить роль владельца. Для передачи владения используйте специальную процедуру.');
+        }
+
+        // Нельзя назначить роль owner обычному пользователю
+        if ($currentRole !== 'owner' && $request->role === 'owner') {
+            return redirect()->back()
+                ->with('error', 'Нельзя назначить роль владельца через обычное изменение роли.');
         }
 
         // Обновляем роль
@@ -409,5 +425,14 @@ class BusinessUsersController extends Controller
         }
         
         return $password;
+    }
+
+    /**
+     * Get available roles from defaults table.
+     */
+    private function getAvailableRoles(bool $includeOwner): array
+    {
+        $service = app(BusinessRolePermissionService::class);
+        return $service->getAvailableRoles($includeOwner);
     }
 }

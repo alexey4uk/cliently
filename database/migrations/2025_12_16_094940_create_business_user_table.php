@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('first_name', 255)->nullable();
             $table->string('last_name', 255)->nullable();
-            $table->enum('role', ['owner', 'admin', 'master'])->default('master');
+            $table->string('role', 100)->default('master');
             $table->timestamps();
 
             $table->unique(['business_id', 'user_id']);

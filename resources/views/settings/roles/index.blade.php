@@ -13,56 +13,139 @@
 <div class="max-w-6xl mx-auto">
     <!-- Заголовок -->
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Права ролей</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-                Настройте права доступа для ролей в вашем бизнесе. Вы можете переопределить базовые права.
-            </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Права ролей</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">
+                    Настройте права доступа для ролей в вашем бизнесе. Вы можете переопределить базовые права.
+                </p>
+            </div>
+            <a href="{{ route('settings.roles.create') }}"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Создать роль</span>
+            </a>
         </div>
     </div>
 
     <!-- Список ролей -->
-    <div class="grid md:grid-cols-3 gap-6">
-        @foreach(['owner' => 'Владелец', 'admin' => 'Администратор', 'master' => 'Мастер'] as $roleKey => $roleName)
-            <a href="{{ route('settings.roles.show', $roleKey) }}" 
-               class="group bg-white dark:bg-slate-900 rounded-xl border-2 border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-600 shadow-sm hover:shadow-md p-6 transition-all">
-                <div class="h-16 w-16 rounded-xl 
-                    @if($roleKey === 'owner') bg-gradient-to-br from-amber-500 to-amber-600
-                    @elseif($roleKey === 'admin') bg-gradient-to-br from-indigo-500 to-indigo-600
-                    @else bg-gradient-to-br from-purple-500 to-purple-600
-                    @endif flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <i class="fa-solid 
-                        @if($roleKey === 'owner') fa-crown
-                        @elseif($roleKey === 'admin') fa-user-shield
-                        @else fa-user
-                        @endif text-white text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    {{ $roleName }}
-                </h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                    @if($roleKey === 'owner')
-                        Полный доступ ко всем функциям бизнеса
-                    @elseif($roleKey === 'admin')
-                        Расширенный доступ к управлению бизнесом
-                    @else
-                        Ограниченный доступ для работы с клиентами
-                    @endif
-                </p>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-slate-500 dark:text-slate-400">
-                        {{ count($roles[$roleKey] ?? []) }} прав
+    @php
+        $roleLabels = [
+            'admin' => 'Администратор',
+            'master' => 'Мастер',
+        ];
+        $roleDescriptions = [
+            'admin' => 'Расширенный доступ к управлению бизнесом',
+            'master' => 'Ограниченный доступ для работы с клиентами',
+        ];
+        $roleIcons = [
+            'admin' => 'fa-user-shield',
+            'master' => 'fa-user',
+        ];
+        $roleGradients = [
+            'admin' => 'from-indigo-500 to-indigo-600',
+            'master' => 'from-purple-500 to-purple-600',
+        ];
+    @endphp
+    <div class="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Роль</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Описание</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Права</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Действия</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                @foreach($roles as $roleKey => $permissions)
+                    @php
+                        $roleName = $roleLabels[$roleKey] ?? ucfirst($roleKey);
+                        $roleDescription = $roleDescriptions[$roleKey] ?? 'Пользовательская роль с настраиваемыми правами';
+                        $roleIcon = $roleIcons[$roleKey] ?? 'fa-user-gear';
+                        $roleGradient = $roleGradients[$roleKey] ?? 'from-slate-500 to-slate-600';
+                    @endphp
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 rounded-lg bg-linear-to-br {{ $roleGradient }} flex items-center justify-center">
+                                    <i class="fa-solid {{ $roleIcon }} text-white text-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-900 dark:text-white">
+                                        {{ $roleName }}
+                                    </div>
+                                    <div class="text-xs text-slate-400 dark:text-slate-500">
+                                        {{ $roleKey }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-slate-600 dark:text-slate-400">
+                                {{ $roleDescription }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-full">
+                                <i class="fa-solid fa-shield-halved text-xs"></i>
+                                {{ count($permissions ?? []) }} прав
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ route('settings.roles.show', $roleKey) }}"
+                               class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+                                <span>Настроить</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="md:hidden space-y-4">
+        @foreach($roles as $roleKey => $permissions)
+            @php
+                $roleName = $roleLabels[$roleKey] ?? ucfirst($roleKey);
+                $roleDescription = $roleDescriptions[$roleKey] ?? 'Пользовательская роль с настраиваемыми правами';
+                $roleIcon = $roleIcons[$roleKey] ?? 'fa-user-gear';
+                $roleGradient = $roleGradients[$roleKey] ?? 'from-slate-500 to-slate-600';
+            @endphp
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-linear-to-br {{ $roleGradient }} flex items-center justify-center">
+                        <i class="fa-solid {{ $roleIcon }} text-white text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-slate-900 dark:text-white">
+                            {{ $roleName }}
+                        </div>
+                        <div class="text-xs text-slate-400 dark:text-slate-500">
+                            {{ $roleKey }}
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-full">
+                        {{ count($permissions ?? []) }} прав
                     </span>
-                    <i class="fa-solid fa-arrow-right text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
                 </div>
-            </a>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-3">
+                    {{ $roleDescription }}
+                </p>
+                <a href="{{ route('settings.roles.show', $roleKey) }}"
+                   class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                    <span>Настроить</span>
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </a>
+            </div>
         @endforeach
     </div>
 
     <!-- Информационная подсказка -->
     <div class="mt-8 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl p-6">
         <div class="flex items-start gap-4">
-            <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+            <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>

@@ -6,12 +6,14 @@ use App\Http\Requests\ClientRequest;
 use App\Models\Client;
 use App\Repositories\ClientRepositoryInterface;
 use App\Services\SubscriptionService;
+use App\Traits\HasOwnDataFiltering;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
+    use HasOwnDataFiltering;
     private ClientRepositoryInterface $clientRepository;
 
     public function __construct(ClientRepositoryInterface $clientRepository)
@@ -32,6 +34,12 @@ class ClientController extends Controller
         }
 
         $query = $business->clients();
+
+        // Применяем фильтр "только свои данные" если нужно
+        $role = $this->getCurrentBusinessRole();
+        if ($role) {
+            $this->applyOwnDataFilterForClients($query, $business, $role, 'clients.view');
+        }
 
         // Поиск
         if ($request->has('search') && $request->search) {
@@ -171,6 +179,13 @@ class ClientController extends Controller
             return redirect()->route('clients.index');
         }
 
+        // Проверяем право на просмотр этого конкретного клиента
+        $role = $this->getCurrentBusinessRole();
+        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+            return redirect()->route('clients.index')
+                ->with('error', 'У вас нет доступа к этому клиенту.');
+        }
+
         // Статистика записей клиента
         $totalAppointments = $client->appointments()->count();
         $completedAppointments = $client->appointments()->where('status', 'completed')->count();
@@ -234,6 +249,13 @@ class ClientController extends Controller
             return redirect()->route('clients.index');
         }
 
+        // Проверяем право на просмотр этого конкретного клиента
+        $role = $this->getCurrentBusinessRole();
+        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+            return redirect()->route('clients.index')
+                ->with('error', 'У вас нет доступа к этому клиенту.');
+        }
+
         return view('clients.edit', [
             'business' => $business,
             'client' => $client,
@@ -249,6 +271,13 @@ class ClientController extends Controller
 
         if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
+        }
+
+        // Проверяем право на просмотр этого конкретного клиента
+        $role = $this->getCurrentBusinessRole();
+        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+            return redirect()->route('clients.index')
+                ->with('error', 'У вас нет доступа к этому клиенту.');
         }
 
         $validated = $request->validated();
@@ -274,6 +303,13 @@ class ClientController extends Controller
             return redirect()->route('clients.index');
         }
 
+        // Проверяем право на просмотр этого конкретного клиента
+        $role = $this->getCurrentBusinessRole();
+        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+            return redirect()->route('clients.index')
+                ->with('error', 'У вас нет доступа к этому клиенту.');
+        }
+
         $client->delete();
 
         // Уменьшать usage не нужно, т.к. для клиентов считаем напрямую из БД
@@ -294,6 +330,12 @@ class ClientController extends Controller
         }
 
         $query = $business->clients();
+
+        // Применяем фильтр "только свои данные" если нужно
+        $role = $this->getCurrentBusinessRole();
+        if ($role) {
+            $this->applyOwnDataFilterForClients($query, $business, $role, 'clients.view');
+        }
 
         // Применяем те же фильтры, что и для index
         if ($request->has('search') && $request->search) {

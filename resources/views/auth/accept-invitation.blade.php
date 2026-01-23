@@ -3,6 +3,27 @@
 @section('title', 'Принятие приглашения')
 
 @section('content')
+@php
+    $roleLabels = [
+        'owner' => 'Владелец',
+        'admin' => 'Администратор',
+        'master' => 'Мастер',
+    ];
+    $roleBadgeClasses = [
+        'owner' => 'text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300',
+        'admin' => 'text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300',
+        'master' => 'text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300',
+    ];
+    $roleIcons = [
+        'owner' => 'fa-crown',
+        'admin' => 'fa-user-shield',
+        'master' => 'fa-user',
+    ];
+    $roleLabel = $roleLabels[$invitation->role] ?? ucfirst($invitation->role);
+    $roleBadge = $roleBadgeClasses[$invitation->role] ?? 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
+    $roleIcon = $roleIcons[$invitation->role] ?? 'fa-user';
+@endphp
+
 <div class="max-w-md mx-auto">
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg p-6 md:p-8">
         <!-- Заголовок -->
@@ -26,22 +47,10 @@
                 <div>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Роль</p>
                     <p class="text-sm font-medium text-slate-900 dark:text-white">
-                        @if($invitation->role === 'owner')
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
-                                <i class="fa-solid fa-crown text-xs"></i>
-                                Владелец
-                            </span>
-                        @elseif($invitation->role === 'admin')
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 dark:bg-indigo-500/20 dark:text-indigo-300 rounded-full">
-                                <i class="fa-solid fa-user-shield text-xs"></i>
-                                Администратор
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-100 dark:bg-purple-500/20 dark:text-purple-300 rounded-full">
-                                <i class="fa-solid fa-user text-xs"></i>
-                                Мастер
-                            </span>
-                        @endif
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $roleBadge }}">
+                            <i class="fa-solid {{ $roleIcon }} text-xs"></i>
+                            {{ $roleLabel }}
+                        </span>
                     </p>
                 </div>
                 <div>

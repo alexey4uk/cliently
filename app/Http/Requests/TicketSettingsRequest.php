@@ -26,8 +26,29 @@ class TicketSettingsRequest extends FormRequest
             'sla_response_time' => ['nullable', 'integer', 'min:0'],
             'email_notifications_enabled' => ['nullable', 'boolean'],
             'email_notification_recipients' => ['nullable', 'array'],
-            'email_notification_recipients.*' => ['email'],
+            'email_notification_recipients.*' => ['nullable', 'email'],
         ];
+    }
+    
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Преобразуем чекбоксы: если они не переданы, устанавливаем false
+        // Если переданы как '1', преобразуем в true
+        $this->merge([
+            'enabled' => $this->has('enabled') ? filter_var($this->input('enabled'), FILTER_VALIDATE_BOOLEAN) : false,
+            'email_notifications_enabled' => $this->has('email_notifications_enabled') ? filter_var($this->input('email_notifications_enabled'), FILTER_VALIDATE_BOOLEAN) : false,
+        ]);
+        
+        // Преобразуем пустые строки в null для email получателей
+        if ($this->has('email_notification_recipients') && is_array($this->input('email_notification_recipients'))) {
+            $recipients = array_map(function($email) {
+                return empty(trim($email ?? '')) ? null : trim($email);
+            }, $this->input('email_notification_recipients'));
+            $this->merge(['email_notification_recipients' => $recipients]);
+        }
     }
 
     /**

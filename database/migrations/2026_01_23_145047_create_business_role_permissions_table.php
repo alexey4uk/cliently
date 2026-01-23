@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('business_role_permissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->nullable()->constrained('businesses')->cascadeOnDelete();
-            $table->enum('role', ['owner', 'admin', 'master']);
+            $table->string('role', 100);
             $table->string('permission', 255);
             $table->boolean('granted')->default(true);
             $table->timestamps();

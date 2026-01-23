@@ -23,6 +23,14 @@
                     {{ strtoupper(mb_substr($user->name, 0, 2)) }}
                 @endif
             </div>
+            @php
+                $roleLabels = [
+                    'owner' => 'Владелец',
+                    'admin' => 'Администратор',
+                    'master' => 'Мастер',
+                ];
+            @endphp
+
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ $user->name }}</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400">{{ $user->email }}</p>
@@ -44,9 +52,13 @@
                         name="role" 
                         required
                         class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
-                    <option value="owner" {{ $currentRole === 'owner' ? 'selected' : '' }} disabled>Владелец</option>
-                    <option value="admin" {{ $currentRole === 'admin' ? 'selected' : '' }}>Администратор</option>
-                    <option value="master" {{ $currentRole === 'master' ? 'selected' : '' }}>Мастер</option>
+                    @foreach($availableRoles as $roleKey)
+                        <option value="{{ $roleKey }}"
+                                {{ $currentRole === $roleKey ? 'selected' : '' }}
+                                {{ $roleKey === 'owner' && $currentRole !== 'owner' ? 'disabled' : '' }}>
+                            {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                        </option>
+                    @endforeach
                 </select>
                 @error('role')
                     <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -54,10 +66,7 @@
                 <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                     Текущая роль: 
                     <span class="font-medium">
-                        @if($currentRole === 'owner') Владелец
-                        @elseif($currentRole === 'admin') Администратор
-                        @else Мастер
-                        @endif
+                        {{ $roleLabels[$currentRole] ?? ucfirst($currentRole) }}
                     </span>
                 </p>
                 @if($currentRole === 'owner')

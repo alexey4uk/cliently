@@ -30,7 +30,7 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
-        
+
         if (! $settings->enabled) {
             return redirect()->route('dashboard')
                 ->with('info', 'Система тикетов отключена.');
@@ -41,7 +41,7 @@ class TicketController extends Controller
         $query = $business->tickets()
             ->where(function ($q) use ($user) {
                 $q->where('created_by_type', 'user')
-                  ->where('created_by_id', $user->id);
+                    ->where('created_by_id', $user->id);
             })
             ->with(['category', 'assignedUser', 'client'])
             ->withCount('comments');
@@ -105,7 +105,7 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
-        
+
         if (! $settings->enabled) {
             return redirect()->route('tickets.index')
                 ->with('info', 'Система тикетов отключена.');
@@ -136,7 +136,7 @@ class TicketController extends Controller
         $user = Auth::user();
 
         $settings = TicketSettings::getForBusiness($business->id);
-        
+
         if (! $settings->enabled) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Система тикетов отключена.');
@@ -161,7 +161,7 @@ class TicketController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('tickets/attachments', 'public');
-                
+
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'file_path' => $path,
@@ -298,7 +298,7 @@ class TicketController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('tickets/attachments', 'public');
-                
+
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'file_path' => $path,
@@ -386,7 +386,7 @@ class TicketController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('tickets/attachments', 'public');
-                
+
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'comment_id' => $comment->id,

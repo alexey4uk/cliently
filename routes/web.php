@@ -145,14 +145,15 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // Тикеты (явные роуты без route model binding, используем {id} вместо {ticket})
-        Route::middleware(['check.business.permission:tickets.view'])->group(function () {
-            Route::get('tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
-            Route::get('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
-        });
-
+        // ВАЖНО: Специфичные маршруты (create, edit) должны быть ПЕРЕД динамическими ({id})
         Route::middleware(['check.business.permission:tickets.create'])->group(function () {
             Route::get('tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
             Route::post('tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+        });
+
+        Route::middleware(['check.business.permission:tickets.view'])->group(function () {
+            Route::get('tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+            Route::get('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
         });
 
         Route::middleware(['check.business.permission:tickets.update'])->group(function () {
@@ -261,8 +262,11 @@ Route::middleware(['auth'])->group(function () {
             // Управление правами ролей бизнеса
             Route::middleware(['check.business.permission:business.roles.manage'])->group(function () {
                 Route::get('/roles', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'index'])->name('roles.index');
+                Route::get('/roles/create', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'create'])->name('roles.create');
+                Route::post('/roles', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'store'])->name('roles.store');
                 Route::get('/roles/{role}', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'show'])->name('roles.show');
                 Route::put('/roles/{role}', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'update'])->name('roles.update');
+                Route::delete('/roles/{role}', [\App\Http\Controllers\Settings\BusinessRolePermissionsController::class, 'destroy'])->name('roles.destroy');
             });
         });
     });

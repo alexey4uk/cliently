@@ -63,10 +63,10 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
 
         $adminPermissions = array_values($adminPermissions);
 
-        // Master: only view and create
+        // Master: only view own data and create
         $masterPermissions = [
-            'clients.view',
-            'appointments.view',
+            'clients.view.own', // Только клиенты с записями у этого мастера
+            'appointments.view.own', // Только записи этого мастера
             'appointments.create',
             'services.view',
             'locations.view',

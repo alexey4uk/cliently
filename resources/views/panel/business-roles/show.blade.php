@@ -1,6 +1,21 @@
 @extends('layouts.panel')
 
-@section('title', 'Базовые права роли: ' . ($role === 'owner' ? 'Владелец' : ($role === 'admin' ? 'Администратор' : 'Мастер')) . ' - Cliently')
+@php
+    $roleLabels = [
+        'owner' => 'Владелец',
+        'admin' => 'Администратор',
+        'master' => 'Мастер',
+    ];
+    $roleLabel = $roleLabels[$role] ?? ucfirst($role);
+    $roleTitleClass = match ($role) {
+        'owner' => 'text-amber-600 dark:text-amber-400',
+        'admin' => 'text-indigo-600 dark:text-indigo-400',
+        'master' => 'text-purple-600 dark:text-purple-400',
+        default => 'text-slate-600 dark:text-slate-300',
+    };
+@endphp
+
+@section('title', 'Базовые права роли: ' . $roleLabel . ' - Cliently')
 
 @section('content')
 <div class="space-y-6">
@@ -8,16 +23,9 @@
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                Базовые права роли: 
-                <span class="
-                    @if($role === 'owner') text-amber-600 dark:text-amber-400
-                    @elseif($role === 'admin') text-indigo-600 dark:text-indigo-400
-                    @else text-purple-600 dark:text-purple-400
-                    @endif">
-                    @if($role === 'owner') Владелец
-                    @elseif($role === 'admin') Администратор
-                    @else Мастер
-                    @endif
+                Базовые права роли:
+                <span class="{{ $roleTitleClass }}">
+                    {{ $roleLabel }}
                 </span>
             </h2>
             <p class="text-slate-600 dark:text-slate-400">

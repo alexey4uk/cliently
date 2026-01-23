@@ -10,12 +10,14 @@ use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
 use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
+use App\Traits\HasOwnDataFiltering;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentsController extends Controller
 {
+    use HasOwnDataFiltering;
     private AppointmentRepositoryInterface $appointmentRepository;
 
     private ClientRepositoryInterface $clientRepository;
@@ -73,6 +75,10 @@ class AppointmentsController extends Controller
             $selectedDate = Carbon::now()->startOfMonth();
         }
 
+        // Получаем роль пользователя для проверки прав
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+
         // Сортировка и пагинация
         $sort = $request->get('sort', 'date');
         $direction = $request->get('direction', 'desc');
@@ -91,8 +97,26 @@ class AppointmentsController extends Controller
             'direction' => $direction,
         ];
 
+        // Применяем фильтр "только свои данные" если нужно
+        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+            $masterId = $this->getCurrentUserMasterId($business);
+            if ($masterId) {
+                $filters['master_id'] = $masterId; // Принудительно фильтруем по мастеру
+            }
+        }
+
         if ($view === 'calendar') {
             $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+
+            // Применяем фильтр "только свои данные" для календаря
+            if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+                $masterId = $this->getCurrentUserMasterId($business);
+                if ($masterId) {
+                    $allAppointments = $allAppointments->where('master_id', $masterId);
+                } else {
+                    $allAppointments = collect(); // Пустая коллекция если нет мастера
+                }
+            }
 
             // Группируем по датам
             $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
@@ -144,6 +168,10 @@ class AppointmentsController extends Controller
             $selectedDate = Carbon::now()->startOfMonth();
         }
 
+        // Получаем роль пользователя для проверки прав
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+
         // Сортировка и пагинация (для совместимости, хотя в календаре не используется)
         $sort = $request->get('sort', 'date');
         $direction = $request->get('direction', 'desc');
@@ -164,6 +192,16 @@ class AppointmentsController extends Controller
 
         // Всегда используем календарную логику
         $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+
+        // Применяем фильтр "только свои данные" для календаря
+        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+            $masterId = $this->getCurrentUserMasterId($business);
+            if ($masterId) {
+                $allAppointments = $allAppointments->where('master_id', $masterId);
+            } else {
+                $allAppointments = collect(); // Пустая коллекция если нет мастера
+            }
+        }
 
         // Группируем по датам
         $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
@@ -287,6 +325,13 @@ class AppointmentsController extends Controller
         }
 
         $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
@@ -307,6 +352,13 @@ class AppointmentsController extends Controller
         }
 
         $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
@@ -331,6 +383,13 @@ class AppointmentsController extends Controller
         }
 
         $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
         $validated = $request->validated();
         $oldStatus = $appointment->status;
 
@@ -367,6 +426,15 @@ class AppointmentsController extends Controller
             return $redirect;
         }
 
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
+
         $user = Auth::user();
         
         // Уменьшаем usage для месячной метрики только если запись была создана в текущем месяце
@@ -390,6 +458,15 @@ class AppointmentsController extends Controller
             return $redirect;
         }
 
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
+
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'confirmed']);
 
@@ -407,6 +484,15 @@ class AppointmentsController extends Controller
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
         if ($redirect) {
             return $redirect;
+        }
+
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
         }
 
         $oldStatus = $appointment->status;
@@ -429,6 +515,15 @@ class AppointmentsController extends Controller
             return $redirect;
         }
 
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        // Проверяем право на просмотр этой конкретной записи
+        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
+
         $appointment->update(['status' => 'completed']);
 
         // Отправить уведомление в Telegram
@@ -449,6 +544,10 @@ class AppointmentsController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
+        // Получаем роль пользователя для проверки прав
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+
         $view = $request->get('view', 'table');
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
@@ -461,6 +560,14 @@ class AppointmentsController extends Controller
             'service_id' => $request->get('service_id'),
             'master_id' => $request->get('master_id'),
         ];
+
+        // Применяем фильтр "только свои данные" если нужно
+        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+            $masterId = $this->getCurrentUserMasterId($business);
+            if ($masterId) {
+                $filters['master_id'] = $masterId; // Принудительно фильтруем по мастеру
+            }
+        }
 
         $appointments = $this->appointmentRepository->getAllFilteredForBusiness($business->id, $filters);
 

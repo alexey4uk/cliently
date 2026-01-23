@@ -47,22 +47,32 @@ class TicketSettingsController extends Controller
         $validated = $request->validated();
         $settings = TicketSettings::getForBusiness($business->id);
 
-        // Обработка чекбоксов (если не переданы, значит false)
-        $enabled = isset($validated['enabled']) && $validated['enabled'] == '1';
-        $emailNotificationsEnabled = isset($validated['email_notifications_enabled']) && $validated['email_notifications_enabled'] == '1';
+        // Обработка чекбоксов
+        // После prepareForValidation значения уже преобразованы в boolean
+        $enabled = $validated['enabled'] ?? false;
+        $emailNotificationsEnabled = $validated['email_notifications_enabled'] ?? false;
 
-        // Обработка массивов - если не переданы, используем пустой массив
+        // Обработка массива email получателей
         $emailNotificationRecipients = $validated['email_notification_recipients'] ?? [];
         
-        // Фильтруем пустые значения из массивов
-        $emailNotificationRecipients = array_filter($emailNotificationRecipients);
+        // Фильтруем пустые значения из массива
+        $emailNotificationRecipients = array_filter($emailNotificationRecipients, function($email) {
+            return !empty(trim($email ?? ''));
+        });
 
-        $settings->update([
-            'enabled' => $enabled,
-            'sla_response_time' => $validated['sla_response_time'] ?? $settings->sla_response_time,
-            'email_notifications_enabled' => $emailNotificationsEnabled,
+        // Подготавливаем данные для обновления
+        $updateData = [
+            'enabled' => (bool) $enabled,
+            'email_notifications_enabled' => (bool) $emailNotificationsEnabled,
             'email_notification_recipients' => array_values($emailNotificationRecipients), // Переиндексируем массив
-        ]);
+        ];
+
+        // Обновляем SLA время ответа только если оно передано
+        if (isset($validated['sla_response_time']) && $validated['sla_response_time'] !== null) {
+            $updateData['sla_response_time'] = (int) $validated['sla_response_time'];
+        }
+
+        $settings->update($updateData);
 
         return redirect()->route('panel.tickets.settings')
             ->with('success', 'Настройки тикет-системы успешно обновлены.');
