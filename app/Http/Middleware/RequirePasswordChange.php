@@ -38,10 +38,12 @@ class RequirePasswordChange
             $path = $request->path();
 
             // Если это не исключенный маршрут и не API, перенаправляем на смену пароля
-            if (!in_array($routeName, $excludedRoutes) 
-                && !$request->is('api/*') 
-                && $path !== 'profile' 
-                && !str_starts_with($path, 'profile/')) {
+            if (
+                !in_array($routeName, $excludedRoutes)
+                && !$request->is('api/*')
+                && $path !== 'profile'
+                && !str_starts_with($path, 'profile/')
+            ) {
                 return redirect()->route('profile.edit')
                     ->with('warning', 'Для безопасности необходимо сменить пароль.');
             }

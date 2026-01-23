@@ -10,10 +10,10 @@ class InvitationRouteAccessTest extends TestCase
     {
         // Проверяем, что маршрут доступен без аутентификации
         $response = $this->get('/invite/test_token_123');
-        
+
         // Главное - что это не редирект (статус не 302)
         $response->assertStatus(200);
-        
+
         // Проверяем, что не перенаправляет на страницу логина
         $response->assertDontSee('Login');
     }

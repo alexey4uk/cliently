@@ -7,6 +7,7 @@ use App\Models\BusinessUserInvitation;
 use App\Models\Plan;
 use App\Models\User;
 use App\Notifications\BusinessUserCreated;
+use App\Notifications\BusinessUserCreatedWithPassword;
 use App\Notifications\BusinessUserInvitation as BusinessUserInvitationNotification;
 use App\Services\SubscriptionService;
 use App\Traits\HasCurrentBusiness;
@@ -178,7 +179,7 @@ class BusinessUsersController extends Controller
             $existingUser->notify(new BusinessUserCreated($business, $request->role));
             
             return redirect()->route('settings.users.index')
-                ->with('success', 'Пользователь добавлен в бизнес.');
+                ->with('success', 'Существующий пользователь добавлен в бизнес. Уведомление отправлено на email.');
         }
         
         // Если пользователь не существует, создаем нового
@@ -230,13 +231,11 @@ class BusinessUsersController extends Controller
             'last_name' => $request->last_name,
         ]);
 
-        // Отправляем уведомление
-        $user->notify(new BusinessUserCreated($business, $request->role));
+        // Отправляем уведомление с временным паролем
+        $user->notify(new BusinessUserCreatedWithPassword($business, $request->role, $temporaryPassword));
 
         return redirect()->route('settings.users.index')
-            ->with('success', 'Пользователь успешно создан.')
-            ->with('temporary_password', $temporaryPassword)
-            ->with('new_user_email', $request->email);
+            ->with('success', 'Пользователь успешно создан. Временный пароль отправлен на email.');
     }
 
     /**
