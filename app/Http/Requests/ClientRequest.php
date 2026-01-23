@@ -11,7 +11,13 @@ class ClientRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $client = $this->route('client');
+        
+        if ($client) {
+            return $this->user()->can('clients.update');
+        }
+        
+        return $this->user()->can('clients.create');
     }
 
     /**

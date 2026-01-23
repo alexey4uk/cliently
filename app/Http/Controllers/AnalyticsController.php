@@ -7,11 +7,14 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class AnalyticsController extends Controller
 {
     public function index()
     {
+        Gate::authorize('analytics.view');
+        
         $user = Auth::user();
 
         $subscriptionService = app(SubscriptionService::class);
@@ -36,6 +39,8 @@ class AnalyticsController extends Controller
 
     public function financial(Request $request)
     {
+        Gate::authorize('analytics.view');
+        
         $user = Auth::user();
 
         $subscriptionService = app(SubscriptionService::class);
@@ -65,6 +70,8 @@ class AnalyticsController extends Controller
 
     public function general(Request $request)
     {
+        Gate::authorize('analytics.view');
+        
         $user = Auth::user();
 
         $subscriptionService = app(SubscriptionService::class);

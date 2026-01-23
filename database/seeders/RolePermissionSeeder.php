@@ -44,12 +44,14 @@ class RolePermissionSeeder extends Seeder
             'appointments.create' => 'Создание новых записей',
             'appointments.update' => 'Редактирование записей',
             'appointments.delete' => 'Удаление записей',
+            'appointments.export' => 'Экспорт записей',
 
             // Клиенты
             'clients.view' => 'Просмотр списка клиентов',
             'clients.create' => 'Создание новых клиентов',
             'clients.update' => 'Редактирование клиентов',
             'clients.delete' => 'Удаление клиентов',
+            'clients.export' => 'Экспорт клиентов',
 
             // Услуги
             'services.view' => 'Просмотр списка услуг',
@@ -98,6 +100,39 @@ class RolePermissionSeeder extends Seeder
 
             // Доступ к клиентской части
             'client.access' => 'Доступ к клиентской части',
+
+            // Админские права (с префиксом panel.) - для работы в админ-панели со всеми данными
+            'panel.businesses.view' => 'Просмотр всех бизнесов (админ-панель)',
+            'panel.businesses.update' => 'Редактирование бизнесов (админ-панель)',
+            'panel.businesses.delete' => 'Удаление бизнесов (админ-панель)',
+
+            'panel.appointments.view' => 'Просмотр всех записей (админ-панель)',
+            'panel.appointments.update' => 'Редактирование записей (админ-панель)',
+            'panel.appointments.delete' => 'Удаление записей (админ-панель)',
+
+            'panel.clients.view' => 'Просмотр всех клиентов (админ-панель)',
+            'panel.clients.create' => 'Создание клиентов (админ-панель)',
+            'panel.clients.update' => 'Редактирование клиентов (админ-панель)',
+            'panel.clients.delete' => 'Удаление клиентов (админ-панель)',
+
+            'panel.services.view' => 'Просмотр всех услуг (админ-панель)',
+            'panel.services.update' => 'Редактирование услуг (админ-панель)',
+            'panel.services.delete' => 'Удаление услуг (админ-панель)',
+
+            'panel.locations.view' => 'Просмотр всех локаций (админ-панель)',
+            'panel.locations.update' => 'Редактирование локаций (админ-панель)',
+            'panel.locations.delete' => 'Удаление локаций (админ-панель)',
+
+            'panel.masters.view' => 'Просмотр всех мастеров (админ-панель)',
+            'panel.masters.update' => 'Редактирование мастеров (админ-панель)',
+            'panel.masters.delete' => 'Удаление мастеров (админ-панель)',
+
+            'panel.analytics.view' => 'Просмотр аналитики всех бизнесов (админ-панель)',
+
+            'panel.tickets.view' => 'Просмотр всех тикетов (админ-панель)',
+            'panel.tickets.update' => 'Редактирование тикетов (админ-панель)',
+            'panel.tickets.delete' => 'Удаление тикетов (админ-панель)',
+            'panel.tickets.assign' => 'Назначение тикетов (админ-панель)',
         ];
 
         foreach ($permissions as $name => $description) {
@@ -116,44 +151,43 @@ class RolePermissionSeeder extends Seeder
         // Создание роли Менеджер
         $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
         $managerPermissions = [
-            // Бизнесы - только просмотр
-            'businesses.view',
+            // Бизнесы - только просмотр (админ-панель)
+            'panel.businesses.view',
             
-            // Записи - полный доступ
-            'appointments.view',
-            'appointments.update',
-            'appointments.delete',
+            // Записи - полный доступ (админ-панель)
+            'panel.appointments.view',
+            'panel.appointments.update',
+            'panel.appointments.delete',
             
-            // Клиенты - полный доступ
-            'clients.view',
-            'clients.create',
-            'clients.update',
-            'clients.delete',
+            // Клиенты - полный доступ (админ-панель)
+            'panel.clients.view',
+            'panel.clients.create',
+            'panel.clients.update',
+            'panel.clients.delete',
             
-            // Услуги - только просмотр и редактирование (создание в клиентской части)
-            'services.view',
-            'services.update',
-            'services.delete',
+            // Услуги - только просмотр и редактирование (админ-панель)
+            'panel.services.view',
+            'panel.services.update',
+            'panel.services.delete',
             
-            // Локации - только просмотр и редактирование (создание в клиентской части)
-            'locations.view',
-            'locations.update',
-            'locations.delete',
+            // Локации - только просмотр и редактирование (админ-панель)
+            'panel.locations.view',
+            'panel.locations.update',
+            'panel.locations.delete',
             
-            // Мастера - только просмотр и редактирование (создание в клиентской части)
-            'masters.view',
-            'masters.update',
-            'masters.delete',
+            // Мастера - только просмотр и редактирование (админ-панель)
+            'panel.masters.view',
+            'panel.masters.update',
+            'panel.masters.delete',
             
-            // Аналитика
-            'analytics.view',
+            // Аналитика (админ-панель)
+            'panel.analytics.view',
             
-            // Тикеты - полный доступ
-            'tickets.view',
-            'tickets.create',
-            'tickets.update',
-            'tickets.delete',
-            'tickets.assign',
+            // Тикеты - полный доступ (админ-панель)
+            'panel.tickets.view',
+            'panel.tickets.update',
+            'panel.tickets.delete',
+            'panel.tickets.assign',
             'tickets.categories.manage',
             
             // Доступ к панели
@@ -166,12 +200,11 @@ class RolePermissionSeeder extends Seeder
         // Создание роли Поддержка
         $supportRole = Role::firstOrCreate(['name' => 'support', 'guard_name' => 'web']);
         $supportPermissions = [
-            'analytics.view',
+            'panel.analytics.view',
             'support.view',
-            'tickets.view',
-            'tickets.create',
-            'tickets.update',
-            'tickets.assign',
+            'panel.tickets.view',
+            'panel.tickets.update',
+            'panel.tickets.assign',
             'panel.access',
         ];
         foreach ($supportPermissions as $permission) {
@@ -182,8 +215,54 @@ class RolePermissionSeeder extends Seeder
         $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $userPermissions = [
             'client.access',
+            
+            // Клиенты - полный доступ для работы в клиентской части
+            'clients.view',
+            'clients.create',
+            'clients.update',
+            'clients.delete',
+            'clients.export',
+            
+            // Услуги - полный доступ
+            'services.view',
+            'services.create',
+            'services.update',
+            'services.delete',
+            
+            // Локации - полный доступ
+            'locations.view',
+            'locations.create',
+            'locations.update',
+            'locations.delete',
+            
+            // Мастера - полный доступ
+            'masters.view',
+            'masters.create',
+            'masters.update',
+            'masters.delete',
+            
+            // Записи - полный доступ
+            'appointments.view',
+            'appointments.create',
+            'appointments.update',
+            'appointments.delete',
+            'appointments.export',
+            
+            // Бизнесы - создание и редактирование своего бизнеса
+            'businesses.create',
+            'businesses.update',
+            
+            // Аналитика
+            'analytics.view',
+            
+            // Тикеты
             'tickets.view',
             'tickets.create',
+            'tickets.update',
+            'tickets.delete',
+            
+            // Telegram настройки
+            'telegram.manage',
         ];
         foreach ($userPermissions as $permission) {
             $userRole->givePermissionTo($permission);

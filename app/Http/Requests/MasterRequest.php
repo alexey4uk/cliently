@@ -11,7 +11,13 @@ class MasterRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $master = $this->route('master');
+        
+        if ($master) {
+            return $this->user()->can('masters.update');
+        }
+        
+        return $this->user()->can('masters.create');
     }
 
     /**

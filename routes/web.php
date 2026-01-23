@@ -55,29 +55,103 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/dashboard/refresh', [DashboardController::class, 'refresh'])->name('dashboard.refresh');
 
         // Аналитика
-        Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
-        Route::get('/analytics/financial', [\App\Http\Controllers\AnalyticsController::class, 'financial'])->name('analytics.financial');
-        Route::get('/analytics/general', [\App\Http\Controllers\AnalyticsController::class, 'general'])->name('analytics.general');
+        Route::middleware(['check.permission:analytics.view'])->group(function () {
+            Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
+            Route::get('/analytics/financial', [\App\Http\Controllers\AnalyticsController::class, 'financial'])->name('analytics.financial');
+            Route::get('/analytics/general', [\App\Http\Controllers\AnalyticsController::class, 'general'])->name('analytics.general');
+        });
 
-        Route::resource('clients', \App\Http\Controllers\ClientController::class);
-        Route::get('clients-export', [\App\Http\Controllers\ClientController::class, 'export'])->name('clients.export');
-        Route::resource('services', \App\Http\Controllers\ServiceController::class);
-        Route::get('appointments-export', [\App\Http\Controllers\AppointmentsController::class, 'export'])->name('appointments.export');
-        Route::get('appointments/calendar', [\App\Http\Controllers\AppointmentsController::class, 'calendar'])->name('appointments.calendar');
-        Route::resource('appointments', \App\Http\Controllers\AppointmentsController::class);
-        Route::patch('appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
-        Route::patch('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
-        Route::patch('appointments/{appointment}/complete', [\App\Http\Controllers\AppointmentsController::class, 'complete'])->name('appointments.complete');
+        // Клиенты
+        Route::middleware(['check.permission:clients.view'])->group(function () {
+            Route::get('/clients', [\App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
+            Route::get('/clients/{client}', [\App\Http\Controllers\ClientController::class, 'show'])->name('clients.show');
+        });
+
+        Route::middleware(['check.permission:clients.create'])->group(function () {
+            Route::get('/clients/create', [\App\Http\Controllers\ClientController::class, 'create'])->name('clients.create');
+            Route::post('/clients', [\App\Http\Controllers\ClientController::class, 'store'])->name('clients.store');
+        });
+
+        Route::middleware(['check.permission:clients.update'])->group(function () {
+            Route::get('/clients/{client}/edit', [\App\Http\Controllers\ClientController::class, 'edit'])->name('clients.edit');
+            Route::patch('/clients/{client}', [\App\Http\Controllers\ClientController::class, 'update'])->name('clients.update');
+        });
+
+        Route::middleware(['check.permission:clients.delete'])->group(function () {
+            Route::delete('/clients/{client}', [\App\Http\Controllers\ClientController::class, 'destroy'])->name('clients.destroy');
+        });
+
+        Route::middleware(['check.permission:clients.export'])->group(function () {
+            Route::get('/clients-export', [\App\Http\Controllers\ClientController::class, 'export'])->name('clients.export');
+        });
+
+        // Услуги
+        Route::middleware(['check.permission:services.view'])->group(function () {
+            Route::get('/services', [\App\Http\Controllers\ServiceController::class, 'index'])->name('services.index');
+        });
+
+        Route::middleware(['check.permission:services.create'])->group(function () {
+            Route::get('/services/create', [\App\Http\Controllers\ServiceController::class, 'create'])->name('services.create');
+            Route::post('/services', [\App\Http\Controllers\ServiceController::class, 'store'])->name('services.store');
+        });
+
+        Route::middleware(['check.permission:services.update'])->group(function () {
+            Route::get('/services/{service}/edit', [\App\Http\Controllers\ServiceController::class, 'edit'])->name('services.edit');
+            Route::patch('/services/{service}', [\App\Http\Controllers\ServiceController::class, 'update'])->name('services.update');
+        });
+
+        Route::middleware(['check.permission:services.delete'])->group(function () {
+            Route::delete('/services/{service}', [\App\Http\Controllers\ServiceController::class, 'destroy'])->name('services.destroy');
+        });
+
+        // Записи
+        Route::middleware(['check.permission:appointments.view'])->group(function () {
+            Route::get('/appointments', [\App\Http\Controllers\AppointmentsController::class, 'index'])->name('appointments.index');
+            Route::get('/appointments/calendar', [\App\Http\Controllers\AppointmentsController::class, 'calendar'])->name('appointments.calendar');
+            Route::get('/appointments/{appointment}', [\App\Http\Controllers\AppointmentsController::class, 'show'])->name('appointments.show');
+        });
+
+        Route::middleware(['check.permission:appointments.create'])->group(function () {
+            Route::get('/appointments/create', [\App\Http\Controllers\AppointmentsController::class, 'create'])->name('appointments.create');
+            Route::post('/appointments', [\App\Http\Controllers\AppointmentsController::class, 'store'])->name('appointments.store');
+        });
+
+        Route::middleware(['check.permission:appointments.update'])->group(function () {
+            Route::get('/appointments/{appointment}/edit', [\App\Http\Controllers\AppointmentsController::class, 'edit'])->name('appointments.edit');
+            Route::patch('/appointments/{appointment}', [\App\Http\Controllers\AppointmentsController::class, 'update'])->name('appointments.update');
+            Route::patch('/appointments/{appointment}/confirm', [\App\Http\Controllers\AppointmentsController::class, 'confirm'])->name('appointments.confirm');
+            Route::patch('/appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentsController::class, 'cancel'])->name('appointments.cancel');
+            Route::patch('/appointments/{appointment}/complete', [\App\Http\Controllers\AppointmentsController::class, 'complete'])->name('appointments.complete');
+        });
+
+        Route::middleware(['check.permission:appointments.delete'])->group(function () {
+            Route::delete('/appointments/{appointment}', [\App\Http\Controllers\AppointmentsController::class, 'destroy'])->name('appointments.destroy');
+        });
+
+        Route::middleware(['check.permission:appointments.export'])->group(function () {
+            Route::get('/appointments-export', [\App\Http\Controllers\AppointmentsController::class, 'export'])->name('appointments.export');
+        });
 
         // Тикеты (явные роуты без route model binding, используем {id} вместо {ticket})
-        Route::get('tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
-        Route::get('tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
-        Route::post('tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
-        Route::get('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
-        Route::get('tickets/{id}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
-        Route::patch('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
-        Route::delete('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
-        Route::post('tickets/{id}/comments', [\App\Http\Controllers\TicketController::class, 'addComment'])->name('tickets.comments.store');
+        Route::middleware(['check.permission:tickets.view'])->group(function () {
+            Route::get('tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+            Route::get('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+        });
+
+        Route::middleware(['check.permission:tickets.create'])->group(function () {
+            Route::get('tickets/create', [\App\Http\Controllers\TicketController::class, 'create'])->name('tickets.create');
+            Route::post('tickets', [\App\Http\Controllers\TicketController::class, 'store'])->name('tickets.store');
+        });
+
+        Route::middleware(['check.permission:tickets.update'])->group(function () {
+            Route::get('tickets/{id}/edit', [\App\Http\Controllers\TicketController::class, 'edit'])->name('tickets.edit');
+            Route::patch('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'update'])->name('tickets.update');
+            Route::post('tickets/{id}/comments', [\App\Http\Controllers\TicketController::class, 'addComment'])->name('tickets.comments.store');
+        });
+
+        Route::middleware(['check.permission:tickets.delete'])->group(function () {
+            Route::delete('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
+        });
 
         // Подписки и тарифы
         Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscription.index');
@@ -94,30 +168,59 @@ Route::middleware(['auth'])->group(function () {
             Route::patch('/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
 
             // Telegram
-            Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
-            Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
+            Route::middleware(['check.permission:telegram.manage'])->group(function () {
+                Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
+                Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
+            });
 
             // Настройки бизнеса
-            Route::get('/business/create', [BusinessSettingsController::class, 'create'])->name('business.create');
-            Route::post('/business', [BusinessSettingsController::class, 'store'])->name('business.store');
-            Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');
-            Route::patch('/business', [BusinessSettingsController::class, 'update'])->name('business.update');
+            Route::middleware(['check.permission:businesses.create'])->group(function () {
+                Route::get('/business/create', [BusinessSettingsController::class, 'create'])->name('business.create');
+                Route::post('/business', [BusinessSettingsController::class, 'store'])->name('business.store');
+            });
+
+            Route::middleware(['check.permission:businesses.update'])->group(function () {
+                Route::get('/business', [BusinessSettingsController::class, 'edit'])->name('business.edit');
+                Route::patch('/business', [BusinessSettingsController::class, 'update'])->name('business.update');
+            });
 
             // Локации
-            Route::get('/locations', [LocationSettingsController::class, 'index'])->name('locations');
-            Route::get('/locations/create', [LocationSettingsController::class, 'create'])->name('locations.create');
-            Route::post('/locations', [LocationSettingsController::class, 'store'])->name('locations.store');
-            Route::get('/locations/{location}/edit', [LocationSettingsController::class, 'edit'])->name('locations.edit');
-            Route::patch('/locations/{location}', [LocationSettingsController::class, 'update'])->name('locations.update');
-            Route::delete('/locations/{location}', [LocationSettingsController::class, 'destroy'])->name('locations.destroy');
+            Route::middleware(['check.permission:locations.view'])->group(function () {
+                Route::get('/locations', [LocationSettingsController::class, 'index'])->name('locations');
+            });
+
+            Route::middleware(['check.permission:locations.create'])->group(function () {
+                Route::get('/locations/create', [LocationSettingsController::class, 'create'])->name('locations.create');
+                Route::post('/locations', [LocationSettingsController::class, 'store'])->name('locations.store');
+            });
+
+            Route::middleware(['check.permission:locations.update'])->group(function () {
+                Route::get('/locations/{location}/edit', [LocationSettingsController::class, 'edit'])->name('locations.edit');
+                Route::patch('/locations/{location}', [LocationSettingsController::class, 'update'])->name('locations.update');
+            });
+
+            Route::middleware(['check.permission:locations.delete'])->group(function () {
+                Route::delete('/locations/{location}', [LocationSettingsController::class, 'destroy'])->name('locations.destroy');
+            });
 
             // Мастера
-            Route::get('/masters', [MasterSettingsController::class, 'index'])->name('masters');
-            Route::get('/masters/create', [MasterSettingsController::class, 'create'])->name('masters.create');
-            Route::post('/masters', [MasterSettingsController::class, 'store'])->name('masters.store');
-            Route::get('/masters/{master}/edit', [MasterSettingsController::class, 'edit'])->name('masters.edit');
-            Route::patch('/masters/{master}', [MasterSettingsController::class, 'update'])->name('masters.update');
-            Route::delete('/masters/{master}', [MasterSettingsController::class, 'destroy'])->name('masters.destroy');
+            Route::middleware(['check.permission:masters.view'])->group(function () {
+                Route::get('/masters', [MasterSettingsController::class, 'index'])->name('masters');
+            });
+
+            Route::middleware(['check.permission:masters.create'])->group(function () {
+                Route::get('/masters/create', [MasterSettingsController::class, 'create'])->name('masters.create');
+                Route::post('/masters', [MasterSettingsController::class, 'store'])->name('masters.store');
+            });
+
+            Route::middleware(['check.permission:masters.update'])->group(function () {
+                Route::get('/masters/{master}/edit', [MasterSettingsController::class, 'edit'])->name('masters.edit');
+                Route::patch('/masters/{master}', [MasterSettingsController::class, 'update'])->name('masters.update');
+            });
+
+            Route::middleware(['check.permission:masters.delete'])->group(function () {
+                Route::delete('/masters/{master}', [MasterSettingsController::class, 'destroy'])->name('masters.destroy');
+            });
         });
     });
 
@@ -186,100 +289,100 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // Бизнесы (админ и менеджер)
-        Route::middleware(['check.permission:businesses.view'])->group(function () {
+        Route::middleware(['check.permission:panel.businesses.view'])->group(function () {
             Route::get('/businesses', [\App\Http\Controllers\Panel\BusinessController::class, 'index'])->name('businesses');
             Route::get('/businesses/{business}', [\App\Http\Controllers\Panel\BusinessController::class, 'show'])->name('businesses.show');
         });
 
-        Route::middleware(['check.permission:businesses.update'])->group(function () {
+        Route::middleware(['check.permission:panel.businesses.update'])->group(function () {
             Route::get('/businesses/{business}/edit', [\App\Http\Controllers\Panel\BusinessController::class, 'edit'])->name('businesses.edit');
             Route::patch('/businesses/{business}', [\App\Http\Controllers\Panel\BusinessController::class, 'update'])->name('businesses.update');
         });
 
-        Route::middleware(['check.permission:businesses.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.businesses.delete'])->group(function () {
             Route::delete('/businesses/{business}', [\App\Http\Controllers\Panel\BusinessController::class, 'destroy'])->name('businesses.destroy');
         });
 
         // Записи (админ и менеджер)
-        Route::middleware(['check.permission:appointments.view'])->group(function () {
+        Route::middleware(['check.permission:panel.appointments.view'])->group(function () {
             Route::get('/appointments', [\App\Http\Controllers\Panel\AppointmentController::class, 'index'])->name('appointments');
         });
 
-        Route::middleware(['check.permission:appointments.update'])->group(function () {
+        Route::middleware(['check.permission:panel.appointments.update'])->group(function () {
             Route::get('/appointments/{appointment}/edit', [\App\Http\Controllers\Panel\AppointmentController::class, 'edit'])->name('appointments.edit');
             Route::patch('/appointments/{appointment}', [\App\Http\Controllers\Panel\AppointmentController::class, 'update'])->name('appointments.update');
         });
 
-        Route::middleware(['check.permission:appointments.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.appointments.delete'])->group(function () {
             Route::delete('/appointments/{appointment}', [\App\Http\Controllers\Panel\AppointmentController::class, 'destroy'])->name('appointments.destroy');
         });
 
         // Клиенты (админ и менеджер)
-        Route::middleware(['check.permission:clients.view'])->group(function () {
+        Route::middleware(['check.permission:panel.clients.view'])->group(function () {
             Route::get('/clients', [\App\Http\Controllers\Panel\ClientController::class, 'index'])->name('clients');
         });
 
-        Route::middleware(['check.permission:clients.create'])->group(function () {
+        Route::middleware(['check.permission:panel.clients.create'])->group(function () {
             Route::get('/clients/create', [\App\Http\Controllers\Panel\ClientController::class, 'create'])->name('clients.create');
             Route::post('/clients', [\App\Http\Controllers\Panel\ClientController::class, 'store'])->name('clients.store');
         });
 
-        Route::middleware(['check.permission:clients.update'])->group(function () {
+        Route::middleware(['check.permission:panel.clients.update'])->group(function () {
             Route::get('/clients/{client}/edit', [\App\Http\Controllers\Panel\ClientController::class, 'edit'])->name('clients.edit');
             Route::patch('/clients/{client}', [\App\Http\Controllers\Panel\ClientController::class, 'update'])->name('clients.update');
         });
 
-        Route::middleware(['check.permission:clients.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.clients.delete'])->group(function () {
             Route::delete('/clients/{client}', [\App\Http\Controllers\Panel\ClientController::class, 'destroy'])->name('clients.destroy');
         });
 
         // Услуги (админ и менеджер)
-        Route::middleware(['check.permission:services.view'])->group(function () {
+        Route::middleware(['check.permission:panel.services.view'])->group(function () {
             Route::get('/services', [\App\Http\Controllers\Panel\ServiceController::class, 'index'])->name('services');
             Route::get('/services/{service}', [\App\Http\Controllers\Panel\ServiceController::class, 'show'])->name('services.show');
         });
 
-        Route::middleware(['check.permission:services.update'])->group(function () {
+        Route::middleware(['check.permission:panel.services.update'])->group(function () {
             Route::get('/services/{service}/edit', [\App\Http\Controllers\Panel\ServiceController::class, 'edit'])->name('services.edit');
             Route::patch('/services/{service}', [\App\Http\Controllers\Panel\ServiceController::class, 'update'])->name('services.update');
         });
 
-        Route::middleware(['check.permission:services.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.services.delete'])->group(function () {
             Route::delete('/services/{service}', [\App\Http\Controllers\Panel\ServiceController::class, 'destroy'])->name('services.destroy');
         });
 
         // Локации (админ и менеджер)
-        Route::middleware(['check.permission:locations.view'])->group(function () {
+        Route::middleware(['check.permission:panel.locations.view'])->group(function () {
             Route::get('/locations', [\App\Http\Controllers\Panel\LocationController::class, 'index'])->name('locations');
             Route::get('/locations/{location}', [\App\Http\Controllers\Panel\LocationController::class, 'show'])->name('locations.show');
         });
 
-        Route::middleware(['check.permission:locations.update'])->group(function () {
+        Route::middleware(['check.permission:panel.locations.update'])->group(function () {
             Route::get('/locations/{location}/edit', [\App\Http\Controllers\Panel\LocationController::class, 'edit'])->name('locations.edit');
             Route::patch('/locations/{location}', [\App\Http\Controllers\Panel\LocationController::class, 'update'])->name('locations.update');
         });
 
-        Route::middleware(['check.permission:locations.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.locations.delete'])->group(function () {
             Route::delete('/locations/{location}', [\App\Http\Controllers\Panel\LocationController::class, 'destroy'])->name('locations.destroy');
         });
 
         // Мастера (админ и менеджер)
-        Route::middleware(['check.permission:masters.view'])->group(function () {
+        Route::middleware(['check.permission:panel.masters.view'])->group(function () {
             Route::get('/masters', [\App\Http\Controllers\Panel\MasterController::class, 'index'])->name('masters');
             Route::get('/masters/{master}', [\App\Http\Controllers\Panel\MasterController::class, 'show'])->name('masters.show');
         });
 
-        Route::middleware(['check.permission:masters.update'])->group(function () {
+        Route::middleware(['check.permission:panel.masters.update'])->group(function () {
             Route::get('/masters/{master}/edit', [\App\Http\Controllers\Panel\MasterController::class, 'edit'])->name('masters.edit');
             Route::patch('/masters/{master}', [\App\Http\Controllers\Panel\MasterController::class, 'update'])->name('masters.update');
         });
 
-        Route::middleware(['check.permission:masters.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.masters.delete'])->group(function () {
             Route::delete('/masters/{master}', [\App\Http\Controllers\Panel\MasterController::class, 'destroy'])->name('masters.destroy');
         });
 
         // Аналитика (админ, менеджер, поддержка)
-        Route::middleware(['check.permission:analytics.view'])->group(function () {
+        Route::middleware(['check.permission:panel.analytics.view'])->group(function () {
             Route::get('/analytics', [\App\Http\Controllers\Panel\AnalyticsController::class, 'index'])->name('analytics');
         });
 
@@ -295,12 +398,12 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // Тикеты (админ, менеджер, поддержка)
-        Route::middleware(['check.permission:tickets.view'])->group(function () {
+        Route::middleware(['check.permission:panel.tickets.view'])->group(function () {
             Route::get('/tickets', [\App\Http\Controllers\Panel\TicketController::class, 'index'])->name('tickets');
             Route::get('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'show'])->name('tickets.show');
         });
 
-        Route::middleware(['check.permission:tickets.update'])->group(function () {
+        Route::middleware(['check.permission:panel.tickets.update'])->group(function () {
             Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\Panel\TicketController::class, 'edit'])->name('tickets.edit');
             Route::patch('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'update'])->name('tickets.update');
             Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\Panel\TicketController::class, 'assign'])->name('tickets.assign');
@@ -308,7 +411,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/tickets/{ticket}/comments', [\App\Http\Controllers\Panel\TicketController::class, 'addComment'])->name('tickets.comments.store');
         });
 
-        Route::middleware(['check.permission:tickets.delete'])->group(function () {
+        Route::middleware(['check.permission:panel.tickets.delete'])->group(function () {
             Route::delete('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'destroy'])->name('tickets.destroy');
         });
 

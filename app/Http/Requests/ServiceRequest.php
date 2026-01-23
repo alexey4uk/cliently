@@ -11,7 +11,13 @@ class ServiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $service = $this->route('service');
+        
+        if ($service) {
+            return $this->user()->can('services.update');
+        }
+        
+        return $this->user()->can('services.create');
     }
 
     /**

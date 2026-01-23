@@ -11,7 +11,14 @@ class TicketRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // Для тикетов используется {id} вместо {ticket} в маршрутах
+        // Проверяем по методу запроса
+        if ($this->isMethod('post')) {
+            return $this->user()->can('tickets.create');
+        }
+        
+        // Для PATCH/PUT это обновление
+        return $this->user()->can('tickets.update');
     }
 
     /**

@@ -17,7 +17,13 @@ class AppointmentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $appointment = $this->route('appointment');
+        
+        if ($appointment) {
+            return $this->user()->can('appointments.update');
+        }
+        
+        return $this->user()->can('appointments.create');
     }
 
     /**

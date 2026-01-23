@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class TelegramSettingsController extends Controller
 {
     public function index()
     {
+        Gate::authorize('telegram.manage');
+        
         $user = Auth::user();
         $business = $user->businesses()->first(); // Предполагаем, что пользователь имеет один бизнес
 
@@ -35,6 +38,8 @@ class TelegramSettingsController extends Controller
 
     public function disconnect()
     {
+        Gate::authorize('telegram.manage');
+        
         $user = Auth::user();
         $business = $user->businesses()->first();
 

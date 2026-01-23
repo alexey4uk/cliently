@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Services\AppointmentSlotService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AppointmentSlotController extends Controller
@@ -22,6 +24,14 @@ class AppointmentSlotController extends Controller
      */
     public function getAvailableSlots(Request $request): JsonResponse
     {
+        // Проверка прав доступа
+        if (!Auth::check() || !Auth::user()->can('appointments.view')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Доступ запрещен',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'service_id' => ['required', 'integer', 'exists:services,id'],
             'date' => ['required', 'date', 'date_format:Y-m-d'],
@@ -56,7 +66,7 @@ class AppointmentSlotController extends Controller
                 'slots' => $slots,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Ошибка при получении слотов в админ-панели', [
+            Log::error('Ошибка при получении слотов в админ-панели', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all(),

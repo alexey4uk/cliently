@@ -11,7 +11,13 @@ class LocationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $location = $this->route('location');
+        
+        if ($location) {
+            return $this->user()->can('locations.update');
+        }
+        
+        return $this->user()->can('locations.create');
     }
 
     /**

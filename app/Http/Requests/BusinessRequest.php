@@ -12,7 +12,22 @@ class BusinessRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // Для бизнеса проверяем по маршруту
+        // Если маршрут /settings/business (без параметра), то это update
+        // Если маршрут /settings/business/create, то это create
+        $business = $this->route('business');
+        
+        if ($business) {
+            return $this->user()->can('businesses.update');
+        }
+        
+        // Проверяем, это создание или редактирование по URL
+        $routeName = $this->route()->getName();
+        if (str_contains($routeName, 'create') || $this->isMethod('post')) {
+            return $this->user()->can('businesses.create');
+        }
+        
+        return $this->user()->can('businesses.update');
     }
 
     /**
