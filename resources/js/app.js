@@ -1,4 +1,5 @@
 import './bootstrap';
+import './plan-features';
 
 // import Alpine from 'alpinejs';
 // import './theme';

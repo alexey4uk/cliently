@@ -157,6 +157,37 @@
                     <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </div>
             </a>
+
+            <!-- Карточка: Тарифы и подписка -->
+            @php
+                $currentSubscription = Auth::user()->activeSubscription();
+                $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
+            @endphp
+            <a href="{{ route('subscription.current') }}"
+                class="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all">
+                <div class="h-12 w-12 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-500/30 transition-colors">
+                    <i class="fa-solid fa-crown text-amber-600 dark:text-amber-400 text-lg"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                    Тарифы и подписка
+                </h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                    @if($currentPlan)
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 dark:bg-slate-500/20 dark:text-slate-300 rounded-full">
+                            {{ $currentPlan->name }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
+                            <i class="fa-solid fa-exclamation-circle text-xs"></i>
+                            Не выбран
+                        </span>
+                    @endif
+                </p>
+                <div class="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 font-medium">
+                    <span>Управление</span>
+                    <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
         </div>
     </div>
 

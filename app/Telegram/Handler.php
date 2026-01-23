@@ -1215,18 +1215,51 @@ class Handler extends WebhookHandler
         ]);
 
         try {
-            $client = Client::firstOrCreate(
-                [
+            // Получаем пользователя через бизнес
+            $user = $business->users()->first();
+            if (! $user) {
+                $this->replyWithMessage('❌ Ошибка при обработке запроса. Пожалуйста, попробуйте позже.');
+                return;
+            }
+
+            $subscriptionService = app(\App\Services\SubscriptionService::class);
+
+            // Проверяем лимит записей в месяц
+            if (! $subscriptionService->canCreateAppointment($user)) {
+                $this->replyWithMessage('❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
+                return;
+            }
+
+            // Ищем существующего клиента
+            $client = Client::where('business_id', $business->id)
+                ->where('phone', $data['client_data']['phone'])
+                ->first();
+
+            // Если клиента нет, проверяем лимит перед созданием
+            if (! $client) {
+                if (! $subscriptionService->canCreateClient($user)) {
+                    $this->replyWithMessage('❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.');
+                    return;
+                }
+
+                // Создаем нового клиента
+                $client = Client::create([
                     'business_id' => $business->id,
-                    'phone' => $data['client_data']['phone'],
-                ],
-                [
                     'first_name' => $data['client_data']['first_name'],
                     'last_name' => $data['client_data']['last_name'] ?? null,
                     'email' => $data['client_data']['email'] ?? null,
+                    'phone' => $data['client_data']['phone'],
                     'telegram_user_id' => $this->callbackQuery->from()->id(),
-                ]
-            );
+                ]);
+            } else {
+                // Обновляем данные существующего клиента
+                $client->update([
+                    'first_name' => $data['client_data']['first_name'],
+                    'last_name' => $data['client_data']['last_name'] ?? $client->last_name,
+                    'email' => $data['client_data']['email'] ?? $client->email,
+                    'telegram_user_id' => $this->callbackQuery->from()->id(),
+                ]);
+            }
 
             // Форматируем время
             $time = $data['time'];
@@ -1247,6 +1280,9 @@ class Handler extends WebhookHandler
                 'status' => 'pending',
                 'notes' => $data['client_data']['notes'] ?? null,
             ]);
+
+            // Увеличиваем usage для месячной метрики
+            $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
             // Удаляем старое сообщение с кнопками подтверждения
             $this->deleteBotMessage($this->lastMessageId);

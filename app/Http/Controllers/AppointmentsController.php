@@ -8,6 +8,7 @@ use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -246,6 +247,16 @@ class AppointmentsController extends Controller
             return $business;
         }
 
+        $user = Auth::user();
+
+        // Проверка лимита записей в месяц
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateAppointment($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.');
+        }
+
         $validated = $request->validated();
 
         $this->validateClientAndService($validated['client_id'], $validated['service_id'], $business->id);
@@ -263,6 +274,9 @@ class AppointmentsController extends Controller
             'duration' => $validated['duration'] ?? null,
             'price' => $validated['price'] ?? null,
         ]);
+
+        // Увеличиваем usage для месячной метрики
+        $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
         // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentCreated($appointment);
@@ -359,6 +373,14 @@ class AppointmentsController extends Controller
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
         if ($redirect) {
             return $redirect;
+        }
+
+        $user = Auth::user();
+        
+        // Уменьшаем usage для месячной метрики только если запись была создана в текущем месяце
+        if ($appointment->created_at->isCurrentMonth()) {
+            $subscriptionService = app(SubscriptionService::class);
+            $subscriptionService->decrementUsage($user, 'max_appointments_per_month');
         }
 
         $appointment->delete();

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LocationRequest;
 use App\Models\Location;
 use App\Repositories\LocationRepositoryInterface;
+use App\Services\SubscriptionService;
 use App\Services\WorkingHoursService;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,9 +69,17 @@ class LocationSettingsController extends Controller
                 ->with('info', 'Сначала создайте бизнес.');
         }
 
+        // Проверка лимита локаций
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateLocation($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут лимит локаций для вашего тарифа. Обновите тариф для добавления большего количества локаций.');
+        }
+
         $validated = $request->validated();
 
-        $this->locationRepository->create([
+        $location = $this->locationRepository->create([
             'business_id' => $business->id,
             'name' => $validated['name'],
             'city' => $validated['city'],
@@ -82,6 +91,9 @@ class LocationSettingsController extends Controller
             'phone' => $validated['phone'],
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
         ]);
+
+        // Увеличиваем usage (для месячных метрик, но для локаций это не нужно, т.к. считаем напрямую)
+        // Но оставим для консистентности, если в будущем понадобится
 
         return redirect()->route('settings.locations')->with('success', 'Локация добавлена');
     }
@@ -146,6 +158,9 @@ class LocationSettingsController extends Controller
         }
 
         $location->delete();
+
+        // Уменьшать usage не нужно, т.к. для локаций считаем напрямую из БД
+        // Но оставим для консистентности, если в будущем понадобится
 
         return redirect()->route('settings.locations')->with('success', 'Локация удалена');
     }

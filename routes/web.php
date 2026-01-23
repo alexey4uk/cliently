@@ -79,6 +79,12 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('tickets/{id}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.destroy');
         Route::post('tickets/{id}/comments', [\App\Http\Controllers\TicketController::class, 'addComment'])->name('tickets.comments.store');
 
+        // Подписки и тарифы
+        Route::get('/subscription', [\App\Http\Controllers\SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::get('/subscription/current', [\App\Http\Controllers\SubscriptionController::class, 'current'])->name('subscription.current');
+        Route::get('/subscription/{plan}', [\App\Http\Controllers\SubscriptionController::class, 'show'])->name('subscription.show');
+        Route::post('/subscription/{plan}/subscribe', [\App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+
         // Настройки бизнеса
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
@@ -323,6 +329,50 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/telegram-management/{bot}/set-webhook', [TelegramManagementController::class, 'setWebhook'])->name('telegram.management.set-webhook');
             Route::post('/telegram-management/{bot}/delete-webhook', [TelegramManagementController::class, 'deleteWebhook'])->name('telegram.management.delete-webhook');
             Route::post('/telegram-management/{bot}/bot-info', [TelegramManagementController::class, 'getBotInfo'])->name('telegram.management.bot-info');
+        });
+
+        // Тарифы (админ)
+        Route::middleware(['check.permission:plans.view'])->group(function () {
+            Route::get('/plans', [\App\Http\Controllers\Panel\PlanController::class, 'index'])->name('plans.index');
+        });
+
+        Route::middleware(['check.permission:plans.create'])->group(function () {
+            Route::get('/plans/create', [\App\Http\Controllers\Panel\PlanController::class, 'create'])->name('plans.create');
+            Route::post('/plans', [\App\Http\Controllers\Panel\PlanController::class, 'store'])->name('plans.store');
+        });
+
+        Route::middleware(['check.permission:plans.update'])->group(function () {
+            Route::get('/plans/{plan}/edit', [\App\Http\Controllers\Panel\PlanController::class, 'edit'])->name('plans.edit');
+            Route::patch('/plans/{plan}', [\App\Http\Controllers\Panel\PlanController::class, 'update'])->name('plans.update');
+            Route::post('/plans/{plan}/increment-sort', [\App\Http\Controllers\Panel\PlanController::class, 'incrementSortOrder'])->name('plans.increment-sort');
+            Route::post('/plans/{plan}/decrement-sort', [\App\Http\Controllers\Panel\PlanController::class, 'decrementSortOrder'])->name('plans.decrement-sort');
+            Route::post('/plans/reorder', [\App\Http\Controllers\Panel\PlanController::class, 'reorder'])->name('plans.reorder');
+        });
+
+        Route::middleware(['check.permission:plans.delete'])->group(function () {
+            Route::delete('/plans/{plan}', [\App\Http\Controllers\Panel\PlanController::class, 'destroy'])->name('plans.destroy');
+        });
+
+        // Свойства тарифов
+        Route::middleware(['check.permission:plans.view'])->group(function () {
+            Route::get('/plans/properties', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'index'])->name('plans.properties.index');
+        });
+
+        Route::middleware(['check.permission:plans.create'])->group(function () {
+            Route::get('/plans/properties/create', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'create'])->name('plans.properties.create');
+            Route::post('/plans/properties', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'store'])->name('plans.properties.store');
+        });
+
+        Route::middleware(['check.permission:plans.update'])->group(function () {
+            Route::get('/plans/properties/{metric}/edit', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'edit'])->name('plans.properties.edit');
+            Route::patch('/plans/properties/{metric}', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'update'])->name('plans.properties.update');
+            Route::post('/plans/properties/{metric}/increment-sort', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'incrementSortOrder'])->name('plans.properties.increment-sort');
+            Route::post('/plans/properties/{metric}/decrement-sort', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'decrementSortOrder'])->name('plans.properties.decrement-sort');
+            Route::post('/plans/properties/reorder', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'reorder'])->name('plans.properties.reorder');
+        });
+
+        Route::middleware(['check.permission:plans.delete'])->group(function () {
+            Route::delete('/plans/properties/{metric}', [\App\Http\Controllers\Panel\SubscriptionMetricController::class, 'destroy'])->name('plans.properties.destroy');
         });
     });
 });

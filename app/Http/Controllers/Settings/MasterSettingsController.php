@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MasterRequest;
 use App\Models\Master;
 use App\Repositories\MasterRepositoryInterface;
+use App\Services\SubscriptionService;
 use App\Services\WorkingHoursService;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,6 +69,14 @@ class MasterSettingsController extends Controller
         if (! $business) {
             return redirect()->route('settings.business.create')
                 ->with('info', 'Сначала создайте бизнес.');
+        }
+
+        // Проверка лимита мастеров
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateMaster($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут лимит мастеров для вашего тарифа. Обновите тариф для добавления большего количества мастеров.');
         }
 
         $validated = $request->validated();
@@ -166,6 +175,8 @@ class MasterSettingsController extends Controller
         }
 
         $master->delete();
+
+        // Уменьшать usage не нужно, т.к. для мастеров считаем напрямую из БД
 
         return redirect()->route('settings.masters')->with('success', 'Мастер удален');
     }

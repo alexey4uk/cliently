@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\User;
+use App\Services\SubscriptionService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,6 +54,19 @@ class RegisteredUserController extends Controller
 
         // Назначаем роль по умолчанию (user)
         $user->assignRole('user');
+
+        // Автоматически создаем подписку на бесплатный тариф по умолчанию
+        $defaultPlan = Plan::where('is_default', true)->first();
+        
+        // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
+        if (! $defaultPlan) {
+            $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
+        }
+        
+        if ($defaultPlan) {
+            $subscriptionService = app(SubscriptionService::class);
+            $subscriptionService->createSubscription($user, $defaultPlan);
+        }
 
         event(new Registered($user));
 

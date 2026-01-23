@@ -87,6 +87,12 @@ class RolePermissionSeeder extends Seeder
             // Telegram
             'telegram.manage' => 'Управление Telegram ботом',
 
+            // Тарифы
+            'plans.view' => 'Просмотр тарифов',
+            'plans.create' => 'Создание тарифов',
+            'plans.update' => 'Редактирование тарифов',
+            'plans.delete' => 'Удаление тарифов',
+
             // Доступ к админке
             'panel.access' => 'Доступ к админ-панели',
 
@@ -104,9 +110,8 @@ class RolePermissionSeeder extends Seeder
         // Создание роли Админ
         // Админ имеет все права доступа
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        foreach ($permissions as $name => $description) {
-            $adminRole->givePermissionTo($name);
-        }
+        // Синхронизируем все права (удаляем старые и добавляем новые)
+        $adminRole->syncPermissions(array_keys($permissions));
 
         // Создание роли Менеджер
         $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ServiceRequest;
 use App\Models\Service;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Services\SubscriptionService;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
@@ -64,6 +65,14 @@ class ServiceController extends Controller
         if (! $business) {
             return redirect()->route('settings.business.create')
                 ->with('info', 'Сначала создайте бизнес.');
+        }
+
+        // Проверка лимита услуг
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateService($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут лимит услуг для вашего тарифа. Обновите тариф для добавления большего количества услуг.');
         }
 
         $validated = $request->validated();
@@ -158,6 +167,8 @@ class ServiceController extends Controller
         }
 
         $service->delete();
+
+        // Уменьшать usage не нужно, т.к. для услуг считаем напрямую из БД
 
         return redirect()->route('services.index')->with('success', 'Услуга удалена');
     }

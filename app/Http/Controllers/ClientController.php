@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
 use App\Repositories\ClientRepositoryInterface;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -139,6 +140,14 @@ class ClientController extends Controller
                 ->with('info', 'Сначала создайте бизнес.');
         }
 
+        // Проверка лимита клиентов
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateClient($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.');
+        }
+
         $validated = $request->validated();
 
         $this->clientRepository->create([
@@ -271,6 +280,8 @@ class ClientController extends Controller
         }
 
         $client->delete();
+
+        // Уменьшать usage не нужно, т.к. для клиентов считаем напрямую из БД
 
         return redirect()->route('clients.index')->with('success', 'Клиент удален');
     }

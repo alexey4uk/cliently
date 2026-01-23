@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
 use App\Services\AppointmentSlotService;
+use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -273,25 +274,51 @@ class AppointmentController extends Controller
         $business = Business::where('slug', $slug)->firstOrFail();
         $validated = $request->validated();
 
-        // Находим или создаем клиента
-        $client = Client::firstOrCreate(
-            [
+        // Получаем пользователя через бизнес
+        $user = $business->users()->first();
+        if (! $user) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Ошибка при обработке запроса. Пожалуйста, попробуйте позже.');
+        }
+
+        // Проверяем лимит записей в месяц
+        $subscriptionService = app(SubscriptionService::class);
+        if (! $subscriptionService->canCreateAppointment($user)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
+        }
+
+        // Ищем существующего клиента
+        $client = Client::where('business_id', $business->id)
+            ->where('phone', $validated['phone'])
+            ->first();
+
+        // Если клиента нет, проверяем лимит перед созданием
+        if (! $client) {
+            if (! $subscriptionService->canCreateClient($user)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
+            }
+
+            // Создаем нового клиента
+            $client = Client::create([
                 'business_id' => $business->id,
-                'phone' => $validated['phone'],
-            ],
-            [
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'] ?? null,
                 'email' => $validated['email'] ?? null,
-            ]
-        );
-
-        // Обновляем данные клиента, если они изменились
-        $client->update([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'] ?? null,
-            'email' => $validated['email'] ?? null,
-        ]);
+                'phone' => $validated['phone'],
+            ]);
+        } else {
+            // Обновляем данные существующего клиента, если они изменились
+            $client->update([
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'] ?? $client->last_name,
+                'email' => $validated['email'] ?? $client->email,
+            ]);
+        }
 
         // Создаем запись
         $appointment = Appointment::create([
@@ -305,6 +332,9 @@ class AppointmentController extends Controller
             'status' => 'pending',
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        // Увеличиваем usage для месячной метрики
+        $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
         TelegramNotificationService::sendAppointmentCreated($appointment);
 

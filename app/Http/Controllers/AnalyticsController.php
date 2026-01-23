@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SubscriptionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +12,16 @@ class AnalyticsController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->load(['businesses']);
+        $user = Auth::user();
+
+        $subscriptionService = app(SubscriptionService::class);
+        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
+
+        if ($analyticsEnabled !== true) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
+        }
+
         $business = $user->businesses->first();
 
         if (! $business) {
@@ -26,7 +36,16 @@ class AnalyticsController extends Controller
 
     public function financial(Request $request)
     {
-        $user = Auth::user()->load(['businesses']);
+        $user = Auth::user();
+
+        $subscriptionService = app(SubscriptionService::class);
+        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
+
+        if ($analyticsEnabled !== true) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
+        }
+
         $business = $user->businesses->first();
 
         if (! $business) {
@@ -46,7 +65,16 @@ class AnalyticsController extends Controller
 
     public function general(Request $request)
     {
-        $user = Auth::user()->load(['businesses']);
+        $user = Auth::user();
+
+        $subscriptionService = app(SubscriptionService::class);
+        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
+
+        if ($analyticsEnabled !== true) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
+        }
+
         $business = $user->businesses->first();
 
         if (! $business) {

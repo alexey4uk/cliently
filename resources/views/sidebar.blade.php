@@ -409,6 +409,31 @@
                                     </a>
                                 @endcan
 
+                                @can('plans.view')
+                                    <a href="{{ route('panel.plans.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.plans.*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Тарифы' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-tags transition-transform duration-200 {{ Request::routeIs('panel.plans.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Тарифы</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Тарифы
+                                        </div>
+                                    </a>
+                                @endcan
+
                                 @can('services.view')
                                     <a href="{{ route('panel.services') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.services')
@@ -653,6 +678,29 @@
                                         Telegram Bot
                                     </div>
                                 </a>
+
+                                <!-- Тарифы -->
+                                <a href="{{ route('subscription.current') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.*')
+                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                    :title="collapsed ? 'Тарифы' : ''"
+                                    x-data="{ tooltip: false }"
+                                    @mouseenter="if (collapsed) tooltip = true"
+                                    @mouseleave="tooltip = false">
+                                    <div class="flex items-center justify-center flex-shrink-0"
+                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                        <i class="fa-solid fa-crown transition-transform duration-200 {{ Request::routeIs('subscription.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                           :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                    </div>
+                                    <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap font-medium">Тарифы</span>
+                                    <div x-show="tooltip && collapsed" 
+                                         x-transition
+                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                        Тарифы
+                                    </div>
+                                </a>
                             @endif
                         </nav>
                     </div>
@@ -804,6 +852,12 @@
                     </div>
 
                     <!-- Аналитика -->
+                    @php
+                        $user = Auth::user();
+                        $subscriptionService = app(\App\Services\SubscriptionService::class);
+                        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled') === true;
+                    @endphp
+                    @if($analyticsEnabled || Str::startsWith(Request::path(), 'panel'))
                     <div>
                         <button @click="analyticsOpen = !analyticsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -918,12 +972,48 @@
                             @endif
                         </nav>
                     </div>
+                    @endif
                 </div>
             </div>
 
             <!-- Нижняя часть сайдбара -->
             <div class="flex-shrink-0 border-t border-slate-200 dark:border-slate-800 pt-4 mt-4">
                 <div :class="collapsed ? 'px-0' : 'px-4 lg:px-6'">
+                    @if(!Str::startsWith(Request::path(), 'panel') && Auth::check())
+                        @php
+                            $user = Auth::user();
+                            $subscription = $user ? $user->activeSubscription() : null;
+                            $plan = $subscription && $subscription->plan ? $subscription->plan : null;
+                        @endphp
+                        
+                        @if($subscription && $plan)
+                            <!-- Информация о тарифе -->
+                            <a href="{{ route('subscription.current') }}"
+                                class="group block mb-4 p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-lg hover:shadow-md transition-all duration-200 relative"
+                                :class="collapsed ? 'px-2' : ''"
+                                :title="collapsed ? '{{ $plan->name }}' : ''"
+                                x-data="{ tooltip: false }"
+                                @mouseenter="if (collapsed) tooltip = true"
+                                @mouseleave="tooltip = false">
+                                <div x-show="!collapsed" x-cloak class="flex items-center gap-2">
+                                    <i class="fa-solid fa-crown text-indigo-600 dark:text-indigo-400 text-sm"></i>
+                                    <span class="text-xs font-semibold text-slate-900 dark:text-white truncate">{{ $plan->name }}</span>
+                                </div>
+                                
+                                <!-- Иконка при свернутом sidebar -->
+                                <div x-show="collapsed" class="flex justify-center">
+                                    <i class="fa-solid fa-crown text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                                </div>
+                                
+                                <div x-show="tooltip && collapsed" 
+                                     x-transition
+                                     class="absolute left-full ml-2 px-2 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                    <div class="font-semibold">{{ $plan->name }}</div>
+                                </div>
+                            </a>
+                        @endif
+                    @endif
+                    
                     <!-- Выход -->
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
