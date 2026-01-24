@@ -92,14 +92,15 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         });
 
         // Клиенты
-        Route::middleware(['check.business.permission:client.clients.view'])->group(function () {
-            Route::get('/clients', [\App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
-            Route::get('/clients/{client}', [\App\Http\Controllers\ClientController::class, 'show'])->name('clients.show');
-        });
-
+        // ВАЖНО: Специфичные маршруты (create) должны быть ПЕРЕД динамическими ({client})
         Route::middleware(['check.business.permission:client.clients.create'])->group(function () {
             Route::get('/clients/create', [\App\Http\Controllers\ClientController::class, 'create'])->name('clients.create');
             Route::post('/clients', [\App\Http\Controllers\ClientController::class, 'store'])->name('clients.store');
+        });
+
+        Route::middleware(['check.business.permission:client.clients.view'])->group(function () {
+            Route::get('/clients', [\App\Http\Controllers\ClientController::class, 'index'])->name('clients.index');
+            Route::get('/clients/{client}', [\App\Http\Controllers\ClientController::class, 'show'])->name('clients.show');
         });
 
         Route::middleware(['check.business.permission:client.clients.update'])->group(function () {
@@ -135,15 +136,16 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         });
 
         // Записи
+        // ВАЖНО: Специфичные маршруты (create, calendar) должны быть ПЕРЕД динамическими ({appointment})
+        Route::middleware(['check.business.permission:client.appointments.create'])->group(function () {
+            Route::get('/appointments/create', [\App\Http\Controllers\AppointmentsController::class, 'create'])->name('appointments.create');
+            Route::post('/appointments', [\App\Http\Controllers\AppointmentsController::class, 'store'])->name('appointments.store');
+        });
+
         Route::middleware(['check.business.permission:client.appointments.view'])->group(function () {
             Route::get('/appointments', [\App\Http\Controllers\AppointmentsController::class, 'index'])->name('appointments.index');
             Route::get('/appointments/calendar', [\App\Http\Controllers\AppointmentsController::class, 'calendar'])->name('appointments.calendar');
             Route::get('/appointments/{appointment}', [\App\Http\Controllers\AppointmentsController::class, 'show'])->name('appointments.show');
-        });
-
-        Route::middleware(['check.business.permission:client.appointments.create'])->group(function () {
-            Route::get('/appointments/create', [\App\Http\Controllers\AppointmentsController::class, 'create'])->name('appointments.create');
-            Route::post('/appointments', [\App\Http\Controllers\AppointmentsController::class, 'store'])->name('appointments.store');
         });
 
         Route::middleware(['check.business.permission:client.appointments.update'])->group(function () {
