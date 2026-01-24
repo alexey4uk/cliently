@@ -77,15 +77,15 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
 
         $ownerRole = BusinessRole::updateOrCreate(
             ['slug' => 'owner'],
-            ['name' => 'Владелец', 'description' => 'Полный доступ', 'is_system' => true]
+            ['name' => 'Владелец', 'description' => 'Полный доступ', 'is_system' => true, 'owner_id' => null]
         );
         $adminRole = BusinessRole::updateOrCreate(
             ['slug' => 'admin'],
-            ['name' => 'Администратор', 'description' => 'Управление бизнесом', 'is_system' => true]
+            ['name' => 'Администратор', 'description' => 'Управление бизнесом', 'is_system' => true, 'owner_id' => null]
         );
         $masterRole = BusinessRole::updateOrCreate(
             ['slug' => 'master'],
-            ['name' => 'Мастер', 'description' => 'Работа с клиентами', 'is_system' => true]
+            ['name' => 'Мастер', 'description' => 'Работа с клиентами', 'is_system' => true, 'owner_id' => null]
         );
 
         $seedPermissions = function (BusinessRole $role, array $permissions): void {

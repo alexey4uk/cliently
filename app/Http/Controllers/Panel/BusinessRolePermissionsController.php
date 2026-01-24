@@ -22,7 +22,8 @@ class BusinessRolePermissionsController extends Controller
         Gate::authorize('panel.business.roles.manage');
 
         $service = app(BusinessRolePermissionService::class);
-        $roles = $service->getAvailableRoles();
+        // В панели админа показываем только системные роли (owner_id = null)
+        $roles = $service->getAvailableRoles(true, null);
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
             $permissions = $service->getPermissionsForRole($role->id);
@@ -60,8 +61,26 @@ class BusinessRolePermissionsController extends Controller
 
         $allPermissions = $this->getAllPermissions();
 
+        // Проверяем, что slug не конфликтует с системными ролями
+        $systemRoles = BusinessRole::where('is_system', true)->pluck('slug')->toArray();
+        if (in_array($request->slug, $systemRoles)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Роль с таким кодом уже существует как системная.');
+        }
+
         $request->validate([
-            'slug' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_]*$/', Rule::notIn(['owner']), Rule::unique('business_roles', 'slug')],
+            'slug' => [
+                'required', 
+                'string', 
+                'max:100', 
+                'regex:/^[a-z][a-z0-9_]*$/', 
+                Rule::notIn(['owner']),
+                // В панели админа создаем роли без owner_id (глобальные пользовательские)
+                Rule::unique('business_roles', 'slug')->where(function ($query) {
+                    return $query->whereNull('owner_id')->where('is_system', false);
+                })
+            ],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
             'permissions' => ['required', 'array', 'min:1'],
@@ -76,11 +95,13 @@ class BusinessRolePermissionsController extends Controller
             'permissions.*.in' => 'Выбрано некорректное право.',
         ]);
 
+        // В панели админа создаем роли без owner_id (owner_id = NULL)
         $role = BusinessRole::create([
             'slug' => $request->slug,
             'name' => $request->name,
             'description' => $request->description,
             'is_system' => false,
+            'owner_id' => null,
         ]);
 
         foreach ($request->permissions as $permission) {
@@ -163,9 +184,10 @@ class BusinessRolePermissionsController extends Controller
     {
         Gate::authorize('panel.business.roles.manage');
 
-        if ($role->slug === 'owner') {
+        // Запрещаем удаление системных ролей
+        if ($role->is_system) {
             return redirect()->route('panel.business-roles.index')
-                ->with('error', 'Роль владельца фиксирована и не удаляется.');
+                ->with('error', 'Системные роли нельзя удалить.');
         }
 
         $roleUsedByUsers = DB::table('business_user')->where('role_id', $role->id)->exists();

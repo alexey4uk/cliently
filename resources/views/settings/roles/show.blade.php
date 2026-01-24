@@ -217,7 +217,7 @@
                     <i class="fa-solid fa-arrow-left text-sm"></i>
                     <span>К списку</span>
                 </a>
-                @if($roleSlug !== 'owner')
+                @if(!$role->is_system)
                     <form method="POST" action="{{ route('settings.roles.destroy', $role->id) }}" class="w-full sm:w-auto"
                           onsubmit="return confirm('Удалить роль {{ $roleLabel }}? Это действие нельзя отменить.');">
                         @csrf

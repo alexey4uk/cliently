@@ -7,17 +7,68 @@ use App\Models\BusinessRolePermission;
 class BusinessRolePermissionService
 {
     /**
-     * Get available roles (global list).
+     * Get available roles.
+     * 
+     * @param bool $includeOwner Whether to include owner role
+     * @param int|null $ownerId Owner ID to filter custom roles. If null, returns only system roles.
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getAvailableRoles(bool $includeOwner = true)
+    public function getAvailableRoles(bool $includeOwner = true, ?int $ownerId = null)
     {
         $query = \App\Models\BusinessRole::query()->orderBy('name');
+
+        if ($ownerId !== null) {
+            // Возвращаем системные роли + роли этого owner
+            $query->where(function ($q) use ($ownerId) {
+                $q->where('is_system', true)
+                  ->orWhere('owner_id', $ownerId);
+            });
+        } else {
+            // Возвращаем только системные роли (для панели админа)
+            $query->where('is_system', true);
+        }
 
         if (! $includeOwner) {
             $query->where('slug', '!=', 'owner');
         }
 
         return $query->get();
+    }
+
+    /**
+     * Get available roles for a specific business.
+     * Determines the owner of the business and returns system roles + owner's custom roles.
+     * 
+     * @param int $businessId Business ID
+     * @param bool $includeOwner Whether to include owner role
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableRolesForBusiness(int $businessId, bool $includeOwner = true)
+    {
+        $ownerId = $this->getBusinessOwnerId($businessId);
+        return $this->getAvailableRoles($includeOwner, $ownerId);
+    }
+
+    /**
+     * Get owner ID for a business.
+     * 
+     * @param int $businessId Business ID
+     * @return int|null Owner ID or null if not found
+     */
+    private function getBusinessOwnerId(int $businessId): ?int
+    {
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        
+        if (!$ownerRole) {
+            return null;
+        }
+
+        $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+            ->where('business_id', $businessId)
+            ->where('role_id', $ownerRole->id)
+            ->first();
+
+        return $ownerPivot ? $ownerPivot->user_id : null;
     }
 
     /**

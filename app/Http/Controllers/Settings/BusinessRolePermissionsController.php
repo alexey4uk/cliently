@@ -31,7 +31,8 @@ class BusinessRolePermissionsController extends Controller
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
         $service = app(BusinessRolePermissionService::class);
-        $roles = $service->getAvailableRoles(false);
+        $ownerId = $this->getBusinessOwnerId($business);
+        $roles = $service->getAvailableRoles(false, $ownerId);
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
             $permissions = $service->getPermissionsForRole($role->id);
@@ -89,12 +90,36 @@ class BusinessRolePermissionsController extends Controller
 
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
+        // Определяем owner текущего бизнеса
+        $ownerId = $this->getBusinessOwnerId($business);
+        if (!$ownerId) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Не удалось определить владельца бизнеса.');
+        }
+
         $allPermissions = $this->getAllPermissions();
         $service = app(BusinessRolePermissionService::class);
-        $existingRoles = $service->getAvailableRoles(true)->pluck('slug')->toArray();
+        
+        // Проверяем, что slug не конфликтует с системными ролями
+        $systemRoles = BusinessRole::where('is_system', true)->pluck('slug')->toArray();
+        if (in_array($request->role, $systemRoles)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Роль с таким кодом уже существует как системная.');
+        }
 
         $request->validate([
-            'role' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_]*$/', Rule::notIn(['owner'])],
+            'role' => [
+                'required', 
+                'string', 
+                'max:100', 
+                'regex:/^[a-z][a-z0-9_]*$/', 
+                Rule::notIn(['owner']),
+                Rule::unique('business_roles', 'slug')->where(function ($query) use ($ownerId) {
+                    return $query->where('owner_id', $ownerId)->where('is_system', false);
+                })
+            ],
             'name' => ['required', 'string', 'max:100'],
             'permissions' => ['required', 'array', 'min:1'],
             'permissions.*' => [Rule::in($allPermissions)],
@@ -102,22 +127,18 @@ class BusinessRolePermissionsController extends Controller
             'role.required' => 'Код роли обязателен для заполнения.',
             'role.regex' => 'Код роли должен быть на латинице и содержать только буквы, цифры и подчёркивания.',
             'role.not_in' => 'Роль владельца фиксирована и не может быть создана заново.',
+            'role.unique' => 'Роль с таким кодом уже существует.',
             'name.required' => 'Название роли обязательно для заполнения.',
             'permissions.required' => 'Выберите хотя бы одно право для роли.',
             'permissions.*.in' => 'Выбрано некорректное право.',
         ]);
-
-        if (in_array($request->role, $existingRoles)) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Роль с таким кодом уже существует.');
-        }
 
         $role = BusinessRole::create([
             'slug' => $request->role,
             'name' => $request->name,
             'description' => $request->input('description'),
             'is_system' => false,
+            'owner_id' => $ownerId,
         ]);
 
         foreach ($request->permissions as $permission) {
@@ -146,9 +167,10 @@ class BusinessRolePermissionsController extends Controller
 
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
-        if ($role->slug === 'owner') {
-            return redirect()->route('settings.roles.index')
-                ->with('info', 'Роль владельца фиксирована и не настраивается.');
+        // Проверяем, что роль принадлежит owner текущего бизнеса или является системной
+        $ownerId = $this->getBusinessOwnerId($business);
+        if (!$role->is_system && $role->owner_id !== $ownerId) {
+            abort(403, 'У вас нет доступа к этой роли.');
         }
 
         $service = app(BusinessRolePermissionService::class);
@@ -187,9 +209,10 @@ class BusinessRolePermissionsController extends Controller
 
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
-        if ($role->slug === 'owner') {
-            return redirect()->route('settings.roles.index')
-                ->with('info', 'Роль владельца фиксирована и не настраивается.');
+        // Проверяем, что роль принадлежит owner текущего бизнеса или является системной
+        $ownerId = $this->getBusinessOwnerId($business);
+        if (!$role->is_system && $role->owner_id !== $ownerId) {
+            abort(403, 'У вас нет доступа к этой роли.');
         }
 
         $service = app(BusinessRolePermissionService::class);
@@ -236,9 +259,17 @@ class BusinessRolePermissionsController extends Controller
 
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
-        if ($role->slug === 'owner') {
+        // Запрещаем удаление системных ролей
+        if ($role->is_system) {
             return redirect()->route('settings.roles.index')
-                ->with('info', 'Роль владельца фиксирована и не удаляется.');
+                ->with('error', 'Системные роли нельзя удалить.');
+        }
+
+        // Проверяем, что роль принадлежит owner текущего бизнеса
+        $ownerId = $this->getBusinessOwnerId($business);
+        if ($role->owner_id !== $ownerId) {
+            return redirect()->route('settings.roles.index')
+                ->with('error', 'У вас нет доступа к этой роли.');
         }
 
         $roleUsedByUsers = DB::table('business_user')->where('role_id', $role->id)->exists();
@@ -288,6 +319,28 @@ class BusinessRolePermissionsController extends Controller
         sort($allPermissions);
 
         return $allPermissions;
+    }
+
+    /**
+     * Get owner ID for a business.
+     * 
+     * @param \App\Models\Business $business
+     * @return int|null Owner ID or null if not found
+     */
+    private function getBusinessOwnerId($business): ?int
+    {
+        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        
+        if (!$ownerRole) {
+            return null;
+        }
+
+        $ownerPivot = DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('role_id', $ownerRole->id)
+            ->first();
+
+        return $ownerPivot ? $ownerPivot->user_id : null;
     }
 
 }

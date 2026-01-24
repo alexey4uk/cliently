@@ -122,7 +122,7 @@
         </div>
     </form>
 
-    @if($role->slug !== 'owner')
+    @if(!$role->is_system)
         <form method="POST" action="{{ route('panel.business-roles.destroy', $role->id) }}"
               onsubmit="return confirm('Удалить роль {{ $roleLabel }}? Это действие нельзя отменить.');">
             @csrf

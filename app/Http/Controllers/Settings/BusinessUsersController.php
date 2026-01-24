@@ -15,6 +15,7 @@ use App\Services\SubscriptionService;
 use App\Traits\HasCurrentBusiness;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -71,9 +72,11 @@ class BusinessUsersController extends Controller
 
         $this->authorizeBusinessPermission('client.business.users.create');
 
+        $ownerId = $this->getBusinessOwnerId($business);
+        
         return view('settings.users.create', [
             'business' => $business,
-            'availableRoles' => $this->getAvailableRoles(false),
+            'availableRoles' => $this->getAvailableRoles($business, false),
             'masters' => $business->masters()->where('is_active', true)->orderBy('first_name')->get(),
         ]);
     }
@@ -322,7 +325,7 @@ class BusinessUsersController extends Controller
             'business' => $business,
             'user' => $user,
             'currentRole' => $currentRole,
-            'availableRoles' => $this->getAvailableRoles(true),
+            'availableRoles' => $this->getAvailableRoles($business, true),
         ]);
     }
 
@@ -482,12 +485,39 @@ class BusinessUsersController extends Controller
     }
 
     /**
-     * Get available roles from defaults table.
+     * Get available roles for a business.
+     * 
+     * @param \App\Models\Business $business
+     * @param bool $includeOwner Whether to include owner role
+     * @return array
      */
-    private function getAvailableRoles(bool $includeOwner): array
+    private function getAvailableRoles($business, bool $includeOwner): array
     {
+        $ownerId = $this->getBusinessOwnerId($business);
         $service = app(BusinessRolePermissionService::class);
-        return $service->getAvailableRoles($includeOwner)->all();
+        return $service->getAvailableRoles($includeOwner, $ownerId)->all();
+    }
+
+    /**
+     * Get owner ID for a business.
+     * 
+     * @param \App\Models\Business $business
+     * @return int|null Owner ID or null if not found
+     */
+    private function getBusinessOwnerId($business): ?int
+    {
+        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        
+        if (!$ownerRole) {
+            return null;
+        }
+
+        $ownerPivot = DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('role_id', $ownerRole->id)
+            ->first();
+
+        return $ownerPivot ? $ownerPivot->user_id : null;
     }
 
     /**
