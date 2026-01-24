@@ -43,6 +43,10 @@ class OAuthController extends Controller
             // Авторизуем пользователя
             Auth::login($user, true);
 
+            // Явно сохраняем сессию до редиректа. При драйвере database/file сессия
+            // пишется после ответа; редирект уходит раньше — на /dashboard приходят без сессии.
+            $request->session()->save();
+
             // Редиректим на главную страницу
             $redirectUrl = config('oauth.settings.redirect_after_login', '/dashboard');
 
