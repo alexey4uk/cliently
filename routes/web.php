@@ -44,7 +44,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/invite/{token}/activate', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'activate'])->name('invite.activate');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     // Welcome/Onboarding page
     Route::middleware(['only.client'])->group(function () {
         Route::get('/welcome', [\App\Http\Controllers\WelcomeController::class, 'index'])->name('welcome');

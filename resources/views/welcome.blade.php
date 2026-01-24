@@ -437,10 +437,11 @@
                     <div class="mb-4 p-3 glass-card rounded-lg">
                         <div class="flex items-center space-x-3">
                             <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                                @if(Auth::user()->avatar)
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                                @if(Auth::user()->getAvatarUrl())
+                                    <img src="{{ Auth::user()->getAvatarUrl() }}" 
                                          alt="{{ Auth::user()->name }}" 
-                                         class="w-full h-full rounded-lg object-cover">
+                                         class="w-full h-full rounded-lg object-cover"
+                                         referrerpolicy="no-referrer">
                                 @else
                                     {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
                                 @endif

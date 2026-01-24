@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\HasSubscription;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 use Propaganistas\LaravelPhone\Casts\E164PhoneNumberCast;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, HasRoles, Notifiable, HasSubscription;
 
@@ -31,6 +31,8 @@ class User extends Authenticatable
         'dashboard_settings',
         'telegram_chat_id',
         'telegram_token',
+        'oauth_provider',
+        'oauth_id',
     ];
 
     /**
@@ -52,8 +54,8 @@ class User extends Authenticatable
     {
         return [
             'dashboard_settings' => 'array',
-            //            'email_verified_at' => 'datetime',
-            //            'password' => 'hashed',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             //            'phone' => E164PhoneNumberCast::class.":BY",
         ];
     }
@@ -141,5 +143,32 @@ class User extends Authenticatable
     public function isTelegramConnected(): bool
     {
         return !empty($this->telegram_chat_id);
+    }
+
+    /**
+     * Получить URL аватара пользователя
+     * Поддерживает как локальные файлы, так и внешние URL (OAuth)
+     */
+    public function getAvatarUrl(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        // Проверяем, является ли аватар внешним URL (начинается с http:// или https://)
+        if (filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+            return $this->avatar;
+        }
+
+        // Иначе это локальный файл в storage
+        return asset('storage/' . $this->avatar);
+    }
+
+    /**
+     * Проверить, является ли аватар внешним URL
+     */
+    public function hasExternalAvatar(): bool
+    {
+        return $this->avatar && filter_var($this->avatar, FILTER_VALIDATE_URL);
     }
 }

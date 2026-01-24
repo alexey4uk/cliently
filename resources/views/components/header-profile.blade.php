@@ -10,10 +10,11 @@
             class="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 overflow-hidden ring-1 ring-slate-200/50 dark:ring-slate-700/50 group"
             aria-label="Профиль"
             :class="{ 'bg-slate-100 dark:bg-slate-800 ring-slate-300 dark:ring-slate-600': open }">
-            @if(Auth::user()->avatar)
-                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+            @if(Auth::user()->getAvatarUrl())
+                <img src="{{ Auth::user()->getAvatarUrl() }}" 
                      alt="{{ Auth::user()->name }}" 
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                     referrerpolicy="no-referrer">
             @else
                 <span class="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
                     {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
@@ -79,10 +80,11 @@
                 <a href="{{ route('profile.edit') }}" 
                    class="flex items-center gap-3 group hover:opacity-90 transition-opacity">
                     <div class="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden shrink-0 ring-2 ring-white/50 dark:ring-slate-700/50 shadow-sm">
-                        @if(Auth::user()->avatar)
-                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" 
+                        @if(Auth::user()->getAvatarUrl())
+                            <img src="{{ Auth::user()->getAvatarUrl() }}" 
                                  alt="{{ Auth::user()->name }}" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 referrerpolicy="no-referrer">
                         @else
                             {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
                         @endif

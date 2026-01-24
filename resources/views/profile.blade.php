@@ -49,7 +49,7 @@
                                     <span x-text="userInitials"></span>
                                 </template>
                                 <template x-if="!avatarPreview && hasAvatar">
-                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}" alt="{{ $user->name }}" class="w-full h-full object-cover" />
+                                    <img src="{{ $user->getAvatarUrl() ?? '' }}" alt="{{ $user->name }}" class="w-full h-full object-cover" referrerpolicy="no-referrer" />
                                 </template>
                                 
                                 <!-- Индикатор загрузки -->

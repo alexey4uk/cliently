@@ -459,9 +459,10 @@ style="width: 0; height: 0;">
                             <div class="flex items-center gap-3">
                                 <div
                                     class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden flex-shrink-0">
-                                    @if (Auth::user()->avatar)
-                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}"
-                                            alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                    @if (Auth::user()->getAvatarUrl())
+                                        <img src="{{ Auth::user()->getAvatarUrl() }}"
+                                            alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
+                                            referrerpolicy="no-referrer">
                                     @else
                                         {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
                                     @endif

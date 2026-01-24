@@ -15,10 +15,11 @@
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
         <div class="flex items-center gap-4 mb-4">
             <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                @if($user->avatar)
-                    <img src="{{ asset('storage/' . $user->avatar) }}" 
+                @if($user->getAvatarUrl())
+                    <img src="{{ $user->getAvatarUrl() }}" 
                          alt="{{ $user->name }}" 
-                         class="w-full h-full rounded-full object-cover">
+                         class="w-full h-full rounded-full object-cover"
+                         referrerpolicy="no-referrer">
                 @else
                     {{ strtoupper(mb_substr($user->name, 0, 2)) }}
                 @endif

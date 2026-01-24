@@ -50,15 +50,18 @@ class ProfileController extends Controller
         // Обработка удаления аватара
         if ($request->has('remove_avatar') && $request->remove_avatar == '1') {
             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+                // Удаляем файл только если это локальный файл, а не внешний URL
+                if (!$user->hasExternalAvatar()) {
+                    Storage::disk('public')->delete($user->avatar);
+                }
                 $user->avatar = null;
             }
         }
 
         // Обработка загрузки нового аватара
         if ($request->hasFile('avatar')) {
-            // Удаляем старый аватар если есть
-            if ($user->avatar) {
+            // Удаляем старый аватар если есть и это локальный файл
+            if ($user->avatar && !$user->hasExternalAvatar()) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
@@ -106,7 +109,11 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
+            // Удаляем файл только если это локальный файл, а не внешний URL
+            if (!$user->hasExternalAvatar()) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            
             $user->avatar = null;
             $user->save();
         }
