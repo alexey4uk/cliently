@@ -8,6 +8,11 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Models\BusinessRole;
 use App\Models\Client;
+use App\Notifications\AppointmentCreated as AppointmentCreatedNotification;
+use App\Notifications\AppointmentStatusChanged as AppointmentStatusChangedNotification;
+use App\Notifications\AppointmentUpcoming as AppointmentUpcomingNotification;
+use App\Services\NotificationSettingsService;
+use App\Services\TelegramNotificationService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -167,6 +172,7 @@ class AppointmentNotificationService
                 continue;
             }
 
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.created',
@@ -183,6 +189,32 @@ class AppointmentNotificationService
                     'url' => self::getAppointmentRoute($user, $appointment)
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.created')) {
+                try {
+                    $user->notify(new AppointmentCreatedNotification($appointment));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for appointment.created', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Telegram уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendTelegram($user, 'appointment.created')) {
+                try {
+                    TelegramNotificationService::sendAppointmentCreated($appointment);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for appointment.created', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 
@@ -243,9 +275,10 @@ class AppointmentNotificationService
                 continue;
             }
 
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $user->id,
-                'type' => 'appointment.updated',
+                'type' => 'appointment.status_changed',
                 'title' => 'Запись ' . $statusText,
                 'message' => sprintf(
                     '%s %s %s - %s',
@@ -260,6 +293,32 @@ class AppointmentNotificationService
                     'url' => self::getAppointmentRoute($user, $appointment)
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.status_changed')) {
+                try {
+                    $user->notify(new AppointmentStatusChangedNotification($appointment, $oldStatus));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for appointment.status_changed', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Telegram уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendTelegram($user, 'appointment.status_changed')) {
+                try {
+                    TelegramNotificationService::sendAppointmentStatusChanged($appointment, $oldStatus);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for appointment.status_changed', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 
@@ -313,6 +372,7 @@ class AppointmentNotificationService
                 continue;
             }
 
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.upcoming',
@@ -329,6 +389,19 @@ class AppointmentNotificationService
                     'url' => self::getAppointmentRoute($user, $appointment)
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.upcoming')) {
+                try {
+                    $user->notify(new AppointmentUpcomingNotification($appointment));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for appointment.upcoming', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 

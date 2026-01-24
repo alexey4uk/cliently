@@ -50,7 +50,7 @@ class MasterRequest extends FormRequest
                 'required',
                 'string',
                 'max:20',
-                'regex:/^\+375\d{9}$/',
+                // 'regex:/^\+375\d{9}$/',
             ],
             'email' => ['nullable', 'email', 'max:255'],
             'working_hours' => ['required', 'array'],

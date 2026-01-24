@@ -11,6 +11,8 @@ use App\Notifications\TicketAssigned;
 use App\Notifications\TicketCommentAdded;
 use App\Notifications\TicketCreated;
 use App\Notifications\TicketStatusChanged;
+use App\Services\NotificationSettingsService;
+use App\Services\TelegramNotificationService;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\DB;
 use App\Services\NotificationService;
@@ -102,20 +104,47 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if (! $settings->email_notifications_enabled) {
-            return;
+        // Проверяем настройки пользователя и настройки тикетов
+        if ($ticket->assignedUser && $settings->email_notifications_enabled) {
+            if (NotificationSettingsService::shouldSendEmail($ticket->assignedUser, 'ticket.created')) {
+                try {
+                    $ticket->assignedUser->notify(new TicketCreated($ticket));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.created', [
+                        'user_id' => $ticket->assignedUser->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
 
-        // Уведомляем назначенного пользователя
-        if ($ticket->assignedUser) {
-            $ticket->assignedUser->notify(new TicketCreated($ticket));
-        }
-
-        // Уведомляем получателей из настроек
-        if ($settings->email_notification_recipients) {
+        // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
+        if ($settings->email_notification_recipients && $settings->email_notifications_enabled) {
             foreach ($settings->email_notification_recipients as $email) {
-                Notification::route('mail', $email)
-                    ->notify(new TicketCreated($ticket));
+                try {
+                    Notification::route('mail', $email)
+                        ->notify(new TicketCreated($ticket));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
+                        'email' => $email,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+
+        // === TELEGRAM УВЕДОМЛЕНИЕ ===
+        if ($ticket->assignedUser && NotificationSettingsService::shouldSendTelegram($ticket->assignedUser, 'ticket.created')) {
+            try {
+                TelegramNotificationService::sendTicketCreated($ticket);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.created', [
+                    'user_id' => $ticket->assignedUser->id,
+                    'ticket_id' => $ticket->id,
+                    'error' => $e->getMessage()
+                ]);
             }
         }
     }
@@ -279,20 +308,51 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if (! $settings->email_notifications_enabled) {
-            return;
+        if ($settings->email_notifications_enabled) {
+            // Уведомляем всех пользователей по email (если включено в их настройках)
+            foreach ($usersToNotify as $user) {
+                if (NotificationSettingsService::shouldSendEmail($user, 'ticket.comment')) {
+                    try {
+                        $user->notify(new TicketCommentAdded($ticket, $comment));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.comment', [
+                            'user_id' => $user->id,
+                            'ticket_id' => $ticket->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+
+            // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
+            if ($settings->email_notification_recipients) {
+                foreach ($settings->email_notification_recipients as $email) {
+                    try {
+                        Notification::route('mail', $email)
+                            ->notify(new TicketCommentAdded($ticket, $comment));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
+                            'email' => $email,
+                            'ticket_id' => $ticket->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
         }
 
-        // Уведомляем всех пользователей по email
+        // === TELEGRAM УВЕДОМЛЕНИЕ ===
         foreach ($usersToNotify as $user) {
-            $user->notify(new TicketCommentAdded($ticket, $comment));
-        }
-
-        // Уведомляем получателей из настроек
-        if ($settings->email_notification_recipients) {
-            foreach ($settings->email_notification_recipients as $email) {
-                Notification::route('mail', $email)
-                    ->notify(new TicketCommentAdded($ticket, $comment));
+            if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.comment')) {
+                try {
+                    TelegramNotificationService::sendTicketCommentAdded($ticket, $comment);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.comment', [
+                        'user_id' => $user->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
         }
     }
@@ -322,7 +382,30 @@ class TicketNotificationService
             ]);
 
             // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-            $user->notify(new TicketAssigned($ticket, $user));
+            if (NotificationSettingsService::shouldSendEmail($user, 'ticket.assigned')) {
+                try {
+                    $user->notify(new TicketAssigned($ticket, $user));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.assigned', [
+                        'user_id' => $user->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // === TELEGRAM УВЕДОМЛЕНИЕ ===
+            if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.assigned')) {
+                try {
+                    TelegramNotificationService::sendTicketAssigned($ticket, $user);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.assigned', [
+                        'user_id' => $user->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 
@@ -383,20 +466,51 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if (! $settings->email_notifications_enabled) {
-            return;
+        if ($settings->email_notifications_enabled) {
+            // Уведомляем всех пользователей по email (если включено в их настройках)
+            foreach ($usersToNotify as $user) {
+                if (NotificationSettingsService::shouldSendEmail($user, 'ticket.status_changed')) {
+                    try {
+                        $user->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.status_changed', [
+                            'user_id' => $user->id,
+                            'ticket_id' => $ticket->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+
+            // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
+            if ($settings->email_notification_recipients) {
+                foreach ($settings->email_notification_recipients as $email) {
+                    try {
+                        Notification::route('mail', $email)
+                            ->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
+                            'email' => $email,
+                            'ticket_id' => $ticket->id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
         }
 
-        // Уведомляем назначенного пользователя
-        if ($ticket->assignedUser) {
-            $ticket->assignedUser->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));
-        }
-
-        // Уведомляем получателей из настроек
-        if ($settings->email_notification_recipients) {
-            foreach ($settings->email_notification_recipients as $email) {
-                Notification::route('mail', $email)
-                    ->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));
+        // === TELEGRAM УВЕДОМЛЕНИЕ ===
+        foreach ($usersToNotify as $user) {
+            if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.status_changed')) {
+                try {
+                    TelegramNotificationService::sendTicketStatusChanged($ticket, $oldStatus, $newStatus);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.status_changed', [
+                        'user_id' => $user->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
         }
     }

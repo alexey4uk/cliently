@@ -70,6 +70,13 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
     });
 
+    // Настройки уведомлений (доступны всем авторизованным пользователям)
+    Route::prefix('settings/notifications')->name('settings.notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'update'])->name('update');
+        Route::get('/api', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'getSettings'])->name('api');
+    });
+
     // === КЛИЕНТСКАЯ ЧАСТЬ ===
     // Для пользователей с доступом к клиентской части
     Route::middleware(['auth', 'only.client'])->group(function () {

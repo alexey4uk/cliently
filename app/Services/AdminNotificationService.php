@@ -6,6 +6,11 @@ use App\Models\Business;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Subscription;
+use App\Notifications\Admin\BusinessCreated as BusinessCreatedNotification;
+use App\Notifications\Admin\TicketCreated as TicketCreatedNotification;
+use App\Notifications\Admin\SubscriptionExpiring as SubscriptionExpiringNotification;
+use App\Services\NotificationSettingsService;
+use App\Services\TelegramNotificationService;
 use Illuminate\Support\Facades\Log;
 
 class AdminNotificationService
@@ -128,6 +133,7 @@ class AdminNotificationService
         $creator = $ticket->creator();
 
         foreach ($admins as $admin) {
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.ticket.created',
@@ -143,6 +149,32 @@ class AdminNotificationService
                     'url' => route('panel.tickets.show', $ticket)
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendEmail($admin, 'admin.ticket.created')) {
+                try {
+                    $admin->notify(new TicketCreatedNotification($ticket));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for admin.ticket.created', [
+                        'admin_id' => $admin->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Telegram уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendTelegram($admin, 'admin.ticket.created')) {
+                try {
+                    TelegramNotificationService::sendAdminTicketCreated($ticket);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for admin.ticket.created', [
+                        'admin_id' => $admin->id,
+                        'ticket_id' => $ticket->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 
@@ -232,6 +264,7 @@ class AdminNotificationService
         }
 
         foreach ($admins as $admin) {
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.subscription.expiring',
@@ -249,6 +282,19 @@ class AdminNotificationService
                     'url' => $business ? route('panel.businesses.show', $business) : route('panel.businesses')
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendEmail($admin, 'admin.subscription.expiring')) {
+                try {
+                    $admin->notify(new SubscriptionExpiringNotification($subscription));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for admin.subscription.expiring', [
+                        'admin_id' => $admin->id,
+                        'subscription_id' => $subscription->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
     }
 

@@ -126,6 +126,14 @@
                 @endif
             </a>
             
+            <a href="{{ route('settings.notifications.index') }}"
+                class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                <div class="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-200 dark:group-hover:bg-blue-500/30 transition-colors">
+                    <i class="fa-solid fa-bell-slash text-xs text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <span class="font-medium">Настройки уведомлений</span>
+            </a>
+            
             @if(Auth::user()->can('panel.access') && !Str::startsWith(Request::path(), 'panel'))
                 <a href="{{ route('panel.index') }}"
                     class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">

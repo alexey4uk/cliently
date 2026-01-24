@@ -77,6 +77,11 @@ class User extends Authenticatable
         return $this->hasMany(NotificationRecord::class);
     }
 
+    public function notificationSettings(): HasMany
+    {
+        return $this->hasMany(UserNotificationSetting::class);
+    }
+
     /**
      * Boot the model.
      */
