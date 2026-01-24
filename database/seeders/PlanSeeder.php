@@ -95,7 +95,7 @@ class PlanSeeder extends Seeder
     protected function createPlanFeatures(Plan $plan, array $features): void
     {
         foreach ($features as $feature) {
-            PlanFeature::firstOrCreate(
+            PlanFeature::updateOrCreate(
                 [
                     'plan_id' => $plan->id,
                     'feature_key' => $feature['key'],

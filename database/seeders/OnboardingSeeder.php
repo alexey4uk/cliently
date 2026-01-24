@@ -41,7 +41,12 @@ class OnboardingSeeder extends Seeder
         ]);
 
         // Привязываем пользователя к бизнесу как владельца
-        $business->users()->attach($user, ['role' => 'owner']);
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        if (!$ownerRole) {
+            $this->command->error('Роль owner не найдена. Сначала запустите DefaultBusinessRolePermissionsSeeder.');
+            return;
+        }
+        $business->users()->attach($user, ['role_id' => $ownerRole->id, 'role' => 'owner']);
 
         // Создаем локацию с рабочими часами
         $workingHours = [

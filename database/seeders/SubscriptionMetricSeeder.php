@@ -52,7 +52,7 @@ class SubscriptionMetricSeeder extends Seeder
         ];
 
         foreach ($integerMetrics as $metric) {
-            SubscriptionMetric::firstOrCreate(
+            SubscriptionMetric::updateOrCreate(
                 ['key' => $metric['key']],
                 [
                     'label' => $metric['label'],
@@ -82,7 +82,7 @@ class SubscriptionMetricSeeder extends Seeder
         ];
 
         foreach ($booleanMetrics as $metric) {
-            SubscriptionMetric::firstOrCreate(
+            SubscriptionMetric::updateOrCreate(
                 ['key' => $metric['key']],
                 [
                     'label' => $metric['label'],

@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolePermissionSeeder::class,
             DefaultBusinessRolePermissionsSeeder::class,
+            SubscriptionMetricSeeder::class, // Метрики подписки должны быть созданы до тарифов
+            PlanSeeder::class, // Тарифы используют метрики
             UserSeeder::class,
             OnboardingSeeder::class,
         ]);

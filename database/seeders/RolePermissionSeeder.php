@@ -132,24 +132,24 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.update' => 'Редактирование тикетов (админ-панель)',
             'panel.tickets.delete' => 'Удаление тикетов (админ-панель)',
             'panel.tickets.assign' => 'Назначение тикетов (админ-панель)',
-            
+
             // Управление пользователями бизнеса (клиентская часть)
             'client.business.users.view' => 'Просмотр пользователей бизнеса',
             'client.business.users.create' => 'Добавление пользователей в бизнес',
             'client.business.users.update' => 'Изменение роли пользователя в бизнесе',
             'client.business.users.delete' => 'Удаление пользователя из бизнеса',
             'client.business.roles.manage' => 'Управление правами ролей бизнеса (настройка прав для ролей в своем бизнесе)',
-            
+
             // Подписки
             'client.subscription.view' => 'Просмотр информации о подписке',
             'client.subscription.manage' => 'Управление подпиской',
-            
+
             // Управление базовыми правами ролей бизнеса (админ-панель)
             'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',
         ];
 
         foreach ($permissions as $name => $description) {
-            Permission::firstOrCreate(
+            Permission::updateOrCreate(
                 ['name' => $name, 'guard_name' => 'web'],
                 ['description' => $description]
             );
@@ -166,46 +166,46 @@ class RolePermissionSeeder extends Seeder
         $managerPermissions = [
             // Бизнесы - только просмотр (админ-панель)
             'panel.businesses.view',
-            
+
             // Записи - полный доступ (админ-панель)
             'panel.appointments.view',
             'panel.appointments.update',
             'panel.appointments.delete',
-            
+
             // Клиенты - полный доступ (админ-панель)
             'panel.clients.view',
             'panel.clients.create',
             'panel.clients.update',
             'panel.clients.delete',
-            
+
             // Услуги - только просмотр и редактирование (админ-панель)
             'panel.services.view',
             'panel.services.update',
             'panel.services.delete',
-            
+
             // Локации - только просмотр и редактирование (админ-панель)
             'panel.locations.view',
             'panel.locations.update',
             'panel.locations.delete',
-            
+
             // Мастера - только просмотр и редактирование (админ-панель)
             'panel.masters.view',
             'panel.masters.update',
             'panel.masters.delete',
-            
+
             // Аналитика (админ-панель)
             'panel.analytics.view',
-            
+
             // Тикеты - полный доступ (админ-панель)
             'panel.tickets.view',
             'panel.tickets.update',
             'panel.tickets.delete',
             'panel.tickets.assign',
             'panel.tickets.categories.manage',
-            
+
             // Управление базовыми правами ролей бизнеса
             'panel.business.roles.manage',
-            
+
             // Доступ к панели
             'panel.access',
         ];
