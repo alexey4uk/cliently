@@ -114,9 +114,15 @@ class MasterController extends Controller
             'location_ids.*' => 'exists:locations,id',
             'service_ids' => 'nullable|array',
             'service_ids.*' => 'exists:services,id',
+            'working_hours' => 'nullable|array',
+            'working_hours.from' => 'required_without:working_hours.24_hours|date_format:H:i',
+            'working_hours.to' => 'required_without:working_hours.24_hours|date_format:H:i',
+            'working_hours.24_hours' => 'nullable|boolean',
+            'working_hours.days_off' => 'nullable|array',
+            'working_hours.days_off.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
         ]);
 
-        $master->update([
+        $updateData = [
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
             'specialization' => $validated['specialization'],
@@ -125,7 +131,14 @@ class MasterController extends Controller
             'email' => $validated['email'] ?? null,
             'business_id' => $validated['business_id'],
             'is_active' => $validated['is_active'] ?? false,
-        ]);
+        ];
+
+        // Добавляем working_hours, если они переданы
+        if (isset($validated['working_hours'])) {
+            $updateData['working_hours'] = \App\Services\WorkingHoursService::toJson($validated['working_hours']);
+        }
+
+        $master->update($updateData);
 
         // Синхронизация локаций
         if (isset($validated['location_ids'])) {
@@ -150,9 +163,10 @@ class MasterController extends Controller
     public function destroy(Master $master)
     {
         // Проверяем, есть ли связанные записи
-        if ($master->appointments()->count() > 0) {
-            return redirect()->route('panel.masters')
-                ->with('error', 'Невозможно удалить мастера, так как у него есть связанные записи');
+        $appointmentsCount = $master->appointments()->count();
+        if ($appointmentsCount > 0) {
+            return redirect()->back()
+                ->with('error', "Невозможно удалить мастера, так как у него есть {$appointmentsCount} связанных записей. Записи останутся без мастера.");
         }
 
         $master->delete();

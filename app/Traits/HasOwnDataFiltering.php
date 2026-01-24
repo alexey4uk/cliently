@@ -7,6 +7,7 @@ use App\Models\Master;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Трейт для фильтрации данных по владельцу
@@ -16,6 +17,9 @@ trait HasOwnDataFiltering
 {
     /**
      * Получить ID мастера для текущего пользователя в бизнесе
+     * 
+     * Сначала проверяет связь через business_user.master_id (если пользователь 
+     * привязан к конкретному мастеру), затем ищет мастера по user_id.
      *
      * @param Business $business
      * @return int|null
@@ -27,6 +31,24 @@ trait HasOwnDataFiltering
             return null;
         }
 
+        // Сначала проверяем, есть ли прямая связь через business_user.master_id
+        $businessUser = DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($businessUser && $businessUser->master_id) {
+            // Проверяем, что мастер существует и принадлежит этому бизнесу
+            $master = Master::where('id', $businessUser->master_id)
+                ->where('business_id', $business->id)
+                ->first();
+            
+            if ($master) {
+                return $master->id;
+            }
+        }
+
+        // Если прямой связи нет, ищем мастера по user_id (старый способ)
         $master = Master::where('business_id', $business->id)
             ->where('user_id', $user->id)
             ->first();

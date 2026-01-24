@@ -16,6 +16,7 @@ class BusinessUserInvitation extends Model
         'email',
         'role',
         'role_id',
+        'master_id',
         'token',
         'created_by',
         'accepted_at',

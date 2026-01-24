@@ -178,10 +178,18 @@ class MasterSettingsController extends Controller
             return redirect()->route('settings.masters');
         }
 
+        // Проверяем, есть ли связанные записи
+        $appointmentsCount = $master->appointments()->count();
+        if ($appointmentsCount > 0) {
+            return redirect()->back()
+                ->with('error', "Невозможно удалить мастера, так как у него есть {$appointmentsCount} связанных записей. Записи останутся без мастера.");
+        }
+
         $master->delete();
 
         // Уменьшать usage не нужно, т.к. для мастеров считаем напрямую из БД
+        // Observer автоматически очистит master_id в business_user и business_user_invitations
 
-        return redirect()->route('settings.masters')->with('success', 'Мастер удален');
+        return redirect()->route('settings.masters')->with('success', 'Мастер успешно удален');
     }
 }

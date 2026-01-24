@@ -22,6 +22,13 @@ class NotificationSettingsController extends Controller
         // Получаем бота для генерации ссылки привязки
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
         $botUsername = $bot ? $bot->name : null;
+        
+        // Генерируем токен, если отсутствует
+        if (empty($user->telegram_token)) {
+            $user->telegram_token = \Illuminate\Support\Str::random(32);
+            $user->save();
+        }
+        
         $telegramLink = $botUsername && $user->telegram_token
             ? "https://t.me/{$botUsername}?start=user_auth_{$user->telegram_token}"
             : null;

@@ -83,10 +83,23 @@ class BusinessInvitationController extends Controller
         }
 
         // Добавляем пользователя в бизнес
-        $invitation->business->users()->attach($user->id, [
+        $pivotData = [
             'role' => $invitation->role,
             'role_id' => $invitation->role_id,
-        ]);
+        ];
+
+        // Если роль "мастер" и указан master_id в приглашении, добавляем его
+        if ($invitation->role === 'master' && $invitation->master_id) {
+            $pivotData['master_id'] = $invitation->master_id;
+        } elseif ($invitation->role === 'master' && !$invitation->master_id) {
+            // Если роль "мастер" но master_id не указан, создаем нового мастера
+            $master = $this->createMasterForUser($invitation->business, $user, $invitation);
+            if ($master) {
+                $pivotData['master_id'] = $master->id;
+            }
+        }
+
+        $invitation->business->users()->attach($user->id, $pivotData);
 
         // Помечаем приглашение как принятое
         $invitation->update([
@@ -126,10 +139,23 @@ class BusinessInvitationController extends Controller
         }
 
         // Добавляем пользователя в бизнес
-        $invitation->business->users()->attach($user->id, [
+        $pivotData = [
             'role' => $invitation->role,
             'role_id' => $invitation->role_id,
-        ]);
+        ];
+
+        // Если роль "мастер" и указан master_id в приглашении, добавляем его
+        if ($invitation->role === 'master' && $invitation->master_id) {
+            $pivotData['master_id'] = $invitation->master_id;
+        } elseif ($invitation->role === 'master' && !$invitation->master_id) {
+            // Если роль "мастер" но master_id не указан, создаем нового мастера
+            $master = $this->createMasterForUser($invitation->business, $user, $invitation);
+            if ($master) {
+                $pivotData['master_id'] = $master->id;
+            }
+        }
+
+        $invitation->business->users()->attach($user->id, $pivotData);
 
         // Помечаем приглашение как принятое
         $invitation->update([
@@ -138,5 +164,37 @@ class BusinessInvitationController extends Controller
 
         return redirect()->route('dashboard')
             ->with('success', 'Вы успешно присоединились к бизнесу.');
+    }
+
+    /**
+     * Создать мастера для пользователя
+     *
+     * @param Business $business
+     * @param User $user
+     * @param BusinessUserInvitation $invitation
+     * @return \App\Models\Master|null
+     */
+    private function createMasterForUser(Business $business, User $user, BusinessUserInvitation $invitation): ?\App\Models\Master
+    {
+        // Проверяем, не существует ли уже мастер для этого пользователя в этом бизнесе
+        $existingMaster = \App\Models\Master::where('business_id', $business->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existingMaster) {
+            return $existingMaster;
+        }
+
+        // Создаем нового мастера
+        return \App\Models\Master::create([
+            'business_id' => $business->id,
+            'user_id' => $user->id,
+            'first_name' => $user->name ? explode(' ', $user->name)[0] : 'Мастер',
+            'last_name' => isset(explode(' ', $user->name)[1]) ? explode(' ', $user->name)[1] : null,
+            'specialization' => 'Мастер',
+            'phone' => $business->phone ?? '',
+            'email' => $user->email,
+            'is_active' => true,
+        ]);
     }
 }

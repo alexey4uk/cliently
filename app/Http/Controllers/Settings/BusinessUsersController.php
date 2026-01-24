@@ -74,6 +74,7 @@ class BusinessUsersController extends Controller
         return view('settings.users.create', [
             'business' => $business,
             'availableRoles' => $this->getAvailableRoles(false),
+            'masters' => $business->masters()->where('is_active', true)->orderBy('first_name')->get(),
         ]);
     }
 
@@ -94,11 +95,13 @@ class BusinessUsersController extends Controller
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'role_id' => ['required', 'exists:business_roles,id'],
+            'master_id' => ['nullable', 'exists:masters,id'],
         ], [
             'email.required' => 'Email обязателен для заполнения.',
             'email.email' => 'Введите корректный email адрес.',
             'role_id.required' => 'Роль обязательна для выбора.',
             'role_id.exists' => 'Выбрана некорректная роль.',
+            'master_id.exists' => 'Выбран некорректный мастер.',
         ]);
 
         // Проверяем, не добавлен ли уже пользователь в этот бизнес
@@ -125,7 +128,7 @@ class BusinessUsersController extends Controller
         // Создаем приглашение
         $role = BusinessRole::findOrFail($request->role_id);
 
-        $invitation = BusinessUserInvitation::create([
+        $invitationData = [
             'business_id' => $business->id,
             'email' => $request->email,
             'role' => $role->slug,
@@ -133,7 +136,14 @@ class BusinessUsersController extends Controller
             'token' => BusinessUserInvitation::generateToken(),
             'created_by' => Auth::id(),
             'expires_at' => now()->addDays(7),
-        ]);
+        ];
+
+        // Если роль "мастер" и указан master_id, добавляем его
+        if ($role->slug === 'master' && $request->filled('master_id')) {
+            $invitationData['master_id'] = $request->master_id;
+        }
+
+        $invitation = BusinessUserInvitation::create($invitationData);
 
         // Отправляем уведомление
         if ($existingUser) {
@@ -166,9 +176,11 @@ class BusinessUsersController extends Controller
 
         $request->validate([
             'role_id' => ['required', 'exists:business_roles,id'],
+            'master_id' => ['nullable', 'exists:masters,id'],
         ], [
             'role_id.required' => 'Роль обязательна для выбора.',
             'role_id.exists' => 'Выбрана некорректная роль.',
+            'master_id.exists' => 'Выбран некорректный мастер.',
         ]);
 
         // Проверяем, существует ли пользователь
@@ -185,12 +197,25 @@ class BusinessUsersController extends Controller
             // Добавляем существующего пользователя в бизнес
             $role = BusinessRole::findOrFail($request->role_id);
 
-            $business->users()->attach($existingUser->id, [
+            $pivotData = [
                 'role' => $role->slug,
                 'role_id' => $role->id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
-            ]);
+            ];
+
+            // Если роль "мастер" и указан master_id, добавляем его
+            if ($role->slug === 'master' && $request->filled('master_id')) {
+                $pivotData['master_id'] = $request->master_id;
+            } elseif ($role->slug === 'master' && !$request->filled('master_id')) {
+                // Если роль "мастер" но master_id не указан, создаем нового мастера
+                $master = $this->createMasterForUser($business, $existingUser, $request);
+                if ($master) {
+                    $pivotData['master_id'] = $master->id;
+                }
+            }
+
+            $business->users()->attach($existingUser->id, $pivotData);
             
             // Отправляем уведомление о добавлении в бизнес
             $existingUser->notify(new BusinessUserCreated($business, $role->name));
@@ -243,12 +268,25 @@ class BusinessUsersController extends Controller
         // Добавляем пользователя в бизнес
         $role = BusinessRole::findOrFail($request->role_id);
 
-        $business->users()->attach($user->id, [
+        $pivotData = [
             'role' => $role->slug,
             'role_id' => $role->id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
-        ]);
+        ];
+
+        // Если роль "мастер" и указан master_id, добавляем его
+        if ($role->slug === 'master' && $request->filled('master_id')) {
+            $pivotData['master_id'] = $request->master_id;
+        } elseif ($role->slug === 'master' && !$request->filled('master_id')) {
+            // Если роль "мастер" но master_id не указан, создаем нового мастера
+            $master = $this->createMasterForUser($business, $user, $request);
+            if ($master) {
+                $pivotData['master_id'] = $master->id;
+            }
+        }
+
+        $business->users()->attach($user->id, $pivotData);
 
         // Отправляем уведомление с временным паролем
         $user->notify(new BusinessUserCreatedWithPassword($business, $role->name, $temporaryPassword));
@@ -450,5 +488,37 @@ class BusinessUsersController extends Controller
     {
         $service = app(BusinessRolePermissionService::class);
         return $service->getAvailableRoles($includeOwner)->all();
+    }
+
+    /**
+     * Создать мастера для пользователя
+     *
+     * @param \App\Models\Business $business
+     * @param User $user
+     * @param Request $request
+     * @return \App\Models\Master|null
+     */
+    private function createMasterForUser(\App\Models\Business $business, User $user, Request $request): ?\App\Models\Master
+    {
+        // Проверяем, не существует ли уже мастер для этого пользователя в этом бизнесе
+        $existingMaster = \App\Models\Master::where('business_id', $business->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($existingMaster) {
+            return $existingMaster;
+        }
+
+        // Создаем нового мастера
+        return \App\Models\Master::create([
+            'business_id' => $business->id,
+            'user_id' => $user->id,
+            'first_name' => $request->first_name ?? $user->name,
+            'last_name' => $request->last_name ?? null,
+            'specialization' => $request->master_specialization ?? 'Мастер',
+            'phone' => $request->master_phone ?? $business->phone ?? '',
+            'email' => $request->email ?? $user->email,
+            'is_active' => true,
+        ]);
     }
 }

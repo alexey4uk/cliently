@@ -73,6 +73,7 @@
                     <select id="invite_role" 
                             name="role_id" 
                             required
+                            x-on:change="$dispatch('role-changed', { roleId: $event.target.value })"
                             class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role_id') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
                         @foreach($availableRoles as $roleKey)
@@ -87,6 +88,53 @@
                     <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                         Пользователь получит приглашение на указанный email
                     </p>
+                </div>
+
+                <!-- Поле выбора мастера для приглашения (показывается только для роли "мастер") -->
+                <div x-data="{ 
+                    selectedRoleId: '{{ old('role_id', '') }}',
+                    isMasterRole: false,
+                    init() {
+                        this.checkRole();
+                        this.$watch('selectedRoleId', () => this.checkRole());
+                        this.$watch('isMasterRole', (val) => {
+                            if (!val) {
+                                document.getElementById('invite_master_id').value = '';
+                            }
+                        });
+                    },
+                    checkRole() {
+                        const roleSelect = document.getElementById('invite_role');
+                        const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+                        const roleSlug = selectedOption ? selectedOption.text.toLowerCase() : '';
+                        this.isMasterRole = roleSlug.includes('мастер') || roleSlug.includes('master');
+                    }
+                }" 
+                x-on:role-changed.window="selectedRoleId = $event.detail.roleId; checkRole();"
+                x-show="isMasterRole" 
+                x-transition
+                class="space-y-3">
+                    <div>
+                        <label for="invite_master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Мастер
+                        </label>
+                        <select id="invite_master_id" 
+                                name="master_id" 
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('master_id') border-rose-500 @enderror">
+                            <option value="">Создать нового мастера при принятии приглашения</option>
+                            @foreach($masters ?? [] as $master)
+                                <option value="{{ $master->id }}" {{ old('master_id') == $master->id ? 'selected' : '' }}>
+                                    {{ $master->first_name }} {{ $master->last_name }} ({{ $master->specialization }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('master_id')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            Выберите существующего мастера или оставьте пустым для создания нового при принятии приглашения
+                        </p>
+                    </div>
                 </div>
 
                 <div class="flex gap-3 pt-2">
@@ -165,6 +213,7 @@
                     <select id="manual_role" 
                             name="role_id" 
                             required
+                            x-on:change="$dispatch('role-changed', { roleId: $event.target.value })"
                             class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role_id') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
                         @foreach($availableRoles as $roleKey)
@@ -180,6 +229,53 @@
                         <i class="fa-solid fa-info-circle mr-1"></i>
                         Новому пользователю будет создан временный пароль, который нужно будет сменить при первом входе.
                     </p>
+                </div>
+
+                <!-- Поле выбора мастера (показывается только для роли "мастер") -->
+                <div x-data="{ 
+                    selectedRoleId: '{{ old('role_id', '') }}',
+                    isMasterRole: false,
+                    init() {
+                        this.checkRole();
+                        this.$watch('selectedRoleId', () => this.checkRole());
+                        this.$watch('isMasterRole', (val) => {
+                            if (!val) {
+                                document.getElementById('manual_master_id').value = '';
+                            }
+                        });
+                    },
+                    checkRole() {
+                        const roleSelect = document.getElementById('manual_role');
+                        const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+                        const roleSlug = selectedOption ? selectedOption.text.toLowerCase() : '';
+                        this.isMasterRole = roleSlug.includes('мастер') || roleSlug.includes('master');
+                    }
+                }" 
+                x-on:role-changed.window="selectedRoleId = $event.detail.roleId; checkRole();"
+                x-show="isMasterRole" 
+                x-transition
+                class="space-y-3">
+                    <div>
+                        <label for="manual_master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Мастер
+                        </label>
+                        <select id="manual_master_id" 
+                                name="master_id" 
+                                class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('master_id') border-rose-500 @enderror">
+                            <option value="">Создать нового мастера</option>
+                            @foreach($masters ?? [] as $master)
+                                <option value="{{ $master->id }}" {{ old('master_id') == $master->id ? 'selected' : '' }}>
+                                    {{ $master->first_name }} {{ $master->last_name }} ({{ $master->specialization }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('master_id')
+                            <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            Выберите существующего мастера или оставьте пустым для создания нового
+                        </p>
+                    </div>
                 </div>
 
                 <div class="flex gap-3 pt-2">

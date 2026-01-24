@@ -31,5 +31,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app['router']->aliasMiddleware('check.permission', \App\Http\Middleware\CheckPermission::class);
         $this->app['router']->aliasMiddleware('only.panel', \App\Http\Middleware\OnlyPanelAccess::class);
         $this->app['router']->aliasMiddleware('only.client', \App\Http\Middleware\OnlyClientAccess::class);
+
+        // Register model observers
+        \App\Models\Master::observe(\App\Observers\MasterObserver::class);
     }
 }
