@@ -19,6 +19,14 @@ class SubscriptionService
         $trialEndsAt = null;
         $endsAt = null;
 
+        // Проверяем, использовал ли пользователь пробный период для этого тарифа
+        if ($isTrial && $plan->trial_days > 0) {
+            if ($this->hasUsedTrialForPlan($user, $plan)) {
+                // Пробный период уже использован для этого тарифа
+                $isTrial = false;
+            }
+        }
+
         if ($isTrial && $plan->trial_days > 0) {
             $trialEndsAt = $now->copy()->addDays($plan->trial_days);
             $status = 'trial';
@@ -34,6 +42,18 @@ class SubscriptionService
         // Если уже есть подписка, обновляем её
         $subscription = $user->subscription;
 
+        // Получаем текущий metadata или создаем новый
+        $metadata = $subscription?->metadata ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
+
+        // Если пробный период активирован, добавляем plan_id в список использованных
+        if ($isTrial && $plan->trial_days > 0) {
+            if (!in_array($plan->id, $usedTrials)) {
+                $usedTrials[] = $plan->id;
+                $metadata['used_trials'] = $usedTrials;
+            }
+        }
+
         if ($subscription) {
             $subscription->update([
                 'plan_id' => $plan->id,
@@ -42,6 +62,7 @@ class SubscriptionService
                 'ends_at' => $endsAt,
                 'trial_ends_at' => $trialEndsAt,
                 'cancelled_at' => null,
+                'metadata' => $metadata,
             ]);
         } else {
             $subscription = Subscription::create([
@@ -51,6 +72,7 @@ class SubscriptionService
                 'starts_at' => $now,
                 'ends_at' => $endsAt,
                 'trial_ends_at' => $trialEndsAt,
+                'metadata' => $metadata,
             ]);
         }
 
@@ -326,6 +348,48 @@ class SubscriptionService
     protected function isMonthlyMetric(string $featureKey): bool
     {
         return str_contains($featureKey, '_per_month') || str_contains($featureKey, '_monthly');
+    }
+
+    /**
+     * Проверить, использовал ли пользователь пробный период для конкретного тарифа
+     *
+     * @param User $user
+     * @param Plan $plan
+     * @return bool
+     */
+    public function hasUsedTrialForPlan(User $user, Plan $plan): bool
+    {
+        $subscription = $user->subscription;
+
+        if (!$subscription) {
+            return false;
+        }
+
+        // Проверяем metadata для истории использованных пробных периодов
+        $metadata = $subscription->metadata ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
+
+        // Если plan_id уже в списке использованных пробных периодов
+        if (in_array($plan->id, $usedTrials)) {
+            return true;
+        }
+
+        // Дополнительная проверка для обработки существующих данных:
+        // Если текущая подписка имеет trial_ends_at для этого plan_id
+        if ($subscription->plan_id === $plan->id && $subscription->trial_ends_at !== null) {
+            // Если пробный период уже закончился, значит он был использован
+            if ($subscription->trial_ends_at->isPast()) {
+                // Обновляем metadata для будущих проверок
+                if (!in_array($plan->id, $usedTrials)) {
+                    $usedTrials[] = $plan->id;
+                    $metadata['used_trials'] = $usedTrials;
+                    $subscription->update(['metadata' => $metadata]);
+                }
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

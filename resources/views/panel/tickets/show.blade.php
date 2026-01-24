@@ -140,14 +140,17 @@
 
                     <!-- Форма комментария -->
                     <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
-                        <form method="POST" action="{{ route('panel.tickets.comments.store', $ticket) }}" enctype="multipart/form-data" class="space-y-4">
+                        <form method="POST" action="{{ route('panel.tickets.comments.store', $ticket) }}" enctype="multipart/form-data" 
+                            x-data="{ submitting: false }"
+                            @submit="submitting = true"
+                            class="space-y-4">
                             @csrf
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Добавить комментарий</label>
                                 <textarea name="content" rows="4" required placeholder="Введите ваш комментарий..."
                                     class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"></textarea>
                             </div>
-                            <div>
+                            <div x-data="fileUploadAdmin()">
                                 <label for="attachments_admin" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                     <i class="fa-solid fa-paperclip mr-2 text-slate-400"></i>
                                     Прикрепить файлы
@@ -159,6 +162,7 @@
                                         name="attachments[]" 
                                         multiple 
                                         accept="image/*,.pdf,.doc,.docx,.txt"
+                                        @change="handleFiles($event)"
                                         class="block w-full text-sm text-slate-500 dark:text-slate-400
                                             file:mr-4 file:py-2 file:px-4
                                             file:rounded-lg file:border-0
@@ -174,14 +178,39 @@
                                     <i class="fa-solid fa-info-circle mr-1"></i>
                                     Максимальный размер файла: 10 МБ. Поддерживаемые форматы: изображения, PDF, DOC, DOCX, TXT
                                 </p>
+                                
+                                <!-- Список выбранных файлов -->
+                                <div x-show="selectedFiles.length > 0" x-cloak class="mt-4 space-y-2">
+                                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Выбрано файлов: <span x-text="selectedFiles.length"></span>
+                                    </p>
+                                    <div class="space-y-2 max-h-40 overflow-y-auto">
+                                        <template x-for="(file, index) in selectedFiles" :key="index">
+                                            <div class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                                                <i class="fa-solid fa-file text-indigo-600 dark:text-indigo-400 text-sm flex-shrink-0"></i>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-slate-900 dark:text-white truncate" x-text="file.name"></p>
+                                                    <p class="text-xs text-slate-500 dark:text-slate-400" x-text="formatFileSize(file.size)"></p>
+                                                </div>
+                                                <button type="button" @click="removeFile(index)" 
+                                                    class="flex-shrink-0 p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex items-center gap-4">
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="is_internal" value="1" class="rounded border-slate-300">
                                     <span class="text-sm text-slate-700 dark:text-slate-300">Внутренний комментарий</span>
                                 </label>
-                                <button type="submit" class="ml-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
-                                    <i class="fa-solid fa-paper-plane mr-2"></i>Отправить
+                                <button type="submit" 
+                                    :disabled="submitting"
+                                    class="ml-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors">
+                                    <i class="fa-solid mr-2" :class="submitting ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                                    <span x-text="submitting ? 'Отправка...' : 'Отправить'"></span>
                                 </button>
                             </div>
                         </form>
@@ -264,4 +293,58 @@
             </div>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        function fileUploadAdmin() {
+            return {
+                selectedFiles: [],
+                
+                handleFiles(event) {
+                    const files = Array.from(event.target.files);
+                    this.addFiles(files);
+                },
+                
+                addFiles(files) {
+                    const maxSize = 10 * 1024 * 1024; // 10 МБ
+                    files.forEach(file => {
+                        if (file.size > maxSize) {
+                            alert(`Файл "${file.name}" слишком большой. Максимальный размер: 10 МБ`);
+                            return;
+                        }
+                        if (!this.selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                            this.selectedFiles.push(file);
+                        }
+                    });
+                },
+                
+                removeFile(index) {
+                    const fileToRemove = this.selectedFiles[index];
+                    this.selectedFiles.splice(index, 1);
+                    
+                    // Удаляем файл из input
+                    const input = document.getElementById('attachments_admin');
+                    const dataTransfer = new DataTransfer();
+                    
+                    // Добавляем все файлы кроме удаленного
+                    Array.from(input.files).forEach(file => {
+                        if (file.name !== fileToRemove.name || file.size !== fileToRemove.size) {
+                            dataTransfer.items.add(file);
+                        }
+                    });
+                    
+                    input.files = dataTransfer.files;
+                },
+                
+                formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+                }
+            }
+        }
+    </script>
+    @endpush
 @endsection

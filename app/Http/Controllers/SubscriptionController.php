@@ -30,12 +30,22 @@ class SubscriptionController extends Controller
             ->ordered()
             ->get();
 
+        // Проверяем для каждого тарифа, использовал ли пользователь пробный период
+        $subscriptionService = app(SubscriptionService::class);
+        $trialUsage = [];
+        foreach ($plans as $plan) {
+            if ($plan->trial_days > 0 && $plan->price !== null) {
+                $trialUsage[$plan->id] = $subscriptionService->hasUsedTrialForPlan($user, $plan);
+            }
+        }
+
         return view('subscription.index', [
             'plans' => $plans,
             'user' => $user,
             'currentPlan' => $currentPlan,
             'currentSubscription' => $currentSubscription,
             'metrics' => $metrics,
+            'trialUsage' => $trialUsage,
         ]);
     }
 
@@ -84,10 +94,18 @@ class SubscriptionController extends Controller
 
         $subscriptionService = app(SubscriptionService::class);
 
+        // Проверяем, может ли пользователь использовать пробный период
+        $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
+        $hasUsedTrial = false;
+        
+        if ($canUseTrial) {
+            $hasUsedTrial = $subscriptionService->hasUsedTrialForPlan($user, $plan);
+        }
+
         // Создаем или обновляем подписку
         // Для бесплатных тарифов сразу активируем
-        $isTrial = $plan->trial_days > 0 && $plan->price !== null;
-        $subscriptionService->createSubscription($user, $plan, $isTrial);
+        $isTrial = $canUseTrial && !$hasUsedTrial;
+        $subscription = $subscriptionService->createSubscription($user, $plan, $isTrial);
 
         $message = "Тариф «{$plan->name}» успешно активирован!";
         
@@ -95,6 +113,9 @@ class SubscriptionController extends Controller
             $trialDays = $plan->trial_days;
             $trialText = $trialDays === 1 ? 'день' : ($trialDays < 5 ? 'дня' : 'дней');
             $message .= " У вас {$trialDays} {$trialText} пробного периода.";
+        } elseif ($hasUsedTrial && $canUseTrial) {
+            // Пробный период уже использован для этого тарифа
+            $message .= " Пробный период для этого тарифа уже был использован ранее.";
         }
 
         return redirect()->route('subscription.current')
