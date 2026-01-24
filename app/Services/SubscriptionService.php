@@ -143,6 +143,7 @@ class SubscriptionService
             'max_masters' => $user->businesses()->withCount('masters')->get()->sum('masters_count'),
             'max_services' => $user->businesses()->withCount('services')->get()->sum('services_count'),
             'max_clients' => $user->businesses()->withCount('clients')->get()->sum('clients_count'),
+            'max_business_users' => $this->getBusinessUsersCount($user),
             default => 0,
         };
     }
@@ -288,6 +289,35 @@ class SubscriptionService
     public function canCreateAppointment(User $user): bool
     {
         return $this->checkLimit($user, 'max_appointments_per_month');
+    }
+
+    /**
+     * Проверить возможность создания пользователя бизнеса
+     */
+    public function canCreateBusinessUser(User $user): bool
+    {
+        return $this->checkLimit($user, 'max_business_users');
+    }
+
+    /**
+     * Получить количество пользователей бизнеса (исключая владельца)
+     */
+    protected function getBusinessUsersCount(User $user): int
+    {
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        if (!$ownerRole) {
+            return 0;
+        }
+
+        $totalUsers = 0;
+        foreach ($user->businesses as $business) {
+            $usersCount = $business->users()
+                ->wherePivot('role_id', '!=', $ownerRole->id)
+                ->count();
+            $totalUsers += $usersCount;
+        }
+
+        return $totalUsers;
     }
 
     /**

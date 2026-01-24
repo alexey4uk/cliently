@@ -268,35 +268,74 @@
     <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Быстрые действия</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            @php
+                $subscriptionService = app(\App\Services\SubscriptionService::class);
+                $canCreateAppointment = $hasBusinessPermission('client.appointments.create') && $subscriptionService->canCreateAppointment($user);
+                $canCreateClient = $hasBusinessPermission('client.clients.create') && $subscriptionService->canCreateClient($user);
+                $canCreateService = $hasBusinessPermission('client.services.create') && $subscriptionService->canCreateService($user);
+            @endphp
             @if($hasBusinessPermission('client.appointments.create'))
-                <a href="{{ route('appointments.create') }}" class="flex flex-col items-center p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Новая запись</span>
-                </a>
+                @if($canCreateAppointment)
+                    <a href="{{ route('appointments.create') }}" class="flex flex-col items-center p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Новая запись</span>
+                    </a>
+                @else
+                    <button disabled class="flex flex-col items-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg cursor-not-allowed opacity-50" title="Достигнут месячный лимит записей для вашего тарифа.">
+                        <div class="w-12 h-12 bg-slate-400 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Новая запись</span>
+                    </button>
+                @endif
             @endif
             @if($hasBusinessPermission('client.clients.create'))
-                <a href="{{ route('clients.create') }}" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-500/10 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/20 transition-colors">
-                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Новый клиент</span>
-                </a>
+                @if($canCreateClient)
+                    <a href="{{ route('clients.create') }}" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-500/10 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/20 transition-colors">
+                        <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Новый клиент</span>
+                    </a>
+                @else
+                    <button disabled class="flex flex-col items-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg cursor-not-allowed opacity-50" title="Достигнут лимит клиентов для вашего тарифа.">
+                        <div class="w-12 h-12 bg-slate-400 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Новый клиент</span>
+                    </button>
+                @endif
             @endif
             @if($hasBusinessPermission('client.services.create'))
-                <a href="{{ route('services.create') }}" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-500/20 transition-colors">
-                    <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-3">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Новая услуга</span>
-                </a>
+                @if($canCreateService)
+                    <a href="{{ route('services.create') }}" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-500/20 transition-colors">
+                        <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">Новая услуга</span>
+                    </a>
+                @else
+                    <button disabled class="flex flex-col items-center p-4 bg-slate-100 dark:bg-slate-800 rounded-lg cursor-not-allowed opacity-50" title="Достигнут лимит услуг для вашего тарифа.">
+                        <div class="w-12 h-12 bg-slate-400 rounded-lg flex items-center justify-center mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Новая услуга</span>
+                    </button>
+                @endif
             @endif
             @if($hasBusinessPermission('client.appointments.view'))
                 <a href="{{ route('appointments.calendar') }}" class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-500/10 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors">

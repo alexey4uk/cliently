@@ -13,12 +13,12 @@ class PlanSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Бесплатный тариф (Free)
+        // 1. Бесплатный тариф (Free) - полноценный тариф для малого бизнеса
         $freePlan = Plan::firstOrCreate(
             ['slug' => 'free'],
             [
                 'name' => 'Бесплатный',
-                'description' => 'Идеально для начала работы. Все основные функции для управления небольшим бизнесом.',
+                'description' => 'Для начинающих и малого бизнеса. Все основные функции для эффективной работы.',
                 'price' => null,
                 'interval' => 'monthly',
                 'trial_days' => 0,
@@ -31,20 +31,22 @@ class PlanSeeder extends Seeder
         $this->createPlanFeatures($freePlan, [
             ['key' => 'max_locations', 'value' => '1', 'type' => 'integer'],
             ['key' => 'max_masters', 'value' => '2', 'type' => 'integer'],
-            ['key' => 'max_services', 'value' => '10', 'type' => 'integer'],
-            ['key' => 'max_clients', 'value' => '50', 'type' => 'integer'],
-            ['key' => 'max_appointments_per_month', 'value' => '100', 'type' => 'integer'],
+            ['key' => 'max_services', 'value' => '15', 'type' => 'integer'],
+            ['key' => 'max_clients', 'value' => '100', 'type' => 'integer'],
+            ['key' => 'max_appointments_per_month', 'value' => '200', 'type' => 'integer'],
+            ['key' => 'max_business_users', 'value' => '0', 'type' => 'integer'], // 0 = только владелец
             ['key' => 'telegram_bot_enabled', 'value' => 'false', 'type' => 'boolean'],
             ['key' => 'analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
+            ['key' => 'advanced_analytics_enabled', 'value' => 'false', 'type' => 'boolean'],
         ]);
 
-        // 2. Базовый тариф (Basic)
+        // 2. Базовый тариф (Basic/Стартовый) - для малого бизнеса
         $basicPlan = Plan::firstOrCreate(
             ['slug' => 'basic'],
             [
-                'name' => 'Базовый',
-                'description' => 'Для растущего бизнеса. Больше возможностей и функций.',
-                'price' => 29.00,
+                'name' => 'Стартовый',
+                'description' => 'Для малого бизнеса. Всё необходимое для эффективной работы салона или студии.',
+                'price' => 39.00,
                 'interval' => 'monthly',
                 'trial_days' => 7,
                 'is_active' => true,
@@ -54,21 +56,23 @@ class PlanSeeder extends Seeder
         );
 
         $this->createPlanFeatures($basicPlan, [
-            ['key' => 'max_locations', 'value' => '3', 'type' => 'integer'],
-            ['key' => 'max_masters', 'value' => '5', 'type' => 'integer'],
-            ['key' => 'max_services', 'value' => '30', 'type' => 'integer'],
-            ['key' => 'max_clients', 'value' => '500', 'type' => 'integer'],
-            ['key' => 'max_appointments_per_month', 'value' => '500', 'type' => 'integer'],
+            ['key' => 'max_locations', 'value' => '2', 'type' => 'integer'],
+            ['key' => 'max_masters', 'value' => '3', 'type' => 'integer'],
+            ['key' => 'max_services', 'value' => '25', 'type' => 'integer'],
+            ['key' => 'max_clients', 'value' => '300', 'type' => 'integer'],
+            ['key' => 'max_appointments_per_month', 'value' => '300', 'type' => 'integer'],
+            ['key' => 'max_business_users', 'value' => '2', 'type' => 'integer'],
             ['key' => 'telegram_bot_enabled', 'value' => 'true', 'type' => 'boolean'],
             ['key' => 'analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
+            ['key' => 'advanced_analytics_enabled', 'value' => 'false', 'type' => 'boolean'],
         ]);
 
-        // 3. Профессиональный тариф (Pro)
+        // 3. Профессиональный тариф (Pro) - для растущего бизнеса
         $proPlan = Plan::firstOrCreate(
             ['slug' => 'pro'],
             [
                 'name' => 'Профессиональный',
-                'description' => 'Максимальные возможности для крупного бизнеса. Безлимитные услуги и расширенная аналитика.',
+                'description' => 'Для растущего бизнеса. Расширенные возможности, безлимитные услуги и полная аналитика.',
                 'price' => 99.00,
                 'interval' => 'monthly',
                 'trial_days' => 14,
@@ -79,13 +83,15 @@ class PlanSeeder extends Seeder
         );
 
         $this->createPlanFeatures($proPlan, [
-            ['key' => 'max_locations', 'value' => '10', 'type' => 'integer'],
-            ['key' => 'max_masters', 'value' => '20', 'type' => 'integer'],
+            ['key' => 'max_locations', 'value' => '5', 'type' => 'integer'],
+            ['key' => 'max_masters', 'value' => '15', 'type' => 'integer'],
             ['key' => 'max_services', 'value' => '-1', 'type' => 'integer'], // -1 для безлимита
-            ['key' => 'max_clients', 'value' => '2000', 'type' => 'integer'],
-            ['key' => 'max_appointments_per_month', 'value' => '2000', 'type' => 'integer'],
+            ['key' => 'max_clients', 'value' => '1500', 'type' => 'integer'],
+            ['key' => 'max_appointments_per_month', 'value' => '1500', 'type' => 'integer'],
+            ['key' => 'max_business_users', 'value' => '8', 'type' => 'integer'],
             ['key' => 'telegram_bot_enabled', 'value' => 'true', 'type' => 'boolean'],
             ['key' => 'analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
+            ['key' => 'advanced_analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
         ]);
     }
 

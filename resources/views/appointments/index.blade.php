@@ -134,12 +134,26 @@
                         <span>Экспорт</span>
                     </a>
                 @endif
-                @if($hasBusinessPermission('client.appointments.create'))
+                @php
+                    $canCreateAppointment = false;
+                    if ($hasBusinessPermission('client.appointments.create')) {
+                        $subscriptionService = app(\App\Services\SubscriptionService::class);
+                        $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
+                    }
+                @endphp
+                @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
                     <a href="{{ route('appointments.create') }}"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span>Создать запись</span>
                     </a>
+                @elseif($hasBusinessPermission('client.appointments.create') && !$canCreateAppointment)
+                    <button disabled
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                        title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Создать запись</span>
+                    </button>
                 @endif
             </div>
         </div>
@@ -875,11 +889,27 @@
                             <span>Очистить фильтры</span>
                         </a>
                     @endif
-                    <a href="{{ route('appointments.create') }}"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Создать запись</span>
-                    </a>
+                    @php
+                        $canCreateAppointment = false;
+                        if ($hasBusinessPermission('client.appointments.create')) {
+                            $subscriptionService = app(\App\Services\SubscriptionService::class);
+                            $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
+                        }
+                    @endphp
+                    @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
+                        <a href="{{ route('appointments.create') }}"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                            <span>Создать запись</span>
+                        </a>
+                    @elseif($hasBusinessPermission('client.appointments.create') && !$canCreateAppointment)
+                        <button disabled
+                            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                            title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">
+                            <i class="fa-solid fa-plus text-sm"></i>
+                            <span>Создать запись</span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

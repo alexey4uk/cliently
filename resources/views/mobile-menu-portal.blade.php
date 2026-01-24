@@ -314,7 +314,28 @@ style="width: 0; height: 0;">
                 @endif
 
                 <!-- Интеграции -->
-                @if($hasBusinessPermission('client.telegram.manage'))
+                @php
+                    // Проверяем доступ к Telegram боту согласно тарифу
+                    $hasTelegramAccess = false;
+                    if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
+                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                        if ($ownerRole) {
+                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                ->where('business_id', $currentBusiness->id)
+                                ->where('role_id', $ownerRole->id)
+                                ->first();
+                            if ($ownerPivot) {
+                                $owner = \App\Models\User::find($ownerPivot->user_id);
+                                if ($owner) {
+                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                    $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
+                                    $hasTelegramAccess = $telegramEnabled === true;
+                                }
+                            }
+                        }
+                    }
+                @endphp
+                @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
                 <div>
                     <button @click="integrationsOpen = !integrationsOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">

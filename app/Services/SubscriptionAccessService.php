@@ -142,6 +142,78 @@ class SubscriptionAccessService
     }
 
     /**
+     * Проверить доступ и вернуть редирект с toast-уведомлением при отсутствии доступа
+     * 
+     * @param Business $business Бизнес, для которого проверяется доступ
+     * @param string $featureKey Ключ функции подписки (например, 'telegram_bot_enabled')
+     * @param string $permission Название права для проверки (например, 'client.telegram.manage')
+     * @param string|null $featureName Название функции для сообщения (например, 'Telegram бот')
+     * @param string|null $redirectRoute Маршрут для редиректа (по умолчанию 'subscription.index')
+     * @return \Illuminate\Http\RedirectResponse|null Редирект при отсутствии доступа, null если доступ есть
+     */
+    public function checkAccessWithRedirect(
+        Business $business,
+        string $featureKey,
+        string $permission,
+        ?string $featureName = null,
+        ?string $redirectRoute = null
+    ): ?\Illuminate\Http\RedirectResponse {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login')
+                ->with('error', 'Необходима авторизация.');
+        }
+
+        // Находим владельца бизнеса
+        $owner = $this->getBusinessOwner($business);
+        
+        if (!$owner) {
+            return redirect()->back()
+                ->with('error', 'Владелец бизнеса не найден.');
+        }
+
+        // Проверяем, включена ли функция в подписку владельца
+        $featureEnabled = $this->subscriptionService->getLimit($owner, $featureKey) === true;
+        
+        if (!$featureEnabled) {
+            $featureDisplayName = $featureName ?? 'Эта функция';
+            $redirectTo = $redirectRoute ?? 'subscription.index';
+            
+            // Получаем текущий план для мотивации
+            $currentSubscription = $owner->activeSubscription();
+            $currentPlanName = $currentSubscription ? $currentSubscription->plan->name : 'текущего тарифа';
+            
+            // Мотивационное сообщение с призывом к действию
+            $message = "🚀 {$featureDisplayName} недоступна для тарифа \"{$currentPlanName}\". Обновите тариф, чтобы получить доступ к этой функции!";
+            
+            return redirect()->route($redirectTo)
+                ->with('warning', $message);
+        }
+
+        // Получаем роль текущего пользователя в бизнесе
+        $role = $this->getUserBusinessRole($user, $business);
+        
+        if (!$role) {
+            return redirect()->back()
+                ->with('error', 'У вас нет роли в этом бизнесе.');
+        }
+
+        $isOwner = $role->slug === 'owner';
+
+        // Проверяем права: есть право ИЛИ пользователь владелец
+        $hasPermission = $this->permissionService->hasPermission($role->id, $permission);
+        
+        if (!$hasPermission && !$isOwner) {
+            return redirect()->back()
+                ->with('error', 'У вас нет прав для доступа к этой функции.');
+        }
+
+        // Доступ есть
+        return null;
+    }
+
+    /**
      * Получить владельца бизнеса
      * 
      * @param Business $business

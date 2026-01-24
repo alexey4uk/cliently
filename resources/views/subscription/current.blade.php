@@ -72,6 +72,7 @@
                 'services' => ['icon' => 'fa-scissors', 'label' => 'Услуги', 'key' => 'max_services'],
                 'clients' => ['icon' => 'fa-users', 'label' => 'Клиенты', 'key' => 'max_clients'],
                 'appointments_per_month' => ['icon' => 'fa-calendar-check', 'label' => 'Записей в месяц', 'key' => 'max_appointments_per_month'],
+                'business_users' => ['icon' => 'fa-users', 'label' => 'Пользователи бизнеса', 'key' => 'max_business_users'],
             ] as $usageKey => $info)
                 @php
                     $current = $usage[$usageKey]['current'] ?? 0;

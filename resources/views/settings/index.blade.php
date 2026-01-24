@@ -130,7 +130,26 @@
             <!-- Карточка: Telegram Бот -->
             @php
                 $telegramBotActive = $business->telegram_chat_id;
+                
+                // Проверяем доступ к Telegram боту согласно тарифу
+                $hasTelegramAccess = false;
+                $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                if ($ownerRole) {
+                    $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                        ->where('business_id', $business->id)
+                        ->where('role_id', $ownerRole->id)
+                        ->first();
+                    if ($ownerPivot) {
+                        $owner = \App\Models\User::find($ownerPivot->user_id);
+                        if ($owner) {
+                            $subscriptionService = app(\App\Services\SubscriptionService::class);
+                            $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
+                            $hasTelegramAccess = $telegramEnabled === true;
+                        }
+                    }
+                }
             @endphp
+            @if($hasTelegramAccess)
             <a href="{{ route('settings.telegram') }}"
                 class="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all">
                 <div class="h-12 w-12 rounded-lg bg-cyan-100 dark:bg-cyan-500/20 flex items-center justify-center mb-4 group-hover:bg-cyan-200 dark:group-hover:bg-cyan-500/30 transition-colors">
@@ -157,6 +176,7 @@
                     <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
                 </div>
             </a>
+            @endif
 
             <!-- Карточка: Тарифы и подписка -->
             @php

@@ -263,11 +263,27 @@
                         <span class="hidden lg:inline">Экспорт</span>
                     </a>
                     <!-- Кнопка создания -->
-                    <a href="{{ route('appointments.create') }}"
-                        class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all duration-200">
-                        <i class="fa-solid fa-plus text-[10px]"></i>
-                        <span class="hidden lg:inline">Создать</span>
-                    </a>
+                    @php
+                        $canCreateAppointment = false;
+                        if (Auth::check()) {
+                            $subscriptionService = app(\App\Services\SubscriptionService::class);
+                            $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
+                        }
+                    @endphp
+                    @if($canCreateAppointment)
+                        <a href="{{ route('appointments.create') }}"
+                            class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all duration-200">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span class="hidden lg:inline">Создать</span>
+                        </a>
+                    @else
+                        <button disabled
+                            class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-semibold text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                            title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span class="hidden lg:inline">Создать</span>
+                        </button>
+                    @endif
                     <!-- Кнопка "Сегодня" -->
                     <button onclick="window.location.href='{{ route('appointments.calendar', array_merge(['month' => \Carbon\Carbon::now()->format('Y-m')], request()->only(['search', 'status', 'service_id', 'master_id', 'date']))) }}'"
                         class="px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all">

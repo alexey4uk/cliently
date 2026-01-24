@@ -93,12 +93,39 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление пользователями и их ролями в бизнесе</p>
             </div>
             <div class="flex gap-3">
-                @if($hasBusinessPermission('client.business.users.create'))
+                @php
+                    // Проверяем лимит пользователей бизнеса согласно тарифу
+                    $canAddUser = false;
+                    if ($hasBusinessPermission('client.business.users.create') && $currentBusiness) {
+                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                        if ($ownerRole) {
+                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                ->where('business_id', $currentBusiness->id)
+                                ->where('role_id', $ownerRole->id)
+                                ->first();
+                            if ($ownerPivot) {
+                                $owner = \App\Models\User::find($ownerPivot->user_id);
+                                if ($owner) {
+                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                    $canAddUser = $subscriptionService->canCreateBusinessUser($owner);
+                                }
+                            }
+                        }
+                    }
+                @endphp
+                @if($hasBusinessPermission('client.business.users.create') && $canAddUser)
                     <a href="{{ route('settings.users.create') }}"
                         class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span>Добавить пользователя</span>
                     </a>
+                @elseif($hasBusinessPermission('client.business.users.create') && !$canAddUser)
+                    <button disabled
+                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                        title="Достигнут лимит пользователей для вашего тарифа. Обновите тариф для добавления новых пользователей.">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Добавить пользователя</span>
+                    </button>
                 @endif
             </div>
         </div>
@@ -358,12 +385,39 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
                     Начните работу, добавив пользователей в ваш бизнес
                 </p>
-                @if($hasBusinessPermission('client.business.users.create'))
+                @php
+                    // Проверяем лимит пользователей бизнеса согласно тарифу
+                    $canAddUser = false;
+                    if ($hasBusinessPermission('client.business.users.create') && $currentBusiness) {
+                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                        if ($ownerRole) {
+                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                ->where('business_id', $currentBusiness->id)
+                                ->where('role_id', $ownerRole->id)
+                                ->first();
+                            if ($ownerPivot) {
+                                $owner = \App\Models\User::find($ownerPivot->user_id);
+                                if ($owner) {
+                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                    $canAddUser = $subscriptionService->canCreateBusinessUser($owner);
+                                }
+                            }
+                        }
+                    }
+                @endphp
+                @if($hasBusinessPermission('client.business.users.create') && $canAddUser)
                     <a href="{{ route('settings.users.create') }}"
                         class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
                         <i class="fa-solid fa-plus text-sm"></i>
                         <span>Добавить пользователя</span>
                     </a>
+                @elseif($hasBusinessPermission('client.business.users.create') && !$canAddUser)
+                    <button disabled
+                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                        title="Достигнут лимит пользователей для вашего тарифа. Обновите тариф для добавления новых пользователей.">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Добавить пользователя</span>
+                    </button>
                 @endif
             </div>
         </div>

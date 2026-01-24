@@ -848,12 +848,26 @@
                                 <span>Очистить фильтры</span>
                             </a>
                         @endif
-                        @if($hasBusinessPermission('client.clients.create'))
+                        @php
+                            $canCreateClient = false;
+                            if ($hasBusinessPermission('client.clients.create')) {
+                                $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                $canCreateClient = $subscriptionService->canCreateClient(Auth::user());
+                            }
+                        @endphp
+                        @if($hasBusinessPermission('client.clients.create') && $canCreateClient)
                             <a href="{{ route('clients.create') }}"
                                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                                 <i class="fa-solid fa-user-plus text-sm"></i>
                                 <span>Добавить клиента</span>
                             </a>
+                        @elseif($hasBusinessPermission('client.clients.create') && !$canCreateClient)
+                            <button disabled
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                                title="Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.">
+                                <i class="fa-solid fa-user-plus text-sm"></i>
+                                <span>Добавить клиента</span>
+                            </button>
                         @endif
                     </div>
                 </div>

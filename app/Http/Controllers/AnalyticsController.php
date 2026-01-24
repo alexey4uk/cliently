@@ -23,7 +23,17 @@ class AnalyticsController extends Controller
 
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
-        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
+        $redirect = $accessService->checkAccessWithRedirect(
+            $business, 
+            'analytics_enabled', 
+            'client.analytics.view', 
+            'Аналитика',
+            'subscription.index'
+        );
+        
+        if ($redirect) {
+            return $redirect;
+        }
 
         return view('analytics.index', [
             'business' => $business,
@@ -41,8 +51,21 @@ class AnalyticsController extends Controller
 
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
-        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
+        $redirect = $accessService->checkAccessWithRedirect(
+            $business, 
+            'analytics_enabled', 
+            'client.analytics.view', 
+            'Аналитика',
+            'subscription.index'
+        );
+        
+        if ($redirect) {
+            return $redirect;
+        }
 
+        // Проверяем доступ к расширенной аналитике
+        $hasAdvancedAnalytics = $this->hasAdvancedAnalytics($business);
+        
         $filters = $this->getFilters($request);
         $data = $this->getFinancialData($business->id, $filters);
 
@@ -50,6 +73,7 @@ class AnalyticsController extends Controller
             'business' => $business,
             'data' => $data,
             'filters' => $filters,
+            'hasAdvancedAnalytics' => $hasAdvancedAnalytics,
         ]);
     }
 
@@ -64,8 +88,21 @@ class AnalyticsController extends Controller
 
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
-        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
+        $redirect = $accessService->checkAccessWithRedirect(
+            $business, 
+            'analytics_enabled', 
+            'client.analytics.view', 
+            'Аналитика',
+            'subscription.index'
+        );
+        
+        if ($redirect) {
+            return $redirect;
+        }
 
+        // Проверяем доступ к расширенной аналитике
+        $hasAdvancedAnalytics = $this->hasAdvancedAnalytics($business);
+        
         $filters = $this->getFilters($request);
         $data = $this->getGeneralData($business->id, $filters);
 
@@ -73,6 +110,7 @@ class AnalyticsController extends Controller
             'business' => $business,
             'data' => $data,
             'filters' => $filters,
+            'hasAdvancedAnalytics' => $hasAdvancedAnalytics,
         ]);
     }
 
@@ -453,6 +491,45 @@ class AnalyticsController extends Controller
         })->values()->sortByDesc('total')->take(10)->values();
 
         return $statsByMaster->toArray();
+    }
+
+    /**
+     * Проверить, есть ли доступ к расширенной аналитике
+     */
+    private function hasAdvancedAnalytics(\App\Models\Business $business): bool
+    {
+        $subscriptionService = app(SubscriptionService::class);
+        $owner = $this->getBusinessOwner($business);
+        
+        if (!$owner) {
+            return false;
+        }
+        
+        $limit = $subscriptionService->getLimit($owner, 'advanced_analytics_enabled');
+        return $limit === true;
+    }
+
+    /**
+     * Получить владельца бизнеса
+     */
+    private function getBusinessOwner(\App\Models\Business $business): ?\App\Models\User
+    {
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        
+        if (!$ownerRole) {
+            return null;
+        }
+
+        $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('role_id', $ownerRole->id)
+            ->first();
+        
+        if (!$ownerPivot) {
+            return null;
+        }
+
+        return \App\Models\User::find($ownerPivot->user_id);
     }
 
 }

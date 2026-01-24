@@ -76,12 +76,26 @@
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Услуги</h1>
                 <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление услугами и прайс-листом вашего бизнеса</p>
             </div>
-            @if($hasBusinessPermission('client.services.create'))
+            @php
+                $canCreateService = false;
+                if ($hasBusinessPermission('client.services.create')) {
+                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                    $canCreateService = $subscriptionService->canCreateService(Auth::user());
+                }
+            @endphp
+            @if($hasBusinessPermission('client.services.create') && $canCreateService)
                 <a href="{{ route('services.create') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
                     <i class="fa-solid fa-plus text-sm"></i>
                     <span>Добавить услугу</span>
                 </a>
+            @elseif($hasBusinessPermission('client.services.create') && !$canCreateService)
+                <button disabled
+                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                    title="Достигнут лимит услуг для вашего тарифа. Обновите тариф для добавления большего количества услуг.">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить услугу</span>
+                </button>
             @endif
         </div>
     </div>

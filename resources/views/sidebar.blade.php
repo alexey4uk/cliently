@@ -661,7 +661,28 @@
 
                     <!-- Интеграции (клиентская часть) -->
                     @if(!Str::startsWith(Request::path(), 'panel'))
-                    @if($hasBusinessPermission('client.telegram.manage'))
+                    @php
+                        // Проверяем доступ к Telegram боту согласно тарифу
+                        $hasTelegramAccess = false;
+                        if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
+                            $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                            if ($ownerRole) {
+                                $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                    ->where('business_id', $currentBusiness->id)
+                                    ->where('role_id', $ownerRole->id)
+                                    ->first();
+                                if ($ownerPivot) {
+                                    $owner = \App\Models\User::find($ownerPivot->user_id);
+                                    if ($owner) {
+                                        $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                        $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
+                                        $hasTelegramAccess = $telegramEnabled === true;
+                                    }
+                                }
+                            }
+                        }
+                    @endphp
+                    @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
                     <div>
                         <button @click="integrationsOpen = !integrationsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -1110,7 +1131,11 @@
                                 @endcan
                             @else
                                 <!-- Клиентская часть -->
-                                @if($hasBusinessPermission('client.analytics.view'))
+                                @php
+                                    // Проверяем доступ к аналитике согласно тарифу (используем существующую проверку выше)
+                                    // $hasAnalyticsAccess уже определен выше в блоке @php
+                                @endphp
+                                @if($hasBusinessPermission('client.analytics.view') && $hasAnalyticsAccess)
                                     <a href="{{ route('analytics.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.index')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'

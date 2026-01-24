@@ -95,6 +95,24 @@ class BusinessUsersController extends Controller
 
         $this->authorizeBusinessPermission('client.business.users.create');
 
+        // Проверяем лимит пользователей бизнеса
+        $ownerId = $this->getBusinessOwnerId($business);
+        if ($ownerId) {
+            $owner = User::find($ownerId);
+            if ($owner) {
+                $subscriptionService = app(SubscriptionService::class);
+                if (!$subscriptionService->canCreateBusinessUser($owner)) {
+                    $currentUsage = $subscriptionService->getCurrentUsage($owner, 'max_business_users');
+                    $limit = $subscriptionService->getLimit($owner, 'max_business_users');
+                    $limitText = $limit === -1 ? 'безлимит' : $limit;
+                    
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Достигнут лимит пользователей для вашего тарифа. У вас {$currentUsage} пользователей, но лимит - {$limitText}. Обновите тариф для добавления новых пользователей.");
+                }
+            }
+        }
+
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
             'role_id' => ['required', 'exists:business_roles,id'],
@@ -176,6 +194,24 @@ class BusinessUsersController extends Controller
         }
 
         $this->authorizeBusinessPermission('client.business.users.create');
+
+        // Проверяем лимит пользователей бизнеса
+        $ownerId = $this->getBusinessOwnerId($business);
+        if ($ownerId) {
+            $owner = User::find($ownerId);
+            if ($owner) {
+                $subscriptionService = app(SubscriptionService::class);
+                if (!$subscriptionService->canCreateBusinessUser($owner)) {
+                    $currentUsage = $subscriptionService->getCurrentUsage($owner, 'max_business_users');
+                    $limit = $subscriptionService->getLimit($owner, 'max_business_users');
+                    $limitText = $limit === -1 ? 'безлимит' : $limit;
+                    
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', "Достигнут лимит пользователей для вашего тарифа. У вас {$currentUsage} пользователей, но лимит - {$limitText}. Обновите тариф для добавления новых пользователей.");
+                }
+            }
+        }
 
         $request->validate([
             'role_id' => ['required', 'exists:business_roles,id'],

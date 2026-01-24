@@ -132,6 +132,10 @@ class SubscriptionController extends Controller
                 'current' => $subscriptionService->getCurrentUsage($user, 'max_appointments_per_month'),
                 'limit' => $subscriptionService->getLimit($user, 'max_appointments_per_month'),
             ],
+            'business_users' => [
+                'current' => $subscriptionService->getCurrentUsage($user, 'max_business_users'),
+                'limit' => $subscriptionService->getLimit($user, 'max_business_users'),
+            ],
         ];
 
         return view('subscription.current', [

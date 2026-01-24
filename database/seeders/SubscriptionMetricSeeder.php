@@ -49,6 +49,12 @@ class SubscriptionMetricSeeder extends Seeder
                 'description' => 'Максимальное количество записей в месяц',
                 'icon' => 'fa-calendar-check',
             ],
+            [
+                'key' => 'max_business_users',
+                'label' => 'Максимальное количество пользователей бизнеса',
+                'description' => 'Лимит на количество пользователей в команде (кроме владельца)',
+                'icon' => 'fa-users',
+            ],
         ];
 
         foreach ($integerMetrics as $metric) {
@@ -78,6 +84,12 @@ class SubscriptionMetricSeeder extends Seeder
                 'label' => 'Аналитика',
                 'description' => 'Включить расширенную аналитику и отчеты',
                 'icon' => 'fa-chart-line',
+            ],
+            [
+                'key' => 'advanced_analytics_enabled',
+                'label' => 'Расширенная аналитика',
+                'description' => 'Доступ к расширенным отчетам, прогнозам и аналитике',
+                'icon' => 'fa-chart-bar',
             ],
         ];
 
