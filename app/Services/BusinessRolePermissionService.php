@@ -7,153 +7,112 @@ use App\Models\BusinessRolePermission;
 class BusinessRolePermissionService
 {
     /**
-     * Get default permissions for a role (from DB, where business_id = NULL).
+     * Get available roles (global list).
+     */
+    public function getAvailableRoles(bool $includeOwner = true)
+    {
+        $query = \App\Models\BusinessRole::query()->orderBy('name');
+
+        if (! $includeOwner) {
+            $query->where('slug', '!=', 'owner');
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Get permissions for a role in a specific business (with overrides).
      *
-     * @param string $role
+     * @param int $roleId
      * @return array
      */
-    public function getDefaultPermissionsForRole(string $role): array
+    public function getPermissionsForRole(int $roleId): array
     {
-        return BusinessRolePermission::whereNull('business_id')
-            ->where('role', $role)
+        return BusinessRolePermission::where('role_id', $roleId)
             ->where('granted', true)
             ->pluck('permission')
             ->toArray();
     }
 
     /**
-     * Get available roles from default permissions (business_id = NULL).
-     */
-    public function getAvailableRoles(bool $includeOwner = true): array
-    {
-        $roles = BusinessRolePermission::whereNull('business_id')
-            ->distinct()
-            ->orderBy('role')
-            ->pluck('role')
-            ->toArray();
-
-        if (! $includeOwner) {
-            $roles = array_values(array_filter($roles, fn($role) => $role !== 'owner'));
-        }
-
-        return $roles;
-    }
-
-    /**
-     * Get permissions for a role in a specific business (with overrides).
-     *
-     * @param int|null $businessId
-     * @param string $role
-     * @return array
-     */
-    public function getPermissionsForRole(?int $businessId, string $role): array
-    {
-        // Base permissions (business_id = NULL)
-        $defaultPermissions = $this->getDefaultPermissionsForRole($role);
-
-        // If no business - return only base permissions
-        if (!$businessId) {
-            return $defaultPermissions;
-        }
-
-        // Overrides for specific business
-        $overrides = BusinessRolePermission::where('business_id', $businessId)
-            ->where('role', $role)
-            ->get()
-            ->keyBy('permission');
-
-        // Apply overrides
-        foreach ($overrides as $permission => $override) {
-            if ($override->granted) {
-                // Add permission if it doesn't exist
-                if (!in_array($permission, $defaultPermissions)) {
-                    $defaultPermissions[] = $permission;
-                }
-            } else {
-                // Remove permission from granted list
-                // Note: Explicit denial (granted = false) is handled separately
-                // in hasPermission() method and has HIGHER priority than wildcards.
-                // This removal only affects the granted permissions list.
-                $defaultPermissions = array_filter($defaultPermissions, fn($p) => $p !== $permission);
-            }
-        }
-
-        return array_values($defaultPermissions);
-    }
-
-    /**
      * Get explicitly denied permissions for a role.
      * These are permissions with granted = false that override wildcards.
      *
-     * @param int|null $businessId
-     * @param string $role
+     * @param int $roleId
      * @return array Array of denied permission names
      */
-    public function getDeniedPermissions(?int $businessId, string $role): array
+    public function getDeniedPermissions(int $roleId): array
     {
-        $denied = [];
-        
-        // Get denied permissions from defaults (business_id = NULL)
-        $defaultDenied = BusinessRolePermission::whereNull('business_id')
-            ->where('role', $role)
+        return BusinessRolePermission::where('role_id', $roleId)
             ->where('granted', false)
             ->pluck('permission')
             ->toArray();
-        
-        $denied = array_merge($denied, $defaultDenied);
-        
-        // Get denied permissions for specific business
-        if ($businessId) {
-            $businessDenied = BusinessRolePermission::where('business_id', $businessId)
-                ->where('role', $role)
-                ->where('granted', false)
-                ->pluck('permission')
-                ->toArray();
-            
-            $denied = array_merge($denied, $businessDenied);
-        }
-        
-        return array_unique($denied);
     }
 
     /**
      * Check if role has permission.
      * 
      * Priority order:
-     * 1. Explicit deny (granted = false) - HIGHEST PRIORITY
-     * 2. Explicit grant (direct permission or granted = true)
-     * 3. Wildcard permission (appointments.*)
+     * 1. Owner role - has all permissions automatically
+     * 2. Explicit deny (granted = false) - HIGHEST PRIORITY
+     * 3. Explicit grant (direct permission or granted = true)
+     * 4. Wildcard permission (appointments.*)
+     * 5. .own permission (if checking base permission like clients.view, also check clients.view.own)
      *
-     * @param int|null $businessId
-     * @param string $role
+     * @param int $roleId
      * @param string $permission
      * @return bool
      */
-    public function hasPermission(?int $businessId, string $role, string $permission): bool
+    public function hasPermission(int $roleId, string $permission): bool
     {
-        // First check: Is permission explicitly denied?
-        $deniedPermissions = $this->getDeniedPermissions($businessId, $role);
+        // First check: Is this the owner role? Owner has all permissions
+        $role = \App\Models\BusinessRole::find($roleId);
+        if ($role && $role->slug === 'owner') {
+            return true;
+        }
+        
+        // Second check: Is permission explicitly denied?
+        $deniedPermissions = $this->getDeniedPermissions($roleId);
         if ($this->checkPermission($deniedPermissions, $permission)) {
             return false; // Explicitly denied, even if covered by wildcard
         }
         
-        // Second check: Does role have permission (direct or via wildcard)?
-        $permissions = $this->getPermissionsForRole($businessId, $role);
-        return $this->checkPermission($permissions, $permission);
+        // Third check: Does role have permission (direct or via wildcard)?
+        $permissions = $this->getPermissionsForRole($roleId);
+        if ($this->checkPermission($permissions, $permission)) {
+            return true;
+        }
+        
+        // Fourth check: If checking base permission (like clients.view), also check .own variant
+        // This allows users with clients.view.own to access clients.view routes
+        // (the controller will filter data appropriately)
+        if (!str_ends_with($permission, '.own')) {
+            $ownPermission = $permission . '.own';
+            if ($this->checkPermission($permissions, $ownPermission)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
      * Check if role has permission to view own data only.
      * If user has both .view and .view.own, .view takes precedence (can see all).
      *
-     * @param int|null $businessId
-     * @param string $role
+     * @param int $roleId
      * @param string $basePermission Base permission like 'appointments.view'
      * @return bool Returns true if has .own permission, false if has full permission or no permission
      */
-    public function hasOwnDataPermission(?int $businessId, string $role, string $basePermission): bool
+    public function hasOwnDataPermission(int $roleId, string $basePermission): bool
     {
-        $permissions = $this->getPermissionsForRole($businessId, $role);
+        // Owner role can see all data, not restricted to own
+        $role = \App\Models\BusinessRole::find($roleId);
+        if ($role && $role->slug === 'owner') {
+            return false;
+        }
+        
+        $permissions = $this->getPermissionsForRole($roleId);
         
         // If user has full permission (e.g., appointments.view), they can see all data
         if ($this->checkPermission($permissions, $basePermission)) {

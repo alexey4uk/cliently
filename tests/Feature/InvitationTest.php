@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
+use App\Models\BusinessRole;
 use App\Models\BusinessUserInvitation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,11 +19,18 @@ class InvitationTest extends TestCase
         $business = Business::factory()->create();
         $user = User::factory()->create();
         
+        $role = BusinessRole::create([
+            'slug' => 'master',
+            'name' => 'Мастер',
+            'is_system' => true,
+        ]);
+
         // Создаем приглашение
         $invitation = BusinessUserInvitation::create([
             'business_id' => $business->id,
             'email' => 'test@example.com',
             'role' => 'master',
+            'role_id' => $role->id,
             'token' => BusinessUserInvitation::generateToken(),
             'created_by' => $user->id,
             'expires_at' => now()->addDays(7),
@@ -45,11 +53,18 @@ class InvitationTest extends TestCase
         $business = Business::factory()->create();
         $user = User::factory()->create();
         
+        $role = BusinessRole::create([
+            'slug' => 'master',
+            'name' => 'Мастер',
+            'is_system' => true,
+        ]);
+
         // Создаем приглашение
         $invitation = BusinessUserInvitation::create([
             'business_id' => $business->id,
             'email' => 'newuser@example.com',
             'role' => 'master',
+            'role_id' => $role->id,
             'token' => BusinessUserInvitation::generateToken(),
             'created_by' => $user->id,
             'expires_at' => now()->addDays(7),

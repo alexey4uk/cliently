@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Business;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
 trait HasCurrentBusiness
@@ -44,24 +45,54 @@ trait HasCurrentBusiness
     }
 
     /**
-     * Get the current user's role in the current business.
-     *
-     * @return string|null
+     * Get the current user's role model in the current business.
      */
-    protected function getCurrentBusinessRole(): ?string
+    protected function getCurrentBusinessRole(): ?\App\Models\BusinessRole
     {
         $business = $this->getCurrentBusiness();
-        
+
         if (!$business) {
             return null;
         }
 
         $user = Auth::user();
-        $pivot = $user->businesses()
+        
+        if (!$user) {
+            return null;
+        }
+
+        // Always query pivot directly from DB for reliability
+        $pivotData = DB::table('business_user')
+            ->where('user_id', $user->id)
             ->where('business_id', $business->id)
             ->first();
-
-        return $pivot?->pivot->role;
+        
+        if (!$pivotData) {
+            return null;
+        }
+        
+        // First try to get role by role_id
+        if ($pivotData->role_id) {
+            $role = \App\Models\BusinessRole::find($pivotData->role_id);
+            if ($role) {
+                return $role;
+            }
+        }
+        
+        // Fallback: try to get role by slug (for backward compatibility)
+        if ($pivotData->role) {
+            $role = \App\Models\BusinessRole::where('slug', $pivotData->role)->first();
+            if ($role) {
+                // Update role_id for future use
+                DB::table('business_user')
+                    ->where('user_id', $user->id)
+                    ->where('business_id', $business->id)
+                    ->update(['role_id' => $role->id]);
+                return $role;
+            }
+        }
+        
+        return null;
     }
 
     /**

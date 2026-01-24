@@ -80,7 +80,7 @@
                                 <span class="hidden sm:inline">К тарифам</span>
                                 <span class="sm:hidden">Назад</span>
                             </a>
-                            @can('plans.create')
+                            @can('panel.plans.create')
                                 <a href="{{ route('panel.plans.properties.create') }}"
                                    class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl text-xs sm:text-sm font-medium hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap">
                                     <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
@@ -340,7 +340,7 @@
                                             <span class="inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300">
                                                 {{ $metric->sort_order }}
                                             </span>
-                                            @can('plans.update')
+                                            @can('panel.plans.update')
                                                 <div class="flex flex-col gap-0.5" draggable="false">
                                                     <form action="{{ route('panel.plans.properties.decrement-sort', $metric) }}" method="POST" class="inline" draggable="false">
                                                         @csrf
@@ -360,13 +360,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('plans.update')
+                                            @can('panel.plans.update')
                                                 <a href="{{ route('panel.plans.properties.edit', $metric) }}"
                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-900 dark:hover:text-indigo-300 transition-all">
                                                     <i class="fa-solid fa-edit text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('plans.delete')
+                                            @can('panel.plans.delete')
                                                 <form action="{{ route('panel.plans.properties.destroy', $metric) }}" method="POST" class="inline"
                                                       onsubmit="return confirm('Вы уверены, что хотите удалить свойство «{{ addslashes($metric->label) }}»?');">
                                                     @csrf
@@ -376,7 +376,7 @@
                                                     </button>
                                                 </form>
                                             @endcan
-                                            @can('plans.update')
+                                            @can('panel.plans.update')
                                                 <button type="button" class="sortable-handle inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-all cursor-move touch-none" title="Перетащить для изменения порядка">
                                                     <i class="fa-solid fa-grip-vertical text-sm pointer-events-none"></i>
                                                 </button>

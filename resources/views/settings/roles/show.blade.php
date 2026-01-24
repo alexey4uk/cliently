@@ -1,13 +1,9 @@
 @extends('layouts.user')
 
 @php
-    $roleLabels = [
-        'owner' => 'Владелец',
-        'admin' => 'Администратор',
-        'master' => 'Мастер',
-    ];
-    $roleLabel = $roleLabels[$role] ?? ucfirst($role);
-    $roleTitleClass = match ($role) {
+    $roleSlug = $role->slug;
+    $roleLabel = $role->name ?? ucfirst($roleSlug);
+    $roleTitleClass = match ($roleSlug) {
         'owner' => 'text-amber-600 dark:text-amber-400',
         'admin' => 'text-indigo-600 dark:text-indigo-400',
         'master' => 'text-purple-600 dark:text-purple-400',
@@ -30,23 +26,34 @@
     $selectedCount = count($currentPermissions);
     $deniedCount = count($deniedPermissions ?? []);
     $ownCount = count(array_filter($allPermissions, fn($p) => str_ends_with($p, '.own')));
-    $overrideCount = $overrides->count();
+    $overrideCount = 0;
     $groupedPermissions = collect($allPermissions)
-        ->groupBy(fn($permission) => explode('.', $permission)[0])
+        ->groupBy(function($permission) {
+            $parts = explode('.', $permission);
+            // Для прав вида client.xxx.yyy группируем по xxx (второй элемент)
+            // Для прав вида panel.xxx.yyy группируем по xxx (второй элемент)
+            return count($parts) > 1 ? $parts[1] : $parts[0];
+        })
         ->sortKeys();
-    $roleIcon = match ($role) {
+    $roleIcon = match ($roleSlug) {
         'owner' => 'fa-crown',
         'admin' => 'fa-user-shield',
         'master' => 'fa-user',
         default => 'fa-user-gear',
     };
-    $roleBadge = match ($role) {
+    $roleBadge = match ($roleSlug) {
         'owner' => 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
         'admin' => 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300',
         'master' => 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300',
         default => 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
     };
-    $resourceLabels = [
+    // Получаем названия групп из описаний прав в БД
+    // Группируем по второму элементу имени права (client.xxx.yyy -> группа xxx)
+    $groupLabels = [];
+    $permissionDescriptions = $permissionDescriptions ?? [];
+    
+    // Fallback на базовые названия групп
+    $fallbackLabels = [
         'clients' => 'Клиенты',
         'appointments' => 'Записи',
         'services' => 'Услуги',
@@ -59,38 +66,126 @@
         'tickets' => 'Тикеты',
         'subscription' => 'Подписка',
     ];
-    $actionLabels = [
-        'view' => 'Просмотр',
-        'create' => 'Создание',
-        'update' => 'Редактирование',
-        'delete' => 'Удаление',
-        'export' => 'Экспорт',
-        'manage' => 'Управление',
-        'confirm' => 'Подтвердить',
-        'cancel' => 'Отменить',
-        'complete' => 'Завершить',
-        'assign' => 'Назначить',
-        'status' => 'Статус',
-        'settings' => 'Настройки',
-        '*' => 'Все действия',
-    ];
-    $formatPermissionLabel = function (string $permission) use ($resourceLabels, $actionLabels): string {
+    
+    // Сначала собираем все группы из всех прав
+    $allGroups = [];
+    foreach ($allPermissions as $permission) {
         $parts = explode('.', $permission);
-        $resource = $parts[0] ?? $permission;
-        $action = $parts[1] ?? null;
-        $suffix = $parts[2] ?? null;
-
-        $resourceLabel = $resourceLabels[$resource] ?? ucfirst($resource);
+        if (count($parts) > 1) {
+            $groupName = $parts[1];
+            if (!in_array($groupName, $allGroups)) {
+                $allGroups[] = $groupName;
+            }
+        }
+    }
+    
+    // Для каждой группы пытаемся получить название из описания любого права этой группы
+    foreach ($allGroups as $groupName) {
+        $groupLabel = null;
+        
+        // Ищем любое право этой группы в БД (предпочитаем .view, потом .create)
+        $preferredActions = ['view', 'create', 'manage', 'update'];
+        
+        foreach ($preferredActions as $action) {
+            $permissionName = 'client.' . $groupName . '.' . $action;
+            if (isset($permissionDescriptions[$permissionName]) && $permissionDescriptions[$permissionName]) {
+                $description = $permissionDescriptions[$permissionName];
+                
+                // Если описание содержит двоеточие - берем часть до двоеточия как название группы
+                if (strpos($description, ':') !== false) {
+                    $descParts = explode(':', $description);
+                    $groupLabel = trim($descParts[0]);
+                    break;
+                }
+                // Если двоеточия нет - используем fallback на название группы из имени права
+                // Не используем описание целиком, так как оно может быть "Просмотр аналитики"
+            }
+        }
+        
+        // Если не нашли в описаниях с двоеточием, ищем в БД напрямую
+        if (!$groupLabel) {
+            $firstPermission = \Spatie\Permission\Models\Permission::where('name', 'like', 'client.' . $groupName . '.%')
+                ->whereNotNull('description')
+                ->orderByRaw("CASE WHEN name LIKE '%.view' THEN 1 WHEN name LIKE '%.create' THEN 2 ELSE 3 END")
+                ->first();
+            
+            if ($firstPermission && $firstPermission->description) {
+                // Проверяем, есть ли двоеточие в описании
+                if (strpos($firstPermission->description, ':') !== false) {
+                    $descParts = explode(':', $firstPermission->description);
+                    $groupLabel = trim($descParts[0]);
+                }
+                // Если двоеточия нет - не используем описание, используем fallback
+            }
+        }
+        
+        // Используем fallback на базовые названия (из имени права или из массива)
+        if (!$groupLabel) {
+            $groupLabel = $fallbackLabels[$groupName] ?? ucfirst($groupName);
+        }
+        
+        $groupLabels[$groupName] = $groupLabel;
+    }
+    
+    // Функция для получения названия права из БД или форматирования
+    $formatPermissionLabel = function (string $permission) use ($permissionDescriptions, $groupLabels): string {
+        $parts = explode('.', $permission);
+        $isOwn = end($parts) === 'own';
+        $isWildcard = end($parts) === '*';
+        
+        // Для wildcard прав: используем название группы + "Все действия"
+        if ($isWildcard) {
+            $resource = count($parts) > 1 ? $parts[1] : ($parts[0] ?? $permission);
+            $resourceLabel = $groupLabels[$resource] ?? ucfirst($resource);
+            return $resourceLabel . ': Все действия';
+        }
+        
+        // Если есть описание в БД, используем его
+        if (isset($permissionDescriptions[$permission]) && $permissionDescriptions[$permission]) {
+            $label = $permissionDescriptions[$permission];
+            if ($isOwn) {
+                $label .= ' (только свои)';
+            }
+            return $label;
+        }
+        
+        // Fallback: форматируем из имени права
+        if ($isOwn) {
+            array_pop($parts);
+        }
+        
+        $resource = count($parts) > 1 ? $parts[1] : ($parts[0] ?? $permission);
+        $action = count($parts) > 2 ? $parts[2] : (count($parts) > 1 ? $parts[1] : null);
+        
+        // Используем название группы из $groupLabels, если есть
+        $resourceLabel = $groupLabels[$resource] ?? ucfirst($resource);
+        
+        // Переводы действий
+        $actionLabels = [
+            'view' => 'Просмотр',
+            'create' => 'Создание',
+            'update' => 'Редактирование',
+            'delete' => 'Удаление',
+            'export' => 'Экспорт',
+            'manage' => 'Управление',
+            'confirm' => 'Подтвердить',
+            'cancel' => 'Отменить',
+            'complete' => 'Завершить',
+            'assign' => 'Назначить',
+            'status' => 'Статус',
+            'settings' => 'Настройки',
+        ];
+        
         $actionLabel = $action ? ($actionLabels[$action] ?? ucfirst($action)) : null;
-
+        
         $label = $resourceLabel;
         if ($actionLabel) {
             $label .= ': ' . $actionLabel;
         }
-        if ($suffix === 'own') {
+        if ($isOwn) {
             $label .= ' (только свои)';
         }
-
+        
         return $label;
     };
 @endphp
@@ -108,11 +203,11 @@
                             {{ $roleLabel }}
                         </h1>
                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $roleBadge }}">
-                            <span class="uppercase">{{ $role }}</span>
+                            <span class="uppercase">{{ $roleSlug }}</span>
                         </span>
                     </div>
                     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Настройте доступы роли для вашего бизнеса. Изменения затронут только текущий бизнес.
+                        Настройте доступы роли. Изменения применяются ко всем бизнесам.
                     </p>
                 </div>
             </div>
@@ -122,8 +217,8 @@
                     <i class="fa-solid fa-arrow-left text-sm"></i>
                     <span>К списку</span>
                 </a>
-                @if($role !== 'owner')
-                    <form method="POST" action="{{ route('settings.roles.destroy', $role) }}" class="w-full sm:w-auto"
+                @if($roleSlug !== 'owner')
+                    <form method="POST" action="{{ route('settings.roles.destroy', $role->id) }}" class="w-full sm:w-auto"
                           onsubmit="return confirm('Удалить роль {{ $roleLabel }}? Это действие нельзя отменить.');">
                         @csrf
                         @method('DELETE')
@@ -150,17 +245,13 @@
                 <p class="text-lg font-semibold text-slate-900 dark:text-white" data-summary-denied>{{ $deniedCount }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
-                <p class="text-xs text-slate-500 dark:text-slate-400">Переопределено</p>
-                <p class="text-lg font-semibold text-slate-900 dark:text-white" data-summary-overrides>{{ $overrideCount }}</p>
-            </div>
-            <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-3">
                 <p class="text-xs text-slate-500 dark:text-slate-400">Только свои</p>
                 <p class="text-lg font-semibold text-slate-900 dark:text-white" data-summary-own>{{ $ownCount }}</p>
             </div>
         </div>
     </div>
 
-    <form method="POST" action="{{ route('settings.roles.update', $role) }}" class="space-y-6">
+    <form method="POST" action="{{ route('settings.roles.update', $role->id) }}" class="space-y-6">
         @csrf
         @method('PUT')
 
@@ -169,18 +260,18 @@
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-info-circle text-slate-500 dark:text-slate-400"></i>
                     <span class="text-lg font-semibold text-slate-900 dark:text-white">
-                        Базовые права (справочно)
+                        Права роли
                     </span>
                 </div>
                 <span class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ count($defaultPermissions) }} прав
+                    {{ count($currentPermissions) }} прав
                 </span>
             </summary>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-3">
-                Эти права устанавливает администратор системы. На этой странице вы задаёте только переопределения.
+                Эти права применяются ко всем бизнесам в системе.
             </p>
             <div class="flex flex-wrap gap-2 mt-4">
-                @foreach($defaultPermissions as $permission)
+                @foreach($currentPermissions as $permission)
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full">
                         <i class="fa-solid fa-check text-xs"></i>
                         {{ $formatPermissionLabel($permission) }}
@@ -189,8 +280,8 @@
                         </span>
                     </span>
                 @endforeach
-                @if(count($defaultPermissions) === 0)
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Нет базовых прав</p>
+                @if(count($currentPermissions) === 0)
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Нет прав</p>
                 @endif
             </div>
         </details>
@@ -202,7 +293,7 @@
                         Поиск права
                     </label>
                     <div class="relative">
-                        <input id="permissionSearch" type="text" placeholder="например: appointments.view"
+                        <input id="permissionSearch" type="text" placeholder="например: client.appointments.view"
                                class="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                         <button type="button" id="clearPermissionSearch"
@@ -223,10 +314,6 @@
                                 class="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                             Выбранные
                         </button>
-                        <button type="button" data-permission-filter="overrides"
-                                class="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                            Переопределения
-                        </button>
                         <button type="button" data-permission-filter="denied"
                                 class="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                             Запрещенные
@@ -234,10 +321,6 @@
                         <button type="button" data-permission-filter="own"
                                 class="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                             Только свои
-                        </button>
-                        <button type="button" data-permission-filter="default"
-                                class="px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                            Базовые
                         </button>
                     </div>
                 </div>
@@ -249,7 +332,7 @@
                             <a href="#group-{{ $groupName }}"
                                data-group-nav="{{ $groupName }}"
                                class="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
-                                <span>{{ $resourceLabels[$groupName] ?? ucfirst($groupName) }}</span>
+                                <span>{{ $groupLabels[$groupName] ?? ucfirst($groupName) }}</span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400">
                                     <span data-group-nav-count="{{ $groupName }}">{{ $permissions->count() }}</span>
                                     • <span data-group-nav-selected="{{ $groupName }}">0</span>
@@ -262,18 +345,6 @@
                 <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
                     <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">Легенда</p>
                     <div class="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                                <i class="fa-solid fa-check text-xs"></i> Базовое
-                            </span>
-                            <span>установлено системой</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
-                                <i class="fa-solid fa-edit text-xs"></i> Переопределено
-                            </span>
-                            <span>изменено для бизнеса</span>
-                        </div>
                         <div class="flex items-center gap-2">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">
                                 <i class="fa-solid fa-user-lock text-xs"></i> Только свои
@@ -298,7 +369,7 @@
                         <summary class="flex items-center justify-between px-4 py-3 cursor-pointer list-none">
                             <div class="flex items-center gap-3">
                                 <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                                    {{ $resourceLabels[$groupName] ?? ucfirst($groupName) }}
+                                    {{ $groupLabels[$groupName] ?? ucfirst($groupName) }}
                                 </span>
                                 <span class="text-xs text-slate-500 dark:text-slate-400" data-group-summary="{{ $groupName }}">
                                     {{ $permissions->count() }} прав
@@ -311,13 +382,11 @@
                         <div class="border-t border-slate-200 dark:border-slate-800 divide-y divide-slate-200 dark:divide-slate-800">
                             @foreach($permissions as $permission)
                                 @php
-                                    $isDefault = in_array($permission, $defaultPermissions) || 
-                                        (str_ends_with($permission, '.own') && in_array(str_replace('.own', '', $permission), $defaultPermissions));
+                                    $isDefault = false;
                                     $isCurrent = in_array($permission, $currentPermissions);
-                                    $hasOverride = isset($overrides[$permission]);
-                                    $overrideGranted = $hasOverride ? $overrides[$permission]->granted : null;
                                     $isOwnPermission = str_ends_with($permission, '.own');
-                                    $isDenied = in_array($permission, $deniedPermissions ?? []) || ($hasOverride && !$overrideGranted);
+                                    $hasOverride = false;
+                                    $isDenied = in_array($permission, $deniedPermissions ?? []);
                                 @endphp
                                 <label class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                                        data-permission-row
@@ -327,7 +396,7 @@
                                        data-denied="{{ $isDenied ? '1' : '0' }}"
                                        data-own="{{ $isOwnPermission ? '1' : '0' }}"
                                        data-override="{{ $hasOverride ? '1' : '0' }}"
-                                       data-default="{{ $isDefault ? '1' : '0' }}">
+                                       data-default="0">
                                     <input type="checkbox"
                                            name="permissions[]"
                                            value="{{ $permission }}"
@@ -350,17 +419,6 @@
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300 rounded-full">
                                                     <i class="fa-solid fa-user-lock text-xs"></i>
                                                     Только свои данные
-                                                </span>
-                                            @endif
-                                            @if($hasOverride && !$isDenied)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
-                                                    <i class="fa-solid fa-edit text-xs"></i>
-                                                    Переопределено
-                                                </span>
-                                            @elseif($isDefault && !$isDenied)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full">
-                                                    <i class="fa-solid fa-check text-xs"></i>
-                                                    Базовое
                                                 </span>
                                             @endif
                                         </div>
@@ -409,7 +467,6 @@
         const summaryTotal = document.querySelector('[data-summary-total]');
         const summarySelected = document.querySelector('[data-summary-selected]');
         const summaryDenied = document.querySelector('[data-summary-denied]');
-        const summaryOverrides = document.querySelector('[data-summary-overrides]');
         const summaryOwn = document.querySelector('[data-summary-own]');
         const groupNavItems = Array.from(document.querySelectorAll('[data-group-nav]'));
 
@@ -424,13 +481,11 @@
             const visibleRows = rows.filter(row => !row.classList.contains('hidden'));
             const selectedVisible = visibleRows.filter(row => row.dataset.selected === '1').length;
             const deniedVisible = visibleRows.filter(row => row.dataset.denied === '1').length;
-            const overridesVisible = visibleRows.filter(row => row.dataset.override === '1').length;
             const ownVisible = visibleRows.filter(row => row.dataset.own === '1').length;
 
             summaryTotal.textContent = `${visibleRows.length}`;
             summarySelected.textContent = `${selectedVisible}`;
             summaryDenied.textContent = `${deniedVisible}`;
-            if (summaryOverrides) summaryOverrides.textContent = `${overridesVisible}`;
             if (summaryOwn) summaryOwn.textContent = `${ownVisible}`;
         };
 
@@ -462,14 +517,10 @@
             switch (activeFilter) {
                 case 'selected':
                     return row.dataset.selected === '1';
-                case 'overrides':
-                    return row.dataset.override === '1';
                 case 'denied':
                     return row.dataset.denied === '1';
                 case 'own':
                     return row.dataset.own === '1';
-                case 'default':
-                    return row.dataset.default === '1';
                 default:
                     return true;
             }

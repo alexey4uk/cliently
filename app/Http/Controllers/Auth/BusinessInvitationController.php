@@ -24,7 +24,7 @@ class BusinessInvitationController extends Controller
         $invitation = BusinessUserInvitation::where('token', $token)
             ->whereNull('accepted_at')
             ->where('expires_at', '>', now())
-            ->with(['business', 'creator'])
+            ->with(['business', 'creator', 'businessRole'])
             ->firstOrFail();
 
         // Проверяем, существует ли пользователь с таким email
@@ -85,6 +85,7 @@ class BusinessInvitationController extends Controller
         // Добавляем пользователя в бизнес
         $invitation->business->users()->attach($user->id, [
             'role' => $invitation->role,
+            'role_id' => $invitation->role_id,
         ]);
 
         // Помечаем приглашение как принятое
@@ -127,6 +128,7 @@ class BusinessInvitationController extends Controller
         // Добавляем пользователя в бизнес
         $invitation->business->users()->attach($user->id, [
             'role' => $invitation->role,
+            'role_id' => $invitation->role_id,
         ]);
 
         // Помечаем приглашение как принятое

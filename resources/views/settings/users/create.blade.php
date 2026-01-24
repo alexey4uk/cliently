@@ -71,17 +71,17 @@
                         Роль <span class="text-rose-500">*</span>
                     </label>
                     <select id="invite_role" 
-                            name="role" 
+                            name="role_id" 
                             required
-                            class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role_id') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
                         @foreach($availableRoles as $roleKey)
-                            <option value="{{ $roleKey }}" {{ old('role') === $roleKey ? 'selected' : '' }}>
-                                {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                            <option value="{{ $roleKey->id }}" {{ old('role_id') == $roleKey->id ? 'selected' : '' }}>
+                                {{ $roleKey->name ?? ($roleLabels[$roleKey->slug] ?? ucfirst($roleKey->slug)) }}
                             </option>
                         @endforeach
                     </select>
-                    @error('role')
+                    @error('role_id')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
                     <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
@@ -163,17 +163,17 @@
                         Роль <span class="text-rose-500">*</span>
                     </label>
                     <select id="manual_role" 
-                            name="role" 
+                            name="role_id" 
                             required
-                            class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
+                            class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role_id') border-rose-500 @enderror">
                         <option value="">Выберите роль</option>
                         @foreach($availableRoles as $roleKey)
-                            <option value="{{ $roleKey }}" {{ old('role') === $roleKey ? 'selected' : '' }}>
-                                {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                            <option value="{{ $roleKey->id }}" {{ old('role_id') == $roleKey->id ? 'selected' : '' }}>
+                                {{ $roleKey->name ?? ($roleLabels[$roleKey->slug] ?? ucfirst($roleKey->slug)) }}
                             </option>
                         @endforeach
                     </select>
-                    @error('role')
+                    @error('role_id')
                         <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
                     <p class="mt-1.5 text-xs text-amber-600 dark:text-amber-400">

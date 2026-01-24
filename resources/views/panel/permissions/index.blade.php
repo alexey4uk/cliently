@@ -48,7 +48,7 @@
                         <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $permissions->total() }}</p>
                         <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего прав</p>
                     </div>
-                    @can('roles.view')
+                    @can('panel.roles.view')
                         <a href="{{ route('panel.permissions.create') }}"
                            class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl text-xs sm:text-sm font-medium hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap">
                             <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
@@ -249,7 +249,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('roles.view')
+                                            @can('panel.roles.view')
                                                 <a href="{{ route('panel.permissions.edit', $permission) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                    title="Редактировать">
@@ -304,7 +304,7 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-1.5 sm:gap-2 flex-shrink-0">
-                                    @can('roles.view')
+                                    @can('panel.roles.view')
                                         <a href="{{ route('panel.permissions.edit', $permission) }}"
                                            class="inline-flex items-center justify-center p-1.5 sm:p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                            title="Редактировать">
@@ -453,7 +453,7 @@
                             <span>Сбросить фильтры</span>
                         </a>
                     @else
-                        @can('roles.view')
+                        @can('panel.roles.view')
                             <a href="{{ route('panel.permissions.create') }}" class="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-lg transition-all duration-200">
                                 <i class="fa-solid fa-plus text-sm sm:text-base"></i>
                                 <span>Создать первое право</span>

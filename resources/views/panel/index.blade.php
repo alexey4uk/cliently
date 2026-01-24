@@ -14,7 +14,7 @@
 
         <!-- Статистика -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @can('appointments.view')
+            @can('panel.appointments.view')
                 <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
                     <div class="flex items-center justify-between">
                         <div>
@@ -28,7 +28,7 @@
                 </div>
             @endcan
 
-            @can('clients.view')
+            @can('panel.clients.view')
                 <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
                     <div class="flex items-center justify-between">
                         <div>
@@ -42,7 +42,7 @@
                 </div>
             @endcan
 
-            @can('users.view')
+            @can('panel.users.view')
                 <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
                     <div class="flex items-center justify-between">
                         <div>
@@ -61,7 +61,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Быстрые действия</h3>
             <div class="flex flex-wrap gap-3">
-                @can('appointments.view')
+                @can('panel.appointments.view')
                     <a href="{{ route('panel.appointments') }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
                         <i class="fa-solid fa-calendar-check"></i>
@@ -69,7 +69,7 @@
                     </a>
                 @endcan
 
-                @can('clients.view')
+                @can('panel.clients.view')
                     <a href="{{ route('panel.clients') }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">
                         <i class="fa-solid fa-users"></i>
@@ -77,7 +77,7 @@
                     </a>
                 @endcan
 
-                @can('users.view')
+                @can('panel.users.view')
                     <a href="{{ route('panel.users') }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors">
                         <i class="fa-solid fa-users-gear"></i>
@@ -85,7 +85,7 @@
                     </a>
                 @endcan
 
-                @can('roles.view')
+                @can('panel.roles.view')
                     <a href="{{ route('panel.roles') }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
                         <i class="fa-solid fa-shield-halved"></i>

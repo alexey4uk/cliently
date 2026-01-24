@@ -322,14 +322,14 @@
                                 </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('appointments.update')
+                                            @can('panel.appointments.update')
                                                 <a href="{{ route('panel.appointments.edit', $appointment) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                    title="Редактировать">
                                                     <i class="fa-solid fa-pencil text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('appointments.delete')
+                                            @can('panel.appointments.delete')
                                                 @if(!($appointment->dateTime->isPast() && $appointment->status === 'confirmed'))
                                                     <form method="POST" action="{{ route('panel.appointments.destroy', $appointment) }}"
                                                           onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"
@@ -395,14 +395,14 @@
                                         @endswitch
                                     </span>
                                     <div class="flex gap-2">
-                                        @can('appointments.update')
+                                        @can('panel.appointments.update')
                                             <a href="{{ route('panel.appointments.edit', $appointment) }}"
                                                class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                title="Редактировать">
                                                 <i class="fa-solid fa-pencil text-xs"></i>
                                             </a>
                                         @endcan
-                                        @can('appointments.delete')
+                                        @can('panel.appointments.delete')
                                             @if(!($appointment->dateTime->isPast() && $appointment->status === 'confirmed'))
                                                 <form method="POST" action="{{ route('panel.appointments.destroy', $appointment) }}"
                                                       onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"

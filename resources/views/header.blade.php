@@ -23,21 +23,21 @@
     <!-- Меню (десктоп) -->
     <nav class="hidden md:flex items-center gap-1 text-sm">
         @if(Str::startsWith(Request::path(), 'panel'))
-            @can('analytics.view')
+            @can('panel.analytics.view')
                 <a href="{{ route('panel.index') }}"
                     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-900 dark:text-white font-medium {{ request()->routeIs('panel.index') ?  'bg-[#6366F1]/10 dark:bg-[#6366F1]/20' : ''}} transition-colors">
                     <i class="fa-solid fa-chart-line text-xs"></i>
                     <span>Главная</span>
                 </a>
             @endcan
-            @can('appointments.view')
+            @can('panel.appointments.view')
                 <a href="{{ route('panel.appointments') }}"
                     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors {{ request()->routeIs('panel.appointments') ?  'bg-[#6366F1]/10 dark:bg-[#6366F1]/20' : ''}}">
                     <i class="fa-solid fa-calendar text-xs"></i>
                     <span>Записи</span>
                 </a>
             @endcan
-            @can('clients.view')
+            @can('panel.clients.view')
                 <a href="{{ route('panel.clients') }}"
                     class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800 transition-colors {{ request()->routeIs('panel.clients') ?  'bg-[#6366F1]/10 dark:bg-[#6366F1]/20' : ''}}">
                     <i class="fa-solid fa-users text-xs"></i>

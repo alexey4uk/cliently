@@ -110,7 +110,7 @@
             const search = this.searchPermission.toLowerCase().trim();
             const allPermissions = {{ json_encode($permissions->pluck('name')->toArray()) }};
             return allPermissions.filter(p => {
-                // Поиск по названию права (например: analytics.view)
+                // Поиск по названию права (например: panel.analytics.view)
                 const nameMatch = p.toLowerCase().includes(search);
                 
                 // Поиск по описанию на русском языке (если есть)
@@ -242,7 +242,7 @@
                                class="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors text-sm shadow-sm">
                     </div>
                     <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-                        Поиск работает по названию права (например: analytics.view) и по описанию на русском языке
+                        Поиск работает по названию права (например: panel.analytics.view) и по описанию на русском языке
                     </p>
                 </div>
 
@@ -335,7 +335,7 @@
                         </a>
                     </div>
                     @if($role->name !== 'admin')
-                        @can('roles.delete')
+                        @can('panel.roles.delete')
                             <form method="POST" action="{{ route('panel.roles.destroy', $role) }}" 
                                   onsubmit="return confirm('Вы уверены, что хотите удалить роль {{ addslashes(ucfirst($role->name)) }}? Это действие нельзя отменить.');"
                                   class="inline">

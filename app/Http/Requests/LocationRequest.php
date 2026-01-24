@@ -30,10 +30,10 @@ class LocationRequest extends FormRequest
         $service = app(BusinessRolePermissionService::class);
         
         if ($location) {
-            return $service->hasPermission($business->id, $role, 'locations.update');
+        return $service->hasPermission($role->id, 'client.locations.update');
         }
         
-        return $service->hasPermission($business->id, $role, 'locations.create');
+        return $service->hasPermission($role->id, 'client.locations.create');
     }
 
     /**

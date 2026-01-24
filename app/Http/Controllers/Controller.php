@@ -33,7 +33,7 @@ abstract class Controller
 
         $service = app(BusinessRolePermissionService::class);
 
-        if (!$service->hasPermission($business->id, $role, $permission)) {
+        if (!$service->hasPermission($role->id, $permission)) {
             abort(403, 'У вас нет прав для выполнения этого действия.');
         }
     }

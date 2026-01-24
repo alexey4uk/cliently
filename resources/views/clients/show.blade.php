@@ -18,6 +18,7 @@
     $user = Auth::user();
     $currentBusiness = null;
     $currentBusinessRole = null;
+    $currentBusinessRoleId = null;
     $permissionService = null;
     if ($user) {
         $user->load('businesses');
@@ -25,18 +26,19 @@
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
             $currentBusinessRole = $pivot?->pivot->role ?? null;
-            if ($currentBusinessRole) {
+            $currentBusinessRoleId = $pivot?->pivot->role_id;
+            if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
             }
         }
     }
 
     // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+        if (!$currentBusinessRoleId || !$permissionService) {
             return false;
         }
-        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
     };
 @endphp
 
@@ -113,7 +115,7 @@
                     </div>
 
                     <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 flex gap-2">
-                        @if($hasBusinessPermission('appointments.create'))
+                        @if($hasBusinessPermission('client.appointments.create'))
                             <a href="{{ route('appointments.create', ['client_id' => $client->id]) }}"
                                 class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
                                 <i class="fa-solid fa-calendar-plus text-sm"></i>
@@ -121,14 +123,14 @@
                             </a>
                         @endif
 
-                        @if($hasBusinessPermission('clients.update'))
+                        @if($hasBusinessPermission('client.clients.update'))
                             <a href="{{ route('clients.edit', $client) }}"
                                 class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                 <i class="fa-solid fa-pencil text-sm"></i>
                             </a>
                         @endif
 
-                        @if($hasBusinessPermission('clients.delete'))
+                        @if($hasBusinessPermission('client.clients.delete'))
                             <button @click="openDeleteModal()"
                                 class="px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/20 hover:bg-rose-100 dark:hover:bg-rose-500/30 rounded-lg transition-colors">
                                 <i class="fa-solid fa-trash text-sm"></i>

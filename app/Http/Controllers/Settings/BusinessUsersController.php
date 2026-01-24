@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\BusinessUserInvitation;
+use App\Models\BusinessRole;
 use App\Models\Plan;
 use App\Models\User;
 use App\Notifications\BusinessUserCreated;
@@ -16,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class BusinessUsersController extends Controller
@@ -35,17 +35,17 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.view');
+        $this->authorizeBusinessPermission('client.business.users.view');
 
         $users = $business->users()
-            ->withPivot('role', 'first_name', 'last_name')
+            ->withPivot('role', 'role_id', 'first_name', 'last_name')
             ->orderBy('business_user.created_at', 'desc')
             ->get();
 
         $invitations = BusinessUserInvitation::where('business_id', $business->id)
             ->whereNull('accepted_at')
             ->where('expires_at', '>', now())
-            ->with('creator')
+            ->with(['creator', 'businessRole'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -53,6 +53,7 @@ class BusinessUsersController extends Controller
             'business' => $business,
             'users' => $users,
             'invitations' => $invitations,
+            'rolesById' => BusinessRole::all()->keyBy('id'),
         ]);
     }
 
@@ -68,7 +69,7 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.create');
+        $this->authorizeBusinessPermission('client.business.users.create');
 
         return view('settings.users.create', [
             'business' => $business,
@@ -88,18 +89,16 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.create');
-
-        $availableRoles = $this->getAvailableRoles(false);
+        $this->authorizeBusinessPermission('client.business.users.create');
 
         $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', Rule::in($availableRoles)],
+            'role_id' => ['required', 'exists:business_roles,id'],
         ], [
             'email.required' => 'Email обязателен для заполнения.',
             'email.email' => 'Введите корректный email адрес.',
-            'role.required' => 'Роль обязательна для выбора.',
-            'role.in' => 'Выбрана некорректная роль.',
+            'role_id.required' => 'Роль обязательна для выбора.',
+            'role_id.exists' => 'Выбрана некорректная роль.',
         ]);
 
         // Проверяем, не добавлен ли уже пользователь в этот бизнес
@@ -124,10 +123,13 @@ class BusinessUsersController extends Controller
         }
 
         // Создаем приглашение
+        $role = BusinessRole::findOrFail($request->role_id);
+
         $invitation = BusinessUserInvitation::create([
             'business_id' => $business->id,
             'email' => $request->email,
-            'role' => $request->role,
+            'role' => $role->slug,
+            'role_id' => $role->id,
             'token' => BusinessUserInvitation::generateToken(),
             'created_by' => Auth::id(),
             'expires_at' => now()->addDays(7),
@@ -160,9 +162,14 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.create');
+        $this->authorizeBusinessPermission('client.business.users.create');
 
-        $availableRoles = $this->getAvailableRoles(false);
+        $request->validate([
+            'role_id' => ['required', 'exists:business_roles,id'],
+        ], [
+            'role_id.required' => 'Роль обязательна для выбора.',
+            'role_id.exists' => 'Выбрана некорректная роль.',
+        ]);
 
         // Проверяем, существует ли пользователь
         $existingUser = User::where('email', $request->email)->first();
@@ -176,14 +183,17 @@ class BusinessUsersController extends Controller
             }
             
             // Добавляем существующего пользователя в бизнес
+            $role = BusinessRole::findOrFail($request->role_id);
+
             $business->users()->attach($existingUser->id, [
-                'role' => $request->role,
+                'role' => $role->slug,
+                'role_id' => $role->id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
             ]);
             
             // Отправляем уведомление о добавлении в бизнес
-            $existingUser->notify(new BusinessUserCreated($business, $request->role));
+            $existingUser->notify(new BusinessUserCreated($business, $role->name));
             
             return redirect()->route('settings.users.index')
                 ->with('success', 'Существующий пользователь добавлен в бизнес. Уведомление отправлено на email.');
@@ -194,14 +204,14 @@ class BusinessUsersController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', Rule::in($availableRoles)],
+            'role_id' => ['required', 'exists:business_roles,id'],
         ], [
             'first_name.required' => 'Имя обязательно для заполнения.',
             'email.required' => 'Email обязателен для заполнения.',
             'email.email' => 'Введите корректный email адрес.',
             'email.unique' => 'Пользователь с таким email уже существует.',
-            'role.required' => 'Роль обязательна для выбора.',
-            'role.in' => 'Выбрана некорректная роль.',
+            'role_id.required' => 'Роль обязательна для выбора.',
+            'role_id.exists' => 'Выбрана некорректная роль.',
         ]);
 
         // Генерируем временный пароль (12 символов: буквы, цифры, символы)
@@ -231,14 +241,17 @@ class BusinessUsersController extends Controller
         }
 
         // Добавляем пользователя в бизнес
+        $role = BusinessRole::findOrFail($request->role_id);
+
         $business->users()->attach($user->id, [
-            'role' => $request->role,
+            'role' => $role->slug,
+            'role_id' => $role->id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
         ]);
 
         // Отправляем уведомление с временным паролем
-        $user->notify(new BusinessUserCreatedWithPassword($business, $request->role, $temporaryPassword));
+        $user->notify(new BusinessUserCreatedWithPassword($business, $role->name, $temporaryPassword));
 
         return redirect()->route('settings.users.index')
             ->with('success', 'Пользователь успешно создан. Временный пароль отправлен на email.');
@@ -256,7 +269,7 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.update');
+        $this->authorizeBusinessPermission('client.business.users.update');
 
         // Проверяем, что пользователь принадлежит этому бизнесу
         if (!$business->users()->where('user_id', $user->id)->exists()) {
@@ -264,7 +277,8 @@ class BusinessUsersController extends Controller
         }
 
         $pivot = $business->users()->where('user_id', $user->id)->first();
-        $currentRole = $pivot->pivot->role;
+        $currentRoleId = $pivot->pivot->role_id;
+        $currentRole = $currentRoleId ? BusinessRole::find($currentRoleId) : null;
 
         return view('settings.users.edit', [
             'business' => $business,
@@ -286,40 +300,41 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.update');
+        $this->authorizeBusinessPermission('client.business.users.update');
 
         // Проверяем, что пользователь принадлежит этому бизнесу
         if (!$business->users()->where('user_id', $user->id)->exists()) {
             abort(404);
         }
 
-        $availableRoles = $this->getAvailableRoles(true);
-
         $request->validate([
-            'role' => ['required', Rule::in($availableRoles)],
+            'role_id' => ['required', 'exists:business_roles,id'],
         ], [
-            'role.required' => 'Роль обязательна для выбора.',
-            'role.in' => 'Выбрана некорректная роль.',
+            'role_id.required' => 'Роль обязательна для выбора.',
+            'role_id.exists' => 'Выбрана некорректная роль.',
         ]);
 
         $pivot = $business->users()->where('user_id', $user->id)->first();
-        $currentRole = $pivot->pivot->role;
+        $currentRoleId = $pivot->pivot->role_id;
+        $currentRole = $currentRoleId ? BusinessRole::find($currentRoleId) : null;
+        $nextRole = BusinessRole::findOrFail($request->role_id);
 
         // Нельзя изменить роль owner на другую (только через специальный процесс)
-        if ($currentRole === 'owner' && $request->role !== 'owner') {
+        if ($currentRole?->slug === 'owner' && $nextRole->slug !== 'owner') {
             return redirect()->back()
                 ->with('error', 'Нельзя изменить роль владельца. Для передачи владения используйте специальную процедуру.');
         }
 
         // Нельзя назначить роль owner обычному пользователю
-        if ($currentRole !== 'owner' && $request->role === 'owner') {
+        if ($currentRole?->slug !== 'owner' && $nextRole->slug === 'owner') {
             return redirect()->back()
                 ->with('error', 'Нельзя назначить роль владельца через обычное изменение роли.');
         }
 
         // Обновляем роль
         $business->users()->updateExistingPivot($user->id, [
-            'role' => $request->role,
+            'role' => $nextRole->slug,
+            'role_id' => $nextRole->id,
         ]);
 
         return redirect()->route('settings.users.index')
@@ -338,7 +353,7 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.delete');
+        $this->authorizeBusinessPermission('client.business.users.delete');
 
         // Проверяем, что пользователь принадлежит этому бизнесу
         if (!$business->users()->where('user_id', $user->id)->exists()) {
@@ -346,10 +361,11 @@ class BusinessUsersController extends Controller
         }
 
         $pivot = $business->users()->where('user_id', $user->id)->first();
-        $role = $pivot->pivot->role;
+        $roleId = $pivot->pivot->role_id;
+        $role = $roleId ? BusinessRole::find($roleId) : null;
 
         // Нельзя удалить последнего owner из бизнеса
-        if ($role === 'owner') {
+        if ($role?->slug === 'owner') {
             $ownersCount = $business->users()
                 ->wherePivot('role', 'owner')
                 ->count();
@@ -379,7 +395,7 @@ class BusinessUsersController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $this->authorizeBusinessPermission('business.users.create');
+        $this->authorizeBusinessPermission('client.business.users.create');
 
         // Проверяем, что приглашение принадлежит этому бизнесу
         if ($invitation->business_id !== $business->id) {
@@ -433,6 +449,6 @@ class BusinessUsersController extends Controller
     private function getAvailableRoles(bool $includeOwner): array
     {
         $service = app(BusinessRolePermissionService::class);
-        return $service->getAvailableRoles($includeOwner);
+        return $service->getAvailableRoles($includeOwner)->all();
     }
 }

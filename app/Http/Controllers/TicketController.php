@@ -316,38 +316,6 @@ class TicketController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        $business = $this->getCurrentBusiness();
-
-        if (!$business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
-        }
-
-        $user = Auth::user();
-
-        // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', $id)
-            ->where('business_id', $business->id)
-            ->where('created_by_type', 'user')
-            ->where('created_by_id', $user->id)
-            ->first();
-
-        if (! $ticket) {
-            return redirect()->route('tickets.index')
-                ->with('error', 'Тикет не найден или у вас нет доступа к этому тикету.');
-        }
-
-        $ticket->delete();
-
-        return redirect()->route('tickets.index')
-            ->with('success', 'Тикет успешно удален.');
-    }
-
-    /**
      * Add a comment to the ticket.
      */
     public function addComment(TicketCommentRequest $request, $id)

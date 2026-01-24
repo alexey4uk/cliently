@@ -15,6 +15,7 @@
     $user = Auth::user();
     $currentBusiness = null;
     $currentBusinessRole = null;
+    $currentBusinessRoleId = null;
     $permissionService = null;
     if ($user) {
         $user->load('businesses');
@@ -22,18 +23,19 @@
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
             $currentBusinessRole = $pivot?->pivot->role ?? null;
-            if ($currentBusinessRole) {
+            $currentBusinessRoleId = $pivot?->pivot->role_id;
+            if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
             }
         }
     }
 
     // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+        if (!$currentBusinessRoleId || !$permissionService) {
             return false;
         }
-        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
     };
 @endphp
 
@@ -248,7 +250,7 @@
                         </div>
                         <h4 class="text-base font-semibold text-gray-900 dark:text-white mb-2">Нет клиентов</h4>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Добавьте первого клиента</p>
-                        @if($hasBusinessPermission('clients.create'))
+                        @if($hasBusinessPermission('client.clients.create'))
                             <a href="{{ route('clients.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -266,7 +268,7 @@
     <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Быстрые действия</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            @if($hasBusinessPermission('appointments.create'))
+            @if($hasBusinessPermission('client.appointments.create'))
                 <a href="{{ route('appointments.create') }}" class="flex flex-col items-center p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">
                     <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,7 +278,7 @@
                     <span class="text-sm font-medium text-gray-900 dark:text-white">Новая запись</span>
                 </a>
             @endif
-            @if($hasBusinessPermission('clients.create'))
+            @if($hasBusinessPermission('client.clients.create'))
                 <a href="{{ route('clients.create') }}" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-500/10 rounded-lg hover:bg-green-100 dark:hover:bg-green-500/20 transition-colors">
                     <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -286,7 +288,7 @@
                     <span class="text-sm font-medium text-gray-900 dark:text-white">Новый клиент</span>
                 </a>
             @endif
-            @if($hasBusinessPermission('services.create'))
+            @if($hasBusinessPermission('client.services.create'))
                 <a href="{{ route('services.create') }}" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-500/10 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-500/20 transition-colors">
                     <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,7 +298,7 @@
                     <span class="text-sm font-medium text-gray-900 dark:text-white">Новая услуга</span>
                 </a>
             @endif
-            @if($hasBusinessPermission('appointments.view'))
+            @if($hasBusinessPermission('client.appointments.view'))
                 <a href="{{ route('appointments.calendar') }}" class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-500/10 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors">
                     <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-3">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

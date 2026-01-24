@@ -39,19 +39,19 @@ class DashboardController extends Controller
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
 
         // Проверяем наличие локаций (только если есть право на создание)
-        if ($business->locations->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'locations.create')) {
+        if ($business->locations->isEmpty() && $role && $permissionService->hasPermission($role->id, 'client.locations.create')) {
             return redirect()->route('settings.locations.create')
                 ->with('info', 'Добавьте локацию для записи клиентов.');
         }
 
         // Проверяем наличие услуг (только если есть право на создание)
-        if ($business->services->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'services.create')) {
+        if ($business->services->isEmpty() && $role && $permissionService->hasPermission($role->id, 'client.services.create')) {
             return redirect()->route('services.create')
                 ->with('info', 'Добавьте услуги, которые вы предлагаете.');
         }
 
         // Проверяем наличие мастеров (только если есть право на создание)
-        if ($business->masters->isEmpty() && $role && $permissionService->hasPermission($business->id, $role, 'masters.create')) {
+        if ($business->masters->isEmpty() && $role && $permissionService->hasPermission($role->id, 'client.masters.create')) {
             return redirect()->route('settings.masters.create')
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }

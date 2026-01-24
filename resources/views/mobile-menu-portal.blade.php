@@ -89,6 +89,7 @@ style="width: 0; height: 0;">
                     $user = Auth::user();
                     $currentBusiness = null;
                     $currentBusinessRole = null;
+                    $currentBusinessRoleId = null;
                     $permissionService = null;
                     if ($user) {
                         $user->load('businesses');
@@ -96,18 +97,19 @@ style="width: 0; height: 0;">
                         if ($currentBusiness) {
                             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
                             $currentBusinessRole = $pivot?->pivot->role ?? null;
-                            if ($currentBusinessRole) {
+                            $currentBusinessRoleId = $pivot?->pivot->role_id;
+                            if ($currentBusinessRoleId) {
                                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
                             }
                         }
                     }
 
                     // Функция для проверки бизнес-прав
-                    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-                        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+                    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+                        if (!$currentBusinessRoleId || !$permissionService) {
                             return false;
                         }
-                        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+                        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
                     };
                 @endphp
 
@@ -128,7 +130,7 @@ style="width: 0; height: 0;">
                             <span class="ml-3 whitespace-nowrap">Главная</span>
                         </a>
 
-                        @if($hasBusinessPermission('appointments.view'))
+                        @if($hasBusinessPermission('client.appointments.view'))
                         <a href="{{ route('appointments.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -150,7 +152,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('clients.view'))
+                        @if($hasBusinessPermission('client.clients.view'))
                         <a href="{{ route('clients.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('clients.*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -165,6 +167,13 @@ style="width: 0; height: 0;">
                 </div>
 
                 <!-- Бизнес -->
+                @php
+                    $hasBusinessGroupAccess = $hasBusinessPermission('client.businesses.update') ||
+                                              $hasBusinessPermission('client.locations.view') ||
+                                              $hasBusinessPermission('client.services.view') ||
+                                              $hasBusinessPermission('client.masters.view');
+                @endphp
+                @if($hasBusinessGroupAccess)
                 <div>
                     <button @click="businessOpen = !businessOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
@@ -178,7 +187,7 @@ style="width: 0; height: 0;">
                         x-transition:leave="transition ease-in duration-150"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
-                        @if($hasBusinessPermission('businesses.update'))
+                        @if($hasBusinessPermission('client.businesses.update'))
                         <a href="{{ route('settings.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.index')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -190,7 +199,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('locations.view'))
+                        @if($hasBusinessPermission('client.locations.view'))
                         <a href="{{ route('settings.locations') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.locations*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -202,7 +211,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('services.view'))
+                        @if($hasBusinessPermission('client.services.view'))
                         <a href="{{ route('services.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('services.*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -214,7 +223,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('masters.view'))
+                        @if($hasBusinessPermission('client.masters.view'))
                         <a href="{{ route('settings.masters') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.masters*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -226,7 +235,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('businesses.update'))
+                        @if($hasBusinessPermission('client.businesses.update'))
                         <a href="{{ route('settings.online-booking') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.online-booking*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -237,17 +246,30 @@ style="width: 0; height: 0;">
                             <span class="ml-3 whitespace-nowrap">Онлайн запись</span>
                         </a>
                         @endif
+
+                        @if($hasBusinessPermission('client.subscription.view'))
+                        <a href="{{ route('subscription.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('subscription.*')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-crown text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Тарифы</span>
+                        </a>
+                        @endif
                     </div>
                 </div>
+                @endif
 
                 <!-- Команда -->
                 @php
                     $hasUsersPermission = false;
                     $hasRolesPermission = false;
-                    if ($currentBusiness && $currentBusinessRole) {
+                    if ($currentBusinessRoleId) {
                         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-                        $hasUsersPermission = $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, 'business.users.view');
-                        $hasRolesPermission = $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, 'business.roles.manage');
+                        $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
+                        $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
                     }
                 @endphp
                 @if($hasUsersPermission || $hasRolesPermission)
@@ -292,7 +314,7 @@ style="width: 0; height: 0;">
                 @endif
 
                 <!-- Интеграции -->
-                @if($hasBusinessPermission('telegram.manage'))
+                @if($hasBusinessPermission('client.telegram.manage'))
                 <div>
                     <button @click="integrationsOpen = !integrationsOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
@@ -322,11 +344,19 @@ style="width: 0; height: 0;">
                 <!-- Аналитика -->
                 @if(!Str::startsWith(Request::path(), 'panel'))
                 @php
-                    $user = Auth::user();
-                    $subscriptionService = app(\App\Services\SubscriptionService::class);
-                    $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled') === true;
+                    // Определяем роль пользователя
+                    $businessRoleModel = $currentBusinessRoleId ? \App\Models\BusinessRole::find($currentBusinessRoleId) : null;
+                    $businessRoleSlug = $businessRoleModel ? $businessRoleModel->slug : ($currentBusinessRole ?? null);
+                    $isOwner = $businessRoleSlug === 'owner';
+                    
+                    // Для клиентской части проверяем подписку владельца бизнеса
+                    $hasAnalyticsAccess = false;
+                    if ($currentBusiness) {
+                        $accessService = app(\App\Services\SubscriptionAccessService::class);
+                        $hasAnalyticsAccess = $accessService->hasAccess($currentBusiness, 'analytics_enabled', 'client.analytics.view');
+                    }
                 @endphp
-                @if($analyticsEnabled && $hasBusinessPermission('analytics.view'))
+                @if($hasAnalyticsAccess)
                 <div>
                     <button @click="analyticsOpen = !analyticsOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
@@ -373,6 +403,11 @@ style="width: 0; height: 0;">
                 @endif
 
                 <!-- Поддержка -->
+                @php
+                    $hasSupportAccess = $hasBusinessPermission('client.tickets.create') ||
+                                       $hasBusinessPermission('client.tickets.view');
+                @endphp
+                @if($hasSupportAccess)
                 <div>
                     <button @click="supportOpen = !supportOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
@@ -386,7 +421,7 @@ style="width: 0; height: 0;">
                         x-transition:leave="transition ease-in duration-150"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
-                        @if($hasBusinessPermission('tickets.create'))
+                        @if($hasBusinessPermission('client.tickets.create'))
                         <a href="{{ route('tickets.create') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('tickets.create')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -398,7 +433,7 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('tickets.view'))
+                        @if($hasBusinessPermission('client.tickets.view'))
                         <a href="{{ route('tickets.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('tickets.*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -411,6 +446,7 @@ style="width: 0; height: 0;">
                         @endif
                     </div>
                 </div>
+                @endif
             </nav>
 
             <!-- Нижняя часть: Профиль -->
@@ -445,7 +481,7 @@ style="width: 0; height: 0;">
                         </a>
 
                         <!-- Подписка -->
-                        @if($hasBusinessPermission('subscription.view'))
+                        @if($hasBusinessPermission('client.subscription.view'))
                         @php
                             $user = Auth::user();
                             $subscription = $user ? $user->activeSubscription() : null;

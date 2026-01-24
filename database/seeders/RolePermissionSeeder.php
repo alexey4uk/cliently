@@ -16,84 +16,83 @@ class RolePermissionSeeder extends Seeder
         // Создание прав доступа с описаниями
         $permissions = [
             // Пользователи
-            'users.view' => 'Просмотр списка пользователей',
-            'users.create' => 'Создание новых пользователей',
-            'users.update' => 'Редактирование пользователей',
-            'users.delete' => 'Удаление пользователей',
+            'panel.users.view' => 'Просмотр списка пользователей',
+            'panel.users.create' => 'Создание новых пользователей',
+            'panel.users.update' => 'Редактирование пользователей',
+            'panel.users.delete' => 'Удаление пользователей',
 
             // Роли
-            'roles.view' => 'Просмотр списка ролей',
-            'roles.create' => 'Создание новых ролей',
-            'roles.update' => 'Редактирование ролей',
-            'roles.delete' => 'Удаление ролей',
+            'panel.roles.view' => 'Просмотр списка ролей',
+            'panel.roles.create' => 'Создание новых ролей',
+            'panel.roles.update' => 'Редактирование ролей',
+            'panel.roles.delete' => 'Удаление ролей',
 
             // Права доступа
-            'permissions.view' => 'Просмотр списка прав доступа',
-            'permissions.create' => 'Создание новых прав доступа',
-            'permissions.update' => 'Редактирование прав доступа',
-            'permissions.delete' => 'Удаление прав доступа',
+            'panel.permissions.view' => 'Просмотр списка прав доступа',
+            'panel.permissions.create' => 'Создание новых прав доступа',
+            'panel.permissions.update' => 'Редактирование прав доступа',
+            'panel.permissions.delete' => 'Удаление прав доступа',
 
             // Бизнесы
-            'businesses.view' => 'Просмотр списка бизнесов',
-            'businesses.create' => 'Создание новых бизнесов',
-            'businesses.update' => 'Редактирование бизнесов',
-            'businesses.delete' => 'Удаление бизнесов',
+            'client.businesses.view' => 'Просмотр списка бизнесов',
+            'client.businesses.create' => 'Создание новых бизнесов',
+            'client.businesses.update' => 'Редактирование бизнесов',
+            'client.businesses.delete' => 'Удаление бизнесов',
 
             // Записи
-            'appointments.view' => 'Просмотр списка записей',
-            'appointments.create' => 'Создание новых записей',
-            'appointments.update' => 'Редактирование записей',
-            'appointments.delete' => 'Удаление записей',
-            'appointments.export' => 'Экспорт записей',
+            'client.appointments.view' => 'Просмотр списка записей',
+            'client.appointments.create' => 'Создание новых записей',
+            'client.appointments.update' => 'Редактирование записей',
+            'client.appointments.delete' => 'Удаление записей',
+            'client.appointments.export' => 'Экспорт записей',
 
             // Клиенты
-            'clients.view' => 'Просмотр списка клиентов',
-            'clients.create' => 'Создание новых клиентов',
-            'clients.update' => 'Редактирование клиентов',
-            'clients.delete' => 'Удаление клиентов',
-            'clients.export' => 'Экспорт клиентов',
+            'client.clients.view' => 'Просмотр списка клиентов',
+            'client.clients.create' => 'Создание новых клиентов',
+            'client.clients.update' => 'Редактирование клиентов',
+            'client.clients.delete' => 'Удаление клиентов',
+            'client.clients.export' => 'Экспорт клиентов',
 
             // Услуги
-            'services.view' => 'Просмотр списка услуг',
-            'services.create' => 'Создание новых услуг',
-            'services.update' => 'Редактирование услуг',
-            'services.delete' => 'Удаление услуг',
+            'client.services.view' => 'Просмотр списка услуг',
+            'client.services.create' => 'Создание новых услуг',
+            'client.services.update' => 'Редактирование услуг',
+            'client.services.delete' => 'Удаление услуг',
 
             // Локации
-            'locations.view' => 'Просмотр списка локаций',
-            'locations.create' => 'Создание новых локаций',
-            'locations.update' => 'Редактирование локаций',
-            'locations.delete' => 'Удаление локаций',
+            'client.locations.view' => 'Просмотр списка локаций',
+            'client.locations.create' => 'Создание новых локаций',
+            'client.locations.update' => 'Редактирование локаций',
+            'client.locations.delete' => 'Удаление локаций',
 
             // Мастера
-            'masters.view' => 'Просмотр списка мастеров',
-            'masters.create' => 'Создание новых мастеров',
-            'masters.update' => 'Редактирование мастеров',
-            'masters.delete' => 'Удаление мастеров',
+            'client.masters.view' => 'Просмотр списка мастеров',
+            'client.masters.create' => 'Создание новых мастеров',
+            'client.masters.update' => 'Редактирование мастеров',
+            'client.masters.delete' => 'Удаление мастеров',
 
             // Аналитика
-            'analytics.view' => 'Просмотр аналитики',
+            'client.analytics.view' => 'Просмотр аналитики',
 
             // Поддержка
-            'support.view' => 'Доступ к разделу поддержки',
+            'panel.support.view' => 'Доступ к разделу поддержки',
 
             // Тикеты
-            'tickets.view' => 'Просмотр тикетов',
-            'tickets.create' => 'Создание тикетов',
-            'tickets.update' => 'Редактирование тикетов',
-            'tickets.delete' => 'Удаление тикетов',
-            'tickets.assign' => 'Назначение тикетов',
-            'tickets.settings' => 'Настройка тикет-системы',
-            'tickets.categories.manage' => 'Управление категориями тикетов',
+            'client.tickets.view' => 'Просмотр тикетов',
+            'client.tickets.create' => 'Создание тикетов',
+            'client.tickets.update' => 'Ответ на тикеты',
+            'panel.tickets.settings' => 'Настройка тикет-системы',
+            'panel.tickets.categories.manage' => 'Управление категориями тикетов',
 
             // Telegram
-            'telegram.manage' => 'Управление Telegram ботом',
+            'client.telegram.manage' => 'Управление Telegram ботом',
+            'panel.telegram.manage' => 'Управление Telegram ботами (админ-панель)',
 
             // Тарифы
-            'plans.view' => 'Просмотр тарифов',
-            'plans.create' => 'Создание тарифов',
-            'plans.update' => 'Редактирование тарифов',
-            'plans.delete' => 'Удаление тарифов',
+            'panel.plans.view' => 'Просмотр тарифов',
+            'panel.plans.create' => 'Создание тарифов',
+            'panel.plans.update' => 'Редактирование тарифов',
+            'panel.plans.delete' => 'Удаление тарифов',
 
             // Доступ к админке
             'panel.access' => 'Доступ к админ-панели',
@@ -135,11 +134,15 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.assign' => 'Назначение тикетов (админ-панель)',
             
             // Управление пользователями бизнеса (клиентская часть)
-            'business.users.view' => 'Просмотр пользователей бизнеса',
-            'business.users.create' => 'Добавление пользователей в бизнес',
-            'business.users.update' => 'Изменение роли пользователя в бизнесе',
-            'business.users.delete' => 'Удаление пользователя из бизнеса',
-            'business.roles.manage' => 'Управление правами ролей бизнеса (настройка прав для ролей в своем бизнесе)',
+            'client.business.users.view' => 'Просмотр пользователей бизнеса',
+            'client.business.users.create' => 'Добавление пользователей в бизнес',
+            'client.business.users.update' => 'Изменение роли пользователя в бизнесе',
+            'client.business.users.delete' => 'Удаление пользователя из бизнеса',
+            'client.business.roles.manage' => 'Управление правами ролей бизнеса (настройка прав для ролей в своем бизнесе)',
+            
+            // Подписки
+            'client.subscription.view' => 'Просмотр информации о подписке',
+            'client.subscription.manage' => 'Управление подпиской',
             
             // Управление базовыми правами ролей бизнеса (админ-панель)
             'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',
@@ -198,7 +201,7 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.update',
             'panel.tickets.delete',
             'panel.tickets.assign',
-            'tickets.categories.manage',
+            'panel.tickets.categories.manage',
             
             // Управление базовыми правами ролей бизнеса
             'panel.business.roles.manage',
@@ -214,7 +217,7 @@ class RolePermissionSeeder extends Seeder
         $supportRole = Role::firstOrCreate(['name' => 'support', 'guard_name' => 'web']);
         $supportPermissions = [
             'panel.analytics.view',
-            'support.view',
+            'panel.support.view',
             'panel.tickets.view',
             'panel.tickets.update',
             'panel.tickets.assign',

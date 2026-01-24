@@ -36,10 +36,10 @@ class AppointmentRequest extends FormRequest
         $service = app(BusinessRolePermissionService::class);
         
         if ($appointment) {
-            return $service->hasPermission($business->id, $role, 'appointments.update');
+        return $service->hasPermission($role->id, 'client.appointments.update');
         }
         
-        return $service->hasPermission($business->id, $role, 'appointments.create');
+        return $service->hasPermission($role->id, 'client.appointments.create');
     }
 
     /**

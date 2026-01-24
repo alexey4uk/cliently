@@ -27,7 +27,7 @@ class WelcomeController extends Controller
         $invitations = BusinessUserInvitation::where('email', $user->email)
             ->whereNull('accepted_at')
             ->where('expires_at', '>', now())
-            ->with(['business', 'creator'])
+            ->with(['business', 'creator', 'businessRole'])
             ->get();
 
         return view('onboarding', [

@@ -40,20 +40,20 @@ trait HasOwnDataFiltering
      *
      * @param Builder $query
      * @param Business $business
-     * @param string $role
+     * @param int $roleId
      * @param string $permission Base permission like 'appointments.view'
      * @return Builder
      */
     protected function applyOwnDataFilterForAppointments(
         Builder $query,
         Business $business,
-        string $role,
+        int $roleId,
         string $permission
     ): Builder {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
         
         // Проверяем, есть ли право на просмотр только своих данных
-        if ($permissionService->hasOwnDataPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
             if ($masterId) {
                 $query->where('master_id', $masterId);
@@ -72,20 +72,20 @@ trait HasOwnDataFiltering
      *
      * @param Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query
      * @param Business $business
-     * @param string $role
+     * @param int $roleId
      * @param string $permission Base permission like 'clients.view'
      * @return Builder|\Illuminate\Database\Eloquent\Relations\HasMany
      */
     protected function applyOwnDataFilterForClients(
         $query,
         Business $business,
-        string $role,
+        int $roleId,
         string $permission
     ) {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
         
         // Проверяем, есть ли право на просмотр только своих данных
-        if ($permissionService->hasOwnDataPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
             if ($masterId) {
                 // Показываем только клиентов, у которых есть записи с этим мастером
@@ -105,26 +105,26 @@ trait HasOwnDataFiltering
      * Проверить, может ли пользователь просматривать конкретную запись
      *
      * @param Business $business
-     * @param string $role
+     * @param int $roleId
      * @param string $permission
      * @param int $appointmentId
      * @return bool
      */
     protected function canViewAppointment(
         Business $business,
-        string $role,
+        int $roleId,
         string $permission,
         int $appointmentId
     ): bool {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
         
         // Если есть полное право, можно просматривать все
-        if ($permissionService->hasPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasPermission($roleId, $permission)) {
             return true;
         }
         
         // Если есть право только на свои данные, проверяем принадлежность
-        if ($permissionService->hasOwnDataPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
             if (!$masterId) {
                 return false;
@@ -142,26 +142,26 @@ trait HasOwnDataFiltering
      * Проверить, может ли пользователь просматривать конкретного клиента
      *
      * @param Business $business
-     * @param string $role
+     * @param int $roleId
      * @param string $permission
      * @param int $clientId
      * @return bool
      */
     protected function canViewClient(
         Business $business,
-        string $role,
+        int $roleId,
         string $permission,
         int $clientId
     ): bool {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
         
         // Если есть полное право, можно просматривать все
-        if ($permissionService->hasPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasPermission($roleId, $permission)) {
             return true;
         }
         
         // Если есть право только на свои данные, проверяем принадлежность
-        if ($permissionService->hasOwnDataPermission($business->id, $role, $permission)) {
+        if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
             if (!$masterId) {
                 return false;

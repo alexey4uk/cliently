@@ -146,6 +146,7 @@
                         $user = Auth::user();
                         $currentBusiness = null;
                         $currentBusinessRole = null;
+                        $currentBusinessRoleId = null;
                         $permissionService = null;
                         if ($user) {
                             $user->load('businesses');
@@ -153,18 +154,44 @@
                             if ($currentBusiness) {
                                 $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
                                 $currentBusinessRole = $pivot?->pivot->role ?? null;
-                                if ($currentBusinessRole) {
+                                $currentBusinessRoleId = $pivot?->pivot->role_id;
+                                if ($currentBusinessRoleId) {
                                     $permissionService = app(\App\Services\BusinessRolePermissionService::class);
                                 }
                             }
                         }
 
                         // Функция для проверки бизнес-прав
-                        $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-                            if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+                        $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+                            if (!$currentBusinessRoleId || !$permissionService) {
                                 return false;
                             }
-                            return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+                            return $permissionService->hasPermission($currentBusinessRoleId, $permission);
+                        };
+                        
+                        // Функция для проверки наличия хотя бы одного права из списка
+                        $hasAnyPermission = function($permissions) use ($hasBusinessPermission, $user) {
+                            foreach ($permissions as $permission) {
+                                if (str_starts_with($permission, 'client.') || str_starts_with($permission, 'panel.')) {
+                                    // Бизнес-права
+                                    if (str_starts_with($permission, 'client.')) {
+                                        if ($hasBusinessPermission($permission)) {
+                                            return true;
+                                        }
+                                    } else {
+                                        // Spatie права
+                                        if ($user && $user->can($permission)) {
+                                            return true;
+                                        }
+                                    }
+                                } else {
+                                    // Spatie права без префикса
+                                    if ($user && $user->can($permission)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                            return false;
                         };
                     @endphp
 
@@ -178,7 +205,7 @@
                         <nav class="space-y-1">
                             <!-- Панель управления / Главная -->
                             @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('analytics.view')
+                                @can('panel.analytics.view')
                                     <a href="{{ route('panel.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {{ Request::routeIs('panel.index')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -229,7 +256,7 @@
 
                             <!-- Клиенты -->
                             @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('clients.view')
+                                @can('panel.clients.view')
                                     <a href="{{ route('panel.clients') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -254,7 +281,7 @@
                                     </a>
                                 @endcan
                             @else
-                                @if($hasBusinessPermission('clients.view'))
+                                @if($hasBusinessPermission('client.clients.view'))
                                     <a href="{{ route('clients.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('clients.*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -282,7 +309,7 @@
 
                             <!-- Записи -->
                             @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('appointments.view')
+                                @can('panel.appointments.view')
                                     <a href="{{ route('panel.appointments') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.appointments')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -307,7 +334,7 @@
                                     </a>
                                 @endcan
                             @else
-                                @if($hasBusinessPermission('appointments.view'))
+                                @if($hasBusinessPermission('client.appointments.view'))
                                     <a href="{{ route('appointments.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -362,6 +389,13 @@
 
                     <!-- Бизнес (клиентская часть) -->
                     @if(!Str::startsWith(Request::path(), 'panel'))
+                    @php
+                        $hasBusinessGroupAccess = $hasBusinessPermission('client.businesses.update') ||
+                                                  $hasBusinessPermission('client.locations.view') ||
+                                                  $hasBusinessPermission('client.services.view') ||
+                                                  $hasBusinessPermission('client.masters.view');
+                    @endphp
+                    @if($hasBusinessGroupAccess)
                     <div>
                         <button @click="businessOpen = !businessOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -381,7 +415,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                                 <!-- Бизнес -->
-                                @if($hasBusinessPermission('businesses.update'))
+                                @if($hasBusinessPermission('client.businesses.update'))
                                     <a href="{{ route('settings.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.index')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -407,7 +441,7 @@
                                 @endif
 
                                 <!-- Локации -->
-                                @if($hasBusinessPermission('locations.view'))
+                                @if($hasBusinessPermission('client.locations.view'))
                                     <a href="{{ route('settings.locations') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.locations*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -433,7 +467,7 @@
                                 @endif
 
                                 <!-- Услуги -->
-                                @if($hasBusinessPermission('services.view'))
+                                @if($hasBusinessPermission('client.services.view'))
                                     <a href="{{ route('services.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('services.*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -459,7 +493,7 @@
                                 @endif
 
                                 <!-- Мастера -->
-                                @if($hasBusinessPermission('masters.view'))
+                                @if($hasBusinessPermission('client.masters.view'))
                                     <a href="{{ route('settings.masters') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.masters*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -485,7 +519,7 @@
                                 @endif
 
                                 <!-- Онлайн запись -->
-                                @if($hasBusinessPermission('businesses.update'))
+                                @if($hasBusinessPermission('client.businesses.update'))
                                     <a href="{{ route('settings.online-booking') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.online-booking*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -510,8 +544,35 @@
                                     </a>
                                 @endif
 
+                                <!-- Тарифы -->
+                                @if($hasBusinessPermission('client.subscription.view'))
+                                    <a href="{{ route('subscription.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Тарифы' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-crown transition-transform duration-200 {{ Request::routeIs('subscription.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Тарифы</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Тарифы
+                                        </div>
+                                    </a>
+                                @endif
+
                         </nav>
                     </div>
+                    @endif
                     @endif
 
                     <!-- Команда (клиентская часть) -->
@@ -519,10 +580,10 @@
                     @php
                         $hasUsersPermission = false;
                         $hasRolesPermission = false;
-                        if ($currentBusiness && $currentBusinessRole) {
+                        if ($currentBusinessRoleId) {
                             $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-                            $hasUsersPermission = $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, 'business.users.view');
-                            $hasRolesPermission = $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, 'business.roles.manage');
+                            $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
+                            $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
                         }
                     @endphp
                     @if($hasUsersPermission || $hasRolesPermission)
@@ -600,7 +661,7 @@
 
                     <!-- Интеграции (клиентская часть) -->
                     @if(!Str::startsWith(Request::path(), 'panel'))
-                    @if($hasBusinessPermission('telegram.manage'))
+                    @if($hasBusinessPermission('client.telegram.manage'))
                     <div>
                         <button @click="integrationsOpen = !integrationsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -647,6 +708,16 @@
 
                     <!-- Система (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
+                    @php
+                        $hasSystemAccess = $user && (
+                            $user->can('panel.users.view') ||
+                            $user->can('panel.roles.view') ||
+                            $user->can('panel.businesses.view') ||
+                            $user->can('panel.plans.view') ||
+                            $user->can('panel.business.roles.manage')
+                        );
+                    @endphp
+                    @if($hasSystemAccess)
                     <div>
                         <button @click="systemOpen = !systemOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -665,7 +736,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            @can('users.view')
+                            @can('panel.users.view')
                                 <a href="{{ route('panel.users') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.users')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -690,7 +761,7 @@
                                 </a>
                             @endcan
 
-                            @can('roles.view')
+                            @can('panel.roles.view')
                                 <a href="{{ route('panel.roles') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.roles')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -715,7 +786,7 @@
                                 </a>
                             @endcan
 
-                            @can('roles.view')
+                            @can('panel.roles.view')
                                 <a href="{{ route('panel.permissions') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.permissions')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -740,7 +811,7 @@
                                 </a>
                             @endcan
 
-                            @can('businesses.view')
+                            @can('panel.businesses.view')
                                 <a href="{{ route('panel.businesses') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -765,7 +836,7 @@
                                 </a>
                             @endcan
 
-                            @can('plans.view')
+                            @can('panel.plans.view')
                                 <a href="{{ route('panel.plans.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.plans.*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -817,9 +888,18 @@
                         </nav>
                     </div>
                     @endif
+                    @endif
 
                     <!-- Контент (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
+                    @php
+                        $hasContentAccess = $user && (
+                            $user->can('panel.services.view') ||
+                            $user->can('panel.locations.view') ||
+                            $user->can('panel.masters.view')
+                        );
+                    @endphp
+                    @if($hasContentAccess)
                     <div>
                         <button @click="contentOpen = !contentOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -838,7 +918,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            @can('services.view')
+                            @can('panel.services.view')
                                 <a href="{{ route('panel.services') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.services')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -863,7 +943,7 @@
                                 </a>
                             @endcan
 
-                            @can('locations.view')
+                            @can('panel.locations.view')
                                 <a href="{{ route('panel.locations') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.locations')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -888,7 +968,7 @@
                                 </a>
                             @endcan
 
-                            @can('masters.view')
+                            @can('panel.masters.view')
                                 <a href="{{ route('panel.masters') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.masters')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -915,10 +995,11 @@
                         </nav>
                     </div>
                     @endif
+                    @endif
 
                     <!-- Интеграции (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
-                    @can('telegram.manage')
+                    @can('panel.telegram.manage')
                     <div>
                         <button @click="panelIntegrationsOpen = !panelIntegrationsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -966,11 +1047,24 @@
 
                     <!-- Аналитика -->
                     @php
-                        $user = Auth::user();
-                        $subscriptionService = app(\App\Services\SubscriptionService::class);
-                        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled') === true;
+                        // Определяем роль пользователя
+                        $businessRoleModel = $currentBusinessRoleId ? \App\Models\BusinessRole::find($currentBusinessRoleId) : null;
+                        $businessRoleSlug = $businessRoleModel ? $businessRoleModel->slug : ($currentBusinessRole ?? null);
+                        $isOwner = $businessRoleSlug === 'owner';
+                        
+                        $hasAnalyticsAccess = false;
+                        if (Str::startsWith(Request::path(), 'panel')) {
+                            // Для админ-панели проверяем Spatie права
+                            $hasAnalyticsAccess = $user && $user->can('panel.analytics.view');
+                        } else {
+                            // Для клиентской части проверяем подписку владельца бизнеса
+                            if ($currentBusiness) {
+                                $accessService = app(\App\Services\SubscriptionAccessService::class);
+                                $hasAnalyticsAccess = $accessService->hasAccess($currentBusiness, 'analytics_enabled', 'client.analytics.view');
+                            }
+                        }
                     @endphp
-                    @if($analyticsEnabled || Str::startsWith(Request::path(), 'panel'))
+                    @if($hasAnalyticsAccess)
                     <div>
                         <button @click="analyticsOpen = !analyticsOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -990,7 +1084,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('analytics.view')
+                                @can('panel.analytics.view')
                                     <a href="{{ route('panel.analytics') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.analytics')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1016,7 +1110,7 @@
                                 @endcan
                             @else
                                 <!-- Клиентская часть -->
-                                @if($hasBusinessPermission('analytics.view'))
+                                @if($hasBusinessPermission('client.analytics.view'))
                                     <a href="{{ route('analytics.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.index')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1090,6 +1184,22 @@
                     @endif
 
                     <!-- Поддержка -->
+                    @php
+                        $hasSupportAccess = false;
+                        if (Str::startsWith(Request::path(), 'panel')) {
+                            // Для админ-панели проверяем Spatie права
+                            $hasSupportAccess = $user && (
+                                $user->can('panel.tickets.view') ||
+                                $user->can('panel.tickets.categories.manage') ||
+                                $user->can('panel.tickets.settings')
+                            );
+                        } else {
+                            // Для клиентской части проверяем бизнес-права
+                            $hasSupportAccess = $hasBusinessPermission('client.tickets.create') ||
+                                               $hasBusinessPermission('client.tickets.view');
+                        }
+                    @endphp
+                    @if($hasSupportAccess)
                     <div>
                         <button @click="supportOpen = !supportOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
@@ -1110,7 +1220,7 @@
                              class="space-y-1 overflow-hidden">
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 <!-- Админские разделы -->
-                                @can('tickets.view')
+                                @can('panel.tickets.view')
                                     <a href="{{ route('panel.tickets') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ (Request::routeIs('panel.tickets') || Request::routeIs('panel.tickets.*')) && !Request::routeIs('panel.tickets.settings*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1135,7 +1245,7 @@
                                     </a>
                                 @endcan
 
-                                @can('tickets.categories.manage')
+                                @can('panel.tickets.categories.manage')
                                     <a href="{{ route('panel.ticket-categories.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.ticket-categories.*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1160,7 +1270,7 @@
                                     </a>
                                 @endcan
 
-                                @can('tickets.settings')
+                                @can('panel.tickets.settings')
                                     <a href="{{ route('panel.tickets.settings') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.tickets.settings*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1186,7 +1296,7 @@
                                 @endcan
                             @else
                                 <!-- Клиентская часть -->
-                                @if($hasBusinessPermission('tickets.create'))
+                                @if($hasBusinessPermission('client.tickets.create'))
                                     <a href="{{ route('tickets.create') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.create')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1211,7 +1321,7 @@
                                     </a>
                                 @endif
                                 
-                                @if($hasBusinessPermission('tickets.view'))
+                                @if($hasBusinessPermission('client.tickets.view'))
                                     <a href="{{ route('tickets.index') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.index') || Request::routeIs('tickets.show') || Request::routeIs('tickets.edit')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
@@ -1238,6 +1348,7 @@
                             @endif
                         </nav>
                     </div>
+                    @endif
                 </div>
             </div>
 
@@ -1252,10 +1363,12 @@
                             
                             // Используем уже полученные данные о бизнесе и роли
                             $business = $currentBusiness ?? null;
-                            $businessRole = $currentBusinessRole ?? null;
+                            $businessRole = $currentBusinessRoleId ? \App\Models\BusinessRole::find($currentBusinessRoleId) : ($currentBusinessRole ?? null);
+                            $businessRoleSlug = is_object($businessRole) ? $businessRole->slug : $businessRole;
+                            $businessRoleName = is_object($businessRole) ? ($businessRole->name ?? ucfirst($businessRole->slug)) : null;
                         @endphp
                         
-                        @if($subscription && $plan && $hasBusinessPermission('subscription.view'))
+                        @if($subscription && $plan && $hasBusinessPermission('client.subscription.view'))
                             <!-- Информация о тарифе -->
                             <a href="{{ route('subscription.current') }}"
                                 class="group block mb-4 p-3 bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-lg hover:shadow-md transition-all duration-200 relative"
@@ -1282,27 +1395,27 @@
                             </a>
                         @endif
                         
-                        @if($businessRole)
+                        @if($businessRoleSlug)
                             @php
                                 $roleLabels = [
                                     'owner' => 'Владелец',
                                     'admin' => 'Администратор',
                                     'master' => 'Мастер',
                                 ];
-                                $roleLabel = $roleLabels[$businessRole] ?? ucfirst($businessRole);
-                                $roleIcon = match ($businessRole) {
+                                $roleLabel = $businessRoleName ?? ($roleLabels[$businessRoleSlug] ?? ucfirst($businessRoleSlug));
+                                $roleIcon = match ($businessRoleSlug) {
                                     'owner' => 'fa-crown',
                                     'admin' => 'fa-user-shield',
                                     'master' => 'fa-user',
                                     default => 'fa-user-gear',
                                 };
-                                $roleColor = match ($businessRole) {
+                                $roleColor = match ($businessRoleSlug) {
                                     'owner' => 'text-amber-600 dark:text-amber-400',
                                     'admin' => 'text-indigo-600 dark:text-indigo-400',
                                     'master' => 'text-purple-600 dark:text-purple-400',
                                     default => 'text-slate-600 dark:text-slate-300',
                                 };
-                                $roleContainer = match ($businessRole) {
+                                $roleContainer = match ($businessRoleSlug) {
                                     'owner' => 'bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 border-amber-200 dark:border-amber-500/20',
                                     'admin' => 'bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border-indigo-200 dark:border-indigo-500/20',
                                     'master' => 'bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 border-purple-200 dark:border-purple-500/20',

@@ -278,21 +278,21 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('services.view')
+                                            @can('panel.services.view')
                                                 <a href="{{ route('panel.services.show', $service) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
                                                    title="Просмотр деталей">
                                                     <i class="fa-solid fa-eye text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('services.update')
+                                            @can('panel.services.update')
                                                 <a href="{{ route('panel.services.edit', $service) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                    title="Редактировать">
                                                     <i class="fa-solid fa-pencil text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('services.delete')
+                                            @can('panel.services.delete')
                                                 <form method="POST" action="{{ route('panel.services.destroy', $service) }}" 
                                                       onsubmit="return confirm('Вы уверены, что хотите удалить эту услугу? Это действие нельзя отменить.');"
                                                       class="inline">
@@ -353,21 +353,21 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-1.5 sm:gap-2 flex-shrink-0">
-                                    @can('services.view')
+                                    @can('panel.services.view')
                                         <a href="{{ route('panel.services.show', $service) }}"
                                            class="inline-flex items-center justify-center p-1.5 sm:p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-colors"
                                            title="Просмотр деталей">
                                             <i class="fa-solid fa-eye text-xs sm:text-sm"></i>
                                         </a>
                                     @endcan
-                                    @can('services.update')
+                                    @can('panel.services.update')
                                         <a href="{{ route('panel.services.edit', $service) }}"
                                            class="inline-flex items-center justify-center p-1.5 sm:p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                            title="Редактировать">
                                             <i class="fa-solid fa-pencil text-xs sm:text-sm"></i>
                                         </a>
                                     @endcan
-                                    @can('services.delete')
+                                    @can('panel.services.delete')
                                         <form method="POST" action="{{ route('panel.services.destroy', $service) }}" 
                                               onsubmit="return confirm('Вы уверены, что хотите удалить эту услугу? Это действие нельзя отменить.');"
                                               class="inline">

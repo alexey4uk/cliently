@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BusinessRolePermission extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'business_id',
-        'role',
+        'role_id',
         'permission',
         'granted',
     ];
@@ -22,35 +20,19 @@ class BusinessRolePermission extends Model
     ];
 
     /**
-     * Get the business that owns this permission (nullable for default permissions).
+     * Get the role that owns this permission.
      */
-    public function business(): BelongsTo
+    public function role()
     {
-        return $this->belongsTo(Business::class);
+        return $this->belongsTo(BusinessRole::class, 'role_id');
     }
 
     /**
-     * Scope a query to only include default permissions (where business_id is NULL).
+     * Scope a query to filter by role id.
      */
-    public function scopeDefaults($query)
+    public function scopeForRole($query, int $roleId)
     {
-        return $query->whereNull('business_id');
-    }
-
-    /**
-     * Scope a query to only include permissions for a specific business.
-     */
-    public function scopeForBusiness($query, int $businessId)
-    {
-        return $query->where('business_id', $businessId);
-    }
-
-    /**
-     * Scope a query to filter by role.
-     */
-    public function scopeForRole($query, string $role)
-    {
-        return $query->where('role', $role);
+        return $query->where('role_id', $roleId);
     }
 
     /**

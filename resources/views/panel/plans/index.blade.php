@@ -73,14 +73,14 @@
                         <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего тарифов</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        @can('plans.view')
+                        @can('panel.plans.view')
                             <a href="{{ route('panel.plans.properties.index') }}"
                                class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs sm:text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap">
                                 <i class="fa-solid fa-chart-line text-xs sm:text-sm"></i>
                                 <span class="hidden sm:inline">Свойства</span>
                             </a>
                         @endcan
-                        @can('plans.create')
+                        @can('panel.plans.create')
                             <a href="{{ route('panel.plans.create') }}"
                                class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl text-xs sm:text-sm font-medium hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap">
                                 <i class="fa-solid fa-plus text-xs sm:text-sm"></i>
@@ -403,7 +403,7 @@
                                         <span class="inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300">
                                             {{ $plan->sort_order }}
                                         </span>
-                                        @can('plans.update')
+                                        @can('panel.plans.update')
                                             <div class="flex flex-col gap-0.5" draggable="false">
                                                 <form action="{{ route('panel.plans.decrement-sort', $plan) }}" method="POST" class="inline" draggable="false">
                                                     @csrf
@@ -423,13 +423,13 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex items-center justify-end gap-2">
-                                        @can('plans.update')
+                                        @can('panel.plans.update')
                                             <a href="{{ route('panel.plans.edit', $plan) }}"
                                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-900 dark:hover:text-indigo-300 transition-all">
                                                 <i class="fa-solid fa-edit text-sm"></i>
                                             </a>
                                         @endcan
-                                        @can('plans.delete')
+                                        @can('panel.plans.delete')
                                             <form method="POST" action="{{ route('panel.plans.destroy', $plan) }}" 
                                                   onsubmit="return confirm('Вы уверены, что хотите удалить тариф {{ addslashes($plan->name) }}?');"
                                                   class="inline">
@@ -440,7 +440,7 @@
                                                 </button>
                                             </form>
                                         @endcan
-                                        @can('plans.update')
+                                        @can('panel.plans.update')
                                             <button type="button" class="sortable-handle inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-all cursor-move touch-none" title="Перетащить для изменения порядка">
                                                 <i class="fa-solid fa-grip-vertical text-sm pointer-events-none"></i>
                                             </button>

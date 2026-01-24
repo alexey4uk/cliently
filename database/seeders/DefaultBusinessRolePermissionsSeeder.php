@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\BusinessRole;
 use App\Models\BusinessRolePermission;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 
 class DefaultBusinessRolePermissionsSeeder extends Seeder
@@ -16,32 +18,31 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
         // Get all permissions from Spatie Permission
         $allPermissions = Permission::pluck('name')->toArray();
 
-        // Filter out panel.* permissions (those are for admin panel only)
+        // Keep only client.* permissions (panel.* are admin-only)
         $clientPermissions = array_filter($allPermissions, function ($permission) {
-            return !str_starts_with($permission, 'panel.')
-                && $permission !== 'client.access'
-                && $permission !== 'panel.access';
+            return str_starts_with($permission, 'client.')
+                && $permission !== 'client.access';
         });
 
         // Owner: all client-side permissions + wildcards and business management
         $ownerPermissions = array_merge(
             array_values($clientPermissions),
             [
-                'clients.*',
-                'appointments.*',
-                'services.*',
-                'locations.*',
-                'masters.*',
-                'businesses.*',
-                'analytics.view',
-                'telegram.manage',
-                'business.users.view',
-                'business.users.create',
-                'business.users.update',
-                'business.users.delete',
-                'business.roles.manage',
-                'subscription.view',
-                'subscription.manage',
+                'client.clients.*',
+                'client.appointments.*',
+                'client.services.*',
+                'client.locations.*',
+                'client.masters.*',
+                'client.businesses.*',
+                'client.analytics.view',
+                'client.telegram.manage',
+                'client.business.users.view',
+                'client.business.users.create',
+                'client.business.users.update',
+                'client.business.users.delete',
+                'client.business.roles.manage',
+                'client.subscription.view',
+                'client.subscription.manage',
             ]
         );
 
@@ -51,68 +52,87 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
         // Admin: limited access (no delete, no businesses.update, no analytics, no telegram, no business.users.*, no business.roles.manage)
         $adminPermissions = array_filter(array_values($clientPermissions), function ($permission) {
             return !str_ends_with($permission, '.delete')
-                && $permission !== 'businesses.update'
-                && $permission !== 'analytics.view'
-                && $permission !== 'telegram.manage'
-                && !str_starts_with($permission, 'business.users.')
-                && $permission !== 'business.roles.manage';
+                && $permission !== 'client.businesses.update'
+                && $permission !== 'client.analytics.view'
+                && $permission !== 'client.telegram.manage'
+                && !str_starts_with($permission, 'client.business.users.')
+                && $permission !== 'client.business.roles.manage';
         });
 
         // Add subscription view permission for admin
-        $adminPermissions[] = 'subscription.view';
+        $adminPermissions[] = 'client.subscription.view';
 
-        $adminPermissions = array_values($adminPermissions);
+        // Remove duplicates
+        $adminPermissions = array_unique(array_values($adminPermissions));
 
         // Master: only view own data and create
         $masterPermissions = [
-            'clients.view.own', // Только клиенты с записями у этого мастера
-            'appointments.view.own', // Только записи этого мастера
-            'appointments.create',
-            'services.view',
-            'locations.view',
-            'masters.view',
+            'client.clients.view.own', // Только клиенты с записями у этого мастера
+            'client.appointments.view.own', // Только записи этого мастера
+            'client.appointments.create',
+            'client.services.view',
+            'client.locations.view',
+            'client.masters.view',
         ];
 
-        // Seed owner permissions
-        foreach ($ownerPermissions as $permission) {
-            BusinessRolePermission::updateOrCreate(
-                [
-                    'business_id' => null,
-                    'role' => 'owner',
-                    'permission' => $permission,
-                ],
-                [
-                    'granted' => true,
-                ]
-            );
-        }
+        $ownerRole = BusinessRole::updateOrCreate(
+            ['slug' => 'owner'],
+            ['name' => 'Владелец', 'description' => 'Полный доступ', 'is_system' => true]
+        );
+        $adminRole = BusinessRole::updateOrCreate(
+            ['slug' => 'admin'],
+            ['name' => 'Администратор', 'description' => 'Управление бизнесом', 'is_system' => true]
+        );
+        $masterRole = BusinessRole::updateOrCreate(
+            ['slug' => 'master'],
+            ['name' => 'Мастер', 'description' => 'Работа с клиентами', 'is_system' => true]
+        );
 
-        // Seed admin permissions
-        foreach ($adminPermissions as $permission) {
-            BusinessRolePermission::updateOrCreate(
-                [
-                    'business_id' => null,
-                    'role' => 'admin',
-                    'permission' => $permission,
-                ],
-                [
-                    'granted' => true,
-                ]
-            );
-        }
+        $seedPermissions = function (BusinessRole $role, array $permissions): void {
+            // Get current permissions for this role
+            $currentPermissions = BusinessRolePermission::where('role_id', $role->id)
+                ->pluck('permission')
+                ->toArray();
+            
+            // Remove permissions that are no longer in the list
+            $permissionsToRemove = array_diff($currentPermissions, $permissions);
+            if (!empty($permissionsToRemove)) {
+                BusinessRolePermission::where('role_id', $role->id)
+                    ->whereIn('permission', $permissionsToRemove)
+                    ->delete();
+            }
+            
+            // Add or update permissions
+            foreach ($permissions as $permission) {
+                BusinessRolePermission::updateOrCreate(
+                    [
+                        'role_id' => $role->id,
+                        'permission' => $permission,
+                    ],
+                    [
+                        'granted' => true,
+                    ]
+                );
+            }
+        };
 
-        // Seed master permissions
-        foreach ($masterPermissions as $permission) {
-            BusinessRolePermission::updateOrCreate(
-                [
-                    'business_id' => null,
-                    'role' => 'master',
-                    'permission' => $permission,
-                ],
-                [
-                    'granted' => true,
-                ]
-            );
-        }
+        $seedPermissions($ownerRole, $ownerPermissions);
+        $seedPermissions($adminRole, $adminPermissions);
+        $seedPermissions($masterRole, $masterPermissions);
+
+        // Backfill role_id for existing records using role slug
+        DB::table('business_user')
+            ->whereNull('role_id')
+            ->whereNotNull('role')
+            ->update(['role_id' => DB::raw("(
+                select id from business_roles where slug = business_user.role limit 1
+            )")]);
+
+        DB::table('business_user_invitations')
+            ->whereNull('role_id')
+            ->whereNotNull('role')
+            ->update(['role_id' => DB::raw("(
+                select id from business_roles where slug = business_user_invitations.role limit 1
+            )")]);
     }
 }

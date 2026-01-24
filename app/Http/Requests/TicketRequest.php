@@ -31,11 +31,11 @@ class TicketRequest extends FormRequest
         // Для тикетов используется {id} вместо {ticket} в маршрутах
         // Проверяем по методу запроса
         if ($this->isMethod('post')) {
-            return $service->hasPermission($business->id, $role, 'tickets.create');
+            return $service->hasPermission($role->id, 'client.tickets.create');
         }
         
         // Для PATCH/PUT это обновление
-        return $service->hasPermission($business->id, $role, 'tickets.update');
+        return $service->hasPermission($role->id, 'client.tickets.update');
     }
 
     /**

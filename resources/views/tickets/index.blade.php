@@ -9,6 +9,36 @@
 @endpush
 
 @section('content')
+
+@php
+    // Получаем бизнес и роль для проверки прав доступа
+    $user = Auth::user();
+    $currentBusiness = null;
+    $currentBusinessRole = null;
+    $currentBusinessRoleId = null;
+    $permissionService = null;
+    if ($user) {
+        $user->load('businesses');
+        $currentBusiness = $user->businesses->first();
+        if ($currentBusiness) {
+            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
+            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            $currentBusinessRoleId = $pivot?->pivot->role_id;
+            if ($currentBusinessRoleId) {
+                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+            }
+        }
+    }
+
+    // Функция для проверки бизнес-прав
+    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+        if (!$currentBusinessRoleId || !$permissionService) {
+            return false;
+        }
+        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
+    };
+@endphp
+
     <div class="space-y-6">
         <!-- Заголовок с кнопкой создания -->
         <div class="flex items-center justify-between">
@@ -16,11 +46,13 @@
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Мои тикеты</h2>
                 <p class="text-slate-600 dark:text-slate-400 mt-1">Управление вашими обращениями в поддержку</p>
             </div>
-            <a href="{{ route('tickets.create') }}"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md">
-                <i class="fa-solid fa-plus text-sm"></i>
-                Создать тикет
-            </a>
+            @if($hasBusinessPermission('client.tickets.create'))
+                <a href="{{ route('tickets.create') }}"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    Создать тикет
+                </a>
+            @endif
         </div>
 
         <!-- Фильтры -->

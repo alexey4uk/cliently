@@ -69,14 +69,14 @@
                         <i class="fa-solid fa-arrow-left text-xs sm:text-sm"></i>
                         <span>Назад к списку</span>
                     </a>
-                    @can('businesses.update')
+                    @can('panel.businesses.update')
                         <a href="{{ route('panel.businesses.edit', $business) }}"
                            class="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/20 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50 rounded-xl text-xs sm:text-sm font-medium transition-colors shadow-sm">
                             <i class="fa-solid fa-pencil text-xs sm:text-sm"></i>
                             <span>Редактировать</span>
                         </a>
                     @endcan
-                    @can('businesses.delete')
+                    @can('panel.businesses.delete')
                         <form method="POST" action="{{ route('panel.businesses.destroy', $business) }}" 
                               onsubmit="return confirm('Вы уверены, что хотите удалить этот бизнес? Это действие нельзя отменить.');"
                               class="inline">

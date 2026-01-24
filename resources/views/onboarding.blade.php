@@ -61,7 +61,7 @@
                                 <div class="flex flex-wrap gap-2 mb-3">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
                                         <i class="fa-solid {{ $getRoleIcon($invitation->role) }} text-xs"></i>
-                                        {{ $getRoleLabel($invitation->role) }}
+                                        {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->role) }}
                                     </span>
                                 </div>
                                 <p class="text-sm text-slate-600 dark:text-slate-400">

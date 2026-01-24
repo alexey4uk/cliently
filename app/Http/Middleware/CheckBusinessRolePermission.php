@@ -17,8 +17,18 @@ class CheckBusinessRolePermission
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $permission): Response
+    public function handle(Request $request, Closure $next, ...$permissionParts): Response
     {
+        // Laravel splits middleware parameters by dots, so we need to reconstruct the full permission name
+        // Join all parts back together with dots
+        $permission = implode('.', $permissionParts);
+        
+        // If permission doesn't start with 'client.' or 'panel.', prepend 'client.' as default
+        // This handles cases where Laravel strips the prefix when parsing middleware parameters
+        if (!str_starts_with($permission, 'client.') && !str_starts_with($permission, 'panel.')) {
+            $permission = 'client.' . $permission;
+        }
+
         $business = $this->getCurrentBusiness();
 
         if (!$business) {
@@ -34,7 +44,7 @@ class CheckBusinessRolePermission
 
         $service = app(BusinessRolePermissionService::class);
 
-        if (!$service->hasPermission($business->id, $role, $permission)) {
+        if (!$service->hasPermission($role->id, $permission)) {
             abort(403, 'У вас нет прав для выполнения этого действия.');
         }
 

@@ -16,7 +16,7 @@ class TelegramSettingsController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
         
-        $this->authorizeBusinessPermission('telegram.manage');
+        $this->authorizeBusinessPermission('client.telegram.manage');
 
         if (!$business) {
             return redirect()->route('welcome')
@@ -54,7 +54,7 @@ class TelegramSettingsController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
         
-        $this->authorizeBusinessPermission('telegram.manage');
+        $this->authorizeBusinessPermission('client.telegram.manage');
 
         if (!$business) {
             return redirect()->route('welcome')

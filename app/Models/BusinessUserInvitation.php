@@ -15,6 +15,7 @@ class BusinessUserInvitation extends Model
         'business_id',
         'email',
         'role',
+        'role_id',
         'token',
         'created_by',
         'accepted_at',
@@ -40,6 +41,14 @@ class BusinessUserInvitation extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the role assigned to this invitation.
+     */
+    public function businessRole(): BelongsTo
+    {
+        return $this->belongsTo(BusinessRole::class, 'role_id');
     }
 
     /**

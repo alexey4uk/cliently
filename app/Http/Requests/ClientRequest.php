@@ -30,10 +30,10 @@ class ClientRequest extends FormRequest
         $service = app(BusinessRolePermissionService::class);
         
         if ($client) {
-            return $service->hasPermission($business->id, $role, 'clients.update');
+        return $service->hasPermission($role->id, 'client.clients.update');
         }
         
-        return $service->hasPermission($business->id, $role, 'clients.create');
+        return $service->hasPermission($role->id, 'client.clients.create');
     }
 
     /**

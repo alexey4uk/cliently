@@ -178,7 +178,7 @@
                             <span>Отмена</span>
                         </a>
                     </div>
-                    @can('roles.view')
+                    @can('panel.roles.view')
                         <form method="POST" action="{{ route('panel.permissions.destroy', $permission) }}" 
                               onsubmit="return confirm('Вы уверены, что хотите удалить право {{ addslashes($permission->name) }}? Это действие нельзя отменить.');"
                               class="inline">

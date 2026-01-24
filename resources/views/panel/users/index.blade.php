@@ -71,7 +71,7 @@
                         <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $users->total() }}</p>
                         <p class="text-sm text-slate-600 dark:text-slate-400">Всего пользователей</p>
                     </div>
-                    @can('users.create')
+                    @can('panel.users.create')
                         <a href="{{ route('panel.users.create') }}"
                            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-md transition-all duration-200">
                             <i class="fa-solid fa-user-plus"></i>
@@ -263,14 +263,14 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('users.update')
+                                            @can('panel.users.update')
                                                 <a href="{{ route('panel.users.edit', $user) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                    title="Редактировать">
                                                     <i class="fa-solid fa-pencil text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('users.delete')
+                                            @can('panel.users.delete')
                                                 @if($user->id !== auth()->id() && !$user->hasRole('admin'))
                                                     <form method="POST" action="{{ route('panel.users.destroy', $user) }}"
                                                           onsubmit="return confirm('Вы уверены, что хотите удалить пользователя {{ addslashes($user->name) }}?');"
@@ -321,14 +321,14 @@
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    @can('users.update')
+                                    @can('panel.users.update')
                                         <a href="{{ route('panel.users.edit', $user) }}"
                                            class="inline-flex items-center justify-center p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                            title="Редактировать">
                                             <i class="fa-solid fa-pencil text-sm"></i>
                                         </a>
                                     @endcan
-                                    @can('users.delete')
+                                    @can('panel.users.delete')
                                         @if($user->id !== auth()->id() && !$user->hasRole('admin'))
                                             <form method="POST" action="{{ route('panel.users.destroy', $user) }}"
                                                   onsubmit="return confirm('Вы уверены, что хотите удалить пользователя {{ addslashes($user->name) }}?');"
@@ -469,7 +469,7 @@
                             <span>Сбросить фильтры</span>
                         </a>
                     @else
-                        @can('users.create')
+                        @can('panel.users.create')
                             <a href="{{ route('panel.users.create') }}" class="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-lg transition-all duration-200">
                                 <i class="fa-solid fa-user-plus"></i>
                                 <span>Создать первого пользователя</span>

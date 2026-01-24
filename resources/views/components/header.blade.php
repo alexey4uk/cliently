@@ -62,36 +62,45 @@
                     @php
                         $user = Auth::user();
                         $businessRole = null;
+                        $businessRoleSlug = null;
+                        $businessRoleName = null;
                         if ($user) {
                             $user->load('businesses');
                             $business = $user->businesses->first();
                             if ($business) {
                                 $pivot = $user->businesses()->where('business_id', $business->id)->first();
-                                $businessRole = $pivot?->pivot->role ?? null;
+                                $businessRoleId = $pivot?->pivot->role_id;
+                                if ($businessRoleId) {
+                                    $businessRole = \App\Models\BusinessRole::find($businessRoleId);
+                                    $businessRoleSlug = $businessRole?->slug;
+                                    $businessRoleName = $businessRole?->name;
+                                } else {
+                                    $businessRoleSlug = $pivot?->pivot->role ?? null;
+                                }
                             }
                         }
                     @endphp
-                    @if($businessRole)
+                    @if($businessRoleSlug)
                         @php
-                            $bgColor = match($businessRole) {
+                            $bgColor = match($businessRoleSlug) {
                                 'owner' => 'bg-amber-100/80 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-600/30',
                                 'admin' => 'bg-indigo-100/80 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-200/50 dark:border-indigo-600/30',
                                 'master' => 'bg-purple-100/80 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-200/50 dark:border-purple-600/30',
                                 default => 'bg-slate-100/80 dark:bg-slate-500/20 text-slate-700 dark:text-slate-400 border-slate-200/50 dark:border-slate-600/30',
                             };
                             
-                            $icon = match($businessRole) {
+                            $icon = match($businessRoleSlug) {
                                 'owner' => 'fa-crown',
                                 'admin' => 'fa-user-shield',
                                 'master' => 'fa-user',
                                 default => 'fa-user',
                             };
                             
-                            $roleDisplayName = match($businessRole) {
+                            $roleDisplayName = $businessRoleName ?? match($businessRoleSlug) {
                                 'owner' => 'Владелец',
                                 'admin' => 'Администратор',
                                 'master' => 'Мастер',
-                                default => ucfirst($businessRole),
+                                default => ucfirst($businessRoleSlug),
                             };
                         @endphp
                         <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold {{ $bgColor }} rounded-full border">

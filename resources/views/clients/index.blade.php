@@ -15,6 +15,7 @@
     $user = Auth::user();
     $currentBusiness = null;
     $currentBusinessRole = null;
+    $currentBusinessRoleId = null;
     $permissionService = null;
     if ($user) {
         $user->load('businesses');
@@ -22,19 +23,25 @@
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
             $currentBusinessRole = $pivot?->pivot->role ?? null;
-            if ($currentBusinessRole) {
+            $currentBusinessRoleId = $pivot?->pivot->role_id;
+            if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
             }
         }
     }
 
     // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+        if (!$currentBusinessRoleId || !$permissionService) {
             return false;
         }
-        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
     };
+    
+    // Проверяем, есть ли хотя бы одно действие для клиентов
+    $hasAnyClientAction = $hasBusinessPermission('client.clients.view') || 
+                          $hasBusinessPermission('client.clients.update') || 
+                          $hasBusinessPermission('client.clients.delete');
 @endphp
 
     <!-- Flash сообщения -->
@@ -143,14 +150,14 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    @if($hasBusinessPermission('clients.export'))
+                    @if($hasBusinessPermission('client.clients.export'))
                         <a href="{{ route('clients.export', request()->query()) }}"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <i class="fa-solid fa-file-csv text-sm"></i>
                             <span>Экспорт</span>
                         </a>
                     @endif
-                    @if($hasBusinessPermission('clients.create'))
+                    @if($hasBusinessPermission('client.clients.create'))
                         <a href="{{ route('clients.create') }}"
                             class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i class="fa-solid fa-user-plus text-sm"></i>
@@ -516,7 +523,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Записей</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Статус</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Добавлен</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Действия</th>
+                                @if($hasAnyClientAction)
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Действия</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
@@ -572,39 +581,43 @@
                                     <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
                                         {{ $client->created_at->format('d.m.Y') }}
                                     </td>
-                                    <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            <a href="{{ route('clients.show', $client->id) }}"
-                                                class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                title="Просмотр">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                            </a>
+                                    @if($hasAnyClientAction)
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                @if($hasBusinessPermission('client.clients.view'))
+                                                    <a href="{{ route('clients.show', $client->id) }}"
+                                                        class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                        title="Просмотр">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                        </svg>
+                                                    </a>
+                                                @endif
 
-                                            @if($hasBusinessPermission('clients.update'))
-                                                <a href="{{ route('clients.edit', $client->id) }}"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                    title="Редактировать">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
-                                                </a>
-                                            @endif
+                                                @if($hasBusinessPermission('client.clients.update'))
+                                                    <a href="{{ route('clients.edit', $client->id) }}"
+                                                        class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                        title="Редактировать">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                    </a>
+                                                @endif
 
-                                            @if($hasBusinessPermission('clients.delete'))
-                                                <button
-                                                    @click="openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                    title="Удалить">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </td>
+                                                @if($hasBusinessPermission('client.clients.delete'))
+                                                    <button
+                                                        @click="openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')"
+                                                        class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                        title="Удалить">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
@@ -679,7 +692,7 @@
                                     Просмотр
                                 </a>
 
-                                @if($hasBusinessPermission('clients.update'))
+                                @if($hasBusinessPermission('client.clients.update'))
                                     <a href="{{ route('clients.edit', $client) }}"
                                         class="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                                         Изменить
@@ -835,11 +848,13 @@
                                 <span>Очистить фильтры</span>
                             </a>
                         @endif
-                        <a href="{{ route('clients.create') }}"
-                            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fa-solid fa-user-plus text-sm"></i>
-                            <span>Добавить клиента</span>
-                        </a>
+                        @if($hasBusinessPermission('client.clients.create'))
+                            <a href="{{ route('clients.create') }}"
+                                class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                                <i class="fa-solid fa-user-plus text-sm"></i>
+                                <span>Добавить клиента</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>

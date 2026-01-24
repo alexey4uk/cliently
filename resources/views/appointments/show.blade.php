@@ -18,6 +18,7 @@
     $user = Auth::user();
     $currentBusiness = null;
     $currentBusinessRole = null;
+    $currentBusinessRoleId = null;
     $permissionService = null;
     if ($user) {
         $user->load('businesses');
@@ -25,18 +26,19 @@
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
             $currentBusinessRole = $pivot?->pivot->role ?? null;
-            if ($currentBusinessRole) {
+            $currentBusinessRoleId = $pivot?->pivot->role_id;
+            if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
             }
         }
     }
 
     // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusiness, $currentBusinessRole, $permissionService) {
-        if (!$currentBusiness || !$currentBusinessRole || !$permissionService) {
+    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
+        if (!$currentBusinessRoleId || !$permissionService) {
             return false;
         }
-        return $permissionService->hasPermission($currentBusiness->id, $currentBusinessRole, $permission);
+        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
     };
 @endphp
 
@@ -217,7 +219,7 @@
         <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
-                    @if($hasBusinessPermission('appointments.update'))
+                    @if($hasBusinessPermission('client.appointments.update'))
                         <a href="{{ route('appointments.edit', $appointment) }}"
                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                             <i class="fa-solid fa-pen text-sm"></i>
@@ -247,7 +249,7 @@
                             </button>
                         </form>
                     @elseif($appointment->status === 'confirmed')
-                        @if($hasBusinessPermission('appointments.update'))
+                        @if($hasBusinessPermission('client.appointments.update'))
                             <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
                                 @csrf
                                 @method('PATCH')
@@ -259,16 +261,18 @@
                             </form>
                         @endif
 
-                        <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline"
-                              onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit"
-                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-600 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-500/30 transition-colors">
-                                <i class="fa-solid fa-xmark-circle text-sm"></i>
-                                <span>Отменить</span>
-                            </button>
-                        </form>
+                        @if($hasBusinessPermission('client.appointments.update'))
+                            <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline"
+                                  onsubmit="return confirm('Вы уверены, что хотите отменить эту запись?');">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-600 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-500/30 transition-colors">
+                                    <i class="fa-solid fa-xmark-circle text-sm"></i>
+                                    <span>Отменить</span>
+                                </button>
+                            </form>
+                        @endif
                     @endif
                 </div>
             </div>

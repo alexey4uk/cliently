@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\BusinessRequest;
 use App\Models\Business;
+use App\Models\BusinessRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,9 +55,11 @@ class BusinessSettingsController extends Controller
 
         DB::transaction(function () use ($businessData, $ownerData, $user) {
             $business = Business::create($businessData);
+            $ownerRole = BusinessRole::where('slug', 'owner')->first();
 
             $business->users()->attach($user, [
                 'role' => 'owner',
+                'role_id' => $ownerRole?->id,
                 'first_name' => $ownerData['first_name'],
                 'last_name' => $ownerData['last_name'],
             ]);

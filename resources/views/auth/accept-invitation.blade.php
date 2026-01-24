@@ -19,9 +19,10 @@
         'admin' => 'fa-user-shield',
         'master' => 'fa-user',
     ];
-    $roleLabel = $roleLabels[$invitation->role] ?? ucfirst($invitation->role);
-    $roleBadge = $roleBadgeClasses[$invitation->role] ?? 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
-    $roleIcon = $roleIcons[$invitation->role] ?? 'fa-user';
+    $roleSlug = $invitation->role;
+    $roleLabel = $invitation->businessRole?->name ?? ($roleLabels[$roleSlug] ?? ucfirst($roleSlug));
+    $roleBadge = $roleBadgeClasses[$roleSlug] ?? 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
+    $roleIcon = $roleIcons[$roleSlug] ?? 'fa-user';
 @endphp
 
 <div class="max-w-md mx-auto">

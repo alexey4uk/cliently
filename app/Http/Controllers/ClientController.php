@@ -38,7 +38,7 @@ class ClientController extends Controller
         // Применяем фильтр "только свои данные" если нужно
         $role = $this->getCurrentBusinessRole();
         if ($role) {
-            $this->applyOwnDataFilterForClients($query, $business, $role, 'clients.view');
+            $this->applyOwnDataFilterForClients($query, $business, $role->id, 'client.clients.view');
         }
 
         // Поиск
@@ -181,7 +181,7 @@ class ClientController extends Controller
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -251,7 +251,7 @@ class ClientController extends Controller
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -275,7 +275,7 @@ class ClientController extends Controller
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -305,7 +305,7 @@ class ClientController extends Controller
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role, 'clients.view', $client->id)) {
+        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -334,7 +334,7 @@ class ClientController extends Controller
         // Применяем фильтр "только свои данные" если нужно
         $role = $this->getCurrentBusinessRole();
         if ($role) {
-            $this->applyOwnDataFilterForClients($query, $business, $role, 'clients.view');
+            $this->applyOwnDataFilterForClients($query, $business, $role->id, 'client.clients.view');
         }
 
         // Применяем те же фильтры, что и для index

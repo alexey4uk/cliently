@@ -39,7 +39,7 @@ class BusinessRequest extends FormRequest
             }
 
             $service = app(BusinessRolePermissionService::class);
-            return $service->hasPermission($business->id, $role, 'businesses.create');
+            return $service->hasPermission($role->id, 'client.businesses.create');
         }
 
         // Для редактирования бизнеса нужен текущий бизнес
@@ -54,7 +54,7 @@ class BusinessRequest extends FormRequest
         }
 
         $service = app(BusinessRolePermissionService::class);
-        return $service->hasPermission($business->id, $role, 'businesses.update');
+        return $service->hasPermission($role->id, 'client.businesses.update');
     }
 
     /**

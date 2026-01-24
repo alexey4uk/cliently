@@ -71,7 +71,7 @@
                         <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $clients->total() }}</p>
                         <p class="text-sm text-slate-600 dark:text-slate-400">Всего клиентов</p>
                     </div>
-                    @can('clients.create')
+                    @can('panel.clients.create')
                         <a href="{{ route('panel.clients.create') }}"
                            class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-indigo-800 shadow-sm hover:shadow-md transition-all duration-200">
                             <i class="fa-solid fa-user-plus"></i>
@@ -280,14 +280,14 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @can('clients.update')
+                                            @can('panel.clients.update')
                                                 <a href="{{ route('panel.clients.edit', $client) }}"
                                                    class="inline-flex items-center justify-center p-1.5 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-md transition-colors"
                                                    title="Редактировать">
                                                     <i class="fa-solid fa-pencil text-sm"></i>
                                                 </a>
                                             @endcan
-                                            @can('clients.delete')
+                                            @can('panel.clients.delete')
                                                 <form method="POST" action="{{ route('panel.clients.destroy', $client) }}"
                                                       onsubmit="return confirm('Вы уверены, что хотите удалить клиента? Это действие нельзя отменить.');"
                                                       class="inline">

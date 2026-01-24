@@ -98,7 +98,7 @@ class AppointmentsController extends Controller
         ];
 
         // Применяем фильтр "только свои данные" если нужно
-        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+        if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
             $masterId = $this->getCurrentUserMasterId($business);
             if ($masterId) {
                 $filters['master_id'] = $masterId; // Принудительно фильтруем по мастеру
@@ -109,7 +109,7 @@ class AppointmentsController extends Controller
             $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
 
             // Применяем фильтр "только свои данные" для календаря
-            if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+            if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
                 $masterId = $this->getCurrentUserMasterId($business);
                 if ($masterId) {
                     $allAppointments = $allAppointments->where('master_id', $masterId);
@@ -194,7 +194,7 @@ class AppointmentsController extends Controller
         $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
 
         // Применяем фильтр "только свои данные" для календаря
-        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+        if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
             $masterId = $this->getCurrentUserMasterId($business);
             if ($masterId) {
                 $allAppointments = $allAppointments->where('master_id', $masterId);
@@ -328,7 +328,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -355,7 +355,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -386,7 +386,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -430,7 +430,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -462,7 +462,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -490,7 +490,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -519,7 +519,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role, 'appointments.view', $appointment->id)) {
+        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -562,7 +562,7 @@ class AppointmentsController extends Controller
         ];
 
         // Применяем фильтр "только свои данные" если нужно
-        if ($role && $permissionService->hasOwnDataPermission($business->id, $role, 'appointments.view')) {
+        if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
             $masterId = $this->getCurrentUserMasterId($business);
             if ($masterId) {
                 $filters['master_id'] = $masterId; // Принудительно фильтруем по мастеру

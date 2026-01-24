@@ -49,27 +49,27 @@
                     Роль в бизнесе <span class="text-rose-500">*</span>
                 </label>
                 <select id="role" 
-                        name="role" 
+                        name="role_id" 
                         required
-                        class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role') border-rose-500 @enderror">
+                        class="w-full px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('role_id') border-rose-500 @enderror">
                     @foreach($availableRoles as $roleKey)
-                        <option value="{{ $roleKey }}"
-                                {{ $currentRole === $roleKey ? 'selected' : '' }}
-                                {{ $roleKey === 'owner' && $currentRole !== 'owner' ? 'disabled' : '' }}>
-                            {{ $roleLabels[$roleKey] ?? ucfirst($roleKey) }}
+                        <option value="{{ $roleKey->id }}"
+                                {{ $currentRole?->id === $roleKey->id ? 'selected' : '' }}
+                                {{ $roleKey->slug === 'owner' && $currentRole?->slug !== 'owner' ? 'disabled' : '' }}>
+                            {{ $roleKey->name ?? ($roleLabels[$roleKey->slug] ?? ucfirst($roleKey->slug)) }}
                         </option>
                     @endforeach
                 </select>
-                @error('role')
+                @error('role_id')
                     <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                 @enderror
                 <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                     Текущая роль: 
                     <span class="font-medium">
-                        {{ $roleLabels[$currentRole] ?? ucfirst($currentRole) }}
+                        {{ $currentRole?->name ?? ($roleLabels[$currentRole?->slug] ?? ucfirst($currentRole?->slug ?? '')) }}
                     </span>
                 </p>
-                @if($currentRole === 'owner')
+                @if($currentRole?->slug === 'owner')
                     <p class="mt-1.5 text-xs text-amber-600 dark:text-amber-400">
                         <i class="fa-solid fa-info-circle mr-1"></i>
                         Роль владельца нельзя изменить

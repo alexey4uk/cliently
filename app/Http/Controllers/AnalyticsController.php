@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\SubscriptionService;
+use App\Services\SubscriptionAccessService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,24 +14,16 @@ class AnalyticsController extends Controller
 {
     public function index()
     {
-        $this->authorizeBusinessPermission('analytics.view');
-        
-        $user = Auth::user();
-
-        $subscriptionService = app(SubscriptionService::class);
-        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
-
-        if ($analyticsEnabled !== true) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
-        }
-
         $business = $this->getCurrentBusiness();
 
         if (!$business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
+
+        // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
+        $accessService = app(SubscriptionAccessService::class);
+        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
 
         return view('analytics.index', [
             'business' => $business,
@@ -39,24 +32,16 @@ class AnalyticsController extends Controller
 
     public function financial(Request $request)
     {
-        $this->authorizeBusinessPermission('analytics.view');
-        
-        $user = Auth::user();
-
-        $subscriptionService = app(SubscriptionService::class);
-        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
-
-        if ($analyticsEnabled !== true) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
-        }
-
         $business = $this->getCurrentBusiness();
 
         if (!$business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
+
+        // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
+        $accessService = app(SubscriptionAccessService::class);
+        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
 
         $filters = $this->getFilters($request);
         $data = $this->getFinancialData($business->id, $filters);
@@ -70,24 +55,16 @@ class AnalyticsController extends Controller
 
     public function general(Request $request)
     {
-        $this->authorizeBusinessPermission('analytics.view');
-        
-        $user = Auth::user();
-
-        $subscriptionService = app(SubscriptionService::class);
-        $analyticsEnabled = $subscriptionService->getLimit($user, 'analytics_enabled');
-
-        if ($analyticsEnabled !== true) {
-            return redirect()->route('dashboard')
-                ->with('error', 'Аналитика недоступна для вашего тарифа. Обновите тариф для доступа к аналитике.');
-        }
-
         $business = $this->getCurrentBusiness();
 
         if (!$business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
+
+        // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
+        $accessService = app(SubscriptionAccessService::class);
+        $accessService->authorizeAccess($business, 'analytics_enabled', 'client.analytics.view', 'Аналитика');
 
         $filters = $this->getFilters($request);
         $data = $this->getGeneralData($business->id, $filters);
@@ -477,4 +454,5 @@ class AnalyticsController extends Controller
 
         return $statsByMaster->toArray();
     }
+
 }

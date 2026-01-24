@@ -43,26 +43,13 @@ class BusinessUserCreatedWithPassword extends Notification
         return (new MailMessage)
             ->subject('Аккаунт создан для бизнеса ' . $this->business->name)
             ->greeting('Здравствуйте!')
-            ->line('Для вас был создан аккаунт в системе для работы с бизнесом "' . $this->business->name . '" в роли ' . $this->getRoleLabel($this->role) . '.')
+            ->line('Для вас был создан аккаунт в системе для работы с бизнесом "' . $this->business->name . '" в роли ' . $this->role . '.')
             ->line('Для входа в систему используйте следующие данные:')
             ->line('**Email:** ' . $notifiable->email)
             ->line('**Пароль:** ' . $this->temporaryPassword)
             ->action('Войти в систему', $loginUrl)
             ->line('Если у вас возникли вопросы, обратитесь к администратору бизнеса.')
             ->line('**Внимание:** Рекомендуется сменить пароль в настройках профиля после входа.');
-    }
-
-    /**
-     * Get role label in Russian.
-     */
-    private function getRoleLabel(string $role): string
-    {
-        return match ($role) {
-            'owner' => 'владельца',
-            'admin' => 'администратора',
-            'master' => 'мастера',
-            default => $role,
-        };
     }
 
     /**
