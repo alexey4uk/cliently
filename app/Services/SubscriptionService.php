@@ -327,4 +327,38 @@ class SubscriptionService
     {
         return str_contains($featureKey, '_per_month') || str_contains($featureKey, '_monthly');
     }
+
+    /**
+     * Отменить подписку пользователя
+     * Подписка остается активной до окончания периода (ends_at)
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function cancelSubscription(User $user): bool
+    {
+        $subscription = $user->activeSubscription();
+
+        // Проверяем наличие активной подписки
+        if (!$subscription) {
+            return false;
+        }
+
+        // Проверяем, что тариф не бесплатный
+        if ($subscription->plan->slug === 'free') {
+            return false;
+        }
+
+        // Проверяем, что подписка еще не отменена
+        if ($subscription->cancelled_at !== null) {
+            return false;
+        }
+
+        // Устанавливаем cancelled_at, статус остается active
+        $subscription->update([
+            'cancelled_at' => now(),
+        ]);
+
+        return true;
+    }
 }

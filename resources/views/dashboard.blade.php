@@ -508,12 +508,41 @@
                     </a>
 
                     @if($hasBusinessPermission('client.subscription.manage'))
-                    <div class="pt-3 border-t border-gray-200 dark:border-slate-800">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Дополнительные действия</p>
-                        <a href="{{ route('subscription.index') }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium">
-                            Управление подпиской →
-                        </a>
-                    </div>
+                        @if(isset($subscriptionStatus['is_cancelled']) && $subscriptionStatus['is_cancelled'])
+                            <div class="p-4 bg-orange-50 dark:bg-orange-500/10 rounded-lg border border-orange-200 dark:border-orange-500/20">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-orange-800 dark:text-orange-300">Подписка отменена</p>
+                                        @if($subscriptionStatus['ends_at'])
+                                        <p class="text-xs text-orange-600 dark:text-orange-400 mt-1">Будет активна до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @elseif(isset($subscriptionStatus['plan_slug']) && $subscriptionStatus['plan_slug'] !== 'free')
+                            <form action="{{ route('subscription.cancel') }}" method="POST" class="pt-3 border-t border-gray-200 dark:border-slate-800">
+                                @csrf
+                                <button type="submit" onclick="return confirm('Вы уверены, что хотите отменить подписку? Она будет активна до окончания текущего периода.')" class="flex items-center justify-between w-full p-4 bg-red-50 dark:bg-red-500/10 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors text-left">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center mr-3">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-red-900 dark:text-red-300">Отменить подписку</p>
+                                            <p class="text-xs text-red-600 dark:text-red-400">Действует до конца периода</p>
+                                        </div>
+                                    </div>
+                                    <svg class="w-5 h-5 text-red-400 dark:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endif
                     @endif
                 </div>
             </div>

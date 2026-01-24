@@ -562,9 +562,13 @@ class DashboardController extends Controller
 
         return [
             'plan_name' => $subscription->plan->name,
+            'plan_slug' => $subscription->plan->slug,
             'plan_price' => $subscription->plan->price,
             'status' => $subscription->status,
             'ends_at' => $subscription->ends_at,
+            'cancelled_at' => $subscription->cancelled_at,
+            'is_cancelled' => $subscription->isCancelled(),
+            'will_cancel_at_end' => $subscription->willCancelAtEnd(),
             'usage' => $usage,
         ];
     }

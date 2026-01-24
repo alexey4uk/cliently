@@ -189,6 +189,7 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
 
         Route::middleware(['check.business.permission:client.subscription.manage'])->group(function () {
             Route::post('/subscription/{plan}/subscribe', [\App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+            Route::post('/subscription/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('subscription.cancel');
         });
 
         // Настройки бизнеса

@@ -77,4 +77,20 @@ class Subscription extends Model
     {
         return $this->plan->getFeatureValue($key);
     }
+
+    /**
+     * Проверить, отменена ли подписка
+     */
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
+    }
+
+    /**
+     * Проверить, будет ли подписка отменена в конце периода
+     */
+    public function willCancelAtEnd(): bool
+    {
+        return $this->isCancelled() && $this->isActive();
+    }
 }
