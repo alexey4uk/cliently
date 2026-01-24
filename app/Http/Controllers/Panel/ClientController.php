@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
 use App\Models\Business;
+use App\Models\Client;
+use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
@@ -32,7 +34,7 @@ class ClientController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
                   ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
             });
         }
@@ -43,7 +45,7 @@ class ClientController extends Controller
         }
 
         // Сортировка
-        $allowedSorts = ['created_at', 'name', 'phone', 'email'];
+        $allowedSorts = ['created_at', 'name', 'email'];
         if (in_array($sort, $allowedSorts)) {
             if ($sort === 'name') {
                 $query->orderByRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) {$direction}");
@@ -76,8 +78,9 @@ class ClientController extends Controller
     public function create()
     {
         $businesses = Business::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
 
-        return view('panel.clients.create', compact('businesses'));
+        return view('panel.clients.create', compact('businesses', 'countries'));
     }
 
     /**
@@ -89,17 +92,21 @@ class ClientController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:clients,email',
-            'phone' => 'required|string|max:20|unique:clients,phone',
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/', Rule::unique('phones', 'phone')->where('phoneable_type', Client::class)],
             'business_id' => 'required|exists:businesses,id',
+        ], [
+            'phone.regex' => 'Телефон в формате E.164 (например, +375291234567).',
+            'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        Client::create($request->only([
-            'first_name',
-            'last_name',
-            'email',
-            'phone',
-            'business_id',
-        ]));
+        $client = Client::create($request->only(['first_name', 'last_name', 'email', 'business_id']));
+
+        $client->phones()->create([
+            'country_id' => (int) $request->phone_country_id,
+            'phone' => $request->phone,
+            'type' => 'primary',
+        ]);
 
         return redirect()->route('panel.clients')->with('success', 'Клиент создан успешно');
     }
@@ -110,8 +117,9 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         $businesses = Business::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
 
-        return view('panel.clients.edit', compact('client', 'businesses'));
+        return view('panel.clients.edit', compact('client', 'businesses', 'countries'));
     }
 
     /**
@@ -123,17 +131,34 @@ class ClientController extends Controller
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:clients,email,'.$client->id,
-            'phone' => 'required|string|max:20|unique:clients,phone,'.$client->id,
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => [
+                'required',
+                'string',
+                'regex:/^\+[0-9]{10,15}$/',
+                Rule::unique('phones', 'phone')->where('phoneable_type', Client::class)->ignore($client->primaryPhone?->id),
+            ],
             'business_id' => 'required|exists:businesses,id',
+        ], [
+            'phone.regex' => 'Телефон в формате E.164 (например, +375291234567).',
+            'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        $client->update($request->only([
-            'first_name',
-            'last_name',
-            'email',
-            'phone',
-            'business_id',
-        ]));
+        $client->update($request->only(['first_name', 'last_name', 'email', 'business_id']));
+
+        $primary = $client->primaryPhone;
+        if ($primary) {
+            $primary->update([
+                'country_id' => (int) $request->phone_country_id,
+                'phone' => $request->phone,
+            ]);
+        } else {
+            $client->phones()->create([
+                'country_id' => (int) $request->phone_country_id,
+                'phone' => $request->phone,
+                'type' => 'primary',
+            ]);
+        }
 
         return redirect()->route('panel.clients')->with('success', 'Клиент обновлен успешно');
     }

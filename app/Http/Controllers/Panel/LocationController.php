@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Models\Business;
+use App\Models\Country;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -29,7 +30,7 @@ class LocationController extends Controller
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('city', 'like', "%{$search}%")
                   ->orWhere('street', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
                   ->orWhere('description', 'like', "%{$search}%");
             });
         }
@@ -83,8 +84,9 @@ class LocationController extends Controller
     public function edit(Location $location)
     {
         $businesses = Business::orderBy('name')->get();
+        $countries = Country::orderBy('name')->get();
 
-        return view('panel.locations.edit', compact('location', 'businesses'));
+        return view('panel.locations.edit', compact('location', 'businesses', 'countries'));
     }
 
     /**
@@ -100,11 +102,38 @@ class LocationController extends Controller
             'building' => 'nullable|string|max:50',
             'apartment' => 'nullable|string|max:50',
             'description' => 'nullable|string|max:500',
-            'phone' => 'nullable|string|max:20',
+            'phone_country_id' => ['nullable', 'required_with:phone', 'exists:countries,id'],
+            'phone' => ['nullable', 'string', 'regex:/^\+[0-9]{10,15}$/'],
             'business_id' => 'required|exists:businesses,id',
         ]);
 
-        $location->update($validated);
+        $location->update([
+            'name' => $validated['name'],
+            'city' => $validated['city'],
+            'street' => $validated['street'],
+            'house' => $validated['house'],
+            'building' => $validated['building'] ?? null,
+            'apartment' => $validated['apartment'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'business_id' => $validated['business_id'],
+        ]);
+
+        $phoneCountryId = isset($validated['phone_country_id']) ? (int) $validated['phone_country_id'] : null;
+        $phoneE164 = $validated['phone'] ?? null;
+        $primary = $location->primaryPhone;
+        if ($phoneE164 && $phoneCountryId) {
+            if ($primary) {
+                $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+            } else {
+                $location->phones()->create([
+                    'country_id' => $phoneCountryId,
+                    'phone' => $phoneE164,
+                    'type' => 'primary',
+                ]);
+            }
+        } elseif ($primary) {
+            $primary->delete();
+        }
 
         return redirect()->route('panel.locations.show', $location)->with('success', 'Локация успешно обновлена');
     }

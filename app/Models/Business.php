@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
 
 class Business extends Model
@@ -15,7 +17,6 @@ class Business extends Model
 
     protected $fillable = [
         'name',
-        'phone',
         'description',
         'slug',
         'telegram_chat_id',
@@ -78,5 +79,20 @@ class Business extends Model
     public function ticketSettings(): HasOne
     {
         return $this->hasOne(TicketSettings::class);
+    }
+
+    public function phones(): MorphMany
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function primaryPhone(): MorphOne
+    {
+        return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->primaryPhone?->phone;
     }
 }

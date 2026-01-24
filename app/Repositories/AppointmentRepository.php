@@ -145,7 +145,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $query->whereHas('client', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"));
             })->orWhereHas('service', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });
@@ -238,7 +238,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $query->whereHas('client', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"));
             })->orWhereHas('service', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });

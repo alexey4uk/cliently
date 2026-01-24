@@ -20,7 +20,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('photo')->nullable();
             $table->string('specialization');
-            $table->string('phone');
             $table->string('email')->nullable();
             $table->json('working_hours')->nullable();
             $table->boolean('is_active')->default(true);

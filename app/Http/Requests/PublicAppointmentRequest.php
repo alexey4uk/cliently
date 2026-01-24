@@ -29,7 +29,8 @@ class PublicAppointmentRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'service_id' => ['required', 'exists:services,id'],
             'master_id' => ['required', 'exists:masters,id'],
@@ -49,7 +50,10 @@ class PublicAppointmentRequest extends FormRequest
     {
         return [
             'first_name.required' => 'Имя обязательно для заполнения.',
+            'phone_country_id.required' => 'Выберите страну.',
+            'phone_country_id.exists' => 'Выбранная страна не найдена.',
             'phone.required' => 'Телефон обязателен для заполнения.',
+            'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
             'service_id.required' => 'Услуга обязательна для заполнения.',
             'service_id.exists' => 'Выбранная услуга не существует.',
             'master_id.required' => 'Мастер обязателен для выбора.',

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Country;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -19,6 +22,7 @@ class ProfileController extends Controller
     {
         return view('profile', [
             'user' => $request->user(),
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -32,7 +36,15 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'nullable|string|max:20|regex:/^\+375\d{9}$/|unique:users,phone,'.$user->id,
+            'phone_country_id' => ['nullable', 'required_with:phone', 'exists:countries,id'],
+            'phone' => [
+                'nullable',
+                'string',
+                'regex:/^\+[0-9]{10,15}$/',
+                Rule::unique('phones', 'phone')
+                    ->where('phoneable_type', User::class)
+                    ->ignore($user->primaryPhone?->id),
+            ],
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'remove_avatar' => 'sometimes|boolean',
         ], [
@@ -40,8 +52,9 @@ class ProfileController extends Controller
             'email.required' => 'Поле "Email" обязательно для заполнения.',
             'email.email' => 'Неверный формат email адреса.',
             'email.unique' => 'Этот email уже используется.',
-            'phone.unique' => 'Этот телефон уже используется',
-            'phone.regex' => 'Телефон должен быть в формате +375XXXXXXXXX (9 цифр после +375).',
+            'phone_country_id.required_with' => 'Выберите страну при указании телефона.',
+            'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
+            'phone.unique' => 'Этот телефон уже используется.',
             'avatar.image' => 'Файл должен быть изображением.',
             'avatar.mimes' => 'Изображение должно быть в формате: jpeg, png, jpg, gif или webp.',
             'avatar.max' => 'Размер изображения не должен превышать 5 МБ.',
@@ -70,11 +83,27 @@ class ProfileController extends Controller
             $user->avatar = $path;
         }
 
-        // Обновляем остальные данные
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        $user->phone = $validated['phone'] ?? null;
         $user->save();
+
+        $phoneE164 = $validated['phone'] ?? null;
+        $phoneCountryId = isset($validated['phone_country_id']) ? (int) $validated['phone_country_id'] : null;
+
+        if ($phoneE164 && $phoneCountryId) {
+            $primary = $user->primaryPhone;
+            if ($primary) {
+                $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+            } else {
+                $user->phones()->create([
+                    'country_id' => $phoneCountryId,
+                    'phone' => $phoneE164,
+                    'type' => 'primary',
+                ]);
+            }
+        } elseif ($user->primaryPhone) {
+            $user->primaryPhone->delete();
+        }
 
         return back()->with('success', 'Профиль успешно обновлен');
     }

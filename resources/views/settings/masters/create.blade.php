@@ -127,14 +127,38 @@
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Контактная информация</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                <div class="md:col-span-2" id="masterCreatePhoneBlock"
+                    data-countries="{{ json_encode($countries->map(fn ($c) => ['id' => $c->id, 'code' => $c->calling_code, 'name' => $c->name])->values()) }}"
+                    data-old-phone="{{ old('phone') }}"
+                    data-old-country="{{ old('phone_country_id') }}">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                         Телефон <span class="text-rose-500">*</span>
                     </label>
-                    <livewire:phone-input name="phone" label="" :value="old('phone')" required="true" />
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="sm:w-48">
+                            <select id="phone_country_id" name="phone_country_id" required
+                                class="w-full px-4 py-2.5 border {{ $errors->has('phone_country_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
+                                @foreach($countries as $c)
+                                    <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="flex-1 relative">
+                            <span id="masterCreatePhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
+                            <input type="tel" id="phone_national" inputmode="numeric" maxlength="15" required
+                                value="{{ old('phone_national') }}"
+                                class="w-full pl-14 pr-4 py-2.5 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
+                                placeholder="291234567">
+                            <input type="hidden" name="phone" id="masterCreatePhone" value="{{ old('phone') }}">
+                        </div>
+                    </div>
+                    @error('phone_country_id')
+                        <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                    @enderror
                     @error('phone')
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Формат: код страны + номер</p>
                 </div>
 
                 <div>
@@ -321,3 +345,35 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+(function() {
+    const block = document.getElementById('masterCreatePhoneBlock');
+    const sel = document.getElementById('phone_country_id');
+    const national = document.getElementById('phone_national');
+    const hidden = document.getElementById('masterCreatePhone');
+    const prefix = document.getElementById('masterCreatePhonePrefix');
+    function updatePhone() {
+        const opt = sel && sel.options[sel.selectedIndex];
+        const code = opt ? (opt.dataset.code || '').replace(/\D/g, '') : '';
+        const digits = national && national.value ? national.value.replace(/\D/g, '') : '';
+        const full = code && digits ? '+' + code + digits : '';
+        if (hidden) hidden.value = full;
+        if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
+    }
+    if (sel) sel.addEventListener('change', function() { updatePhone(); if (national) national.placeholder = (this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789'; });
+    if (national) national.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 15); updatePhone(); });
+    if (sel && sel.options.length) {
+        const opt = sel.options[sel.selectedIndex];
+        if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
+        if (national) national.placeholder = (opt && opt.dataset.code === '+375') ? '291234567' : '9123456789';
+        const op = block && block.dataset.oldPhone ? block.dataset.oldPhone : '', oc = block && block.dataset.oldCountry ? String(block.dataset.oldCountry) : '';
+        if (op && oc && sel.value === oc && opt) { const codeDigits = (opt.dataset.code || '').replace(/\D/g, ''), phoneDigits = op.replace(/\D/g, ''); if (phoneDigits.startsWith(codeDigits)) national.value = phoneDigits.slice(codeDigits.length); }
+        updatePhone();
+    }
+    const form = block && block.closest('form');
+    if (form) form.addEventListener('submit', updatePhone);
+})();
+</script>
+@endpush

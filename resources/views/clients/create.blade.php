@@ -86,29 +86,38 @@
                 <h2 class="text-base font-semibold text-slate-900 dark:text-white mb-6">Контактная информация</h2>
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Телефон -->
-                        <div class="space-y-2">
-                            <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <div class="space-y-2 md:col-span-2" id="clientPhoneBlock"
+                            data-countries="{{ json_encode($countries->map(fn ($c) => ['id' => $c->id, 'code' => $c->calling_code, 'name' => $c->name])->values()) }}"
+                            data-old-phone="{{ old('phone') }}"
+                            data-old-country="{{ old('phone_country_id') }}">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
                                 Телефон <span class="text-rose-500">*</span>
                             </label>
-                            <div class="relative">
-                                <input type="tel" id="phone" name="phone" required value="{{ old('phone') }}"
-                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('phone') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                                    placeholder="+375XXXXXXXXX">
-                                @if ($errors->has('phone'))
-                                    <div class="absolute inset-y-0 right-3 flex items-center">
-                                        <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
-                                    </div>
-                                @endif
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="sm:w-48">
+                                    <select id="phone_country_id" name="phone_country_id" required
+                                        class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('phone_country_id') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                        @foreach($countries as $c)
+                                            <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex-1 relative">
+                                    <span id="clientPhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
+                                    <input type="tel" id="phone_national" inputmode="numeric" maxlength="15" required
+                                        value="{{ old('phone_national') }}"
+                                        class="w-full pl-14 pr-4 py-2.5 text-sm rounded-lg {{ $errors->has('phone') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                                        placeholder="291234567">
+                                    <input type="hidden" name="phone" id="client_phone" value="{{ old('phone') }}">
+                                </div>
                             </div>
-                            @error('phone')
-                                <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">
-                                    {{ $message }}
-                                </p>
+                            @error('phone_country_id')
+                                <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
-                            <p class="text-xs text-slate-500 dark:text-slate-400">
-                                Формат: +375XXXXXXXXX
-                            </p>
+                            @error('phone')
+                                <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Формат: код страны + номер</p>
                         </div>
 
                         <!-- Email -->
@@ -157,82 +166,51 @@
 
 @push('scripts')
     <script>
-        // ==================== ОБРАБОТКА ТЕЛЕФОНА ====================
-        const phoneInput = document.getElementById('phone');
+        (function() {
+            const block = document.getElementById('clientPhoneBlock');
+            const sel = document.getElementById('phone_country_id');
+            const national = document.getElementById('phone_national');
+            const hidden = document.getElementById('client_phone');
+            const prefix = document.getElementById('clientPhonePrefix');
 
-        if (phoneInput) {
-            // Автоподстановка +375 при фокусе
-            phoneInput.addEventListener('focus', function(e) {
-                if (!e.target.value || !e.target.value.startsWith('+375')) {
-                    e.target.value = '+375';
-                    setTimeout(() => {
-                        e.target.setSelectionRange(4, 4);
-                    }, 0);
+            function updatePhone() {
+                const opt = sel && sel.options[sel.selectedIndex];
+                const code = opt ? (opt.dataset.code || '').replace(/\D/g, '') : '';
+                const digits = national && national.value ? national.value.replace(/\D/g, '') : '';
+                const full = code && digits ? '+' + code + digits : '';
+                if (hidden) hidden.value = full;
+                if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
+            }
+
+            if (sel) {
+                sel.addEventListener('change', function() {
+                    updatePhone();
+                    if (national) national.placeholder = (this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789';
+                });
+            }
+            if (national) {
+                national.addEventListener('input', function() {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 15);
+                    updatePhone();
+                });
+            }
+
+            if (sel && sel.options.length) {
+                const opt = sel.options[sel.selectedIndex];
+                if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
+                if (national) national.placeholder = (opt && opt.dataset.code === '+375') ? '291234567' : '9123456789';
+                const op = block && block.dataset.oldPhone ? block.dataset.oldPhone : '';
+                const oc = block && block.dataset.oldCountry ? String(block.dataset.oldCountry) : '';
+                if (op && oc && sel.value === oc && opt) {
+                    const codeDigits = (opt.dataset.code || '').replace(/\D/g, '');
+                    const phoneDigits = op.replace(/\D/g, '');
+                    if (phoneDigits.startsWith(codeDigits)) national.value = phoneDigits.slice(codeDigits.length);
                 }
-            });
+                updatePhone();
+            }
 
-            // Защита от удаления +375
-            phoneInput.addEventListener('keydown', function(e) {
-                const selectionStart = e.target.selectionStart;
-                const selectionEnd = e.target.selectionEnd;
-
-                if (selectionStart < 5 || selectionEnd < 5) {
-                    if (e.key === 'Backspace' || e.key === 'Delete') {
-                        e.preventDefault();
-                        e.target.setSelectionRange(5, 5);
-                        return false;
-                    }
-                }
-            });
-
-            // Валидные коды операторов Беларуси
-            const validOperatorCodes = ['29', '33', '44', '25'];
-
-            // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
-            phoneInput.addEventListener('input', function(e) {
-                let value = e.target.value;
-
-                if (!value.startsWith('+375')) {
-                    value = '+375';
-                }
-
-                const digits = value.substring(4).replace(/\D/g, '');
-
-                // Проверяем код оператора при вводе первых 2 цифр
-                if (digits.length >= 2) {
-                    const operatorCode = digits.substring(0, 2);
-                    if (!validOperatorCodes.includes(operatorCode)) {
-                        const firstDigit = digits.substring(0, 1);
-                        const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-
-                        if (!canBeValid) {
-                            e.target.value = '+375';
-                            e.target.setSelectionRange(5, 5);
-                            return;
-                        } else {
-                            const limitedDigits = firstDigit;
-                            e.target.value = '+375' + limitedDigits;
-                            e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
-                            return;
-                        }
-                    }
-                } else if (digits.length === 1) {
-                    const firstDigit = digits;
-                    const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                    if (!canBeValid) {
-                        e.target.value = '+375';
-                        e.target.setSelectionRange(5, 5);
-                        return;
-                    }
-                }
-
-                // Ограничиваем до 9 цифр
-                const limitedDigits = digits.substring(0, 9);
-                e.target.value = '+375' + limitedDigits;
-
-                const cursorPosition = Math.max(5, e.target.value.length);
-                e.target.setSelectionRange(cursorPosition, cursorPosition);
-            });
-        }
+            const form = block && block.closest('form');
+            if (form) form.addEventListener('submit', updatePhone);
+        })();
     </script>
 @endpush

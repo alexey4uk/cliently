@@ -210,6 +210,8 @@ class AppointmentController extends Controller
             // Если пользователь явно выбрал дату без слотов - показываем пустой список
         }
 
+        $countries = \App\Models\Country::orderBy('name')->get();
+
         return view('appointments.public.select-time', compact(
             'business',
             'location',
@@ -218,7 +220,8 @@ class AppointmentController extends Controller
             'selectedDate',
             'availableSlots',
             'date',
-            'datesWithSlots'
+            'datesWithSlots',
+            'countries'
         ))->with('currentStep', 4);
     }
 
@@ -291,12 +294,10 @@ class AppointmentController extends Controller
                 ->with('error', 'Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
         }
 
-        // Ищем существующего клиента
         $client = Client::where('business_id', $business->id)
-            ->where('phone', $validated['phone'])
+            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
             ->first();
 
-        // Если клиента нет, проверяем лимит перед созданием
         if (! $client) {
             if (! $subscriptionService->canCreateClient($user)) {
                 return redirect()->back()
@@ -304,18 +305,25 @@ class AppointmentController extends Controller
                     ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
             }
 
-            // Создаем нового клиента
             $client = Client::create([
                 'business_id' => $business->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'] ?? null,
                 'email' => $validated['email'] ?? null,
-                'phone' => $validated['phone'],
             ]);
+
+            $countryId = isset($validated['phone_country_id']) ? (int) $validated['phone_country_id'] : \App\Models\Country::where('code', 'BY')->value('id');
+            if ($countryId) {
+                $client->phones()->create([
+                    'country_id' => $countryId,
+                    'phone' => $validated['phone'],
+                    'type' => 'primary',
+                ]);
+            }
+
             $isNewClient = true;
         } else {
             $isNewClient = false;
-            // Обновляем данные существующего клиента, если они изменились
             $client->update([
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'] ?? $client->last_name,

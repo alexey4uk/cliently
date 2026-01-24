@@ -18,31 +18,39 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
     }
 
     /**
-     * Найти или создать клиента по телефону и бизнесу
+     * Найти или создать клиента по телефону и бизнесу.
+     * Телефон хранится в phones (phoneable); при создании передаются country_id и phone в $attributes.
      */
     public function firstOrCreateByPhone(int $businessId, string $phone, array $attributes = []): Client
     {
-        $defaultAttributes = array_merge($attributes, [
-            'business_id' => $businessId,
+        $client = $this->findByPhone($businessId, $phone);
+
+        if ($client) {
+            return $client;
+        }
+
+        $payload = array_merge($attributes, ['business_id' => $businessId]);
+        unset($payload['phone'], $payload['phone_country_id']);
+
+        $client = $this->model->create($payload);
+
+        $countryId = (int) ($attributes['phone_country_id'] ?? \App\Models\Country::where('code', 'BY')->value('id'));
+        $client->phones()->create([
+            'country_id' => $countryId,
             'phone' => $phone,
+            'type' => 'primary',
         ]);
 
-        return $this->model->firstOrCreate(
-            [
-                'business_id' => $businessId,
-                'phone' => $phone,
-            ],
-            $defaultAttributes
-        );
+        return $client;
     }
 
     /**
-     * Найти клиента по телефону и бизнесу
+     * Найти клиента по телефону (E.164) и бизнесу
      */
     public function findByPhone(int $businessId, string $phone): ?Client
     {
         return $this->model->where('business_id', $businessId)
-            ->where('phone', $phone)
+            ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
             ->first();
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LocationRequest;
+use App\Models\Country;
 use App\Models\Location;
 use App\Repositories\LocationRepositoryInterface;
 use App\Services\SubscriptionService;
@@ -53,6 +54,7 @@ class LocationSettingsController extends Controller
 
         return view('settings.locations.create', [
             'business' => $business,
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -78,6 +80,8 @@ class LocationSettingsController extends Controller
         }
 
         $validated = $request->validated();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
 
         $location = $this->locationRepository->create([
             'business_id' => $business->id,
@@ -88,8 +92,13 @@ class LocationSettingsController extends Controller
             'building' => $validated['building'] ?? null,
             'apartment' => $validated['apartment'] ?? null,
             'description' => $validated['description'] ?? null,
-            'phone' => $validated['phone'],
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
+        ]);
+
+        $location->phones()->create([
+            'country_id' => $phoneCountryId,
+            'phone' => $phoneE164,
+            'type' => 'primary',
         ]);
 
         // Увеличиваем usage (для месячных метрик, но для локаций это не нужно, т.к. считаем напрямую)
@@ -113,6 +122,7 @@ class LocationSettingsController extends Controller
         return view('settings.locations.edit', [
             'business' => $business,
             'location' => $location,
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -129,6 +139,8 @@ class LocationSettingsController extends Controller
         }
 
         $validated = $request->validated();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
 
         $location->update([
             'name' => $validated['name'],
@@ -138,9 +150,19 @@ class LocationSettingsController extends Controller
             'building' => $validated['building'] ?? null,
             'apartment' => $validated['apartment'] ?? null,
             'description' => $validated['description'] ?? null,
-            'phone' => $validated['phone'],
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
         ]);
+
+        $primary = $location->primaryPhone;
+        if ($primary) {
+            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+        } else {
+            $location->phones()->create([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+                'type' => 'primary',
+            ]);
+        }
 
         return redirect()->route('settings.locations')->with('success', 'Локация обновлена');
     }

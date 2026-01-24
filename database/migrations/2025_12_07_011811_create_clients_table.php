@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name')->nullable();
             $table->string('email')->nullable();
-            $table->string('phone');
             $table->string('telegram_user_id')->nullable();
             $table->timestamps();
         });

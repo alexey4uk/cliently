@@ -7,6 +7,8 @@ use App\Traits\HasSubscription;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -23,7 +25,6 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
-        'phone',
         'email',
         'email_verified_at',
         'password',
@@ -86,6 +87,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function notificationSettings(): HasMany
     {
         return $this->hasMany(UserNotificationSetting::class);
+    }
+
+    public function phones(): MorphMany
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function primaryPhone(): MorphOne
+    {
+        return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->primaryPhone?->phone;
     }
 
     /**

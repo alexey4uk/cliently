@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Country;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -12,6 +13,27 @@ use Tests\TestCase;
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(\Database\Seeders\CountrySeeder::class);
+    }
+
+    protected function userWithPhone(array $overrides = []): User
+    {
+        $user = User::factory()->create($overrides);
+        $country = Country::where('code', 'BY')->first();
+        if ($country) {
+            $user->phones()->create([
+                'country_id' => $country->id,
+                'phone' => '+375291234567',
+                'type' => 'primary',
+            ]);
+        }
+
+        return $user->refresh();
+    }
 
     public function test_profile_screen_can_be_rendered(): void
     {
@@ -33,17 +55,18 @@ class ProfileTest extends TestCase
 
     public function test_user_can_update_profile_name(): void
     {
-        $user = User::factory()->create([
+        $user = $this->userWithPhone([
             'name' => 'Old Name',
             'email' => 'old@example.com',
-            'phone' => '+375291234567',
         ]);
+        $countryId = Country::where('code', 'BY')->value('id');
 
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
                 'name' => 'New Name',
                 'email' => 'old@example.com',
+                'phone_country_id' => $countryId,
                 'phone' => '+375291234567',
             ]);
 
@@ -56,17 +79,18 @@ class ProfileTest extends TestCase
 
     public function test_user_can_update_profile_email(): void
     {
-        $user = User::factory()->create([
+        $user = $this->userWithPhone([
             'name' => 'Test User',
             'email' => 'old@example.com',
-            'phone' => '+375291234567',
         ]);
+        $countryId = Country::where('code', 'BY')->value('id');
 
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'new@example.com',
+                'phone_country_id' => $countryId,
                 'phone' => '+375291234567',
             ]);
 
@@ -78,17 +102,18 @@ class ProfileTest extends TestCase
 
     public function test_user_can_update_profile_phone(): void
     {
-        $user = User::factory()->create([
+        $user = $this->userWithPhone([
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'phone' => '+375291234567',
         ]);
+        $countryId = Country::where('code', 'BY')->value('id');
 
         $response = $this->actingAs($user)
             ->from('/profile')
             ->patch('/profile', [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'phone_country_id' => $countryId,
                 'phone' => '+375299876543',
             ]);
 
@@ -104,15 +129,15 @@ class ProfileTest extends TestCase
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg', 100, 100);
+        $payload = ['name' => $user->name, 'email' => $user->email];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
         $response = $this->actingAs($user)
             ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'avatar' => $file,
-            ]);
+            ->patch('/profile', $payload + ['avatar' => $file]);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
@@ -131,15 +156,15 @@ class ProfileTest extends TestCase
         $path = $file->store('avatars', 'public');
         $user->avatar = $path;
         $user->save();
+        $payload = ['name' => $user->name, 'email' => $user->email, 'remove_avatar' => '1'];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
         $response = $this->actingAs($user)
             ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'remove_avatar' => '1',
-            ]);
+            ->patch('/profile', $payload);
 
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
@@ -154,13 +179,13 @@ class ProfileTest extends TestCase
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('document.pdf', 100);
+        $payload = ['name' => $user->name, 'email' => $user->email, 'avatar' => $file];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
-        $response = $this->actingAs($user)->patch('/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'avatar' => $file,
-        ]);
+        $response = $this->actingAs($user)->patch('/profile', $payload);
 
         $response->assertSessionHasErrors('avatar');
     }
@@ -171,13 +196,13 @@ class ProfileTest extends TestCase
 
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg')->size(6000); // 6MB
+        $payload = ['name' => $user->name, 'email' => $user->email, 'avatar' => $file];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
-        $response = $this->actingAs($user)->patch('/profile', [
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'avatar' => $file,
-        ]);
+        $response = $this->actingAs($user)->patch('/profile', $payload);
 
         $response->assertSessionHasErrors('avatar');
     }
@@ -185,11 +210,13 @@ class ProfileTest extends TestCase
     public function test_profile_update_requires_name(): void
     {
         $user = User::factory()->create();
+        $payload = ['email' => $user->email];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
-        $response = $this->actingAs($user)->patch('/profile', [
-            'email' => $user->email,
-            'phone' => $user->phone,
-        ]);
+        $response = $this->actingAs($user)->patch('/profile', $payload);
 
         $response->assertSessionHasErrors('name');
     }
@@ -197,11 +224,13 @@ class ProfileTest extends TestCase
     public function test_profile_update_requires_email(): void
     {
         $user = User::factory()->create();
+        $payload = ['name' => $user->name];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
-        $response = $this->actingAs($user)->patch('/profile', [
-            'name' => $user->name,
-            'phone' => $user->phone,
-        ]);
+        $response = $this->actingAs($user)->patch('/profile', $payload);
 
         $response->assertSessionHasErrors('email');
     }
@@ -222,24 +251,27 @@ class ProfileTest extends TestCase
     public function test_profile_update_validates_email_format(): void
     {
         $user = User::factory()->create();
+        $payload = ['name' => $user->name, 'email' => 'invalid-email'];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
-        $response = $this->actingAs($user)->patch('/profile', [
-            'name' => $user->name,
-            'email' => 'invalid-email',
-            'phone' => $user->phone,
-        ]);
+        $response = $this->actingAs($user)->patch('/profile', $payload);
 
         $response->assertSessionHasErrors('email');
     }
 
     public function test_profile_update_validates_unique_email(): void
     {
-        $user1 = User::factory()->create(['email' => 'user1@example.com']);
+        $user1 = $this->userWithPhone(['email' => 'user1@example.com']);
         $user2 = User::factory()->create(['email' => 'user2@example.com']);
+        $countryId = Country::where('code', 'BY')->value('id');
 
         $response = $this->actingAs($user1)->patch('/profile', [
             'name' => $user1->name,
             'email' => 'user2@example.com',
+            'phone_country_id' => $countryId,
             'phone' => $user1->phone,
         ]);
 
@@ -337,17 +369,15 @@ class ProfileTest extends TestCase
         $oldPath = $oldFile->store('avatars', 'public');
         $user->avatar = $oldPath;
         $user->save();
-
-        $newFile = UploadedFile::fake()->image('new-avatar.jpg');
+        $payload = ['name' => $user->name, 'email' => $user->email, 'avatar' => UploadedFile::fake()->image('new-avatar.jpg')];
+        if ($user->phone) {
+            $payload['phone_country_id'] = $user->primaryPhone->country_id;
+            $payload['phone'] = $user->phone;
+        }
 
         $response = $this->actingAs($user)
             ->from('/profile')
-            ->patch('/profile', [
-                'name' => $user->name,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'avatar' => $newFile,
-            ]);
+            ->patch('/profile', $payload);
 
         $response->assertRedirect(route('profile.edit'));
 

@@ -1254,29 +1254,33 @@ class Handler extends WebhookHandler
                 return;
             }
 
-            // Ищем существующего клиента
             $client = Client::where('business_id', $business->id)
-                ->where('phone', $data['client_data']['phone'])
+                ->whereHas('phones', fn ($q) => $q->where('phone', $data['client_data']['phone']))
                 ->first();
 
-            // Если клиента нет, проверяем лимит перед созданием
             if (! $client) {
                 if (! $subscriptionService->canCreateClient($user)) {
                     $this->replyWithMessage('❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.');
                     return;
                 }
 
-                // Создаем нового клиента
                 $client = Client::create([
                     'business_id' => $business->id,
                     'first_name' => $data['client_data']['first_name'],
                     'last_name' => $data['client_data']['last_name'] ?? null,
                     'email' => $data['client_data']['email'] ?? null,
-                    'phone' => $data['client_data']['phone'],
                     'telegram_user_id' => $this->callbackQuery->from()->id(),
                 ]);
+
+                $countryBy = \App\Models\Country::where('code', 'BY')->first();
+                if ($countryBy) {
+                    $client->phones()->create([
+                        'country_id' => $countryBy->id,
+                        'phone' => $data['client_data']['phone'],
+                        'type' => 'primary',
+                    ]);
+                }
             } else {
-                // Обновляем данные существующего клиента
                 $client->update([
                     'first_name' => $data['client_data']['first_name'],
                     'last_name' => $data['client_data']['last_name'] ?? $client->last_name,

@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
+use App\Models\Country;
+use App\Models\Phone;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\SubscriptionService;
@@ -16,18 +18,24 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Используем firstOrCreate для безопасного создания (не создаст дубликат)
         $user = User::firstOrCreate(
             ['email' => 'a@a.ru'],
             [
                 'name' => 'Иван',
-                'phone' => '+375292909641',
                 'password' => Hash::make('lm57iqxz'),
                 'email_verified_at' => now(),
             ]
         );
 
-        // Назначаем роль админа
+        $countryBy = Country::where('code', 'BY')->first();
+        if ($countryBy && !$user->primaryPhone) {
+            $user->phones()->create([
+                'country_id' => $countryBy->id,
+                'phone' => '+375292909641',
+                'type' => 'primary',
+            ]);
+        }
+
         $user->assignRole('admin');
 
         // Автоматически создаем подписку на тариф по умолчанию, если её еще нет

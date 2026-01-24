@@ -177,19 +177,43 @@
                         @enderror
                     </div>
 
+                    @php
+                        $phoneCountry = $master->primaryPhone?->country ?? $countries->first();
+                        $phoneNational = '';
+                        if ($master->primaryPhone && $phoneCountry) {
+                            $codeDig = preg_replace('/\D/', '', $phoneCountry->calling_code);
+                            $phoneDig = preg_replace('/\D/', '', $master->primaryPhone->phone);
+                            $phoneNational = $codeDig && str_starts_with($phoneDig, $codeDig) ? substr($phoneDig, strlen($codeDig)) : $phoneDig;
+                        }
+                    @endphp
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Телефон -->
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <div class="md:col-span-2" id="panelMasterEditPhoneBlock"
+                            data-old-country="{{ old('phone_country_id', $master->primaryPhone?->country_id) }}"
+                            data-old-phone="{{ old('phone', $master->phone) }}">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 Телефон <span class="text-rose-500">*</span>
                             </label>
-                            <input type="text"
-                                   id="phone"
-                                   name="phone"
-                                   value="{{ old('phone', $master->phone) }}"
-                                   class="w-full px-4 py-2.5 rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                                   placeholder="+375XXXXXXXXX"
-                                   required>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="sm:w-48">
+                                    <select id="phone_country_id" name="phone_country_id" required
+                                        class="w-full px-4 py-2.5 rounded-lg border {{ $errors->has('phone_country_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-colors">
+                                        @foreach($countries as $c)
+                                            <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id', $master->primaryPhone?->country_id) == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex-1 relative">
+                                    <span id="panelMasterEditPhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
+                                    <input type="tel" id="panelMasterEditPhoneNational" inputmode="numeric" maxlength="15" required
+                                        value="{{ old('phone_national', $phoneNational) }}"
+                                        class="w-full pl-14 pr-4 py-2.5 rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-colors"
+                                        placeholder="291234567">
+                                    <input type="hidden" name="phone" id="panelMasterEditPhone" value="{{ old('phone', $master->phone) }}">
+                                </div>
+                            </div>
+                            @error('phone_country_id')
+                                <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                            @enderror
                             @error('phone')
                                 <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
@@ -397,4 +421,46 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const block = document.getElementById('panelMasterEditPhoneBlock');
+            if (!block) return;
+            const sel = document.getElementById('phone_country_id');
+            const prefixSpan = document.getElementById('panelMasterEditPhonePrefix');
+            const nationalInput = document.getElementById('panelMasterEditPhoneNational');
+            const hidden = document.getElementById('panelMasterEditPhone');
+            const oldCountry = block.dataset.oldCountry || '';
+            const oldPhone = block.dataset.oldPhone || '';
+
+            function updatePrefix() {
+                const opt = sel?.selectedOptions?.[0];
+                if (prefixSpan) prefixSpan.textContent = opt?.dataset?.code || '+375';
+            }
+
+            function buildE164() {
+                const opt = sel?.selectedOptions?.[0];
+                const code = opt?.dataset?.code?.replace(/\D/g, '') || '375';
+                const national = nationalInput?.value?.replace(/\D/g, '') || '';
+                const digits = code + national;
+                if (digits.length >= 10 && hidden) hidden.value = '+' + digits;
+            }
+
+            if (sel) { sel.addEventListener('change', updatePrefix); sel.addEventListener('change', buildE164); }
+            if (nationalInput) {
+                nationalInput.addEventListener('input', function() { this.value = this.value.replace(/\D/g, ''); buildE164(); });
+                nationalInput.addEventListener('blur', buildE164);
+            }
+            updatePrefix();
+            if (oldCountry && sel) { const o = Array.from(sel.options).find(op => op.value === oldCountry); if (o) { sel.value = oldCountry; updatePrefix(); } }
+            if (oldPhone && oldPhone.startsWith('+') && nationalInput && hidden) {
+                const code = sel?.selectedOptions?.[0]?.dataset?.code?.replace(/\D/g, '') || '375';
+                const rest = oldPhone.replace(/\D/g, '').replace(new RegExp('^' + code), '') || '';
+                nationalInput.value = rest;
+                hidden.value = oldPhone;
+            }
+        });
+    </script>
+    @endpush
 @endsection

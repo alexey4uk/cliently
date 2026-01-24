@@ -195,28 +195,51 @@
                 </div>
             </div>
 
-            <!-- Телефон -->
-            <div>
-                <label for="phone" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+            @php
+                $phoneCountry = $user->primaryPhone?->country ?? ($countries->first());
+                $phoneNational = '';
+                if ($user->primaryPhone && $phoneCountry) {
+                    $codeDig = preg_replace('/\D/', '', $phoneCountry->calling_code);
+                    $phoneDig = preg_replace('/\D/', '', $user->primaryPhone->phone);
+                    $phoneNational = $codeDig && str_starts_with($phoneDig, $codeDig) ? substr($phoneDig, strlen($codeDig)) : $phoneDig;
+                }
+            @endphp
+            <div id="profilePhoneBlock"
+                data-countries="{{ json_encode($countries->map(fn ($c) => ['id' => $c->id, 'code' => $c->calling_code, 'name' => $c->name])->values()) }}"
+                data-old-phone="{{ old('phone', $user->phone) }}"
+                data-old-country="{{ old('phone_country_id', $user->primaryPhone?->country_id) }}">
+                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
                     <i class="fa-solid fa-phone mr-2 text-slate-400"></i>
                     Телефон
                 </label>
-                <input 
-                    type="tel" 
-                    id="phone" 
-                    name="phone" 
-                    value="{{ old('phone', $user->phone) }}"
-                    class="w-full px-4 py-3 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-xl focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
-                    placeholder="+375 (XX) XXX-XX-XX" />
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="sm:w-48">
+                        <select id="phone_country_id" name="phone_country_id"
+                            class="w-full px-4 py-3 border {{ $errors->has('phone_country_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-xl focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all">
+                            <option value="">—</option>
+                            @foreach($countries as $c)
+                                <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id', $user->primaryPhone?->country_id) == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="flex-1 relative">
+                        <span id="profilePhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
+                        <input type="tel" id="phone_national" inputmode="numeric" maxlength="15"
+                            value="{{ old('phone_national', $phoneNational) }}"
+                            class="w-full pl-14 pr-4 py-3 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-xl focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
+                            placeholder="291234567">
+                        <input type="hidden" name="phone" id="profilePhone" value="{{ old('phone', $user->phone) }}">
+                    </div>
+                </div>
+                @error('phone_country_id')
+                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-400 flex items-center"><i class="fa-solid fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                @enderror
                 @error('phone')
-                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-400 flex items-center">
-                        <i class="fa-solid fa-exclamation-circle mr-1"></i>
-                        {{ $message }}
-                    </p>
+                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-400 flex items-center"><i class="fa-solid fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                 @enderror
                 <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center">
                     <i class="fa-solid fa-info-circle mr-1.5"></i>
-                    Формат: +375 (XX) XXX-XX-XX
+                    Формат: код страны + номер. Необязательно.
                 </p>
             </div>
 
@@ -606,83 +629,32 @@
         }));
     });
 
-    // ==================== ОБРАБОТКА ТЕЛЕФОНА ====================
-    document.addEventListener('DOMContentLoaded', function() {
-        const phoneInput = document.getElementById('phone');
-        if (!phoneInput) return;
-
-        // Автоподстановка +375 при фокусе
-        phoneInput.addEventListener('focus', function(e) {
-            if (!e.target.value || !e.target.value.startsWith('+375')) {
-                e.target.value = '+375';
-                setTimeout(() => {
-                    e.target.setSelectionRange(4, 4);
-                }, 0);
-            }
-        });
-
-        // Защита от удаления +375
-        phoneInput.addEventListener('keydown', function(e) {
-            const selectionStart = e.target.selectionStart;
-            const selectionEnd = e.target.selectionEnd;
-
-            if (selectionStart < 5 || selectionEnd < 5) {
-                if (e.key === 'Backspace' || e.key === 'Delete') {
-                    e.preventDefault();
-                    e.target.setSelectionRange(5, 5);
-                    return false;
-                }
-            }
-        });
-
-        // Валидные коды операторов Беларуси
-        const validOperatorCodes = ['29', '33', '44', '25'];
-
-        // Обработка ввода: только цифры, ограничение количества и проверка кода оператора
-        phoneInput.addEventListener('input', function(e) {
-            let value = e.target.value;
-
-            if (!value.startsWith('+375')) {
-                value = '+375';
-            }
-
-            const digits = value.substring(4).replace(/\D/g, '');
-
-            // Проверяем код оператора при вводе первых 2 цифр
-            if (digits.length >= 2) {
-                const operatorCode = digits.substring(0, 2);
-                if (!validOperatorCodes.includes(operatorCode)) {
-                    const firstDigit = digits.substring(0, 1);
-                    const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-
-                    if (!canBeValid) {
-                        e.target.value = '+375';
-                        e.target.setSelectionRange(5, 5);
-                        return;
-                    } else {
-                        const limitedDigits = firstDigit;
-                        e.target.value = '+375' + limitedDigits;
-                        e.target.setSelectionRange(5 + limitedDigits.length, 5 + limitedDigits.length);
-                        return;
-                    }
-                }
-            } else if (digits.length === 1) {
-                const firstDigit = digits;
-                const canBeValid = validOperatorCodes.some(code => code.startsWith(firstDigit));
-                if (!canBeValid) {
-                    e.target.value = '+375';
-                    e.target.setSelectionRange(5, 5);
-                    return;
-                }
-            }
-
-            // Ограничиваем до 9 цифр
-            const limitedDigits = digits.substring(0, 9);
-            e.target.value = '+375' + limitedDigits;
-
-            const cursorPosition = Math.max(5, e.target.value.length);
-            e.target.setSelectionRange(cursorPosition, cursorPosition);
-        });
-    });
+    (function() {
+        const block = document.getElementById('profilePhoneBlock');
+        const sel = document.getElementById('phone_country_id');
+        const national = document.getElementById('phone_national');
+        const hidden = document.getElementById('profilePhone');
+        const prefix = document.getElementById('profilePhonePrefix');
+        function updatePhone() {
+            const opt = sel && sel.options[sel.selectedIndex];
+            const code = opt && opt.value ? (opt.dataset.code || '').replace(/\D/g, '') : '';
+            const digits = national && national.value ? national.value.replace(/\D/g, '') : '';
+            const full = code && digits ? '+' + code + digits : '';
+            if (hidden) hidden.value = full;
+            if (prefix) prefix.textContent = opt && opt.value ? opt.dataset.code || '' : '';
+        }
+        if (sel) sel.addEventListener('change', function() { updatePhone(); if (national) national.placeholder = (this.selectedIndex && this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789'; });
+        if (national) national.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 15); updatePhone(); });
+        if (sel && sel.options.length) {
+            const opt = sel.options[sel.selectedIndex];
+            if (prefix) prefix.textContent = opt && opt.value ? opt.dataset.code || '' : '';
+            if (national) national.placeholder = (opt && opt.value && opt.dataset.code === '+375') ? '291234567' : '9123456789';
+            const op = block && block.dataset.oldPhone ? block.dataset.oldPhone : '', oc = block && block.dataset.oldCountry ? String(block.dataset.oldCountry) : '';
+            if (op && oc && sel.value === oc && opt) { const codeDigits = (opt.dataset.code || '').replace(/\D/g, ''), phoneDigits = op.replace(/\D/g, ''); if (phoneDigits.startsWith(codeDigits)) national.value = phoneDigits.slice(codeDigits.length); }
+            updatePhone();
+        }
+        const form = block && block.closest('form');
+        if (form) form.addEventListener('submit', updatePhone);
+    })();
 </script>
 @endpush

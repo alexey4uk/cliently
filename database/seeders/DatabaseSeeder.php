@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         //        ]);
 
         $this->call([
+            CountrySeeder::class, // Справочник стран (до phones, форм и т.д.)
             RolePermissionSeeder::class,
             DefaultBusinessRolePermissionsSeeder::class,
             SubscriptionMetricSeeder::class, // Метрики подписки должны быть созданы до тарифов

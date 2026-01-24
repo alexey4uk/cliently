@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Location extends Model
 {
@@ -20,7 +22,6 @@ class Location extends Model
         'building',
         'apartment',
         'description',
-        'phone',
         'working_hours',
     ];
 
@@ -55,5 +56,20 @@ class Location extends Model
     {
         return $this->belongsToMany(Master::class, 'master_location')
             ->withTimestamps();
+    }
+
+    public function phones(): MorphMany
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function primaryPhone(): MorphOne
+    {
+        return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->primaryPhone?->phone;
     }
 }

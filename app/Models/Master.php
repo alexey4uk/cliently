@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Master extends Model
 {
@@ -20,7 +22,6 @@ class Master extends Model
         'description',
         'photo',
         'specialization',
-        'phone',
         'email',
         'working_hours',
         'is_active',
@@ -61,6 +62,21 @@ class Master extends Model
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function phones(): MorphMany
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function primaryPhone(): MorphOne
+    {
+        return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->primaryPhone?->phone;
     }
 
     /**

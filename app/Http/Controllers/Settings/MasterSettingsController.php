@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MasterRequest;
+use App\Models\Country;
 use App\Models\Master;
 use App\Repositories\MasterRepositoryInterface;
 use App\Services\SubscriptionService;
@@ -57,6 +58,7 @@ class MasterSettingsController extends Controller
             'business' => $business,
             'locations' => $business->locations,
             'services' => $business->services,
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -84,6 +86,8 @@ class MasterSettingsController extends Controller
         }
 
         $validated = $request->validated();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
 
         $master = $this->masterRepository->create([
             'business_id' => $business->id,
@@ -92,9 +96,14 @@ class MasterSettingsController extends Controller
             'last_name' => $validated['last_name'] ?? null,
             'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
-            'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
+        ]);
+
+        $master->phones()->create([
+            'country_id' => $phoneCountryId,
+            'phone' => $phoneE164,
+            'type' => 'primary',
         ]);
 
         if (! empty($validated['location_ids'])) {
@@ -127,6 +136,7 @@ class MasterSettingsController extends Controller
             'master' => $master,
             'locations' => $business->locations,
             'services' => $business->services,
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -143,17 +153,29 @@ class MasterSettingsController extends Controller
         }
 
         $validated = $request->validated();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
 
         $master->update([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
             'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
-            'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
             'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
             'is_active' => $validated['is_active'] ?? $master->is_active,
         ]);
+
+        $primary = $master->primaryPhone;
+        if ($primary) {
+            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+        } else {
+            $master->phones()->create([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+                'type' => 'primary',
+            ]);
+        }
 
         if (isset($validated['location_ids'])) {
             $master->locations()->sync($validated['location_ids']);

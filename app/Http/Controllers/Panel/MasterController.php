@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Business;
+use App\Models\Country;
 use App\Models\Location;
 use App\Models\Master;
 use App\Models\Service;
@@ -30,7 +31,7 @@ class MasterController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('specialization', 'like', "%{$search}%");
             });
@@ -42,7 +43,7 @@ class MasterController extends Controller
         }
 
         // Сортировка
-        $allowedSorts = ['first_name', 'last_name', 'name', 'phone', 'email', 'created_at'];
+        $allowedSorts = ['first_name', 'last_name', 'name', 'email', 'created_at'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction);
         } else {
@@ -93,7 +94,9 @@ class MasterController extends Controller
             $services = Service::where('business_id', $master->business_id)->orderBy('name')->get();
         }
 
-        return view('panel.masters.edit', compact('master', 'businesses', 'locations', 'services'));
+        $countries = Country::orderBy('name')->get();
+
+        return view('panel.masters.edit', compact('master', 'businesses', 'locations', 'services', 'countries'));
     }
 
     /**
@@ -106,7 +109,8 @@ class MasterController extends Controller
             'last_name' => 'nullable|string|max:255',
             'specialization' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'phone' => 'required|string|max:20',
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
             'email' => 'nullable|email|max:255',
             'business_id' => 'required|exists:businesses,id',
             'is_active' => 'boolean',
@@ -127,7 +131,6 @@ class MasterController extends Controller
             'last_name' => $validated['last_name'] ?? null,
             'specialization' => $validated['specialization'],
             'description' => $validated['description'] ?? null,
-            'phone' => $validated['phone'],
             'email' => $validated['email'] ?? null,
             'business_id' => $validated['business_id'],
             'is_active' => $validated['is_active'] ?? false,
@@ -139,6 +142,19 @@ class MasterController extends Controller
         }
 
         $master->update($updateData);
+
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
+        $primary = $master->primaryPhone;
+        if ($primary) {
+            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+        } else {
+            $master->phones()->create([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+                'type' => 'primary',
+            ]);
+        }
 
         // Синхронизация локаций
         if (isset($validated['location_ids'])) {

@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('building', 20)->nullable();
             $table->string('apartment', 20)->nullable();
             $table->text('description')->nullable();
-            $table->string('phone');
             $table->json('working_hours')->nullable();
 
             $table->timestamps();

@@ -82,12 +82,8 @@ class BusinessRequest extends FormRequest
                 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
             ],
             'description' => ['nullable', 'string'],
-            'phone' => [
-                'required',
-                'string',
-                'max:12',
-                'digits:12',
-            ],
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
         ];
     }
 
@@ -101,8 +97,10 @@ class BusinessRequest extends FormRequest
             'slug.required' => 'Поле "URL-адрес" обязательно для заполнения.',
             'slug.unique' => 'Этот URL-адрес уже занят.',
             'slug.regex' => 'URL-адрес может содержать только латинские буквы, цифры и дефисы.',
+            'phone_country_id.required' => 'Выберите страну.',
+            'phone_country_id.exists' => 'Выбранная страна не найдена.',
             'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
-            'phone.regex' => 'Телефон должен быть в формате +375XXXXXXXXX (9 цифр после +375).',
+            'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
         ];
     }
 }

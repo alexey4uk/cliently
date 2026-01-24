@@ -49,7 +49,8 @@ class ClientRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
         ];
     }
 
@@ -66,8 +67,10 @@ class ClientRequest extends FormRequest
             'last_name.max' => 'Фамилия не должна превышать 255 символов.',
             'email.email' => 'Введите корректный email адрес.',
             'email.max' => 'Email не должен превышать 255 символов.',
+            'phone_country_id.required' => 'Выберите страну.',
+            'phone_country_id.exists' => 'Выбранная страна не найдена.',
             'phone.required' => 'Телефон обязателен для заполнения.',
-            'phone.max' => 'Телефон не должен превышать 20 символов.',
+            'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
         ];
     }
 }

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Client extends Model
 {
@@ -16,7 +18,6 @@ class Client extends Model
         'first_name',
         'last_name',
         'email',
-        'phone',
         'telegram_user_id',
     ];
 
@@ -33,6 +34,21 @@ class Client extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function phones(): MorphMany
+    {
+        return $this->morphMany(Phone::class, 'phoneable');
+    }
+
+    public function primaryPhone(): MorphOne
+    {
+        return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
+    }
+
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->primaryPhone?->phone;
     }
 
     /**

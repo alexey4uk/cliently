@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BusinessRequest;
 use App\Models\Business;
 use App\Models\BusinessRole;
+use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,9 @@ class BusinessSettingsController extends Controller
             return redirect()->route('settings.index');
         }
 
-        return view('settings.business.create');
+        return view('settings.business.create', [
+            'countries' => Country::orderBy('name')->get(),
+        ]);
     }
 
     /**
@@ -41,9 +44,7 @@ class BusinessSettingsController extends Controller
             return redirect()->route('settings.index');
         }
 
-        $businessData = $request->validated();
-
-        // Дополнительная валидация для имени и фамилии владельца
+        $validated = $request->validated();
         $ownerData = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
@@ -53,10 +54,20 @@ class BusinessSettingsController extends Controller
             'last_name.max' => 'Поле "Фамилия" не может быть длиннее 255 символов.',
         ]);
 
-        DB::transaction(function () use ($businessData, $ownerData, $user) {
-            $business = Business::create($businessData);
-            $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        $businessData = collect($validated)->only(['name', 'slug', 'description'])->all();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
 
+        DB::transaction(function () use ($businessData, $ownerData, $phoneCountryId, $phoneE164, $user) {
+            $business = Business::create($businessData);
+
+            $business->phones()->create([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+                'type' => 'primary',
+            ]);
+
+            $ownerRole = BusinessRole::where('slug', 'owner')->first();
             $business->users()->attach($user, [
                 'role' => 'owner',
                 'role_id' => $ownerRole?->id,
@@ -143,6 +154,7 @@ class BusinessSettingsController extends Controller
 
         return view('settings.business.edit', [
             'business' => $business,
+            'countries' => Country::orderBy('name')->get(),
         ]);
     }
 
@@ -158,7 +170,23 @@ class BusinessSettingsController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $business->update($request->validated());
+        $validated = $request->validated();
+        $businessData = collect($validated)->only(['name', 'slug', 'description'])->all();
+        $phoneCountryId = (int) $validated['phone_country_id'];
+        $phoneE164 = $validated['phone'];
+
+        $business->update($businessData);
+
+        $primary = $business->primaryPhone;
+        if ($primary) {
+            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+        } else {
+            $business->phones()->create([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+                'type' => 'primary',
+            ]);
+        }
 
         return redirect()->route('settings.index')->with('success', 'Данные бизнеса обновлены');
     }

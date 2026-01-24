@@ -26,7 +26,7 @@ class BusinessController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
                   ->orWhere('description', 'like', "%{$search}%");
             });
         }
