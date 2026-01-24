@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -124,6 +125,10 @@ class OAuthService
             $email = $provider . '_' . $socialiteUser->getId() . '@oauth.local';
         }
 
+        // OAuth пользователи считаются верифицированными автоматически,
+        // так как они прошли авторизацию через OAuth провайдера
+        $shouldVerifyEmail = config('oauth.settings.auto_verify_email', true);
+
         $user = User::create([
             'name' => $name,
             'email' => $email,
@@ -131,14 +136,25 @@ class OAuthService
             'oauth_id' => $socialiteUser->getId(),
             'avatar' => $socialiteUser->getAvatar(),
             'password' => null, // OAuth пользователи не имеют пароля
-            'email_verified_at' => config('oauth.settings.auto_verify_email', true) 
-                ? now() 
-                : null,
+            'email_verified_at' => $shouldVerifyEmail ? now() : null,
         ]);
 
         // Назначаем роль по умолчанию (если используется Spatie Permission)
         if (method_exists($user, 'assignRole')) {
             $user->assignRole('user');
+        }
+
+        // Автоматически создаем подписку на бесплатный тариф по умолчанию
+        $defaultPlan = Plan::where('is_default', true)->first();
+
+        // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
+        if (! $defaultPlan) {
+            $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
+        }
+
+        if ($defaultPlan) {
+            $subscriptionService = app(SubscriptionService::class);
+            $subscriptionService->createSubscription($user, $defaultPlan);
         }
 
         return $user;

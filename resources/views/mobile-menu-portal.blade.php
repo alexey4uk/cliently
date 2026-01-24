@@ -458,7 +458,7 @@ style="width: 0; height: 0;">
                             class="block mb-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden flex-shrink-0">
+                                    class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm overflow-hidden flex-shrink-0 ring-2 ring-indigo-500/30">
                                     @if (Auth::user()->getAvatarUrl())
                                         <img src="{{ Auth::user()->getAvatarUrl() }}"
                                             alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
