@@ -75,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'index'])->name('index');
         Route::post('/', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'update'])->name('update');
         Route::get('/api', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'getSettings'])->name('api');
+        Route::post('/telegram/disconnect', [\App\Http\Controllers\Settings\NotificationSettingsController::class, 'disconnectTelegram'])->name('telegram.disconnect');
     });
 
     // === КЛИЕНТСКАЯ ЧАСТЬ ===

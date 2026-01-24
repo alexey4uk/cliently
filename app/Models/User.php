@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Propaganistas\LaravelPhone\Casts\E164PhoneNumberCast;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -28,6 +29,8 @@ class User extends Authenticatable
         'name',
         'avatar',
         'dashboard_settings',
+        'telegram_chat_id',
+        'telegram_token',
     ];
 
     /**
@@ -124,6 +127,19 @@ class User extends Authenticatable
                     ],
                 ];
             }
+
+            // Генерируем токен для Telegram, если не задан
+            if (is_null($user->telegram_token)) {
+                $user->telegram_token = Str::random(32);
+            }
         });
+    }
+
+    /**
+     * Проверить, привязан ли Telegram аккаунт
+     */
+    public function isTelegramConnected(): bool
+    {
+        return !empty($this->telegram_chat_id);
     }
 }

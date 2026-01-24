@@ -245,6 +245,30 @@ class Handler extends WebhookHandler
         $parts = explode(' ', $text);
 
         if (isset($parts[1])) {
+            if (str_starts_with($parts[1], 'user_auth_')) {
+                // Подключение пользователя
+                $token = str_replace('user_auth_', '', $parts[1]);
+                $user = $this->botService->findUserByToken($token);
+
+                if ($user) {
+                    $this->botService->updateUserChatId($user, $this->chat->chat_id);
+                    Log::info('User account connected', [
+                        'user_id' => $userId,
+                        'app_user_id' => $user->id,
+                        'app_user_name' => $user->name,
+                    ]);
+                    $this->replyWithMessage(TelegramMessages::MSG_ACCOUNT_CONNECTED);
+                } else {
+                    Log::warning('User not found for auth token', [
+                        'user_id' => $userId,
+                        'token' => $token,
+                    ]);
+                    $this->replyWithMessage('Пользователь не найден. Проверьте ссылку для привязки.');
+                }
+
+                return;
+            }
+
             if (str_starts_with($parts[1], 'auth_')) {
                 // Подключение бизнеса
                 $token = str_replace('auth_', '', $parts[1]);
@@ -1288,7 +1312,9 @@ class Handler extends WebhookHandler
             $this->deleteBotMessage($this->lastMessageId);
 
             TelegramUserState::clearState($state->telegram_user_id, $business->id);
-            TelegramNotificationService::sendAppointmentCreated($appointment);
+            
+            // Отправляем уведомления пользователям бизнеса (включая Telegram)
+            \App\Services\AppointmentNotificationService::notifyCreated($appointment);
 
             // Форматируем для сообщения
             $formattedDate = $appointment->date->format('d.m.Y');

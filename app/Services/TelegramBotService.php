@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Business;
+use App\Models\User;
 use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
@@ -261,5 +262,22 @@ class TelegramBotService
     public function findMaster(int $id): ?\App\Models\Master
     {
         return $this->masterRepository->find($id);
+    }
+
+    /**
+     * Найти пользователя по токену Telegram
+     */
+    public function findUserByToken(string $token): ?User
+    {
+        return User::where('telegram_token', $token)->first();
+    }
+
+    /**
+     * Обновить чат ID для пользователя
+     */
+    public function updateUserChatId(User $user, int $chatId): bool
+    {
+        $user->telegram_chat_id = (string) $chatId;
+        return $user->save();
     }
 }

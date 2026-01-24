@@ -19,7 +19,14 @@ class NotificationSettingsController extends Controller
         $channels = NotificationSettingsService::getAvailableChannels();
         $typesByCategory = NotificationSettingsService::getNotificationTypesByCategory();
 
-        return view('settings.notifications.index', compact('settings', 'channels', 'typesByCategory'));
+        // Получаем бота для генерации ссылки привязки
+        $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+        $botUsername = $bot ? $bot->name : null;
+        $telegramLink = $botUsername && $user->telegram_token
+            ? "https://t.me/{$botUsername}?start=user_auth_{$user->telegram_token}"
+            : null;
+
+        return view('settings.notifications.index', compact('settings', 'channels', 'typesByCategory', 'user', 'telegramLink'));
     }
 
     /**
@@ -68,6 +75,21 @@ class NotificationSettingsController extends Controller
         return response()->json([
             'settings' => $settings,
             'channels' => $channels,
+        ]);
+    }
+
+    /**
+     * Отвязать Telegram аккаунт пользователя.
+     */
+    public function disconnectTelegram()
+    {
+        $user = Auth::user();
+        $user->telegram_chat_id = null;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Telegram аккаунт успешно отвязан',
         ]);
     }
 }

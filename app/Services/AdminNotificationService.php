@@ -56,6 +56,7 @@ class AdminNotificationService
         $owner = $business->users()->wherePivot('role', 'owner')->first();
 
         foreach ($admins as $admin) {
+            // Системное уведомление (всегда отправляется)
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.business.created',
@@ -71,6 +72,32 @@ class AdminNotificationService
                     'url' => route('panel.businesses.show', $business)
                 ]
             ]);
+
+            // Email уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendEmail($admin, 'admin.business.created')) {
+                try {
+                    $admin->notify(new BusinessCreatedNotification($business));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for admin.business.created', [
+                        'admin_id' => $admin->id,
+                        'business_id' => $business->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            // Telegram уведомление (если включено в настройках)
+            if (NotificationSettingsService::shouldSendTelegram($admin, 'admin.business.created')) {
+                try {
+                    TelegramNotificationService::sendAdminBusinessCreated($business, $admin);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for admin.business.created', [
+                        'admin_id' => $admin->id,
+                        'business_id' => $business->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
         }
 
         Log::info('AdminNotificationService: Business created notifications sent', [
@@ -166,7 +193,7 @@ class AdminNotificationService
             // Telegram уведомление (если включено в настройках)
             if (NotificationSettingsService::shouldSendTelegram($admin, 'admin.ticket.created')) {
                 try {
-                    TelegramNotificationService::sendAdminTicketCreated($ticket);
+                    TelegramNotificationService::sendAdminTicketCreated($ticket, $admin);
                 } catch (\Exception $e) {
                     Log::error('Failed to send telegram notification for admin.ticket.created', [
                         'admin_id' => $admin->id,

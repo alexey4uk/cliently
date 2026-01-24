@@ -13,29 +13,25 @@ use Illuminate\Support\Facades\Log;
 class TelegramNotificationService
 {
     /**
-     * Отправить уведомление о новом назначении
+     * Отправить уведомление о новом назначении конкретному пользователю
      */
-    public static function sendAppointmentCreated(Appointment $appointment)
+    public static function sendAppointmentCreated(Appointment $appointment, User $user)
     {
-        $business = $appointment->business;
-
-        if (! $business->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
         $message = self::formatAppointmentMessage($appointment, 'новая запись');
 
-        self::sendMessage($business, $message);
+        self::sendMessageToUser($user, $message);
     }
 
     /**
-     * Отправить уведомление об изменении статуса назначения для мастера
+     * Отправить уведомление об изменении статуса назначения конкретному пользователю
      */
-    public static function sendAppointmentStatusChanged(Appointment $appointment, ?string $oldStatus = null)
+    public static function sendAppointmentStatusChanged(Appointment $appointment, User $user, ?string $oldStatus = null)
     {
-        $business = $appointment->business;
-
-        if (! $business->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
@@ -48,7 +44,7 @@ class TelegramNotificationService
 
         $message = self::formatAppointmentMessage($appointment, "запись {$statusText}");
 
-        self::sendMessage($business, $message);
+        self::sendMessageToUser($user, $message);
     }
 
     /**
@@ -111,7 +107,43 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить сообщение в Telegram
+     * Отправить сообщение в личный чат пользователя
+     */
+    private static function sendMessageToUser(User $user, string $message)
+    {
+        try {
+            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+
+            if (! $bot) {
+                return;
+            }
+
+            if (! $user->telegram_chat_id) {
+                return;
+            }
+
+            $chat = TelegraphChat::where('chat_id', $user->telegram_chat_id)->first();
+
+            if (! $chat) {
+                $chat = $bot->chats()->create([
+                    'chat_id' => $user->telegram_chat_id,
+                    'name' => $user->name ?? 'User Notifications',
+                ]);
+            }
+
+            $chat->message($message)->send();
+        } catch (\Exception $e) {
+            // Логируем ошибку, но не прерываем выполнение
+            Log::error('Telegram notification failed for user: '.$e->getMessage(), [
+                'user_id' => $user->id,
+                'chat_id' => $user->telegram_chat_id,
+            ]);
+        }
+    }
+
+    /**
+     * Отправить сообщение в Telegram (для бизнеса - оставлено для обратной совместимости)
+     * @deprecated Используйте sendMessageToUser для отправки пользователям
      */
     private static function sendMessage(Business $business, string $message)
     {
@@ -119,6 +151,10 @@ class TelegramNotificationService
             $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
             if (! $bot) {
+                return;
+            }
+
+            if (! $business->telegram_chat_id) {
                 return;
             }
 
@@ -164,32 +200,24 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить уведомление о создании тикета
+     * Отправить уведомление о создании тикета конкретному пользователю
      */
-    public static function sendTicketCreated(Ticket $ticket): void
+    public static function sendTicketCreated(Ticket $ticket, User $user): void
     {
-        if (!$ticket->assignedUser) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
-        // Пока отправляем только назначенному пользователю
-        // В будущем можно добавить отправку в групповой чат бизнеса
         $message = self::formatTicketMessage($ticket, 'новый тикет');
-        
-        // Используем бизнес для отправки (если есть telegram_chat_id)
-        $business = $ticket->business;
-        if ($business && $business->telegram_chat_id) {
-            self::sendMessage($business, $message);
-        }
+        self::sendMessageToUser($user, $message);
     }
 
     /**
-     * Отправить уведомление о новом комментарии к тикету
+     * Отправить уведомление о новом комментарии к тикету конкретному пользователю
      */
-    public static function sendTicketCommentAdded(Ticket $ticket, TicketComment $comment): void
+    public static function sendTicketCommentAdded(Ticket $ticket, TicketComment $comment, User $user): void
     {
-        $business = $ticket->business;
-        if (!$business || !$business->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
@@ -202,16 +230,15 @@ class TelegramNotificationService
             $message .= '...';
         }
 
-        self::sendMessage($business, $message);
+        self::sendMessageToUser($user, $message);
     }
 
     /**
-     * Отправить уведомление об изменении статуса тикета
+     * Отправить уведомление об изменении статуса тикета конкретному пользователю
      */
-    public static function sendTicketStatusChanged(Ticket $ticket, string $oldStatus, string $newStatus): void
+    public static function sendTicketStatusChanged(Ticket $ticket, User $user, string $oldStatus, string $newStatus): void
     {
-        $business = $ticket->business;
-        if (!$business || !$business->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
@@ -224,16 +251,15 @@ class TelegramNotificationService
         };
 
         $message = self::formatTicketMessage($ticket, "тикет {$statusText}");
-        self::sendMessage($business, $message);
+        self::sendMessageToUser($user, $message);
     }
 
     /**
-     * Отправить уведомление о назначении тикета
+     * Отправить уведомление о назначении тикета конкретному пользователю
      */
     public static function sendTicketAssigned(Ticket $ticket, User $user): void
     {
-        $business = $ticket->business;
-        if (!$business || !$business->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
@@ -247,7 +273,7 @@ class TelegramNotificationService
             $message .= "\n";
         }
 
-        self::sendMessage($business, $message);
+        self::sendMessageToUser($user, $message);
     }
 
     /**
@@ -283,67 +309,47 @@ class TelegramNotificationService
     }
 
     /**
-     * Отправить админское уведомление о создании бизнеса
+     * Отправить админское уведомление о создании бизнеса конкретному админу
      */
-    public static function sendAdminBusinessCreated(Business $business): void
+    public static function sendAdminBusinessCreated(Business $business, User $admin): void
     {
-        // Для админских уведомлений можно использовать отдельный чат или отправлять всем админам
-        // Пока используем первый доступный бот
-        try {
-            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
-            if (!$bot) {
-                return;
-            }
-
-            $owner = $business->users()->wherePivot('role', 'owner')->first();
-            $message = "🏢 Новый бизнес зарегистрирован\n\n";
-            $message .= "📋 Название: {$business->name}\n";
-            $message .= "👤 Владелец: " . ($owner ? $owner->name : 'Не указан') . "\n";
-            $message .= "📧 Email: " . ($owner ? $owner->email : 'Не указан') . "\n";
-
-            // Отправляем в первый доступный чат бота (можно настроить отдельный админский чат)
-            $chats = $bot->chats()->get();
-            if ($chats->isNotEmpty()) {
-                $chats->first()->message($message)->send();
-            }
-        } catch (\Exception $e) {
-            Log::error('Telegram admin notification failed: '.$e->getMessage());
+        if (! $admin->telegram_chat_id) {
+            return;
         }
+
+        $owner = $business->users()->wherePivot('role', 'owner')->first();
+        $message = "🏢 Новый бизнес зарегистрирован\n\n";
+        $message .= "📋 Название: {$business->name}\n";
+        $message .= "👤 Владелец: " . ($owner ? $owner->name : 'Не указан') . "\n";
+        $message .= "📧 Email: " . ($owner ? $owner->email : 'Не указан') . "\n";
+
+        self::sendMessageToUser($admin, $message);
     }
 
     /**
-     * Отправить админское уведомление о создании тикета
+     * Отправить админское уведомление о создании тикета конкретному админу
      */
-    public static function sendAdminTicketCreated(Ticket $ticket): void
+    public static function sendAdminTicketCreated(Ticket $ticket, User $admin): void
     {
-        try {
-            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
-            if (!$bot) {
-                return;
-            }
-
-            $business = $ticket->business;
-            $creator = $ticket->creator();
-
-            $message = "🎫 Новый тикет от пользователя\n\n";
-            $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
-            $message .= "🏢 Бизнес: " . ($business->name ?? 'Не указан') . "\n";
-            $message .= "👤 Создатель: " . ($creator ? $creator->name : 'Не указан') . "\n";
-            if ($ticket->description) {
-                $message .= "📝 " . substr($ticket->description, 0, 200);
-                if (strlen($ticket->description) > 200) {
-                    $message .= '...';
-                }
-                $message .= "\n";
-            }
-
-            // Отправляем в первый доступный чат бота (можно настроить отдельный админский чат)
-            $chats = $bot->chats()->get();
-            if ($chats->isNotEmpty()) {
-                $chats->first()->message($message)->send();
-            }
-        } catch (\Exception $e) {
-            Log::error('Telegram admin notification failed: '.$e->getMessage());
+        if (! $admin->telegram_chat_id) {
+            return;
         }
+
+        $business = $ticket->business;
+        $creator = $ticket->creator();
+
+        $message = "🎫 Новый тикет от пользователя\n\n";
+        $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
+        $message .= "🏢 Бизнес: " . ($business->name ?? 'Не указан') . "\n";
+        $message .= "👤 Создатель: " . ($creator ? $creator->name : 'Не указан') . "\n";
+        if ($ticket->description) {
+            $message .= "📝 " . substr($ticket->description, 0, 200);
+            if (strlen($ticket->description) > 200) {
+                $message .= '...';
+            }
+            $message .= "\n";
+        }
+
+        self::sendMessageToUser($admin, $message);
     }
 }

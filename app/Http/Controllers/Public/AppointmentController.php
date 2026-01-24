@@ -339,10 +339,7 @@ class AppointmentController extends Controller
         // Увеличиваем usage для месячной метрики
         $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
-        // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentCreated($appointment);
-
-        // Отправить системное уведомление о создании записи
+        // Отправить системное уведомление о создании записи (включая Telegram для каждого пользователя)
         AppointmentNotificationService::notifyCreated($appointment);
 
         // Отправить уведомление о новом клиенте, если клиент был создан

@@ -35,6 +35,53 @@
         <span x-text="toastMessage"></span>
     </div>
 
+    <!-- Привязка Telegram -->
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                <i class="fa-brands fa-telegram text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Привязка Telegram</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Подключите Telegram для получения уведомлений</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            @if($user->isTelegramConnected())
+                <div class="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-check-circle text-emerald-600 dark:text-emerald-400"></i>
+                        <div>
+                            <p class="text-sm font-medium text-emerald-900 dark:text-emerald-100">Telegram привязан</p>
+                            <p class="text-xs text-emerald-700 dark:text-emerald-300">Вы будете получать уведомления в Telegram</p>
+                        </div>
+                    </div>
+                    <button 
+                        @click="disconnectTelegram()"
+                        class="px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors">
+                        Отвязать
+                    </button>
+                </div>
+            @else
+                <div class="p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">Для получения уведомлений в Telegram привяжите свой аккаунт:</p>
+                    @if($telegramLink)
+                        <a 
+                            href="{{ $telegramLink }}" 
+                            target="_blank"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
+                            <i class="fa-brands fa-telegram"></i>
+                            <span>Привязать Telegram</span>
+                        </a>
+                    @else
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Ссылка для привязки недоступна. Обратитесь к администратору.</p>
+                    @endif
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Настройки по категориям -->
     @foreach($typesByCategory as $categoryKey => $categoryTypes)
         @php
@@ -181,6 +228,38 @@ function notificationSettings() {
             setTimeout(() => {
                 this.showToast = false;
             }, 3000);
+        },
+
+        async disconnectTelegram() {
+            if (!confirm('Вы уверены, что хотите отвязать Telegram? Вы перестанете получать уведомления в Telegram.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('{{ route("settings.notifications.telegram.disconnect") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    this.showToastMessage('Telegram успешно отвязан');
+                    // Перезагружаем страницу для обновления статуса
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    this.showToastMessage(data.message || 'Ошибка при отвязке Telegram', 'error');
+                }
+            } catch (error) {
+                console.error('Error disconnecting telegram:', error);
+                this.showToastMessage('Ошибка при отвязке Telegram', 'error');
+            }
         }
     }
 }

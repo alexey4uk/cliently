@@ -138,7 +138,7 @@ class TicketNotificationService
         // === TELEGRAM УВЕДОМЛЕНИЕ ===
         if ($ticket->assignedUser && NotificationSettingsService::shouldSendTelegram($ticket->assignedUser, 'ticket.created')) {
             try {
-                TelegramNotificationService::sendTicketCreated($ticket);
+                TelegramNotificationService::sendTicketCreated($ticket, $ticket->assignedUser);
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.created', [
                     'user_id' => $ticket->assignedUser->id,
@@ -345,7 +345,7 @@ class TicketNotificationService
         foreach ($usersToNotify as $user) {
             if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.comment')) {
                 try {
-                    TelegramNotificationService::sendTicketCommentAdded($ticket, $comment);
+                    TelegramNotificationService::sendTicketCommentAdded($ticket, $comment, $user);
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.comment', [
                         'user_id' => $user->id,
@@ -503,7 +503,7 @@ class TicketNotificationService
         foreach ($usersToNotify as $user) {
             if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.status_changed')) {
                 try {
-                    TelegramNotificationService::sendTicketStatusChanged($ticket, $oldStatus, $newStatus);
+                    TelegramNotificationService::sendTicketStatusChanged($ticket, $user, $oldStatus, $newStatus);
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.status_changed', [
                         'user_id' => $user->id,

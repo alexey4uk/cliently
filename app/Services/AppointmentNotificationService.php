@@ -206,7 +206,7 @@ class AppointmentNotificationService
             // Telegram уведомление (если включено в настройках)
             if (NotificationSettingsService::shouldSendTelegram($user, 'appointment.created')) {
                 try {
-                    TelegramNotificationService::sendAppointmentCreated($appointment);
+                    TelegramNotificationService::sendAppointmentCreated($appointment, $user);
                 } catch (\Exception $e) {
                     Log::error('Failed to send telegram notification for appointment.created', [
                         'user_id' => $user->id,
@@ -310,7 +310,7 @@ class AppointmentNotificationService
             // Telegram уведомление (если включено в настройках)
             if (NotificationSettingsService::shouldSendTelegram($user, 'appointment.status_changed')) {
                 try {
-                    TelegramNotificationService::sendAppointmentStatusChanged($appointment, $oldStatus);
+                    TelegramNotificationService::sendAppointmentStatusChanged($appointment, $user, $oldStatus);
                 } catch (\Exception $e) {
                     Log::error('Failed to send telegram notification for appointment.status_changed', [
                         'user_id' => $user->id,
