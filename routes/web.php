@@ -174,17 +174,17 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // Настройки бизнеса
-        Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', [BusinessSettingsController::class, 'index'])->name('index');
+        Route::name('settings.')->group(function () {
+            Route::get('/settings', [BusinessSettingsController::class, 'index'])->name('index');
 
             // Онлайн-запись
-            Route::get('/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
-            Route::patch('/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
+            Route::get('/settings/online-booking', [BusinessSettingsController::class, 'onlineBooking'])->name('online-booking');
+            Route::patch('/settings/online-booking', [BusinessSettingsController::class, 'updateOnlineBooking'])->name('online-booking.update');
 
             // Telegram
             Route::middleware(['check.business.permission:client.telegram.manage'])->group(function () {
-                Route::get('/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
-                Route::delete('/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
+                Route::get('/settings/telegram', [TelegramSettingsController::class, 'index'])->name('telegram');
+                Route::delete('/settings/telegram/disconnect', [TelegramSettingsController::class, 'disconnect'])->name('telegram.disconnect');
             });
 
             // Настройки бизнеса (создание доступно без бизнеса)

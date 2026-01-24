@@ -2,21 +2,21 @@
     // Переменные для клиентской части
     businessOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'settings') ||
+            Request::routeIs('settings.*') ||
             (Request::path() === 'services' || Str::startsWith(Request::path(), 'services/'))
         )) 
         ? 'true' : 'false' 
     }},
     teamOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'settings/users') ||
-            Str::startsWith(Request::path(), 'settings/roles')
+            Request::routeIs('settings.users*') ||
+            Request::routeIs('settings.roles*')
         )) 
         ? 'true' : 'false' 
     }},
     integrationsOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'settings/telegram')
+            Request::routeIs('settings.telegram*')
         )) 
         ? 'true' : 'false' 
     }},
