@@ -174,6 +174,12 @@ class TicketController extends Controller
             }
         }
 
+        // Отправляем уведомление о создании тикета (если тикет назначен)
+        if ($ticket->assigned_to) {
+            $notificationService = new \App\Services\TicketNotificationService();
+            $notificationService->notifyTicketCreated($ticket);
+        }
+
         return redirect()->route('tickets.show', $ticket->id)
             ->with('success', 'Тикет успешно создан.');
     }

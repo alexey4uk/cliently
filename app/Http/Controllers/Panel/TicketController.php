@@ -10,6 +10,7 @@ use App\Models\TicketAttachment;
 use App\Models\TicketCategory;
 use App\Models\TicketComment;
 use App\Models\User;
+use App\Services\TicketNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -156,7 +157,7 @@ class TicketController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('tickets/attachments', 'public');
-                
+
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'file_path' => $path,
@@ -193,10 +194,21 @@ class TicketController extends Controller
             'assigned_to' => ['nullable', 'exists:users,id'],
         ]);
 
+        $oldAssignedTo = $ticket->assigned_to;
+
         $ticket->update([
             'assigned_to' => $validated['assigned_to'] ?? null,
             'status' => $validated['assigned_to'] ? 'in_progress' : $ticket->status,
         ]);
+
+        // Отправляем уведомление о назначении
+        if ($validated['assigned_to'] && $validated['assigned_to'] !== $oldAssignedTo) {
+            $assignedUser = User::find($validated['assigned_to']);
+            if ($assignedUser) {
+                $notificationService = new TicketNotificationService();
+                $notificationService->notifyTicketAssigned($ticket, $assignedUser);
+            }
+        }
 
         return redirect()->back()->with('success', 'Тикет успешно назначен.');
     }
@@ -210,7 +222,14 @@ class TicketController extends Controller
             'status' => ['required', 'in:new,in_progress,resolved,closed'],
         ]);
 
+        $oldStatus = $ticket->status;
         $ticket->update(['status' => $validated['status']]);
+
+        // Отправляем уведомление об изменении статуса
+        if ($oldStatus !== $validated['status']) {
+            $notificationService = new TicketNotificationService();
+            $notificationService->notifyStatusChanged($ticket, $oldStatus, $validated['status']);
+        }
 
         return redirect()->back()->with('success', 'Статус тикета обновлен.');
     }
@@ -233,7 +252,7 @@ class TicketController extends Controller
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
                 $path = $file->store('tickets/attachments', 'public');
-                
+
                 TicketAttachment::create([
                     'ticket_id' => $ticket->id,
                     'comment_id' => $comment->id,
@@ -250,8 +269,14 @@ class TicketController extends Controller
         // Обновляем статус тикета на "в работе", если он был "новый"
         if ($ticket->status === 'new') {
             $ticket->update(['status' => 'in_progress']);
+            // Обновляем объект в памяти
+            $ticket->refresh();
         }
 
-        return redirect()->back()->with('success', 'Комментарий добавлен.');
+        // Отправляем уведомление о новом комментарии
+        $notificationService = new TicketNotificationService();
+        $notificationService->notifyCommentAdded($ticket, $comment);
+
+        return redirect()->route('panel.tickets.show', $ticket)->with('success', 'Комментарий добавлен.');
     }
 }

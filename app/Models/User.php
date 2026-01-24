@@ -72,6 +72,11 @@ class User extends Authenticatable
         return $this->hasMany(TicketComment::class);
     }
 
+    public function notificationRecords(): HasMany
+    {
+        return $this->hasMany(NotificationRecord::class);
+    }
+
     /**
      * Boot the model.
      */

@@ -98,6 +98,17 @@ class Ticket extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    /**
+     * Получить создателя тикета
+     */
+    public function creator(): ?User
+    {
+        if ($this->created_by_type === 'user' && $this->created_by_id) {
+            return User::find($this->created_by_id);
+        }
+        return null;
+    }
+
     public function comments(): HasMany
     {
         return $this->hasMany(TicketComment::class)->orderBy('created_at');

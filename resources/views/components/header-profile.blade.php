@@ -110,6 +110,22 @@
                 <span class="font-medium">Профиль</span>
             </a>
             
+            <a href="{{ route('notifications.index') }}"
+                class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group relative">
+                <div class="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 group-hover:bg-purple-200 dark:group-hover:bg-purple-500/30 transition-colors">
+                    <i class="fa-solid fa-bell text-xs text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <span class="font-medium">Уведомления</span>
+                @php
+                    $unreadCount = \App\Services\NotificationService::getUnreadCount(Auth::id());
+                @endphp
+                @if($unreadCount > 0)
+                    <span class="ml-auto px-2 py-0.5 text-xs font-semibold bg-rose-500 text-white rounded-full">
+                        {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                    </span>
+                @endif
+            </a>
+            
             @if(Auth::user()->can('panel.access') && !Str::startsWith(Request::path(), 'panel'))
                 <a href="{{ route('panel.index') }}"
                     class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">

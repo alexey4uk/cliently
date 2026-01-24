@@ -52,6 +52,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/invite/{token}/accept', [\App\Http\Controllers\Auth\BusinessInvitationController::class, 'store'])->name('invite.store');
 
+    // Уведомления (доступны всем авторизованным пользователям)
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+        Route::get('/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::get('/unread', [\App\Http\Controllers\NotificationController::class, 'unread'])->name('unread');
+        Route::post('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('read');
+        Route::post('/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('read-all');
+        Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+    });
+
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');

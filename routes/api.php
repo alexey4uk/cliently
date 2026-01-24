@@ -20,3 +20,23 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Публичный API для получения доступных слотов по slug бизнеса
 Route::get('/book/{slug}/available-slots', [\App\Http\Controllers\Public\AppointmentSlotController::class, 'getAvailableSlots'])
     ->name('api.public.appointments.available-slots');
+
+// API для системных уведомлений (требует авторизации)
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('notifications')->name('api.notifications.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index'])
+            ->name('index');
+        Route::get('/unread', [\App\Http\Controllers\Api\NotificationController::class, 'unread'])
+            ->name('unread');
+        Route::get('/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount'])
+            ->name('unread-count');
+        Route::post('/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead'])
+            ->name('read');
+        Route::post('/read-all', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead'])
+            ->name('read-all');
+        Route::post('/unread', [\App\Http\Controllers\Api\NotificationController::class, 'markAsUnread'])
+            ->name('unread.update');
+        Route::delete('/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy'])
+            ->name('delete');
+    });
+});

@@ -146,6 +146,10 @@ class RolePermissionSeeder extends Seeder
 
             // Управление базовыми правами ролей бизнеса (админ-панель)
             'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',
+
+            // Системные уведомления
+            'panel.notifications.view' => 'Просмотр системных уведомлений (админ-панель)',
+            'client.notifications.view' => 'Просмотр системных уведомлений (клиентская часть)',
         ];
 
         foreach ($permissions as $name => $description) {
@@ -206,6 +210,9 @@ class RolePermissionSeeder extends Seeder
             // Управление базовыми правами ролей бизнеса
             'panel.business.roles.manage',
 
+            // Системные уведомления
+            'panel.notifications.view',
+
             // Доступ к панели
             'panel.access',
         ];
@@ -221,6 +228,7 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.view',
             'panel.tickets.update',
             'panel.tickets.assign',
+            'panel.notifications.view',
             'panel.access',
         ];
         foreach ($supportPermissions as $permission) {

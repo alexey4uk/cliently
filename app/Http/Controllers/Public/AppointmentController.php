@@ -7,6 +7,7 @@ use App\Http\Requests\PublicAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
+use App\Services\AppointmentNotificationService;
 use App\Services\AppointmentSlotService;
 use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
@@ -311,7 +312,9 @@ class AppointmentController extends Controller
                 'email' => $validated['email'] ?? null,
                 'phone' => $validated['phone'],
             ]);
+            $isNewClient = true;
         } else {
+            $isNewClient = false;
             // Обновляем данные существующего клиента, если они изменились
             $client->update([
                 'first_name' => $validated['first_name'],
@@ -336,7 +339,16 @@ class AppointmentController extends Controller
         // Увеличиваем usage для месячной метрики
         $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
+        // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentCreated($appointment);
+
+        // Отправить системное уведомление о создании записи
+        AppointmentNotificationService::notifyCreated($appointment);
+
+        // Отправить уведомление о новом клиенте, если клиент был создан
+        if ($isNewClient) {
+            AppointmentNotificationService::notifyNewClient($appointment);
+        }
 
         return redirect()
             ->route('public.appointments.success', [$business->slug, $appointment->token])

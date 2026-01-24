@@ -8,6 +8,7 @@ use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Services\AppointmentNotificationService;
 use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
 use App\Traits\HasOwnDataFiltering;
@@ -70,7 +71,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth.'-01');
+            $selectedDate = Carbon::parse($currentMonth . '-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -163,7 +164,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth.'-01');
+            $selectedDate = Carbon::parse($currentMonth . '-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -311,6 +312,9 @@ class AppointmentsController extends Controller
         // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentCreated($appointment);
 
+        // Отправить системное уведомление
+        AppointmentNotificationService::notifyCreated($appointment);
+
         return redirect()->route('appointments.index')->with('success', 'Запись создана');
     }
 
@@ -411,6 +415,8 @@ class AppointmentsController extends Controller
         // Отправить уведомление в Telegram, если статус изменился
         if ($appointment->status !== $oldStatus) {
             TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+            // Отправить системное уведомление
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись обновлена');
@@ -436,7 +442,7 @@ class AppointmentsController extends Controller
         }
 
         $user = Auth::user();
-        
+
         // Уменьшаем usage для месячной метрики только если запись была создана в текущем месяце
         if ($appointment->created_at->isCurrentMonth()) {
             $subscriptionService = app(SubscriptionService::class);
@@ -473,6 +479,9 @@ class AppointmentsController extends Controller
         // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
 
+        // Отправить системное уведомление
+        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+
         return redirect()->route('appointments.index')->with('success', 'Запись подтверждена');
     }
 
@@ -502,6 +511,9 @@ class AppointmentsController extends Controller
         TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
         TelegramNotificationService::sendAppointmentStatusChanged($appointment, $oldStatus);
 
+        // Отправить системное уведомление
+        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+
         return redirect()->route('appointments.index')->with('success', 'Запись отменена');
     }
 
@@ -524,10 +536,14 @@ class AppointmentsController extends Controller
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
 
+        $oldStatus = $appointment->status;
         $appointment->update(['status' => 'completed']);
 
         // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentStatusChanged($appointment);
+
+        // Отправить системное уведомление
+        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
 
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
     }
@@ -571,7 +587,7 @@ class AppointmentsController extends Controller
 
         $appointments = $this->appointmentRepository->getAllFilteredForBusiness($business->id, $filters);
 
-        $filename = 'appointments_'.now()->format('Y-m-d_H-i-s').'.csv';
+        $filename = 'appointments_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         $headers = [
             'Content-type' => 'text/csv',
@@ -602,9 +618,9 @@ class AppointmentsController extends Controller
                     $appointment->client->full_name,
                     $appointment->client->phone,
                     $appointment->service->name,
-                    $appointment->master ? $appointment->master->first_name.' '.$appointment->master->last_name : 'Не назначен',
+                    $appointment->master ? $appointment->master->first_name . ' ' . $appointment->master->last_name : 'Не назначен',
                     $statusLabels[$appointment->status] ?? $appointment->status,
-                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' Br' : '',
+                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ') . ' Br' : '',
                 ]);
             }
 
