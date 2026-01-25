@@ -476,7 +476,7 @@ style="width: 0; height: 0;">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-plus text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Создать</span>
+                            <span class="ml-3 whitespace-nowrap">Создать тикет</span>
                         </a>
                         @endif
 
@@ -488,7 +488,7 @@ style="width: 0; height: 0;">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-ticket text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Мои</span>
+                            <span class="ml-3 whitespace-nowrap">Мои тикеты</span>
                         </a>
                         @endif
                     </div>

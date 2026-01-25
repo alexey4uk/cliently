@@ -139,7 +139,7 @@
                     @endif
 
                     <!-- Форма комментария -->
-                    @can('panel.tickets.update')
+                    @if(auth()->user()->can('panel.tickets.update') || $ticket->assigned_to === auth()->id())
                     <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
                         <form method="POST" action="{{ route('panel.tickets.comments.store', $ticket) }}" enctype="multipart/form-data" 
                             x-data="{ submitting: false }"
@@ -216,7 +216,7 @@
                             </div>
                         </form>
                     </div>
-                    @endcan
+                    @endif
                 </div>
             </div>
 
@@ -243,7 +243,7 @@
                         </div>
                         @endcan
 
-                        @can('panel.tickets.update')
+                        @if(auth()->user()->can('panel.tickets.update') || $ticket->assigned_to === auth()->id())
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Изменить статус</label>
                             <form method="POST" action="{{ route('panel.tickets.status', $ticket) }}" class="inline-block w-full">
@@ -257,7 +257,9 @@
                                 </select>
                             </form>
                         </div>
+                        @endif
 
+                        @can('panel.tickets.update')
                         <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
                             <a href="{{ route('panel.tickets.edit', $ticket) }}"
                                 class="block w-full text-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">

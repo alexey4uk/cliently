@@ -3,9 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Business;
+use App\Models\Plan;
 use App\Models\User;
+use App\Services\SubscriptionService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -33,6 +36,33 @@ class DatabaseSeeder extends Seeder
             // UserSeeder::class,
             // OnboardingSeeder::class, // зависит от UserSeeder (a@a.ru)
         ]);
+
+        // Создание тестового админа
+        $admin = User::firstOrCreate(
+            ['email' => 'a@a.ru'],
+            [
+                'name' => 'Администратор',
+                'password' => Hash::make('lm57iqxz'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $admin->assignRole('admin');
+
+        // Автоматически создаем подписку на тариф по умолчанию, если её еще нет
+        if (! $admin->subscription()->exists()) {
+            $defaultPlan = Plan::where('is_default', true)->first();
+
+            // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
+            if (! $defaultPlan) {
+                $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
+            }
+
+            if ($defaultPlan) {
+                $subscriptionService = app(SubscriptionService::class);
+                $subscriptionService->createSubscription($admin, $defaultPlan);
+            }
+        }
 
         // Business::factory(20)->create();
     }

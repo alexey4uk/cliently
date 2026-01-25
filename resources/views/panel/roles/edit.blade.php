@@ -334,23 +334,33 @@
                             <span>Отмена</span>
                         </a>
                     </div>
-                    @if($role->name !== 'admin')
-                        @can('panel.roles.delete')
-                            <form method="POST" action="{{ route('panel.roles.destroy', $role) }}" 
-                                  onsubmit="return confirm('Вы уверены, что хотите удалить роль {{ addslashes(ucfirst($role->name)) }}? Это действие нельзя отменить.');"
-                                  class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" 
-                                        class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-rose-600 hover:bg-rose-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-colors shadow-sm hover:shadow-md w-full sm:w-auto">
-                                    <i class="fa-solid fa-trash text-sm"></i>
-                                    <span>Удалить роль</span>
-                                </button>
-                            </form>
-                        @endcan
-                    @endif
                 </div>
             </div>
         </form>
+
+        <!-- Форма удаления (отдельно от формы редактирования) -->
+        @if($role->name !== 'admin')
+            @can('panel.roles.delete')
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Опасная зона</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">Удаление роли нельзя отменить. Все пользователи с этой ролью потеряют соответствующие права.</p>
+                    </div>
+                    <form method="POST" action="{{ route('panel.roles.destroy', $role) }}" 
+                          onsubmit="return confirm('Вы уверены, что хотите удалить роль {{ addslashes(ucfirst($role->name)) }}? Это действие нельзя отменить.');"
+                          class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                class="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-rose-600 hover:bg-rose-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-colors shadow-sm hover:shadow-md">
+                            <i class="fa-solid fa-trash text-sm"></i>
+                            <span>Удалить роль</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endcan
+        @endif
     </div>
 @endsection

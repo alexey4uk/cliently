@@ -363,49 +363,54 @@ class TicketNotificationService
      */
     public function notifyTicketAssigned(Ticket $ticket, ?User $user): void
     {
-        if ($user && NotificationSettingsService::isTypeEnabled($user, 'ticket.assigned')) {
-            // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket assigned notification', [
-                'user_id' => $user->id,
+        if (! $user) {
+            return;
+        }
+
+        // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
+        // Отправляем всегда, даже если тип уведомления отключен - назначение тикета критично
+        \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket assigned notification', [
+            'user_id' => $user->id,
+            'ticket_id' => $ticket->id,
+        ]);
+
+        NotificationService::send([
+            'user_id' => $user->id,
+            'type' => 'ticket.assigned',
+            'title' => 'Вам назначен тикет #'.$ticket->id,
+            'message' => 'Тикет "'.$ticket->title.'" назначен вам',
+            'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
+            'data' => [
                 'ticket_id' => $ticket->id,
-            ]);
+                'url' => $this->getTicketRoute($user, $ticket),
+            ],
+        ]);
 
-            NotificationService::send([
-                'user_id' => $user->id,
-                'type' => 'ticket.assigned',
-                'title' => 'Вам назначен тикет #'.$ticket->id,
-                'message' => 'Тикет "'.$ticket->title.'" назначен вам',
-                'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
-                'data' => [
+        // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
+        // Отправляем только если тип уведомления включен
+        if (NotificationSettingsService::isTypeEnabled($user, 'ticket.assigned') && NotificationSettingsService::shouldSendEmail($user, 'ticket.assigned')) {
+            try {
+                $user->notify(new TicketAssigned($ticket, $user));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.assigned', [
+                    'user_id' => $user->id,
                     'ticket_id' => $ticket->id,
-                    'url' => $this->getTicketRoute($user, $ticket),
-                ],
-            ]);
-
-            // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-            if (NotificationSettingsService::shouldSendEmail($user, 'ticket.assigned')) {
-                try {
-                    $user->notify(new TicketAssigned($ticket, $user));
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.assigned', [
-                        'user_id' => $user->id,
-                        'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+                    'error' => $e->getMessage(),
+                ]);
             }
+        }
 
-            // === TELEGRAM УВЕДОМЛЕНИЕ ===
-            if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.assigned')) {
-                try {
-                    TelegramNotificationService::sendTicketAssigned($ticket, $user);
-                } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.assigned', [
-                        'user_id' => $user->id,
-                        'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+        // === TELEGRAM УВЕДОМЛЕНИЕ ===
+        // Отправляем только если тип уведомления включен
+        if (NotificationSettingsService::isTypeEnabled($user, 'ticket.assigned') && NotificationSettingsService::shouldSendTelegram($user, 'ticket.assigned')) {
+            try {
+                TelegramNotificationService::sendTicketAssigned($ticket, $user);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.assigned', [
+                    'user_id' => $user->id,
+                    'ticket_id' => $ticket->id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
     }

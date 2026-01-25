@@ -505,8 +505,10 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::patch('/tickets/settings', [\App\Http\Controllers\Settings\TicketSettingsController::class, 'update'])->name('tickets.settings.update');
         });
 
-        // Тикеты (админ, менеджер, поддержка)
-        Route::middleware(['check.permission:panel.tickets.view'])->group(function () {
+        // Тикеты (доступ для всех с panel.access, но видимость зависит от прав)
+        // Пользователи с panel.tickets.view видят все тикеты
+        // Пользователи без этого права видят только назначенные на них тикеты
+        Route::middleware(['check.permission:panel.access'])->group(function () {
             Route::get('/tickets', [\App\Http\Controllers\Panel\TicketController::class, 'index'])->name('tickets');
             Route::get('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'show'])->name('tickets.show');
         });
@@ -515,6 +517,10 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::get('/tickets/{ticket}/edit', [\App\Http\Controllers\Panel\TicketController::class, 'edit'])->name('tickets.edit');
             Route::patch('/tickets/{ticket}', [\App\Http\Controllers\Panel\TicketController::class, 'update'])->name('tickets.update');
             Route::post('/tickets/{ticket}/assign', [\App\Http\Controllers\Panel\TicketController::class, 'assign'])->name('tickets.assign');
+        });
+
+        // Изменение статуса и комментарии доступны также назначенным пользователям
+        Route::middleware(['check.permission:panel.access'])->group(function () {
             Route::post('/tickets/{ticket}/status', [\App\Http\Controllers\Panel\TicketController::class, 'updateStatus'])->name('tickets.status');
             Route::post('/tickets/{ticket}/comments', [\App\Http\Controllers\Panel\TicketController::class, 'addComment'])->name('tickets.comments.store');
         });

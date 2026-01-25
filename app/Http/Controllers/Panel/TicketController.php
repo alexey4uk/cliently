@@ -21,6 +21,7 @@ class TicketController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
@@ -32,6 +33,12 @@ class TicketController extends Controller
 
         $query = Ticket::with(['business', 'category', 'assignedUser', 'client'])
             ->withCount('comments');
+
+        // Если у пользователя нет права на просмотр всех тикетов,
+        // показываем только тикеты, назначенные на него
+        if (! $user->can('panel.tickets.view')) {
+            $query->where('assigned_to', $user->id);
+        }
 
         // Поиск
         if ($search) {
@@ -102,6 +109,14 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
+        $user = Auth::user();
+
+        // Проверяем доступ: либо есть право на просмотр всех тикетов,
+        // либо тикет назначен на текущего пользователя
+        if (! $user->can('panel.tickets.view') && $ticket->assigned_to !== $user->id) {
+            abort(403, 'У вас нет доступа к этому тикету.');
+        }
+
         $ticket->load([
             'business',
             'category',
@@ -126,6 +141,14 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
+        $user = Auth::user();
+
+        // Редактирование доступно только с правом panel.tickets.update
+        // Назначенные пользователи без права могут только просматривать и комментировать
+        if (! $user->can('panel.tickets.update')) {
+            abort(403, 'У вас нет прав для редактирования тикетов.');
+        }
+
         $ticket->load(['business', 'category', 'assignedUser', 'client']);
 
         $categories = TicketCategory::where('is_active', true)
@@ -154,12 +177,23 @@ class TicketController extends Controller
             'client_id' => ['nullable', 'exists:clients,id'],
         ]);
 
+        $oldAssignedTo = $ticket->assigned_to;
+
         // Если у пользователя нет права на назначение, не обновляем assigned_to
         if (! Auth::user()->can('panel.tickets.assign')) {
             unset($validated['assigned_to']);
         }
 
         $ticket->update($validated);
+
+        // Отправляем уведомление о назначении, если назначение изменилось
+        if (isset($validated['assigned_to']) && $validated['assigned_to'] !== $oldAssignedTo) {
+            $assignedUser = User::find($validated['assigned_to']);
+            if ($assignedUser) {
+                $notificationService = new TicketNotificationService;
+                $notificationService->notifyTicketAssigned($ticket, $assignedUser);
+            }
+        }
 
         return redirect()->route('panel.tickets.show', $ticket)
             ->with('success', 'Тикет успешно обновлен.');
@@ -209,6 +243,14 @@ class TicketController extends Controller
      */
     public function updateStatus(Request $request, Ticket $ticket)
     {
+        $user = Auth::user();
+
+        // Изменение статуса доступно либо с правом panel.tickets.update,
+        // либо если тикет назначен на текущего пользователя
+        if (! $user->can('panel.tickets.update') && $ticket->assigned_to !== $user->id) {
+            abort(403, 'У вас нет прав для изменения статуса этого тикета.');
+        }
+
         $validated = $request->validate([
             'status' => ['required', 'in:new,in_progress,resolved,closed'],
         ]);
@@ -230,6 +272,14 @@ class TicketController extends Controller
      */
     public function addComment(TicketCommentRequest $request, Ticket $ticket)
     {
+        $user = Auth::user();
+
+        // Комментирование доступно либо с правом panel.tickets.update,
+        // либо если тикет назначен на текущего пользователя
+        if (! $user->can('panel.tickets.update') && $ticket->assigned_to !== $user->id) {
+            abort(403, 'У вас нет прав для добавления комментариев к этому тикету.');
+        }
+
         $validated = $request->validated();
 
         $comment = TicketComment::create([
