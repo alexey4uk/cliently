@@ -927,7 +927,7 @@
                                     </a>
                                 @endcan
                             @else
-                                <!-- Клиентская часть -->
+                                <!-- Рабочая область -->
                                 @php
                                     // Проверяем доступ к аналитике согласно тарифу (используем существующую проверку выше)
                                     // $hasAnalyticsAccess уже определен выше в блоке @php
@@ -1117,7 +1117,7 @@
                                     </a>
                                 @endcan
                             @else
-                                <!-- Клиентская часть -->
+                                <!-- Рабочая область -->
                                 @if($hasBusinessPermission('client.tickets.create'))
                                     <a href="{{ route('tickets.create') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.create')

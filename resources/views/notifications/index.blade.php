@@ -57,7 +57,7 @@
     </div>
 @endif
 
-<div class="space-y-6">
+<div class="max-w-4xl mx-auto space-y-6">
     <!-- Заголовок с действиями -->
     <div class="flex items-center justify-between">
         <div>
@@ -71,13 +71,11 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-        @if(($layout ?? 'layouts.user') === 'layouts.panel')
-            <a href="{{ route('panel.settings.notifications.index') }}"
+            <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.settings.notifications.index') : route('settings.notifications.index') }}"
                 class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium transition-all duration-200">
                 <i class="fa-solid fa-gear text-sm"></i>
                 Настройки уведомлений
             </a>
-        @endif
         @if($unreadCount > 0)
             <form method="POST" action="{{ route('notifications.read-all') }}" class="inline">
                 @csrf

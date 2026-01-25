@@ -115,12 +115,12 @@
             <span>Новая запись</span>
         </button>
 
-        <!-- Админка (только для админов) -->
+        <!-- Панель управления (только для админов) -->
         @if(!Str::startsWith(Request::path(), 'panel') && Auth::user()->hasRole('admin'))
-            <a href="{{ route('panel.index') }}" 
+            <a href="{{ route('panel.index') }}" target="_blank" rel="noopener noreferrer"
                class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-500 hover:bg-amber-600 text-white font-medium transition-colors">
                 <i class="fa-solid fa-shield-halved text-xs"></i>
-                <span>Админка</span>
+                <span>Панель управления</span>
             </a>
         @endif
 
@@ -154,10 +154,10 @@
                     <span>Настройки</span>
                 </a>
                 @if(!Str::startsWith(Request::path(), 'panel') && Auth::user()->hasRole('admin'))
-                    <a href="{{ route('panel.index') }}"
+                    <a href="{{ route('panel.index') }}" target="_blank" rel="noopener noreferrer"
                         class="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800">
                         <span class="w-4 text-amber-500 dark:text-amber-300"><i class="fa-solid fa-shield-halved"></i></span>
-                        <span>Админка</span>
+                        <span>Панель управления</span>
                     </a>
                 @endif
                 <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>

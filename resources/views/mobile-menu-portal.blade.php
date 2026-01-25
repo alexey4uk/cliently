@@ -2,14 +2,14 @@
 <div x-data="{ 
     open: false,
     resourcesOpen: {{ Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*') ? 'true' : 'false' }},
-    settingsOpen: {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') ? 'true' : 'false' }},
+    settingsOpen: {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') || Request::routeIs('settings.notifications.*') || Request::routeIs('panel.settings.notifications.*') ? 'true' : 'false' }},
     subscriptionOpen: {{ Request::routeIs('subscription.*') ? 'true' : 'false' }},
     analyticsOpen: {{ Request::routeIs('analytics.*') ? 'true' : 'false' }},
     supportOpen: {{ Request::routeIs('tickets.*') ? 'true' : 'false' }},
     init() {
         // Инициализируем переменные для корректной работы Alpine
         this.resourcesOpen = {{ Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*') ? 'true' : 'false' }};
-        this.settingsOpen = {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') ? 'true' : 'false' }};
+        this.settingsOpen = {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') || Request::routeIs('settings.notifications.*') || Request::routeIs('panel.settings.notifications.*') ? 'true' : 'false' }};
         this.subscriptionOpen = {{ Request::routeIs('subscription.*') ? 'true' : 'false' }};
         this.analyticsOpen = {{ Request::routeIs('analytics.*') ? 'true' : 'false' }};
         this.supportOpen = {{ Request::routeIs('tickets.*') ? 'true' : 'false' }};
@@ -164,6 +164,25 @@ style="width: 0; height: 0;">
                             <span class="ml-3 whitespace-nowrap">Клиенты</span>
                         </a>
                         @endif
+
+                        <!-- Уведомления (доступны всем авторизованным пользователям) -->
+                        <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.notifications.index') : route('notifications.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ (Request::routeIs('notifications.*') || Request::routeIs('panel.notifications.*'))
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-bell text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Уведомления</span>
+                            @php
+                                $unreadCount = \App\Services\NotificationService::getUnreadCount(Auth::id());
+                            @endphp
+                            @if($unreadCount > 0)
+                                <span class="ml-auto px-2 py-0.5 text-xs font-semibold bg-rose-500 text-white rounded-full">
+                                    {{ $unreadCount > 99 ? '99+' : $unreadCount }}
+                                </span>
+                            @endif
+                        </a>
                     </div>
                 </div>
 
@@ -338,7 +357,33 @@ style="width: 0; height: 0;">
                             <span class="ml-3 whitespace-nowrap">Telegram Bot</span>
                         </a>
                         @endif
+
+                        <!-- Настройки уведомлений (доступны всем авторизованным пользователям) -->
+                        <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.settings.notifications.index') : route('settings.notifications.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ (Request::routeIs('settings.notifications.*') || Request::routeIs('panel.settings.notifications.*'))
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-bell-slash text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Уведомления</span>
+                        </a>
                     </div>
+                </div>
+                @endif
+
+                <!-- Настройки уведомлений (отдельный раздел, если нет доступа к другим настройкам) -->
+                @if(!$hasSettingsAccess)
+                <div>
+                    <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.settings.notifications.index') : route('settings.notifications.index') }}" @click="closeMenu()"
+                        class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ (Request::routeIs('settings.notifications.*') || Request::routeIs('panel.settings.notifications.*'))
+                            ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                            <i class="fa-solid fa-bell-slash text-base"></i>
+                        </div>
+                        <span class="ml-3 whitespace-nowrap">Настройки уведомлений</span>
+                    </a>
                 </div>
                 @endif
 
@@ -533,14 +578,14 @@ style="width: 0; height: 0;">
                         @endif
                     @endauth
 
-                    <!-- Админка (только для админов) -->
+                    <!-- Панель управления (только для админов) -->
                     @if(!Str::startsWith(Request::path(), 'panel') && Auth::user()->can('panel.access'))
-                        <a href="{{ route('panel.index') }}" @click="closeMenu()"
+                        <a href="{{ route('panel.index') }}" target="_blank" rel="noopener noreferrer" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 bg-amber-500 hover:bg-amber-600 text-white mb-2">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-shield-halved text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Админка</span>
+                            <span class="ml-3 whitespace-nowrap">Панель управления</span>
                         </a>
                         <div class="border-t border-slate-200/50 dark:border-slate-800/50 my-2"></div>
                     @endif
