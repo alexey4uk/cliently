@@ -284,6 +284,8 @@ class AppointmentsController extends Controller
         // Проверка лимита записей в месяц
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateAppointment($user)) {
+            \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_appointments_per_month');
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.');

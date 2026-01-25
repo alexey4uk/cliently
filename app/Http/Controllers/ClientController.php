@@ -152,6 +152,8 @@ class ClientController extends Controller
         // Проверка лимита клиентов
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateClient($user)) {
+            \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_clients');
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.');

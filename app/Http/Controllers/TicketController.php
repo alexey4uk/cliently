@@ -179,6 +179,8 @@ class TicketController extends Controller
             $notificationService->notifyTicketCreated($ticket);
         }
 
+        \App\Services\AdminNotificationService::notifyTicketCreated($ticket);
+
         return redirect()->route('tickets.show', $ticket->id)
             ->with('success', 'Тикет успешно создан.');
     }

@@ -6,6 +6,7 @@ use App\Http\Requests\BusinessRequest;
 use App\Models\Business;
 use App\Models\BusinessRole;
 use App\Models\Country;
+use App\Services\AdminNotificationService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,7 +60,8 @@ class BusinessSettingsController extends Controller
         $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
 
-        DB::transaction(function () use ($businessData, $ownerData, $phoneCountryId, $phoneE164, $user) {
+        $business = null;
+        DB::transaction(function () use ($businessData, $ownerData, $phoneCountryId, $phoneE164, $user, &$business) {
             $business = Business::create($businessData);
 
             $business->phones()->create([
@@ -76,6 +78,8 @@ class BusinessSettingsController extends Controller
                 'last_name' => $ownerData['last_name'],
             ]);
         });
+
+        AdminNotificationService::notifyBusinessCreated($business);
 
         return redirect()->route('settings.index')->with('success', 'Бизнес успешно создан!');
     }

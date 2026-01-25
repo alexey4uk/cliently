@@ -309,6 +309,8 @@ class AppointmentController extends Controller
         // Проверяем лимит записей в месяц
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateAppointment($user)) {
+            \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_appointments_per_month');
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
@@ -320,6 +322,8 @@ class AppointmentController extends Controller
 
         if (! $client) {
             if (! $subscriptionService->canCreateClient($user)) {
+                \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_clients');
+
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);

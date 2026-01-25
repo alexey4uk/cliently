@@ -306,6 +306,16 @@ function notificationDropdown() {
                 'subscription.limit': 'fa-exclamation-triangle',
                 'subscription.expiring': 'fa-clock-rotate-left',
                 'client.new': 'fa-user-plus',
+                'admin.business.created': 'fa-building',
+                'admin.business.deleted': 'fa-building',
+                'admin.business.inactive': 'fa-building',
+                'admin.ticket.created': 'fa-ticket',
+                'admin.ticket.critical': 'fa-exclamation-circle',
+                'admin.user.created': 'fa-user-plus',
+                'admin.subscription.expiring': 'fa-clock-rotate-left',
+                'admin.subscription.limit.exceeded': 'fa-exclamation-triangle',
+                'admin.system.error': 'fa-triangle-exclamation',
+                'admin.broadcast': 'fa-paper-plane',
             };
             return icons[type] || 'fa-bell';
         },
@@ -323,6 +333,16 @@ function notificationDropdown() {
                 'subscription.limit': 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
                 'subscription.expiring': 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400',
                 'client.new': 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400',
+                'admin.business.created': 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400',
+                'admin.business.deleted': 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400',
+                'admin.business.inactive': 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
+                'admin.ticket.created': 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400',
+                'admin.ticket.critical': 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400',
+                'admin.user.created': 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400',
+                'admin.subscription.expiring': 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
+                'admin.subscription.limit.exceeded': 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
+                'admin.system.error': 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400',
+                'admin.broadcast': 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400',
             };
             return colors[type] || 'bg-slate-100 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400';
         },

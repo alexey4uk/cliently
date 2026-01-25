@@ -110,6 +110,8 @@ class BusinessController extends Controller
                 ->with('error', 'Невозможно удалить бизнес, так как у него есть связанные данные (клиенты, записи, услуги, мастера или локации)');
         }
 
+        \App\Services\AdminNotificationService::notifyBusinessDeleted($business, request()->user());
+
         $business->delete();
 
         return redirect()->route('panel.businesses')->with('success', 'Бизнес успешно удален');

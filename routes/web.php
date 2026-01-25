@@ -573,6 +573,16 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::delete('/business-roles/{role}', [\App\Http\Controllers\Panel\BusinessRolePermissionsController::class, 'destroy'])->name('business-roles.destroy');
         });
 
+        // Уведомления: список (тот же controller, layout по path) и настройки
+        Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+
+        Route::prefix('settings/notifications')->name('settings.notifications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Panel\NotificationSettingsController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Panel\NotificationSettingsController::class, 'update'])->name('update');
+            Route::get('/api', [\App\Http\Controllers\Panel\NotificationSettingsController::class, 'getSettings'])->name('api');
+            Route::post('/telegram/disconnect', [\App\Http\Controllers\Panel\NotificationSettingsController::class, 'disconnectTelegram'])->name('telegram.disconnect');
+        });
+
         // Настройки bePaid (только админ)
         Route::middleware(['check.permission:panel.payments.settings'])->group(function () {
             Route::get('/settings/bepaid', [\App\Http\Controllers\Panel\BepaidSettingsController::class, 'index'])->name('settings.bepaid');

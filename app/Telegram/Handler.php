@@ -1292,6 +1292,7 @@ class Handler extends WebhookHandler
 
             // Проверяем лимит записей в месяц
             if (! $subscriptionService->canCreateAppointment($user)) {
+                \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_appointments_per_month');
                 $this->replyWithMessage('❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
 
                 return;
@@ -1303,6 +1304,7 @@ class Handler extends WebhookHandler
 
             if (! $client) {
                 if (! $subscriptionService->canCreateClient($user)) {
+                    \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_clients');
                     $this->replyWithMessage('❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.');
 
                     return;

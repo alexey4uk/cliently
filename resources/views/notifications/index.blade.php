@@ -1,4 +1,4 @@
-@extends('layouts.user')
+@extends($layout ?? 'layouts.user')
 
 @section('title', 'Уведомления - Cliently')
 @section('page-title', 'Уведомления')
@@ -70,6 +70,14 @@
                 @endif
             </p>
         </div>
+        <div class="flex items-center gap-2">
+        @if(($layout ?? 'layouts.user') === 'layouts.panel')
+            <a href="{{ route('panel.settings.notifications.index') }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium transition-all duration-200">
+                <i class="fa-solid fa-gear text-sm"></i>
+                Настройки уведомлений
+            </a>
+        @endif
         @if($unreadCount > 0)
             <form method="POST" action="{{ route('notifications.read-all') }}" class="inline">
                 @csrf
@@ -80,6 +88,7 @@
                 </button>
             </form>
         @endif
+        </div>
     </div>
 
     <!-- Фильтры -->
@@ -135,6 +144,7 @@
                                         'admin.subscription.expiring' => ['icon' => 'fa-clock-rotate-left', 'color' => 'amber'],
                                         'admin.subscription.limit.exceeded' => ['icon' => 'fa-exclamation-triangle', 'color' => 'amber'],
                                         'admin.system.error' => ['icon' => 'fa-triangle-exclamation', 'color' => 'red'],
+                                        'admin.broadcast' => ['icon' => 'fa-paper-plane', 'color' => 'indigo'],
                                     ];
                                     $config = $iconConfig[$notification->type] ?? ['icon' => 'fa-bell', 'color' => 'slate'];
                                     $colorClasses = [

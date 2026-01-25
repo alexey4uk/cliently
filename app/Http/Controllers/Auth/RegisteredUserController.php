@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\AdminNotificationService;
 use App\Services\SubscriptionService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -69,6 +70,8 @@ class RegisteredUserController extends Controller
         }
 
         event(new Registered($user));
+
+        AdminNotificationService::notifyUserCreated($user);
 
         Auth::login($user);
 

@@ -92,6 +92,7 @@
                 :showRoleBadge="true"
                 :showProfile="true"
                 :showMobileMenu="true"
+                :showNotificationsDropdown="true"
             />
 
             <!-- Основной контент -->

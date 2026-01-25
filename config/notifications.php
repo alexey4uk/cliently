@@ -56,6 +56,7 @@ return [
             'admin.subscription.expiring' => 'Истечение подписки',
             'admin.subscription.limit.exceeded' => 'Превышение лимитов',
             'admin.system.error' => 'Системная ошибка',
+            'admin.broadcast' => 'Рассылки от админов',
         ],
         'subscription' => [
             'subscription.expiring' => 'Подписка истекает',
@@ -76,5 +77,28 @@ return [
     'default_channels' => [
         'email' => true,
         'telegram' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Type Permissions
+    |--------------------------------------------------------------------------
+    |
+    | required_permission per admin notification type. null = visible to all
+    | admins (panel.access). Used for filtering on /panel/settings/notifications.
+    |
+    */
+
+    'admin_type_permissions' => [
+        'admin.business.created' => 'panel.businesses.view',
+        'admin.business.deleted' => 'panel.businesses.view',
+        'admin.business.inactive' => 'panel.businesses.view',
+        'admin.ticket.created' => 'panel.tickets.view',
+        'admin.ticket.critical' => 'panel.tickets.view',
+        'admin.user.created' => 'panel.users.view',
+        'admin.subscription.expiring' => 'panel.businesses.view',
+        'admin.subscription.limit.exceeded' => 'panel.businesses.view',
+        'admin.system.error' => null,
+        'admin.broadcast' => null,
     ],
 ];

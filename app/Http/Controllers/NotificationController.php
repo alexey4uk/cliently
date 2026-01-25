@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class NotificationController extends Controller
 {
@@ -61,10 +62,13 @@ class NotificationController extends Controller
         // Получаем количество непрочитанных
         $unreadCount = NotificationService::getUnreadCount($user->id);
 
+        $usePanel = Str::startsWith($request->path(), 'panel');
+
         return view('notifications.index', [
             'notifications' => $notifications,
             'filter' => $filter,
             'unreadCount' => $unreadCount,
+            'layout' => $usePanel ? 'layouts.panel' : 'layouts.user',
         ]);
     }
 

@@ -101,6 +101,8 @@ class BusinessUsersController extends Controller
             if ($owner) {
                 $subscriptionService = app(SubscriptionService::class);
                 if (! $subscriptionService->canCreateBusinessUser($owner)) {
+                    \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_business_users');
+
                     $currentUsage = $subscriptionService->getCurrentUsage($owner, 'max_business_users');
                     $limit = $subscriptionService->getLimit($owner, 'max_business_users');
                     $limitText = $limit === -1 ? 'безлимит' : $limit;
@@ -201,6 +203,8 @@ class BusinessUsersController extends Controller
             if ($owner) {
                 $subscriptionService = app(SubscriptionService::class);
                 if (! $subscriptionService->canCreateBusinessUser($owner)) {
+                    \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_business_users');
+
                     $currentUsage = $subscriptionService->getCurrentUsage($owner, 'max_business_users');
                     $limit = $subscriptionService->getLimit($owner, 'max_business_users');
                     $limitText = $limit === -1 ? 'безлимит' : $limit;

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\Admin\BusinessCreated as BusinessCreatedNotification;
 use App\Notifications\Admin\SubscriptionExpiring as SubscriptionExpiringNotification;
 use App\Notifications\Admin\TicketCreated as TicketCreatedNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class AdminNotificationService
@@ -340,6 +341,18 @@ class AdminNotificationService
     }
 
     /**
+     * Уведомить админов о превышении лимитов бизнесом (с throttling 15 мин на пару business+limitType).
+     */
+    public static function notifySubscriptionLimitExceededIfNotThrottled(Business $business, string $limitType): void
+    {
+        $key = 'admin_limit_notify_' . $business->id . '_' . $limitType;
+        if (! Cache::add($key, 1, now()->addMinutes(15))) {
+            return;
+        }
+        self::notifySubscriptionLimitExceeded($business, $limitType);
+    }
+
+    /**
      * Уведомить админов о превышении лимитов бизнесом
      */
     public static function notifySubscriptionLimitExceeded(Business $business, string $limitType): void
@@ -354,6 +367,7 @@ class AdminNotificationService
             'max_appointments_per_month' => 'лимит записей в месяц',
             'max_clients' => 'лимит клиентов',
             'max_users' => 'лимит пользователей',
+            'max_business_users' => 'лимит пользователей бизнеса',
         ];
 
         $limitName = $limitNames[$limitType] ?? $limitType;

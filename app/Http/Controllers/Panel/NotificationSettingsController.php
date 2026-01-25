@@ -1,47 +1,85 @@
 <?php
 
-namespace App\Http\Controllers\Settings;
+namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Services\NotificationSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class NotificationSettingsController extends Controller
 {
     /**
-     * Показать страницу настроек уведомлений.
+     * Показать страницу настроек уведомлений (админка).
+     * Без client.access — только админские подкатегории. С client.access — все категории.
      */
     public function index()
     {
         $user = Auth::user();
         $settings = NotificationSettingsService::getUserSettings($user);
         $channels = NotificationSettingsService::getAvailableChannels();
-        $allCategories = NotificationSettingsService::getNotificationTypesByCategory();
-        // В клиентской части исключаем админские уведомления
-        $typesByCategory = array_filter($allCategories, function ($key) {
-            return $key !== 'admin';
-        }, ARRAY_FILTER_USE_KEY);
 
-        // Получаем бота для генерации ссылки привязки
-        $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
-        $botUsername = $bot ? $bot->name : null;
+        $hasClientAccess = $user->can('client.access');
 
-        // Генерируем токен, если отсутствует
-        if (empty($user->telegram_token)) {
-            $user->telegram_token = \Illuminate\Support\Str::random(32);
-            $user->save();
+        if (! $hasClientAccess) {
+            $subcategories = NotificationSettingsService::getAdminTypesBySubcategory($user);
+            $typesByCategory = [];
+            $categoryNames = [];
+            $categoryIcons = [];
+            foreach ($subcategories as $key => $data) {
+                $typesByCategory[$key] = $data['types'];
+                $categoryNames[$key] = $data['label'];
+                $categoryIcons[$key] = $data['icon'];
+            }
+        } else {
+            $all = NotificationSettingsService::getNotificationTypesByCategory();
+            $adminSub = NotificationSettingsService::getAdminTypesBySubcategory($user);
+            $typesByCategory = [];
+            $categoryNames = [
+                'appointments' => 'Записи',
+                'tickets' => 'Тикеты',
+                'subscription' => 'Подписки',
+            ];
+            $categoryIcons = [
+                'appointments' => 'fa-calendar-check',
+                'tickets' => 'fa-ticket',
+                'subscription' => 'fa-crown',
+            ];
+            if (isset($all['appointments'])) {
+                $typesByCategory['appointments'] = $all['appointments'];
+            }
+            if (isset($all['tickets'])) {
+                $typesByCategory['tickets'] = $all['tickets'];
+            }
+            foreach ($adminSub as $key => $data) {
+                $typesByCategory[$key] = $data['types'];
+                $categoryNames[$key] = $data['label'];
+                $categoryIcons[$key] = $data['icon'];
+            }
+            if (isset($all['subscription'])) {
+                $typesByCategory['subscription'] = $all['subscription'];
+            }
         }
 
+        $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+        $botUsername = $bot ? $bot->name : null;
+        if (empty($user->telegram_token)) {
+            $user->telegram_token = Str::random(32);
+            $user->save();
+        }
         $telegramLink = $botUsername && $user->telegram_token
             ? "https://t.me/{$botUsername}?start=user_auth_{$user->telegram_token}"
             : null;
 
-        return view('settings.notifications.index', compact('settings', 'channels', 'typesByCategory', 'user', 'telegramLink'));
+        return view('panel.settings.notifications.index', compact(
+            'settings', 'channels', 'typesByCategory', 'categoryNames', 'categoryIcons',
+            'user', 'telegramLink'
+        ));
     }
 
     /**
-     * Обновить настройку для конкретного типа уведомления (AJAX).
+     * Обновить настройку (AJAX).
      */
     public function update(Request $request)
     {
@@ -76,7 +114,7 @@ class NotificationSettingsController extends Controller
     }
 
     /**
-     * Получить все настройки пользователя (JSON API).
+     * Получить настройки (JSON API).
      */
     public function getSettings()
     {
@@ -91,7 +129,7 @@ class NotificationSettingsController extends Controller
     }
 
     /**
-     * Отвязать Telegram аккаунт пользователя.
+     * Отвязать Telegram.
      */
     public function disconnectTelegram()
     {
