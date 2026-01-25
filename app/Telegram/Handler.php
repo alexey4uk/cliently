@@ -4,13 +4,17 @@ namespace App\Telegram;
 
 use App\Models\Appointment;
 use App\Models\Business;
+use App\Models\BusinessRole;
 use App\Models\Client;
 use App\Models\TelegramUserState;
+use App\Models\User;
 use App\Services\AppointmentSlotService;
+use App\Services\SubscriptionService;
 use App\Services\TelegramBotService;
 use Carbon\Carbon;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use DefStudio\Telegraph\Keyboard\Keyboard;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 // Импортируем наши новые классы
@@ -297,6 +301,24 @@ class Handler extends WebhookHandler
             $business = $this->botService->findBusinessBySlug($slug);
 
             if ($business) {
+                // Проверяем доступ к Telegram боту для записи
+                $subscriptionService = app(SubscriptionService::class);
+                $owner = $this->getBusinessOwner($business);
+
+                if ($owner) {
+                    $telegramBotEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled') === true;
+                    
+                    if (! $telegramBotEnabled) {
+                        Log::warning('Telegram bot booking not enabled for business', [
+                            'user_id' => $userId,
+                            'business_id' => $business->id,
+                            'owner_id' => $owner->id,
+                        ]);
+                        $this->replyWithMessage('❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.');
+                        return;
+                    }
+                }
+
                 Log::info('Starting booking process', [
                     'user_id' => $userId,
                     'business_id' => $business->id,
@@ -814,6 +836,24 @@ class Handler extends WebhookHandler
                 $this->replyWithMessage(TelegramMessages::MSG_BUSINESS_NOT_FOUND);
 
                 return;
+            }
+
+            // Проверяем доступ к Telegram боту для записи
+            $subscriptionService = app(SubscriptionService::class);
+            $owner = $this->getBusinessOwner($business);
+
+            if ($owner) {
+                $telegramBotEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled') === true;
+                
+                if (! $telegramBotEnabled) {
+                    Log::warning('Telegram bot booking not enabled for business from catalog', [
+                        'user_id' => $userId,
+                        'business_id' => $business->id,
+                        'owner_id' => $owner->id,
+                    ]);
+                    $this->replyWithMessage('❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.');
+                    return;
+                }
             }
 
             Log::info('Business selected from catalog:', ['business_id' => $businessId, 'business_name' => $business->name]);
@@ -1378,5 +1418,29 @@ class Handler extends WebhookHandler
             Log::warning('✗ Failed to delete bot message: '.$e->getMessage());
         }
         Log::info('=== deleteBotMessage END ===');
+    }
+
+    /**
+     * Получить владельца бизнеса
+     */
+    protected function getBusinessOwner(Business $business): ?User
+    {
+        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+
+        if (! $ownerRole) {
+            return null;
+        }
+
+        $ownerPivot = DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('role_id', $ownerRole->id)
+            ->first();
+
+        if (! $ownerPivot) {
+            // Fallback: пробуем получить первого пользователя бизнеса
+            return $business->users()->first();
+        }
+
+        return User::find($ownerPivot->user_id);
     }
 }

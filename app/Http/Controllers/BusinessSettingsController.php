@@ -6,6 +6,7 @@ use App\Http\Requests\BusinessRequest;
 use App\Models\Business;
 use App\Models\BusinessRole;
 use App\Models\Country;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -114,10 +115,37 @@ class BusinessSettingsController extends Controller
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+        
+        // Проверяем доступ к Telegram боту для записи
+        $subscriptionService = app(SubscriptionService::class);
+        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        $owner = null;
+        
+        if ($ownerRole) {
+            $ownerPivot = DB::table('business_user')
+                ->where('business_id', $business->id)
+                ->where('role_id', $ownerRole->id)
+                ->first();
+            
+            if ($ownerPivot) {
+                $owner = \App\Models\User::find($ownerPivot->user_id);
+            }
+        }
+        
+        // Fallback: если не нашли по роли, берем первого пользователя
+        if (! $owner) {
+            $owner = $business->users()->first();
+        }
+        
+        $telegramBotEnabled = false;
+        if ($owner) {
+            $telegramBotEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled') === true;
+        }
 
         return view('settings.online-booking', [
             'business' => $business,
             'bot' => $bot,
+            'telegramBotEnabled' => $telegramBotEnabled,
         ]);
     }
 

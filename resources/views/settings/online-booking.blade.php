@@ -247,7 +247,7 @@
             </div>
 
             <!-- Telegram запись -->
-            @if ($bot && $telegramUrl)
+            @if ($bot && $telegramUrl && ($telegramBotEnabled ?? false))
                 <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
