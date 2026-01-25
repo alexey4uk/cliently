@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div x-data="{
             showFilters: {{ $search || $groupFilter || $sort !== 'name' || $direction !== 'asc' || $perPage != 20 ? 'true' : 'false' }}
         }" class="space-y-6">

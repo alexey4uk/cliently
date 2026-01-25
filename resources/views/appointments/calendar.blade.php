@@ -68,7 +68,8 @@
     ];
 @endphp
 
-<div class="flex flex-col gap-3 sm:gap-4 sm:h-[calc(100vh-180px)]" x-data="{
+<div class="max-w-[1800px] mx-auto">
+    <div class="flex flex-col gap-3 sm:gap-4 sm:h-[calc(100vh-180px)]" x-data="{
     showPhoneModal: false,
     phone: '',
     phoneDisplay: '',
@@ -565,6 +566,7 @@
                 Позвонить
             </a>
         </div>
+    </div>
     </div>
 
 </div>

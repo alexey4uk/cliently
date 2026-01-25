@@ -3,7 +3,7 @@
 @section('title', 'Рассылки')
 
 @section('content')
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div class="space-y-6">
             @if (session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"

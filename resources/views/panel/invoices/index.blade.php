@@ -22,7 +22,7 @@
         </div>
     @endif
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div class="space-y-6">
             <!-- Заголовок со статистикой -->
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">

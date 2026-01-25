@@ -135,8 +135,9 @@
         },
         toggleFilters() {
             this.showFilters = !this.showFilters;
-        }
-    }" class="space-y-4 md:space-y-6">
+    }
+}" class="max-w-[1400px] mx-auto">
+    <div class="space-y-4 md:space-y-6">
 
         <!-- Заголовок -->
         <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
@@ -975,5 +976,7 @@
             if (desktopInput) desktopInput.value = direction;
         }
     </script>
+    </div>
+</div>
 
 @endsection

@@ -3,7 +3,7 @@
 @section('title', 'Тикеты')
 
 @section('content')
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div class="space-y-6">
             <div class="flex items-center justify-between">
             <div>

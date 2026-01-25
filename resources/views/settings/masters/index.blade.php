@@ -43,7 +43,8 @@
                          $hasBusinessPermission('client.masters.delete');
 @endphp
 
-<div x-data="{
+<div class="max-w-[1400px] mx-auto">
+    <div x-data="{
     showDeleteModal: false,
     masterToDelete: null,
     masterName: '',
@@ -419,6 +420,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

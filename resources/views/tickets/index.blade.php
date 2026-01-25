@@ -39,8 +39,9 @@
     };
 @endphp
 
-    <div class="space-y-6">
-        <!-- Заголовок с кнопкой создания -->
+    <div class="max-w-[1400px] mx-auto">
+        <div class="space-y-6">
+            <!-- Заголовок с кнопкой создания -->
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Мои тикеты</h2>
@@ -179,5 +180,6 @@
                 </div>
             </div>
         @endif
+        </div>
     </div>
 @endsection

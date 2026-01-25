@@ -42,7 +42,8 @@
     };
 @endphp
 
-<div x-data="{
+<div class="max-w-6xl mx-auto">
+    <div x-data="{
     showPhoneModal: false,
     phone: '',
     phoneDisplay: '',
@@ -333,6 +334,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

@@ -60,7 +60,7 @@
     $canViewSubscription = $hasBusinessPermission('client.subscription.view');
 @endphp
 
-<div class="w-full max-w-none">
+<div class="max-w-[1400px] mx-auto">
     <!-- Page Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>

@@ -11,7 +11,8 @@
 @endpush
 
 @section('content')
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto">
+        <div class="space-y-6">
         <!-- Информация о тикете -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
             <div class="flex items-start justify-between mb-6">
@@ -289,4 +290,6 @@
         }
     </script>
     @endpush
+        </div>
+    </div>
 @endsection

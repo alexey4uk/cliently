@@ -38,7 +38,7 @@
     };
 @endphp
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+<div class="max-w-6xl mx-auto">
     <!-- Информация о текущем тарифе -->
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden mb-6 sm:mb-8">
         <!-- Заголовок карточки -->

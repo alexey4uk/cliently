@@ -46,7 +46,8 @@
                           $hasBusinessPermission('client.services.delete');
 @endphp
 
-<div x-data="{ 
+<div class="max-w-[1400px] mx-auto">
+    <div x-data="{ 
     showDeleteModal: false,
     serviceToDelete: null,
     serviceName: '',
@@ -350,6 +351,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 

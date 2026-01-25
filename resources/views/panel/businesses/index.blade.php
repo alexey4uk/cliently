@@ -50,7 +50,7 @@
         </div>
     @endif
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <div x-data="{
         showFilters: {{ $search || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 20 ? 'true' : 'false' }}
     }" class="space-y-6">

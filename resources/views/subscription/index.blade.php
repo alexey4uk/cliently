@@ -19,7 +19,8 @@
     $advancedMetricsList = $metrics->filter(fn($m) => in_array($m->key, $advancedMetrics));
 @endphp
 
-<div x-data="{
+<div class="max-w-[1400px] mx-auto">
+    <div x-data="{
     showConfirmModal: false,
     selectedPlan: null,
     selectedForm: null,
@@ -47,7 +48,7 @@
     }
 }">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
     <!-- Hero секция -->
     <div class="text-center mb-8 sm:mb-12 lg:mb-16">
         <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
@@ -454,5 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+    </div>
+</div>
 
 @endsection

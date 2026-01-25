@@ -62,7 +62,8 @@
     $getRoleIcon = fn($role) => $roleIcons[$role] ?? 'fa-user';
 @endphp
 
-<div x-data="{
+<div class="max-w-[1400px] mx-auto">
+    <div x-data="{
     showDeleteModal: false,
     userToDelete: null,
     userName: '',
@@ -466,6 +467,7 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </div>
 
