@@ -126,7 +126,10 @@ class RolePermissionSeeder extends Seeder
             'panel.masters.update' => 'Редактирование мастеров (админ-панель)',
             'panel.masters.delete' => 'Удаление мастеров (админ-панель)',
 
-            'panel.analytics.view' => 'Просмотр аналитики всех бизнесов (админ-панель)',
+            'panel.analytics.view' => 'Просмотр общей аналитики (админ-панель)',
+            'panel.analytics.financial' => 'Просмотр финансовой аналитики (админ-панель)',
+            'panel.analytics.general' => 'Просмотр общей статистики (админ-панель)',
+            'panel.analytics.subscriptions' => 'Просмотр аналитики подписок (админ-панель)',
 
             'panel.tickets.view' => 'Просмотр всех тикетов (админ-панель)',
             'panel.tickets.update' => 'Редактирование тикетов (админ-панель)',
@@ -196,6 +199,7 @@ class RolePermissionSeeder extends Seeder
             'panel.masters.update',
             'panel.masters.delete',
             'panel.analytics.view',
+            'panel.analytics.general',
             'panel.tickets.view',
             'panel.tickets.update',
             'panel.tickets.delete',
@@ -214,6 +218,7 @@ class RolePermissionSeeder extends Seeder
         $supportRole = Role::firstOrCreate(['name' => 'support', 'guard_name' => 'web']);
         $supportPermissions = [
             'panel.analytics.view',
+            'panel.analytics.general',
             'panel.support.view',
             'panel.tickets.view',
             'panel.tickets.update',

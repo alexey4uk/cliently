@@ -78,7 +78,8 @@ class TicketController extends Controller
         // Получаем данные для фильтров
         $businesses = Business::orderBy('name')->get();
         $categories = TicketCategory::where('is_active', true)->orderBy('sort_order')->get();
-        $users = User::orderBy('name')->get();
+        // Только системные пользователи (с доступом к админ-панели) для назначения на тикеты
+        $users = User::permission('panel.access')->orderBy('name')->get();
 
         return view('panel.tickets.index', compact(
             'tickets',
@@ -111,7 +112,8 @@ class TicketController extends Controller
             'comments.attachments',
         ]);
 
-        $users = User::orderBy('name')->get();
+        // Только системные пользователи (с доступом к админ-панели) для назначения на тикеты
+        $users = User::permission('panel.access')->orderBy('name')->get();
         $categories = TicketCategory::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
@@ -129,7 +131,8 @@ class TicketController extends Controller
         $categories = TicketCategory::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
-        $users = User::orderBy('name')->get();
+        // Только системные пользователи (с доступом к админ-панели) для назначения на тикеты
+        $users = User::permission('panel.access')->orderBy('name')->get();
         $clients = \App\Models\Client::where('business_id', $ticket->business_id)
             ->orderBy('first_name')
             ->get();

@@ -464,9 +464,25 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::delete('/masters/{master}', [\App\Http\Controllers\Panel\MasterController::class, 'destroy'])->name('masters.destroy');
         });
 
-        // Аналитика (админ, менеджер, поддержка)
+        // Аналитика
+        // Общая аналитика (обзор)
         Route::middleware(['check.permission:panel.analytics.view'])->group(function () {
             Route::get('/analytics', [\App\Http\Controllers\Panel\AnalyticsController::class, 'index'])->name('analytics');
+        });
+
+        // Финансовая аналитика
+        Route::middleware(['check.permission:panel.analytics.financial'])->group(function () {
+            Route::get('/analytics/financial', [\App\Http\Controllers\Panel\AnalyticsController::class, 'financial'])->name('analytics.financial');
+        });
+
+        // Общая статистика
+        Route::middleware(['check.permission:panel.analytics.general'])->group(function () {
+            Route::get('/analytics/general', [\App\Http\Controllers\Panel\AnalyticsController::class, 'general'])->name('analytics.general');
+        });
+
+        // Аналитика подписок
+        Route::middleware(['check.permission:panel.analytics.subscriptions'])->group(function () {
+            Route::get('/analytics/subscriptions', [\App\Http\Controllers\Panel\AnalyticsController::class, 'subscriptions'])->name('analytics.subscriptions');
         });
 
         // Поддержка (админ и поддержка)
