@@ -50,19 +50,64 @@
         $accessService = app(\App\Services\SubscriptionAccessService::class);
         $hasAnalyticsAccess = $accessService->hasAccess($currentBusiness, 'analytics_enabled', 'client.analytics.view');
     }
+
+    // Определяем доступные виджеты
+    $canViewAppointments = $hasBusinessPermission('client.appointments.view') || $hasBusinessPermission('client.appointments.view.own');
+    $canViewClients = $hasBusinessPermission('client.clients.view') || $hasBusinessPermission('client.clients.view.own');
+    $canViewServices = $hasBusinessPermission('client.services.view');
+    $canViewMasters = $hasBusinessPermission('client.masters.view');
+    $canViewLocations = $hasBusinessPermission('client.locations.view');
+    $canViewSubscription = $hasBusinessPermission('client.subscription.view');
 @endphp
 
-<div>
+<div class="w-full max-w-none">
     <!-- Page Header -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Обзор вашего бизнеса</p>
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Обзор вашего бизнеса</p>
+        </div>
+        <form action="{{ route('dashboard.refresh') }}" method="POST">
+            @csrf
+            <button type="submit" 
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>Обновить</span>
+            </button>
+        </form>
     </div>
 
-    <!-- Stats Cards -->
-    @if($hasBusinessPermission('client.appointments.view') || $hasBusinessPermission('client.appointments.view.own'))
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Stats Cards - Гибкая сетка в зависимости от доступных виджетов -->
+    @php
+        $statsCards = [];
+        if ($canViewAppointments) {
+            $statsCards[] = 'appointments';
+        }
+        if ($canViewClients) {
+            $statsCards[] = 'clients';
+        }
+        if ($canViewAppointments) {
+            $statsCards[] = 'completed';
+        }
+        if ($canViewServices) {
+            $statsCards[] = 'services';
+        }
+        if ($canViewMasters) {
+            $statsCards[] = 'masters';
+        }
+        if ($canViewLocations) {
+            $statsCards[] = 'locations';
+        }
+        $statsCount = count($statsCards);
+        $gridCols = $statsCount <= 2 ? 'grid-cols-1 sm:grid-cols-2' : ($statsCount <= 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6');
+    @endphp
+    
+    @if($statsCount > 0)
+    <div class="grid {{ $gridCols }} gap-4 mb-6">
         <!-- Today's Appointments -->
+        @if($canViewAppointments)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
             <div class="flex items-center justify-between">
                 <div>
@@ -86,8 +131,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Total Clients -->
+        @if($canViewClients)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
             <div class="flex items-center justify-between">
                 <div>
@@ -111,8 +158,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Revenue / Completed Appointments -->
+        @if($canViewAppointments)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
             <div class="flex items-center justify-between">
                 <div>
@@ -136,9 +185,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Services -->
-        @if($hasBusinessPermission('client.services.view'))
+        @if($canViewServices)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
             <div class="flex items-center justify-between">
                 <div>
@@ -154,14 +204,51 @@
             </div>
         </div>
         @endif
+
+        <!-- Masters -->
+        @if($canViewMasters)
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Мастеров</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $business->masters->count() ?? 0 }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">В системе</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Locations -->
+        @if($canViewLocations)
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Локаций</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $business->locations->count() ?? 0 }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">В системе</p>
+                </div>
+                <div class="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
     @endif
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content Grid - На всю ширину -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <!-- Today's Schedule -->
-        @if($hasBusinessPermission('client.appointments.view') || $hasBusinessPermission('client.appointments.view.own'))
-        <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
+        @if($canViewAppointments)
+        <div class="xl:col-span-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
             <div class="p-5 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $appointmentsTitle }} на сегодня</h2>
                 @if($hasBusinessPermission('client.appointments.view') || $hasBusinessPermission('client.appointments.view.own'))
@@ -243,7 +330,7 @@
         @endif
 
         <!-- Recent Clients -->
-        @if($hasBusinessPermission('client.clients.view') || $hasBusinessPermission('client.clients.view.own'))
+        @if($canViewClients)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
             <div class="p-5 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $clientsTitle }}</h2>
@@ -289,9 +376,9 @@
         @endif
     </div>
 
-    <!-- Financial Metrics -->
+    <!-- Financial Metrics - На всю ширину -->
     @if($hasAnalyticsAccess && isset($financialStats))
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
             <div class="flex items-center justify-between">
                 <div>
@@ -365,10 +452,10 @@
     </div>
     @endif
 
-    <!-- Top Services and Masters -->
-    @if($hasAnalyticsAccess && (($hasBusinessPermission('client.services.view') && isset($topServices) && count($topServices) > 0) || ($hasBusinessPermission('client.masters.view') && isset($topMasters) && count($topMasters) > 0)))
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 mb-6">
-        @if($hasBusinessPermission('client.services.view') && isset($topServices) && count($topServices) > 0)
+    <!-- Top Services and Masters - На всю ширину -->
+    @if($hasAnalyticsAccess && (($canViewServices && isset($topServices) && count($topServices) > 0) || ($canViewMasters && isset($topMasters) && count($topMasters) > 0)))
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        @if($canViewServices && isset($topServices) && count($topServices) > 0)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
             <div class="p-5 border-b border-gray-200 dark:border-slate-800">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Топ услуги</h2>
@@ -391,7 +478,7 @@
         </div>
         @endif
 
-        @if($hasBusinessPermission('client.masters.view') && isset($topMasters) && count($topMasters) > 0)
+        @if($canViewMasters && isset($topMasters) && count($topMasters) > 0)
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
             <div class="p-5 border-b border-gray-200 dark:border-slate-800">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Топ мастера</h2>
@@ -416,9 +503,9 @@
     </div>
     @endif
 
-    <!-- Subscription Status and Actions -->
-    @if($hasBusinessPermission('client.subscription.view') && isset($subscriptionStatus))
-    <div class="mt-6 mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Subscription Status and Actions - На всю ширину -->
+    @if($canViewSubscription && isset($subscriptionStatus))
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Subscription Status -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
             <div class="p-5 border-b border-gray-200 dark:border-slate-800">
@@ -511,7 +598,7 @@
                         @if(isset($subscriptionStatus['is_cancelled']) && $subscriptionStatus['is_cancelled'])
                             <div class="p-4 bg-orange-50 dark:bg-orange-500/10 rounded-lg border border-orange-200 dark:border-orange-500/20">
                                 <div class="flex items-start">
-                                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                                     </svg>
                                     <div class="flex-1">
@@ -550,7 +637,7 @@
     </div>
     @endif
 
-    <!-- Quick Actions -->
+    <!-- Quick Actions - На всю ширину -->
     <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Быстрые действия</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -31,6 +31,7 @@
     }},
     supportOpen: {{ 
         (Str::startsWith(Request::path(), 'panel') && (
+            Str::startsWith(Request::path(), 'panel/support') ||
             Str::startsWith(Request::path(), 'panel/tickets') ||
             Str::startsWith(Request::path(), 'panel/ticket-categories')
         )) || 
@@ -267,7 +268,7 @@
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 @can('panel.clients.view')
                                     <a href="{{ route('panel.clients') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients')
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                             : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                         :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
@@ -277,7 +278,7 @@
                                         @mouseleave="tooltip = false">
                                         <div class="flex items-center justify-center flex-shrink-0"
                                             :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('panel.clients') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('panel.clients*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                         </div>
                                         <span x-show="!collapsed" x-cloak
@@ -320,7 +321,7 @@
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 @can('panel.appointments.view')
                                     <a href="{{ route('panel.appointments') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.appointments')
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.appointments*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                             : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                         :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -330,7 +331,7 @@
                                         @mouseleave="tooltip = false">
                                         <div class="flex items-center justify-center flex-shrink-0"
                                             :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-calendar-check transition-transform duration-200 {{ Request::routeIs('panel.appointments') ? 'scale-110' : 'group-hover:scale-110' }}"
+                                            <i class="fa-solid fa-calendar-check transition-transform duration-200 {{ Request::routeIs('panel.appointments*') ? 'scale-110' : 'group-hover:scale-110' }}"
                                                 :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                         </div>
                                         <span x-show="!collapsed" x-cloak
@@ -614,7 +615,7 @@
                              class="space-y-1 overflow-hidden">
                             @can('panel.services.view')
                                 <a href="{{ route('panel.services') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.services')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.services*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -624,7 +625,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-scissors transition-transform duration-200 {{ Request::routeIs('panel.services') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-scissors transition-transform duration-200 {{ Request::routeIs('panel.services*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -639,7 +640,7 @@
 
                             @can('panel.locations.view')
                                 <a href="{{ route('panel.locations') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.locations')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.locations*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -649,7 +650,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-location-dot transition-transform duration-200 {{ Request::routeIs('panel.locations') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-location-dot transition-transform duration-200 {{ Request::routeIs('panel.locations*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -664,7 +665,7 @@
 
                             @can('panel.masters.view')
                                 <a href="{{ route('panel.masters') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.masters')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.masters*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -674,7 +675,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-user-tie transition-transform duration-200 {{ Request::routeIs('panel.masters') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-user-tie transition-transform duration-200 {{ Request::routeIs('panel.masters*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -1114,7 +1115,7 @@
                              class="space-y-1 overflow-hidden">
                             @can('panel.users.view')
                                 <a href="{{ route('panel.users') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.users')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.users*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -1124,7 +1125,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-users-gear transition-transform duration-200 {{ Request::routeIs('panel.users') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-users-gear transition-transform duration-200 {{ Request::routeIs('panel.users*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -1139,7 +1140,7 @@
 
                             @can('panel.roles.view')
                                 <a href="{{ route('panel.roles') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.roles')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.roles*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -1149,7 +1150,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-shield-halved transition-transform duration-200 {{ Request::routeIs('panel.roles') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-shield-halved transition-transform duration-200 {{ Request::routeIs('panel.roles*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -1164,7 +1165,7 @@
 
                             @can('panel.roles.view')
                                 <a href="{{ route('panel.permissions') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.permissions')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.permissions*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -1174,7 +1175,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-key transition-transform duration-200 {{ Request::routeIs('panel.permissions') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-key transition-transform duration-200 {{ Request::routeIs('panel.permissions*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -1247,7 +1248,7 @@
                              class="space-y-1 overflow-hidden">
                             @can('panel.businesses.view')
                                 <a href="{{ route('panel.businesses') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses')
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -1257,7 +1258,7 @@
                                     @mouseleave="tooltip = false">
                                     <div class="flex items-center justify-center flex-shrink-0"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('panel.businesses') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('panel.businesses*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -1439,7 +1440,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             <a href="{{ route('panel.telegram.management') }}"
-                                class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.telegram.management')
+                                class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.telegram.management*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                 :class="collapsed ? 'justify-center mx-2' : 'px-3'"
@@ -1449,7 +1450,7 @@
                                 @mouseleave="tooltip = false">
                                 <div class="flex items-center justify-center flex-shrink-0"
                                     :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                    <i class="fa-brands fa-telegram transition-transform duration-200 {{ Request::routeIs('panel.telegram.management') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                    <i class="fa-brands fa-telegram transition-transform duration-200 {{ Request::routeIs('panel.telegram.management*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                        :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                 </div>
                                 <span x-show="!collapsed" x-cloak
