@@ -34,7 +34,6 @@ class MasterFactory extends Factory
             'last_name' => fake()->lastName(),
             'specialization' => fake()->jobTitle(),
             'description' => fake()->optional()->text(200),
-            'phone' => '+37529'.fake()->numerify('#######'),
             'email' => fake()->optional()->safeEmail(),
             'working_hours' => json_encode($workingHours),
         ];

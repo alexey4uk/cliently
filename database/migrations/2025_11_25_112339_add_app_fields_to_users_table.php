@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // OAuth provider name (google, vk, yandex, telegram, etc.)
             $table->string('oauth_provider')->nullable()->after('email');
-            
-            // OAuth provider user ID
             $table->string('oauth_id')->nullable()->after('oauth_provider');
-            
-            // Make email and password nullable for OAuth users
+            $table->string('avatar')->after('oauth_id')->nullable();
+            $table->json('dashboard_settings')->nullable()->after('avatar');
+            $table->string('telegram_chat_id')->nullable()->after('dashboard_settings');
+            $table->string('telegram_token', 64)->unique()->nullable()->after('telegram_chat_id');
+        });
+
+        Schema::table('users', function (Blueprint $table) {
             $table->string('email')->nullable()->change();
             $table->string('password')->nullable()->change();
-            
-            // Add index for faster OAuth user lookup
             $table->index(['oauth_provider', 'oauth_id'], 'oauth_provider_id_index');
         });
     }
@@ -34,9 +34,14 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropIndex('oauth_provider_id_index');
-            $table->dropColumn(['oauth_provider', 'oauth_id']);
-            
-            // Restore email and password to NOT NULL (be careful in production!)
+            $table->dropColumn([
+                'avatar',
+                'dashboard_settings',
+                'telegram_chat_id',
+                'telegram_token',
+                'oauth_provider',
+                'oauth_id',
+            ]);
             $table->string('email')->nullable(false)->change();
             $table->string('password')->nullable(false)->change();
         });

@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('subscription_usages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('subscription_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('business_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('feature_key');
             $table->integer('current_usage')->default(0);
             $table->date('period_start');
             $table->date('period_end');
             $table->timestamps();
 
-            $table->unique(['subscription_id', 'feature_key', 'period_start'], 'sub_usages_unique');
+            $table->unique(['user_id', 'feature_key', 'period_start'], 'user_feature_period_unique');
         });
     }
 

@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('telegram_user_id');
             $table->string('step')->default('start');
             $table->json('data')->nullable();
-            $table->foreignId('business_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('last_message_id')->nullable();
+            $table->foreignId('business_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
 
             $table->unique(['telegram_user_id', 'business_id']);

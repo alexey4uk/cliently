@@ -7,11 +7,21 @@ use App\Models\BusinessRole;
 use App\Models\BusinessUserInvitation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class InvitationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
+        $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        $role->givePermissionTo('client.access');
+    }
 
     public function test_invitation_accept_page_is_accessible_without_authentication()
     {
@@ -80,11 +90,8 @@ class InvitationTest extends TestCase
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('success');
 
-        // Проверяем, что пользователь создан и приглашение принято
         $this->assertDatabaseHas('users', ['email' => 'newuser@example.com']);
-        $this->assertDatabaseHas('business_user_invitations', [
-            'id' => $invitation->id,
-            'accepted_at' => now(),
-        ]);
+        $invitation->refresh();
+        $this->assertNotNull($invitation->accepted_at);
     }
 }

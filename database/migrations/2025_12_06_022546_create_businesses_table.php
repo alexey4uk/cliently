@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->string('telegram_chat_id')->nullable();
+            $table->string('telegram_token', 64)->unique()->nullable();
 
             $table->timestamps();
         });

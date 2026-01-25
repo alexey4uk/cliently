@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
+            $table->string('token', 64)->unique()->nullable();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
             $table->foreignId('client_id')->constrained()->cascadeOnDelete();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
@@ -29,6 +30,7 @@ return new class extends Migration
 
             $table->index(['business_id', 'date']);
             $table->index(['master_id', 'date', 'time']);
+            $table->index('token');
         });
     }
 

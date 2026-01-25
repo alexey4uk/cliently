@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('duration')->default(30);
+            $table->integer('preparation_time')->nullable()->comment('Время подготовки между записями в минутах');
             $table->decimal('price', 10, 2)->default(0);
             $table->boolean('is_active')->default(false);
 

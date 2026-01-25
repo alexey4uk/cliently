@@ -36,7 +36,6 @@ class LocationFactory extends Factory
             'building' => fake()->optional()->buildingNumber(),
             'apartment' => fake()->optional()->buildingNumber(),
             'description' => fake()->text(200),
-            'phone' => '+37529'.fake()->numerify('#######'),
             'working_hours' => json_encode($workingHours),
         ];
     }
