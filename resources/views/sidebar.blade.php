@@ -51,6 +51,7 @@
             Str::startsWith(Request::path(), 'panel/roles') ||
             Str::startsWith(Request::path(), 'panel/permissions') ||
             Str::startsWith(Request::path(), 'panel/business-roles') ||
+            Str::startsWith(Request::path(), 'panel/broadcasts') ||
             Str::startsWith(Request::path(), 'panel/notifications') ||
             Str::startsWith(Request::path(), 'panel/settings/notifications')
         )) 
@@ -58,7 +59,6 @@
     }},
     platformOpen: {{ 
         (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/businesses') ||
             Str::startsWith(Request::path(), 'panel/plans') ||
             Str::startsWith(Request::path(), 'panel/invoices') ||
             Str::startsWith(Request::path(), 'panel/settings/bepaid')
@@ -213,43 +213,12 @@
                         };
                     @endphp
 
-                    <!-- Рабочий процесс -->
-                    <div>
-                        <h3 x-show="!collapsed" x-cloak
-                            class="sidebar-section-title px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-briefcase text-[10px] opacity-50"></i>
-                            <span>Рабочий процесс</span>
-                        </h3>
-                        <nav class="space-y-1">
-                            <!-- Панель управления / Главная -->
-                            @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('panel.analytics.view')
-                                    <a href="{{ route('panel.index') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {{ Request::routeIs('panel.index')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
-                                        :title="collapsed ? 'Главная' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0 relative"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-chart-line transition-transform duration-200 {{ Request::routeIs('panel.index') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Главная</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Главная
-                                        </div>
-                                    </a>
-                                @endcan
-                            @else
-                                <a href="{{ route('dashboard') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('dashboard')
+                    <!-- Главная (без секции) -->
+                    <nav class="space-y-1 mb-6">
+                        @if(Str::startsWith(Request::path(), 'panel'))
+                            @can('panel.analytics.view')
+                                <a href="{{ route('panel.index') }}"
+                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 {{ Request::routeIs('panel.index')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                     :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
@@ -257,9 +226,9 @@
                                     x-data="{ tooltip: false }"
                                     @mouseenter="if (collapsed) tooltip = true"
                                     @mouseleave="tooltip = false">
-                                    <div class="flex items-center justify-center flex-shrink-0"
+                                    <div class="flex items-center justify-center flex-shrink-0 relative"
                                         :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-chart-line transition-transform duration-200 {{ Request::routeIs('dashboard') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                        <i class="fa-solid fa-home transition-transform duration-200 {{ Request::routeIs('panel.index') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                     </div>
                                     <span x-show="!collapsed" x-cloak
@@ -270,8 +239,41 @@
                                         Главная
                                     </div>
                                 </a>
-                            @endif
+                            @endcan
+                        @else
+                            <a href="{{ route('dashboard') }}"
+                                class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('dashboard')
+                                    ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                :title="collapsed ? 'Главная' : ''"
+                                x-data="{ tooltip: false }"
+                                @mouseenter="if (collapsed) tooltip = true"
+                                @mouseleave="tooltip = false">
+                                <div class="flex items-center justify-center flex-shrink-0"
+                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                    <i class="fa-solid fa-home transition-transform duration-200 {{ Request::routeIs('dashboard') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                       :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                </div>
+                                <span x-show="!collapsed" x-cloak
+                                    class="sidebar-text whitespace-nowrap font-medium">Главная</span>
+                                <div x-show="tooltip && collapsed" 
+                                     x-transition
+                                     class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                    Главная
+                                </div>
+                            </a>
+                        @endif
+                    </nav>
 
+                    <!-- Основные данные -->
+                    <div>
+                        <h3 x-show="!collapsed" x-cloak
+                            class="sidebar-section-title px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-database text-[10px] opacity-50"></i>
+                            <span>Основные данные</span>
+                        </h3>
+                        <nav class="space-y-1">
                             <!-- Записи -->
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 @can('panel.appointments.view')
@@ -400,6 +402,34 @@
                                         </div>
                                     </a>
                                 @endif
+                            @endif
+
+                            <!-- Бизнесы (только для админ-панели) -->
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('panel.businesses.view')
+                                    <a href="{{ route('panel.businesses') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Бизнесы' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('panel.businesses*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Бизнесы</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Бизнесы
+                                        </div>
+                                    </a>
+                                @endcan
                             @endif
 
                         </nav>
@@ -756,7 +786,7 @@
                     @endif
                     @endif
 
-                    <!-- Услуги и ресурсы (админ-панель) -->
+                    <!-- Ресурсы (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
                     @php
                         $hasContentAccess = $user && (
@@ -1083,6 +1113,7 @@
                         if (Str::startsWith(Request::path(), 'panel')) {
                             // Для админ-панели проверяем Spatie права
                             $hasSupportAccess = $user && (
+                                $user->can('panel.support.view') ||
                                 $user->can('panel.tickets.view') ||
                                 $user->can('panel.tickets.categories.manage') ||
                                 $user->can('panel.tickets.settings')
@@ -1114,6 +1145,30 @@
                              class="space-y-1 overflow-hidden">
                             @if(Str::startsWith(Request::path(), 'panel'))
                                 <!-- Админские разделы -->
+                                @can('panel.support.view')
+                                    <a href="{{ route('panel.support') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.support*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Поддержка' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-headset transition-transform duration-200 {{ Request::routeIs('panel.support*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Поддержка</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Поддержка
+                                        </div>
+                                    </a>
+                                @endcan
                                 @can('panel.tickets.view')
                                     <a href="{{ route('panel.tickets') }}"
                                         class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ (Request::routeIs('panel.tickets') || Request::routeIs('panel.tickets.*')) && !Request::routeIs('panel.tickets.settings*')
@@ -1429,11 +1484,10 @@
                     @endif
                     @endif
 
-                    <!-- Платформа и платежи (админ-панель) -->
+                    <!-- Платформа (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
                     @php
                         $hasPlatformAccess = $user && (
-                            $user->can('panel.businesses.view') ||
                             $user->can('panel.plans.view') ||
                             $user->can('panel.payments.view') ||
                             $user->can('panel.payments.settings')
@@ -1445,7 +1499,7 @@
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-credit-card text-[10px] opacity-60"></i>
-                                <span>Платежи</span>
+                                <span>Платформа</span>
                             </div>
                             <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
                                 :class="{ 'rotate-180': platformOpen }"></i>
@@ -1458,31 +1512,6 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            @can('panel.businesses.view')
-                                <a href="{{ route('panel.businesses') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses*')
-                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Бизнесы' : ''"
-                                    x-data="{ tooltip: false }"
-                                    @mouseenter="if (collapsed) tooltip = true"
-                                    @mouseleave="tooltip = false">
-                                    <div class="flex items-center justify-center flex-shrink-0"
-                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('panel.businesses*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                           :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                    </div>
-                                    <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Бизнесы</span>
-                                    <div x-show="tooltip && collapsed" 
-                                         x-transition
-                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Бизнесы
-                                    </div>
-                                </a>
-                            @endcan
-
                             @can('panel.plans.view')
                                 <a href="{{ route('panel.plans.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.plans.*')
