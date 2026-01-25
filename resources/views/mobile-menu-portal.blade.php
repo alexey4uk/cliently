@@ -1,16 +1,16 @@
 <!-- Overlay и меню выносятся за пределы header для корректного отображения -->
 <div x-data="{ 
     open: false,
-    businessOpen: {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }},
-    teamOpen: {{ Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') ? 'true' : 'false' }},
-    integrationsOpen: {{ Request::routeIs('settings.telegram*') ? 'true' : 'false' }},
+    resourcesOpen: {{ Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*') ? 'true' : 'false' }},
+    settingsOpen: {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') ? 'true' : 'false' }},
+    subscriptionOpen: {{ Request::routeIs('subscription.*') ? 'true' : 'false' }},
     analyticsOpen: {{ Request::routeIs('analytics.*') ? 'true' : 'false' }},
     supportOpen: {{ Request::routeIs('tickets.*') ? 'true' : 'false' }},
     init() {
         // Инициализируем переменные для корректной работы Alpine
-        this.businessOpen = {{ Request::routeIs('settings.*') || Request::routeIs('services.*') ? 'true' : 'false' }};
-        this.teamOpen = {{ Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') ? 'true' : 'false' }};
-        this.integrationsOpen = {{ Request::routeIs('settings.telegram*') ? 'true' : 'false' }};
+        this.resourcesOpen = {{ Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*') ? 'true' : 'false' }};
+        this.settingsOpen = {{ Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*') ? 'true' : 'false' }};
+        this.subscriptionOpen = {{ Request::routeIs('subscription.*') ? 'true' : 'false' }};
         this.analyticsOpen = {{ Request::routeIs('analytics.*') ? 'true' : 'false' }};
         this.supportOpen = {{ Request::routeIs('tickets.*') ? 'true' : 'false' }};
         
@@ -113,11 +113,12 @@ style="width: 0; height: 0;">
                     };
                 @endphp
 
-                <!-- Основное -->
+                <!-- Рабочий процесс -->
                 <div>
                     <h3
-                        class="px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Основное
+                        class="px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase text-[10px] opacity-50"></i>
+                        <span>Рабочий процесс</span>
                     </h3>
                     <div class="space-y-1">
                         <a href="{{ route('dashboard') }}" @click="closeMenu()"
@@ -166,51 +167,29 @@ style="width: 0; height: 0;">
                     </div>
                 </div>
 
-                <!-- Бизнес -->
+                <!-- Ресурсы -->
                 @php
-                    $hasBusinessGroupAccess = $hasBusinessPermission('client.businesses.update') ||
-                                              $hasBusinessPermission('client.locations.view') ||
-                                              $hasBusinessPermission('client.services.view') ||
-                                              $hasBusinessPermission('client.masters.view');
+                    $hasResourcesAccess = $hasBusinessPermission('client.locations.view') ||
+                                         $hasBusinessPermission('client.services.view') ||
+                                         $hasBusinessPermission('client.masters.view');
                 @endphp
-                @if($hasBusinessGroupAccess)
+                @if($hasResourcesAccess)
                 <div>
-                    <button @click="businessOpen = !businessOpen"
+                    <button @click="resourcesOpen = !resourcesOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                        <span>Бизнес</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-folder-open text-[10px] opacity-60"></i>
+                            <span>Ресурсы</span>
+                        </div>
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
-                            :class="{ 'rotate-180': businessOpen }"></i>
+                            :class="{ 'rotate-180': resourcesOpen }"></i>
                     </button>
-                    <div x-show="businessOpen" x-transition:enter="transition ease-out duration-200"
+                    <div x-show="resourcesOpen" x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 -translate-y-2"
                         x-transition:enter-end="opacity-100 translate-y-0"
                         x-transition:leave="transition ease-in duration-150"
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
-                        @if($hasBusinessPermission('client.businesses.update'))
-                        <a href="{{ route('settings.index') }}" @click="closeMenu()"
-                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.index')
-                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                <i class="fa-solid fa-building text-base"></i>
-                            </div>
-                            <span class="ml-3 whitespace-nowrap">Бизнес</span>
-                        </a>
-                        @endif
-
-                        @if($hasBusinessPermission('client.locations.view'))
-                        <a href="{{ route('settings.locations') }}" @click="closeMenu()"
-                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.locations*')
-                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                <i class="fa-solid fa-location-dot text-base"></i>
-                            </div>
-                            <span class="ml-3 whitespace-nowrap">Локации</span>
-                        </a>
-                        @endif
-
                         @if($hasBusinessPermission('client.services.view'))
                         <a href="{{ route('services.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('services.*')
@@ -235,6 +214,83 @@ style="width: 0; height: 0;">
                         </a>
                         @endif
 
+                        @if($hasBusinessPermission('client.locations.view'))
+                        <a href="{{ route('settings.locations') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.locations*')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-location-dot text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Локации</span>
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                <!-- Настройки -->
+                @php
+                    // Проверяем доступ к Telegram боту согласно тарифу
+                    $hasTelegramAccess = false;
+                    if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
+                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                        if ($ownerRole) {
+                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                ->where('business_id', $currentBusiness->id)
+                                ->where('role_id', $ownerRole->id)
+                                ->first();
+                            if ($ownerPivot) {
+                                $owner = \App\Models\User::find($ownerPivot->user_id);
+                                if ($owner) {
+                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                    $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
+                                    $hasTelegramAccess = $telegramEnabled === true;
+                                }
+                            }
+                        }
+                    }
+                    $hasUsersPermission = false;
+                    $hasRolesPermission = false;
+                    if ($currentBusinessRoleId) {
+                        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+                        $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
+                        $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
+                    }
+                    $hasSettingsAccess = $hasBusinessPermission('client.businesses.update') ||
+                                       $hasUsersPermission ||
+                                       $hasRolesPermission ||
+                                       ($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess);
+                @endphp
+                @if($hasSettingsAccess)
+                <div>
+                    <button @click="settingsOpen = !settingsOpen"
+                        class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-gear text-[10px] opacity-60"></i>
+                            <span>Настройки</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
+                            :class="{ 'rotate-180': settingsOpen }"></i>
+                    </button>
+                    <div x-show="settingsOpen" x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
+                        @if($hasBusinessPermission('client.businesses.update'))
+                        <a href="{{ route('settings.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.index')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-building text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Бизнес</span>
+                        </a>
+                        @endif
+
                         @if($hasBusinessPermission('client.businesses.update'))
                         <a href="{{ route('settings.online-booking') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.online-booking*')
@@ -243,49 +299,10 @@ style="width: 0; height: 0;">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-link text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Онлайн запись</span>
+                            <span class="ml-3 whitespace-nowrap">Онлайн-запись</span>
                         </a>
                         @endif
 
-                        @if($hasBusinessPermission('client.subscription.view'))
-                        <a href="{{ route('subscription.index') }}" @click="closeMenu()"
-                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('subscription.*')
-                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
-                                <i class="fa-solid fa-crown text-base"></i>
-                            </div>
-                            <span class="ml-3 whitespace-nowrap">Тарифы</span>
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
-                <!-- Команда -->
-                @php
-                    $hasUsersPermission = false;
-                    $hasRolesPermission = false;
-                    if ($currentBusinessRoleId) {
-                        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-                        $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
-                        $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
-                    }
-                @endphp
-                @if($hasUsersPermission || $hasRolesPermission)
-                <div>
-                    <button @click="teamOpen = !teamOpen"
-                        class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                        <span>Команда</span>
-                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
-                            :class="{ 'rotate-180': teamOpen }"></i>
-                    </button>
-                    <div x-show="teamOpen" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
                         @if($hasUsersPermission)
                         <a href="{{ route('settings.users.index') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.users*')
@@ -309,46 +326,8 @@ style="width: 0; height: 0;">
                             <span class="ml-3 whitespace-nowrap">Роли</span>
                         </a>
                         @endif
-                    </div>
-                </div>
-                @endif
 
-                <!-- Интеграции -->
-                @php
-                    // Проверяем доступ к Telegram боту согласно тарифу
-                    $hasTelegramAccess = false;
-                    if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
-                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-                        if ($ownerRole) {
-                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
-                                ->where('business_id', $currentBusiness->id)
-                                ->where('role_id', $ownerRole->id)
-                                ->first();
-                            if ($ownerPivot) {
-                                $owner = \App\Models\User::find($ownerPivot->user_id);
-                                if ($owner) {
-                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
-                                    $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
-                                    $hasTelegramAccess = $telegramEnabled === true;
-                                }
-                            }
-                        }
-                    }
-                @endphp
-                @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
-                <div>
-                    <button @click="integrationsOpen = !integrationsOpen"
-                        class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                        <span>Интеграции</span>
-                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
-                            :class="{ 'rotate-180': integrationsOpen }"></i>
-                    </button>
-                    <div x-show="integrationsOpen" x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
+                        @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
                         <a href="{{ route('settings.telegram') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('settings.telegram*')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
@@ -358,6 +337,7 @@ style="width: 0; height: 0;">
                             </div>
                             <span class="ml-3 whitespace-nowrap">Telegram Bot</span>
                         </a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -365,11 +345,6 @@ style="width: 0; height: 0;">
                 <!-- Аналитика -->
                 @if(!Str::startsWith(Request::path(), 'panel'))
                 @php
-                    // Определяем роль пользователя
-                    $businessRoleModel = $currentBusinessRoleId ? \App\Models\BusinessRole::find($currentBusinessRoleId) : null;
-                    $businessRoleSlug = $businessRoleModel ? $businessRoleModel->slug : ($currentBusinessRole ?? null);
-                    $isOwner = $businessRoleSlug === 'owner';
-                    
                     // Для клиентской части проверяем подписку владельца бизнеса
                     $hasAnalyticsAccess = false;
                     if ($currentBusiness) {
@@ -377,11 +352,14 @@ style="width: 0; height: 0;">
                         $hasAnalyticsAccess = $accessService->hasAccess($currentBusiness, 'analytics_enabled', 'client.analytics.view');
                     }
                 @endphp
-                @if($hasAnalyticsAccess)
+                @if($hasBusinessPermission('client.analytics.view') && $hasAnalyticsAccess)
                 <div>
                     <button @click="analyticsOpen = !analyticsOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                        <span>Аналитика</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-bar text-[10px] opacity-60"></i>
+                            <span>Аналитика</span>
+                        </div>
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
                             :class="{ 'rotate-180': analyticsOpen }"></i>
                     </button>
@@ -407,7 +385,7 @@ style="width: 0; height: 0;">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-money-bill-wave text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Финансовая</span>
+                            <span class="ml-3 whitespace-nowrap">Финансы</span>
                         </a>
                         <a href="{{ route('analytics.general') }}" @click="closeMenu()"
                             class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.general')
@@ -432,7 +410,10 @@ style="width: 0; height: 0;">
                 <div>
                     <button @click="supportOpen = !supportOpen"
                         class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                        <span>Поддержка</span>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-ticket text-[10px] opacity-60"></i>
+                            <span>Поддержка</span>
+                        </div>
                         <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
                             :class="{ 'rotate-180': supportOpen }"></i>
                     </button>
@@ -450,21 +431,52 @@ style="width: 0; height: 0;">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-plus text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Создать тикет</span>
+                            <span class="ml-3 whitespace-nowrap">Создать</span>
                         </a>
                         @endif
 
                         @if($hasBusinessPermission('client.tickets.view'))
                         <a href="{{ route('tickets.index') }}" @click="closeMenu()"
-                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('tickets.*')
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('tickets.index') || Request::routeIs('tickets.show') || Request::routeIs('tickets.edit')
                                 ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                             <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
                                 <i class="fa-solid fa-ticket text-base"></i>
                             </div>
-                            <span class="ml-3 whitespace-nowrap">Мои тикеты</span>
+                            <span class="ml-3 whitespace-nowrap">Мои</span>
                         </a>
                         @endif
+                    </div>
+                </div>
+                @endif
+
+                <!-- Подписка -->
+                @if($hasBusinessPermission('client.subscription.view'))
+                <div>
+                    <button @click="subscriptionOpen = !subscriptionOpen"
+                        class="w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-credit-card text-[10px] opacity-60"></i>
+                            <span>Подписка</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-200"
+                            :class="{ 'rotate-180': subscriptionOpen }"></i>
+                    </button>
+                    <div x-show="subscriptionOpen" x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 -translate-y-2"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100 translate-y-0"
+                        x-transition:leave-end="opacity-0 -translate-y-2" class="space-y-1 overflow-hidden">
+                        <a href="{{ route('subscription.index') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('subscription.*')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-credit-card text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Тарифы</span>
+                        </a>
                     </div>
                 </div>
                 @endif

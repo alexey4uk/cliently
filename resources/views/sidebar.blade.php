@@ -2,21 +2,25 @@
     // Переменные для клиентской части
     businessOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Request::routeIs('settings.*') ||
-            (Request::path() === 'services' || Str::startsWith(Request::path(), 'services/'))
+            Request::routeIs('services.*') ||
+            Request::routeIs('settings.masters*') ||
+            Request::routeIs('settings.locations*')
         )) 
         ? 'true' : 'false' 
     }},
     teamOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
+            Request::routeIs('settings.index') ||
+            Request::routeIs('settings.online-booking*') ||
             Request::routeIs('settings.users*') ||
-            Request::routeIs('settings.roles*')
+            Request::routeIs('settings.roles*') ||
+            Request::routeIs('settings.telegram*')
         )) 
         ? 'true' : 'false' 
     }},
-    integrationsOpen: {{ 
+    subscriptionOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Request::routeIs('settings.telegram*')
+            Request::routeIs('subscription.*')
         )) 
         ? 'true' : 'false' 
     }},
@@ -86,6 +90,7 @@
         if (this.collapsed) {
             this.businessOpen = true;
             this.teamOpen = true;
+            this.subscriptionOpen = true;
             this.integrationsOpen = true;
             this.analyticsOpen = true;
             this.supportOpen = true;
@@ -109,6 +114,7 @@
                 if (this.collapsed) {
                     this.businessOpen = true;
                     this.teamOpen = true;
+                    this.subscriptionOpen = true;
                     this.integrationsOpen = true;
                     this.analyticsOpen = true;
                     this.supportOpen = true;
@@ -205,12 +211,12 @@
                         };
                     @endphp
 
-                    <!-- Основное -->
+                    <!-- Рабочий процесс -->
                     <div>
                         <h3 x-show="!collapsed" x-cloak
                             class="sidebar-section-title px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-compass text-[10px] opacity-50"></i>
-                            <span>Основное</span>
+                            <i class="fa-solid fa-briefcase text-[10px] opacity-50"></i>
+                            <span>Рабочий процесс</span>
                         </h3>
                         <nav class="space-y-1">
                             <!-- Панель управления / Главная -->
@@ -262,59 +268,6 @@
                                         Главная
                                     </div>
                                 </a>
-                            @endif
-
-                            <!-- Клиенты -->
-                            @if(Str::startsWith(Request::path(), 'panel'))
-                                @can('panel.clients.view')
-                                    <a href="{{ route('panel.clients') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients*')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
-                                        :title="collapsed ? 'Клиенты' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('panel.clients*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Клиенты</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Клиенты
-                                        </div>
-                                    </a>
-                                @endcan
-                            @else
-                                @if($hasBusinessPermission('client.clients.view'))
-                                    <a href="{{ route('clients.index') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('clients.*')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
-                                        :title="collapsed ? 'Клиенты' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('clients.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Клиенты</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Клиенты
-                                        </div>
-                                    </a>
-                                @endif
                             @endif
 
                             <!-- Записи -->
@@ -394,24 +347,76 @@
                                 @endif
                             @endif
 
+                            <!-- Клиенты -->
+                            @if(Str::startsWith(Request::path(), 'panel'))
+                                @can('panel.clients.view')
+                                    <a href="{{ route('panel.clients') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                        :title="collapsed ? 'Клиенты' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('panel.clients*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Клиенты</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Клиенты
+                                        </div>
+                                    </a>
+                                @endcan
+                            @else
+                                @if($hasBusinessPermission('client.clients.view'))
+                                    <a href="{{ route('clients.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('clients.*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'" 
+                                        :title="collapsed ? 'Клиенты' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-users transition-transform duration-200 {{ Request::routeIs('clients.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Клиенты</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Клиенты
+                                        </div>
+                                    </a>
+                                @endif
+                            @endif
+
                         </nav>
                     </div>
 
-                    <!-- Бизнес (клиентская часть) -->
+                    <!-- Ресурсы (клиентская часть) -->
                     @if(!Str::startsWith(Request::path(), 'panel'))
                     @php
-                        $hasBusinessGroupAccess = $hasBusinessPermission('client.businesses.update') ||
-                                                  $hasBusinessPermission('client.locations.view') ||
-                                                  $hasBusinessPermission('client.services.view') ||
-                                                  $hasBusinessPermission('client.masters.view');
+                        $hasResourcesAccess = $hasBusinessPermission('client.locations.view') ||
+                                             $hasBusinessPermission('client.services.view') ||
+                                             $hasBusinessPermission('client.masters.view');
                     @endphp
-                    @if($hasBusinessGroupAccess)
+                    @if($hasResourcesAccess)
                     <div>
                         <button @click="businessOpen = !businessOpen" x-show="!collapsed" x-cloak
                             class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-building text-[10px] opacity-60"></i>
-                                <span>Бизнес</span>
+                                <i class="fa-solid fa-folder-open text-[10px] opacity-60"></i>
+                                <span>Ресурсы</span>
                             </div>
                             <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
                                 :class="{ 'rotate-180': businessOpen }"></i>
@@ -424,58 +429,6 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                                <!-- Бизнес -->
-                                @if($hasBusinessPermission('client.businesses.update'))
-                                    <a href="{{ route('settings.index') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.index')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                        :title="collapsed ? 'Бизнес' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('settings.index') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Бизнес</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Бизнес
-                                        </div>
-                                    </a>
-                                @endif
-
-                                <!-- Локации -->
-                                @if($hasBusinessPermission('client.locations.view'))
-                                    <a href="{{ route('settings.locations') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.locations*')
-                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                        :title="collapsed ? 'Локации' : ''"
-                                        x-data="{ tooltip: false }"
-                                        @mouseenter="if (collapsed) tooltip = true"
-                                        @mouseleave="tooltip = false">
-                                        <div class="flex items-center justify-center flex-shrink-0"
-                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-location-dot transition-transform duration-200 {{ Request::routeIs('settings.locations*') ? 'scale-110' : 'group-hover:scale-110' }}"
-                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                        </div>
-                                        <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Локации</span>
-                                        <div x-show="tooltip && collapsed" 
-                                             x-transition
-                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Локации
-                                        </div>
-                                    </a>
-                                @endif
-
                                 <!-- Услуги -->
                                 @if($hasBusinessPermission('client.services.view'))
                                     <a href="{{ route('services.index') }}"
@@ -528,6 +481,109 @@
                                     </a>
                                 @endif
 
+                                <!-- Локации -->
+                                @if($hasBusinessPermission('client.locations.view'))
+                                    <a href="{{ route('settings.locations') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.locations*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Локации' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-location-dot transition-transform duration-200 {{ Request::routeIs('settings.locations*') ? 'scale-110' : 'group-hover:scale-110' }}"
+                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Локации</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Локации
+                                        </div>
+                                    </a>
+                                @endif
+
+                        </nav>
+                    </div>
+                    @endif
+                    @endif
+
+                    <!-- Настройки (клиентская часть) -->
+                    @if(!Str::startsWith(Request::path(), 'panel'))
+                    @php
+                        // Проверяем доступ к Telegram боту согласно тарифу
+                        $hasTelegramAccess = false;
+                        if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
+                            $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+                            if ($ownerRole) {
+                                $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                                    ->where('business_id', $currentBusiness->id)
+                                    ->where('role_id', $ownerRole->id)
+                                    ->first();
+                                if ($ownerPivot) {
+                                    $owner = \App\Models\User::find($ownerPivot->user_id);
+                                    if ($owner) {
+                                        $subscriptionService = app(\App\Services\SubscriptionService::class);
+                                        $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
+                                        $hasTelegramAccess = $telegramEnabled === true;
+                                    }
+                                }
+                            }
+                        }
+                        $hasSettingsAccess = $hasBusinessPermission('client.businesses.update') ||
+                                           $hasBusinessPermission('client.business.users.view') ||
+                                           $hasBusinessPermission('client.business.roles.manage') ||
+                                           ($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess);
+                    @endphp
+                    @if($hasSettingsAccess)
+                    <div>
+                        <button @click="teamOpen = !teamOpen" x-show="!collapsed" x-cloak
+                            class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-gear text-[10px] opacity-60"></i>
+                                <span>Настройки</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
+                                :class="{ 'rotate-180': teamOpen }"></i>
+                        </button>
+                        <nav x-show="teamOpen || collapsed"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 -translate-y-1"
+                             class="space-y-1 overflow-hidden">
+                                <!-- Бизнес -->
+                                @if($hasBusinessPermission('client.businesses.update'))
+                                    <a href="{{ route('settings.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.index')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Бизнес' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-building transition-transform duration-200 {{ Request::routeIs('settings.index') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Бизнес</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Бизнес
+                                        </div>
+                                    </a>
+                                @endif
+
                                 <!-- Онлайн запись -->
                                 @if($hasBusinessPermission('client.businesses.update'))
                                     <a href="{{ route('settings.online-booking') }}"
@@ -545,7 +601,7 @@
                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                         </div>
                                         <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Запись</span>
+                                            class="sidebar-text whitespace-nowrap font-medium">Онлайн-запись</span>
                                         <div x-show="tooltip && collapsed" 
                                              x-transition
                                              class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
@@ -554,32 +610,145 @@
                                     </a>
                                 @endif
 
-                                <!-- Тарифы -->
-                                @if($hasBusinessPermission('client.subscription.view'))
-                                    <a href="{{ route('subscription.index') }}"
-                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.*')
+                                <!-- Пользователи -->
+                                @php
+                                    $hasUsersPermission = false;
+                                    if ($currentBusinessRoleId) {
+                                        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+                                        $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
+                                    }
+                                @endphp
+                                @if($hasUsersPermission)
+                                    <a href="{{ route('settings.users.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.users*')
                                             ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                             : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                         :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                        :title="collapsed ? 'Тарифы' : ''"
+                                        :title="collapsed ? 'Пользователи' : ''"
                                         x-data="{ tooltip: false }"
                                         @mouseenter="if (collapsed) tooltip = true"
                                         @mouseleave="tooltip = false">
                                         <div class="flex items-center justify-center flex-shrink-0"
                                             :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                            <i class="fa-solid fa-credit-card transition-transform duration-200 {{ Request::routeIs('subscription.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                            <i class="fa-solid fa-users-gear transition-transform duration-200 {{ Request::routeIs('settings.users*') ? 'scale-110' : 'group-hover:scale-110' }}" 
                                                :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                         </div>
                                         <span x-show="!collapsed" x-cloak
-                                            class="sidebar-text whitespace-nowrap font-medium">Тарифы</span>
+                                            class="sidebar-text whitespace-nowrap font-medium">Пользователи</span>
                                         <div x-show="tooltip && collapsed" 
                                              x-transition
                                              class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                            Тарифы
+                                            Пользователи
                                         </div>
                                     </a>
                                 @endif
 
+                                <!-- Роли -->
+                                @php
+                                    $hasRolesPermission = false;
+                                    if ($currentBusinessRoleId) {
+                                        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+                                        $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
+                                    }
+                                @endphp
+                                @if($hasRolesPermission)
+                                    <a href="{{ route('settings.roles.index') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.roles*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Роли' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-solid fa-shield-halved transition-transform duration-200 {{ Request::routeIs('settings.roles*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak
+                                            class="sidebar-text whitespace-nowrap font-medium">Роли</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Роли
+                                        </div>
+                                    </a>
+                                @endif
+
+                                <!-- Telegram Bot -->
+                                @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
+                                    <a href="{{ route('settings.telegram') }}"
+                                        class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.telegram*')
+                                            ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                        :title="collapsed ? 'Telegram Bot' : ''"
+                                        x-data="{ tooltip: false }"
+                                        @mouseenter="if (collapsed) tooltip = true"
+                                        @mouseleave="tooltip = false">
+                                        <div class="flex items-center justify-center flex-shrink-0"
+                                            :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                            <i class="fa-brands fa-telegram transition-transform duration-200 {{ Request::routeIs('settings.telegram*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                               :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                        </div>
+                                        <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap font-medium">Telegram Bot</span>
+                                        <div x-show="tooltip && collapsed" 
+                                             x-transition
+                                             class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                            Telegram Bot
+                                        </div>
+                                    </a>
+                                @endif
+
+                        </nav>
+                    </div>
+                    @endif
+                    @endif
+
+                    <!-- Подписка (клиентская часть) -->
+                    @if(!Str::startsWith(Request::path(), 'panel'))
+                    @if($hasBusinessPermission('client.subscription.view'))
+                    <div>
+                        <button @click="subscriptionOpen = !subscriptionOpen" x-show="!collapsed" x-cloak
+                            class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-credit-card text-[10px] opacity-60"></i>
+                                <span>Подписка</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
+                                :class="{ 'rotate-180': subscriptionOpen }"></i>
+                        </button>
+                        <nav x-show="subscriptionOpen || collapsed"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 -translate-y-1"
+                             class="space-y-1 overflow-hidden">
+                            <a href="{{ route('subscription.index') }}"
+                                class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.*')
+                                    ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                                :title="collapsed ? 'Тарифы' : ''"
+                                x-data="{ tooltip: false }"
+                                @mouseenter="if (collapsed) tooltip = true"
+                                @mouseleave="tooltip = false">
+                                <div class="flex items-center justify-center flex-shrink-0"
+                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                    <i class="fa-solid fa-credit-card transition-transform duration-200 {{ Request::routeIs('subscription.*') ? 'scale-110' : 'group-hover:scale-110' }}" 
+                                       :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                                </div>
+                                <span x-show="!collapsed" x-cloak
+                                    class="sidebar-text whitespace-nowrap font-medium">Тарифы</span>
+                                <div x-show="tooltip && collapsed" 
+                                     x-transition
+                                     class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                    Тарифы
+                                </div>
+                            </a>
                         </nav>
                     </div>
                     @endif
@@ -1001,89 +1170,6 @@
                     </div>
                     @endif
 
-                    <!-- Команда (клиентская часть) -->
-                    @if(!Str::startsWith(Request::path(), 'panel'))
-                    @php
-                        $hasUsersPermission = false;
-                        $hasRolesPermission = false;
-                        if ($currentBusinessRoleId) {
-                            $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-                            $hasUsersPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.users.view');
-                            $hasRolesPermission = $permissionService->hasPermission($currentBusinessRoleId, 'client.business.roles.manage');
-                        }
-                    @endphp
-                    @if($hasUsersPermission || $hasRolesPermission)
-                    <div>
-                        <button @click="teamOpen = !teamOpen" x-show="!collapsed" x-cloak
-                            class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-users-gear text-[10px] opacity-60"></i>
-                                <span>Команда</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
-                                :class="{ 'rotate-180': teamOpen }"></i>
-                        </button>
-                        <nav x-show="teamOpen || collapsed"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 translate-y-0"
-                             x-transition:leave-end="opacity-0 -translate-y-1"
-                             class="space-y-1 overflow-hidden">
-                            @if($hasUsersPermission)
-                                <a href="{{ route('settings.users.index') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.users*')
-                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Пользователи' : ''"
-                                    x-data="{ tooltip: false }"
-                                    @mouseenter="if (collapsed) tooltip = true"
-                                    @mouseleave="tooltip = false">
-                                    <div class="flex items-center justify-center flex-shrink-0"
-                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-users-gear transition-transform duration-200 {{ Request::routeIs('settings.users*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                           :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                    </div>
-                                    <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Пользователи</span>
-                                    <div x-show="tooltip && collapsed" 
-                                         x-transition
-                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Пользователи
-                                    </div>
-                                </a>
-                            @endif
-
-                            @if($hasRolesPermission)
-                                <a href="{{ route('settings.roles.index') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.roles*')
-                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Роли' : ''"
-                                    x-data="{ tooltip: false }"
-                                    @mouseenter="if (collapsed) tooltip = true"
-                                    @mouseleave="tooltip = false">
-                                    <div class="flex items-center justify-center flex-shrink-0"
-                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-shield-halved transition-transform duration-200 {{ Request::routeIs('settings.roles*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                           :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                    </div>
-                                    <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Роли</span>
-                                    <div x-show="tooltip && collapsed" 
-                                         x-transition
-                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Роли
-                                    </div>
-                                </a>
-                            @endif
-                        </nav>
-                    </div>
-                    @endif
-                    @endif
 
                     <!-- Администрирование (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
@@ -1350,73 +1436,6 @@
                     @endif
                     @endif
 
-                    <!-- Интеграции (клиентская часть) -->
-                    @if(!Str::startsWith(Request::path(), 'panel'))
-                    @php
-                        // Проверяем доступ к Telegram боту согласно тарифу
-                        $hasTelegramAccess = false;
-                        if ($currentBusiness && $hasBusinessPermission('client.telegram.manage')) {
-                            $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-                            if ($ownerRole) {
-                                $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
-                                    ->where('business_id', $currentBusiness->id)
-                                    ->where('role_id', $ownerRole->id)
-                                    ->first();
-                                if ($ownerPivot) {
-                                    $owner = \App\Models\User::find($ownerPivot->user_id);
-                                    if ($owner) {
-                                        $subscriptionService = app(\App\Services\SubscriptionService::class);
-                                        $telegramEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled');
-                                        $hasTelegramAccess = $telegramEnabled === true;
-                                    }
-                                }
-                            }
-                        }
-                    @endphp
-                    @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
-                    <div>
-                        <button @click="integrationsOpen = !integrationsOpen" x-show="!collapsed" x-cloak
-                            class="sidebar-section-title w-full flex items-center justify-between px-3 mb-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 rounded-lg py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/30">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-plug text-[10px] opacity-60"></i>
-                                <span>Интеграции</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
-                                :class="{ 'rotate-180': integrationsOpen }"></i>
-                        </button>
-                        <nav x-show="integrationsOpen || collapsed"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 translate-y-0"
-                             x-transition:leave-end="opacity-0 -translate-y-1"
-                             class="space-y-1 overflow-hidden">
-                            <a href="{{ route('settings.telegram') }}"
-                                class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.telegram*')
-                                    ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                :title="collapsed ? 'Telegram Bot' : ''"
-                                x-data="{ tooltip: false }"
-                                @mouseenter="if (collapsed) tooltip = true"
-                                @mouseleave="tooltip = false">
-                                <div class="flex items-center justify-center flex-shrink-0"
-                                    :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                    <i class="fa-brands fa-telegram transition-transform duration-200 {{ Request::routeIs('settings.telegram*') ? 'scale-110' : 'group-hover:scale-110' }}" 
-                                       :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                </div>
-                                <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap font-medium">Telegram Bot</span>
-                                <div x-show="tooltip && collapsed" 
-                                     x-transition
-                                     class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                    Telegram Bot
-                                </div>
-                            </a>
-                        </nav>
-                    </div>
-                    @endif
-                    @endif
 
                     <!-- Интеграции (админ-панель) -->
                     @if(Str::startsWith(Request::path(), 'panel'))
@@ -1534,63 +1553,6 @@
                                     @endif
                                 </div>
                             </a>
-                        @endif
-                        
-                        @if($businessRoleSlug)
-                            @php
-                                $roleLabels = [
-                                    'owner' => 'Владелец',
-                                    'admin' => 'Администратор',
-                                    'master' => 'Мастер',
-                                ];
-                                $roleLabel = $businessRoleName ?? ($roleLabels[$businessRoleSlug] ?? ucfirst($businessRoleSlug));
-                                $roleIcon = match ($businessRoleSlug) {
-                                    'owner' => 'fa-crown',
-                                    'admin' => 'fa-user-shield',
-                                    'master' => 'fa-user',
-                                    default => 'fa-user-gear',
-                                };
-                                $roleColor = match ($businessRoleSlug) {
-                                    'owner' => 'text-amber-600 dark:text-amber-400',
-                                    'admin' => 'text-indigo-600 dark:text-indigo-400',
-                                    'master' => 'text-purple-600 dark:text-purple-400',
-                                    default => 'text-slate-600 dark:text-slate-300',
-                                };
-                                $roleContainer = match ($businessRoleSlug) {
-                                    'owner' => 'bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 border-amber-200 dark:border-amber-500/20',
-                                    'admin' => 'bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 border-indigo-200 dark:border-indigo-500/20',
-                                    'master' => 'bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 border-purple-200 dark:border-purple-500/20',
-                                    default => 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700',
-                                };
-                            @endphp
-                            <!-- Информация о роли работника -->
-                            <div class="mb-4 p-3 rounded-lg border transition-all duration-200 relative
-                                {{ $roleContainer }}"
-                                :class="collapsed ? 'px-2' : ''"
-                                :title="collapsed ? '{{ $roleLabel }}' : ''"
-                                x-data="{ tooltip: false }"
-                                @mouseenter="if (collapsed) tooltip = true"
-                                @mouseleave="tooltip = false">
-                                <div x-show="!collapsed" x-cloak class="flex items-center gap-2">
-                                    <i class="fa-solid {{ $roleIcon }} {{ $roleColor }} text-sm"></i>
-                                    <span class="text-xs font-semibold text-slate-900 dark:text-white truncate">
-                                        {{ $roleLabel }}
-                                    </span>
-                                </div>
-                                
-                                <!-- Иконка при свернутом sidebar -->
-                                <div x-show="collapsed" class="flex justify-center">
-                                    <i class="fa-solid {{ $roleIcon }} {{ $roleColor }} text-lg"></i>
-                                </div>
-                                
-                                <div x-show="tooltip && collapsed" 
-                                     x-transition
-                                     class="absolute left-full ml-2 px-2 py-1.5 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                    <div class="font-semibold">
-                                        {{ $roleLabel }}
-                                    </div>
-                                </div>
-                            </div>
                         @endif
                     @endif
                     
