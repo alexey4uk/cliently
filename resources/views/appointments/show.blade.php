@@ -91,7 +91,7 @@
                 </div>
                 <div class="sm:text-right">
                     <p class="text-3xl font-bold text-slate-900 dark:text-white">
-                        {{ number_format($appointment->final_price, 0, ',', ' ') }} ₽
+                        {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                     </p>
                     <p class="text-sm text-slate-500 dark:text-slate-400">Стоимость услуги</p>
                 </div>

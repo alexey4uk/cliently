@@ -139,7 +139,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-slate-900 dark:text-white">
-                                        {{ number_format($service->price, 0, ',', ' ') }} ₽
+                                        {{ number_format($service->price, 0, ',', ' ') }} BYN
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
@@ -228,7 +228,7 @@
                         <div class="flex items-center gap-4 text-sm">
                             <div class="flex items-center gap-1.5">
                                 <span class="font-semibold text-slate-900 dark:text-white">
-                                    {{ number_format($service->price, 0, ',', ' ') }} ₽
+                                    {{ number_format($service->price, 0, ',', ' ') }} BYN
                                 </span>
                             </div>
                             <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">

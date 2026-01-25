@@ -241,7 +241,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center px-3 py-1.5 text-sm font-semibold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 rounded-lg border border-emerald-200 dark:border-emerald-600/30">
-                                            {{ number_format($service->price, 0, '.', ' ') }} ₽
+                                            {{ number_format($service->price, 0, '.', ' ') }} BYN
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

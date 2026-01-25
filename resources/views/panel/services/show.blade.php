@@ -125,7 +125,7 @@
                 <!-- Цена -->
                 <div>
                     <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Цена</p>
-                    <p class="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{{ number_format($service->price, 0, '.', ' ') }} ₽</p>
+                    <p class="text-sm sm:text-base font-semibold text-slate-900 dark:text-white">{{ number_format($service->price, 0, '.', ' ') }} BYN</p>
                 </div>
 
                 <!-- Длительность -->

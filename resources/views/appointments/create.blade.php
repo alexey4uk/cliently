@@ -256,7 +256,7 @@
                                 @click="toggleOpen()"
                                 class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('service_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                             <span x-show="selectedService" x-cloak class="text-slate-900 dark:text-white">
-                                <span x-text="selectedService ? selectedService.name : ''"></span> - <span x-text="selectedService ? selectedService.price : ''"></span> ₽ (<span x-text="selectedService ? selectedService.duration : ''"></span> мин)
+                                <span x-text="selectedService ? selectedService.name : ''"></span> - <span x-text="selectedService ? selectedService.price : ''"></span> BYN (<span x-text="selectedService ? selectedService.duration : ''"></span> мин)
                             </span>
                             <span x-show="!selectedService" x-cloak class="text-slate-400 dark:text-slate-500">
                                 Выберите услугу
@@ -304,7 +304,7 @@
                                         :class="selectedService && selectedService.id === service.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
                                     <div class="flex-1 min-w-0">
                                         <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="service.name"></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="`${service.price} ₽ • ${service.duration} мин`"></div>
+                                        <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="`${service.price} BYN • ${service.duration} мин`"></div>
                                     </div>
                                     <i x-show="selectedService && selectedService.id === service.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
                                 </button>

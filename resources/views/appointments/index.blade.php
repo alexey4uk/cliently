@@ -562,7 +562,7 @@
                                 <td class="px-6 py-4">
                                     @if ($appointment->final_price)
                                         <span class="text-sm font-medium text-slate-900 dark:text-white">
-                                            {{ number_format($appointment->final_price, 0, ',', ' ') }} ₽
+                                            {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                                         </span>
                                     @else
                                         <span class="text-slate-400 dark:text-slate-500 italic">Не указана</span>
@@ -710,7 +710,7 @@
                             <div>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Цена</p>
                                 <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                                    {{ number_format($appointment->final_price, 0, ',', ' ') }} ₽
+                                    {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                                 </p>
                             </div>
                         @endif

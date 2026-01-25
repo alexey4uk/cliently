@@ -148,11 +148,11 @@
                             <p class="text-sm text-slate-500 dark:text-slate-400">Записей</p>
                         </div>
                         <div class="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                            <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($totalSpent, 0, ',', ' ') }} ₽</p>
+                            <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{{ number_format($totalSpent, 0, ',', ' ') }} BYN</p>
                             <p class="text-sm text-slate-500 dark:text-slate-400">Потрачено</p>
                         </div>
                         <div class="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                            <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ number_format($avgCheck, 0, ',', ' ') }} ₽</p>
+                            <p class="text-2xl font-bold text-amber-600 dark:text-amber-400">{{ number_format($avgCheck, 0, ',', ' ') }} BYN</p>
                             <p class="text-sm text-slate-500 dark:text-slate-400">Средний чек</p>
                         </div>
                         <div class="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
@@ -223,7 +223,7 @@
                                             Мастер не назначен
                                         @endif
                                         @if ($appointment->final_price)
-                                            · {{ number_format($appointment->final_price, 0, ',', ' ') }} ₽
+                                            · {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                                         @endif
                                     </p>
                                 </div>

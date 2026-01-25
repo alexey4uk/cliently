@@ -208,7 +208,7 @@
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $service->name }}</p>
                                         @if($service->pivot->price)
-                                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ number_format($service->pivot->price, 0, '.', ' ') }} ₽</p>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{{ number_format($service->pivot->price, 0, '.', ' ') }} BYN</p>
                                         @endif
                                     </div>
                                 </div>

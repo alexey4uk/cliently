@@ -138,7 +138,7 @@
                         <!-- Цена -->
                         <div>
                             <label for="price" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                Цена (₽) <span class="text-rose-500">*</span>
+                                Цена (BYN) <span class="text-rose-500">*</span>
                             </label>
                             <div class="relative">
                                 <input type="number"
@@ -149,7 +149,7 @@
                                        step="0.01"
                                        class="w-full px-4 py-2.5 rounded-lg border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                                        required>
-                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm">₽</span>
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm">BYN</span>
                             </div>
                             @error('price')
                                 <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>

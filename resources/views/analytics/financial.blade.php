@@ -103,7 +103,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Общая выручка</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['total_revenue'], 0, ',', ' ') }} ₽</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['total_revenue'], 0, ',', ' ') }} BYN</p>
                 </div>
                 <div class="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center">
                     <i class="fa-solid fa-money-bill-wave text-green-600 dark:text-green-400 text-xl"></i>
@@ -127,7 +127,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Средний чек</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['average_check'], 0, ',', ' ') }} ₽</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['average_check'], 0, ',', ' ') }} BYN</p>
                 </div>
                 <div class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 rounded-xl flex items-center justify-center">
                     <i class="fa-solid fa-calculator text-purple-600 dark:text-purple-400 text-xl"></i>
@@ -162,7 +162,7 @@
                             <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
                                 <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['service_name'] }}</td>
                                 <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                                <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} ₽</td>
+                                <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -191,7 +191,7 @@
                         <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['master_name'] }}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} ₽</td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -218,7 +218,7 @@
                         <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
                             <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['location_name'] }}</td>
                             <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} ₽</td>
+                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -253,7 +253,7 @@
                 data: {
                     labels: revenueData.map(item => item.label),
                     datasets: [{
-                        label: 'Выручка (₽)',
+                        label: 'Выручка (BYN)',
                         data: revenueData.map(item => item.revenue),
                         borderColor: 'rgb(34, 197, 94)',
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -277,7 +277,7 @@
                             intersect: false,
                             callbacks: {
                                 label: function(context) {
-                                    return 'Выручка: ' + new Intl.NumberFormat('ru-RU').format(context.parsed.y) + ' ₽';
+                                    return 'Выручка: ' + new Intl.NumberFormat('ru-RU').format(context.parsed.y) + ' BYN';
                                 }
                             }
                         }
@@ -296,7 +296,7 @@
                             ticks: {
                                 color: colors.textSecondary,
                                 callback: function(value) {
-                                    return new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+                                    return new Intl.NumberFormat('ru-RU').format(value) + ' BYN';
                                 }
                             },
                             grid: {

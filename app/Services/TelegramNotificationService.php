@@ -96,7 +96,7 @@ class TelegramNotificationService
         $message .= "🕐 Время: {$appointment->time}\n";
 
         if ($appointment->price) {
-            $message .= "💰 Цена: {$appointment->price} руб.\n";
+            $message .= "💰 Цена: {$appointment->price} BYN\n";
         }
 
         if ($appointment->notes) {
