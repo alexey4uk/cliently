@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Business;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of appointments.
      */
@@ -81,7 +89,7 @@ class AppointmentController extends Controller
         $appointments = $query->paginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.appointments.index', compact(
             'appointments',
@@ -101,7 +109,7 @@ class AppointmentController extends Controller
      */
     public function edit(Appointment $appointment)
     {
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.appointments.edit', compact('appointment', 'businesses'));
     }

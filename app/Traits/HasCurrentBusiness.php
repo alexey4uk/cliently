@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Business;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -11,6 +12,7 @@ trait HasCurrentBusiness
 {
     /**
      * Get the current business for the authenticated user.
+     * Uses request-level caching to avoid multiple DB queries.
      * Checks session first, then falls back to the first business.
      */
     protected function getCurrentBusiness(): ?Business
@@ -21,15 +23,26 @@ trait HasCurrentBusiness
             return null;
         }
 
+        // Request-level cache (exists only for current request)
+        $cacheKey = "current_business_{$user->id}";
+        if (app()->bound($cacheKey)) {
+            return app($cacheKey);
+        }
+
         // Check session for current business (for future multi-business support)
         $businessId = Session::get('current_business_id');
 
         if ($businessId) {
-            $business = Business::find($businessId);
+            // Кешируем бизнес на 5 минут
+            $business = Cache::remember("business_{$businessId}", 300, function () use ($businessId) {
+                return Business::find($businessId);
+            });
+
             // Verify user has access to this business
             if ($business) {
-                $user->load('businesses');
-                if ($user->businesses->contains($business->id)) {
+                $userBusinesses = $this->getUserBusinesses($user);
+                if ($userBusinesses->contains($business->id)) {
+                    app()->instance($cacheKey, $business);
                     return $business;
                 }
             }
@@ -38,13 +51,16 @@ trait HasCurrentBusiness
         }
 
         // Fallback to first business (MVP approach)
-        $user->load('businesses');
+        $userBusinesses = $this->getUserBusinesses($user);
+        $business = $userBusinesses->first();
+        app()->instance($cacheKey, $business);
 
-        return $user->businesses->first();
+        return $business;
     }
 
     /**
      * Get the current user's role model in the current business.
+     * Uses caching to avoid repeated DB queries.
      */
     protected function getCurrentBusinessRole(): ?\App\Models\BusinessRole
     {
@@ -60,27 +76,39 @@ trait HasCurrentBusiness
             return null;
         }
 
-        // Always query pivot directly from DB for reliability
-        $pivotData = DB::table('business_user')
-            ->where('user_id', $user->id)
-            ->where('business_id', $business->id)
-            ->first();
+        // Request-level cache
+        $cacheKey = "current_business_role_{$user->id}_{$business->id}";
+        if (app()->bound($cacheKey)) {
+            return app($cacheKey);
+        }
+
+        // Кешируем pivot данные на 10 минут
+        $pivotData = Cache::remember("business_user_pivot_{$user->id}_{$business->id}", 600, function () use ($user, $business) {
+            return DB::table('business_user')
+                ->where('user_id', $user->id)
+                ->where('business_id', $business->id)
+                ->first();
+        });
 
         if (! $pivotData) {
+            app()->instance($cacheKey, null);
             return null;
         }
 
+        $role = null;
+
         // First try to get role by role_id
         if ($pivotData->role_id) {
-            $role = \App\Models\BusinessRole::find($pivotData->role_id);
+            $role = \App\Models\BusinessRole::getCached($pivotData->role_id);
             if ($role) {
+                app()->instance($cacheKey, $role);
                 return $role;
             }
         }
 
         // Fallback: try to get role by slug (for backward compatibility)
         if ($pivotData->role) {
-            $role = \App\Models\BusinessRole::where('slug', $pivotData->role)->first();
+            $role = \App\Models\BusinessRole::getCachedBySlug($pivotData->role);
             if ($role) {
                 // Update role_id for future use
                 DB::table('business_user')
@@ -88,11 +116,26 @@ trait HasCurrentBusiness
                     ->where('business_id', $business->id)
                     ->update(['role_id' => $role->id]);
 
+                // Очищаем кеш pivot
+                Cache::forget("business_user_pivot_{$user->id}_{$business->id}");
+
+                app()->instance($cacheKey, $role);
                 return $role;
             }
         }
 
+        app()->instance($cacheKey, null);
         return null;
+    }
+
+    /**
+     * Get user businesses with caching.
+     */
+    protected function getUserBusinesses($user)
+    {
+        return Cache::remember("user_businesses_{$user->id}", 600, function () use ($user) {
+            return $user->businesses;
+        });
     }
 
     /**
@@ -107,9 +150,15 @@ trait HasCurrentBusiness
         }
 
         // Verify user has access to this business
-        $user->load('businesses');
-        if ($user->businesses->contains($business->id)) {
+        $userBusinesses = $this->getUserBusinesses($user);
+        if ($userBusinesses->contains($business->id)) {
             Session::put('current_business_id', $business->id);
+
+            // Очищаем кеш текущего бизнеса
+            $cacheKey = "current_business_{$user->id}";
+            if (app()->bound($cacheKey)) {
+                app()->forgetInstance($cacheKey);
+            }
         }
     }
 }

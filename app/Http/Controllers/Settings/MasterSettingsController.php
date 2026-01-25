@@ -58,7 +58,7 @@ class MasterSettingsController extends Controller
             'business' => $business,
             'locations' => $business->locations,
             'services' => $business->services,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 
@@ -136,7 +136,7 @@ class MasterSettingsController extends Controller
             'master' => $master,
             'locations' => $business->locations,
             'services' => $business->services,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 

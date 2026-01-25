@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Business;
+use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentSlotService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,10 +13,14 @@ use Illuminate\Support\Facades\Validator;
 class AppointmentSlotController extends Controller
 {
     protected AppointmentSlotService $slotService;
+    protected BusinessRepositoryInterface $businessRepository;
 
-    public function __construct(AppointmentSlotService $slotService)
-    {
+    public function __construct(
+        AppointmentSlotService $slotService,
+        BusinessRepositoryInterface $businessRepository
+    ) {
         $this->slotService = $slotService;
+        $this->businessRepository = $businessRepository;
     }
 
     /**
@@ -25,7 +30,10 @@ class AppointmentSlotController extends Controller
      */
     public function getAvailableSlots(Request $request, string $slug): JsonResponse
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         $validator = Validator::make($request->all(), [
             'service_id' => ['required', 'integer', 'exists:services,id'],

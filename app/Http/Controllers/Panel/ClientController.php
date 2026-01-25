@@ -6,11 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\Client;
 use App\Models\Country;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ClientController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of clients.
      */
@@ -58,7 +66,7 @@ class ClientController extends Controller
         $clients = $query->paginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
-        $businesses = \App\Models\Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.clients.index', compact(
             'clients',
@@ -76,8 +84,8 @@ class ClientController extends Controller
      */
     public function create()
     {
-        $businesses = Business::orderBy('name')->get();
-        $countries = Country::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
+        $countries = Country::getCached();
 
         return view('panel.clients.create', compact('businesses', 'countries'));
     }
@@ -115,8 +123,8 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
-        $businesses = Business::orderBy('name')->get();
-        $countries = Country::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
+        $countries = Country::getCached();
 
         return view('panel.clients.edit', compact('client', 'businesses', 'countries'));
     }

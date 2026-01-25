@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\Country;
 use App\Models\Location;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -51,7 +52,7 @@ class LocationController extends Controller
         $locations = $query->paginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.locations.index', compact(
             'locations',
@@ -83,8 +84,8 @@ class LocationController extends Controller
      */
     public function edit(Location $location)
     {
-        $businesses = Business::orderBy('name')->get();
-        $countries = Country::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
+        $countries = Country::getCached();
 
         return view('panel.locations.edit', compact('location', 'businesses', 'countries'));
     }

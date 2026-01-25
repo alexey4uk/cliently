@@ -59,20 +59,33 @@ class DashboardController extends Controller
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
-        // Кэширование данных (5 минут)
+        // Кэширование данных (5 минут) с использованием тегов для групповой очистки
         $user = Auth::user();
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
+        $roleId = $role ? $role->id : 'no_role';
+        $cacheTags = ['dashboard', "user_{$user->id}", "role_{$roleId}"];
+
+        // Проверяем, поддерживает ли драйвер кеша теги (array драйвер не поддерживает)
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+
+        // Функция для получения кеша с поддержкой тегов или без
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
 
         // Получаем данные с фильтрацией по правам
-        $stats = Cache::remember('dashboard_stats_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $stats = $getCache('dashboard_stats_'.$user->id.'_'.$roleId, function () use ($business, $role) {
             return $this->getStats($business, $role);
         });
 
-        $appointments = Cache::remember('dashboard_appointments_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $appointments = $getCache('dashboard_appointments_'.$user->id.'_'.$roleId, function () use ($business, $role) {
             return $this->getAppointments($business, $role);
         });
 
-        $clients = Cache::remember('dashboard_clients_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $clients = $getCache('dashboard_clients_'.$user->id.'_'.$roleId, function () use ($business, $role) {
             return $this->getRecentClients($business, $role, 5);
         });
 
@@ -81,7 +94,7 @@ class DashboardController extends Controller
         if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $financialStats = Cache::remember('dashboard_financial_'.$user->id.'_'.$role->id, 300, function () use ($business, $role) {
+                $financialStats = $getCache('dashboard_financial_'.$user->id.'_'.$role->id, function () use ($business, $role) {
                     return $this->getFinancialStats($business, $role);
                 });
             }
@@ -95,7 +108,7 @@ class DashboardController extends Controller
         ) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topServices = Cache::remember('dashboard_top_services_'.$user->id.'_'.$role->id, 300, function () use ($business) {
+                $topServices = $getCache('dashboard_top_services_'.$user->id.'_'.$role->id, function () use ($business) {
                     return $this->getTopServices($business);
                 });
             }
@@ -109,7 +122,7 @@ class DashboardController extends Controller
         ) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topMasters = Cache::remember('dashboard_top_masters_'.$user->id.'_'.$role->id, 300, function () use ($business) {
+                $topMasters = $getCache('dashboard_top_masters_'.$user->id.'_'.$role->id, function () use ($business) {
                     return $this->getTopMasters($business);
                 });
             }
@@ -118,7 +131,7 @@ class DashboardController extends Controller
         // Статус подписки (если есть доступ)
         $subscriptionStatus = null;
         if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
-            $subscriptionStatus = Cache::remember('dashboard_subscription_'.$user->id.'_'.$role->id, 300, function () use ($business) {
+            $subscriptionStatus = $getCache('dashboard_subscription_'.$user->id.'_'.$role->id, function () use ($business) {
                 return $this->getSubscriptionStatus($business);
             });
         }
@@ -142,14 +155,20 @@ class DashboardController extends Controller
         $role = $this->getCurrentBusinessRole();
         $roleId = $role ? $role->id : 'no_role';
 
-        // Очистка кэша
-        Cache::forget('dashboard_stats_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_appointments_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_clients_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_financial_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_top_services_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_top_masters_'.$user->id.'_'.$roleId);
-        Cache::forget('dashboard_subscription_'.$user->id.'_'.$roleId);
+        // Очистка кэша через теги для групповой очистки (если поддерживается)
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        if ($supportsTags) {
+            Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->flush();
+        } else {
+            // Если теги не поддерживаются, очищаем вручную
+            Cache::forget('dashboard_stats_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_appointments_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_clients_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_financial_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_top_services_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_top_masters_'.$user->id.'_'.$roleId);
+            Cache::forget('dashboard_subscription_'.$user->id.'_'.$roleId);
+        }
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }

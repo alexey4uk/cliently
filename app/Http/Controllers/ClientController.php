@@ -131,7 +131,7 @@ class ClientController extends Controller
 
         return view('clients.create', [
             'business' => $business,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 
@@ -270,7 +270,7 @@ class ClientController extends Controller
         return view('clients.edit', [
             'business' => $business,
             'client' => $client,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 

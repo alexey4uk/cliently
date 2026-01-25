@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\Service;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of services.
      */
@@ -45,8 +53,8 @@ class ServiceController extends Controller
 
         $services = $query->paginate($perPage)->withQueryString();
 
-        // Получаем список бизнесов для фильтра
-        $businesses = Business::orderBy('name')->get();
+        // Получаем список бизнесов для фильтра (кешируется)
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.services.index', compact(
             'services',
@@ -75,7 +83,7 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.services.edit', compact('service', 'businesses'));
     }

@@ -26,7 +26,7 @@ class ProfileController extends Controller
         
         return view($view, [
             'user' => $request->user(),
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 

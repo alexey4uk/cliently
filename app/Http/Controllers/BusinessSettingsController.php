@@ -28,7 +28,7 @@ class BusinessSettingsController extends Controller
         }
 
         return view('settings.business.create', [
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 
@@ -207,7 +207,7 @@ class BusinessSettingsController extends Controller
 
         return view('settings.business.edit', [
             'business' => $business,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 

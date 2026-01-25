@@ -54,7 +54,7 @@ class LocationSettingsController extends Controller
 
         return view('settings.locations.create', [
             'business' => $business,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 
@@ -122,7 +122,7 @@ class LocationSettingsController extends Controller
         return view('settings.locations.edit', [
             'business' => $business,
             'location' => $location,
-            'countries' => Country::orderBy('name')->get(),
+            'countries' => Country::getCached(),
         ]);
     }
 

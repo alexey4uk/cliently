@@ -10,12 +10,20 @@ use App\Models\TicketAttachment;
 use App\Models\TicketCategory;
 use App\Models\TicketComment;
 use App\Models\User;
+use App\Repositories\BusinessRepositoryInterface;
 use App\Services\TicketNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -83,7 +91,7 @@ class TicketController extends Controller
         $tickets = $query->paginate($perPage)->withQueryString();
 
         // Получаем данные для фильтров
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
         $categories = TicketCategory::where('is_active', true)->orderBy('sort_order')->get();
         // Только системные пользователи (с доступом к админ-панели) для назначения на тикеты
         $users = User::permission('panel.access')->orderBy('name')->get();

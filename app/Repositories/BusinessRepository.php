@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Business;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Репозиторий для работы с бизнесами
@@ -20,40 +21,54 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Найти бизнес по токену Telegram
+     * Uses caching to avoid repeated DB queries.
      */
     public function findByTelegramToken(string $token): ?Business
     {
-        return $this->model->where('telegram_token', $token)->first();
+        return Cache::remember("business_telegram_token_{$token}", 1800, function () use ($token) {
+            return $this->model->where('telegram_token', $token)->first();
+        });
     }
 
     /**
      * Найти бизнес по slug
+     * Uses caching to avoid repeated DB queries.
      */
     public function findBySlug(string $slug): ?Business
     {
-        return $this->model->where('slug', $slug)->first();
+        return Cache::remember("business_slug_{$slug}", 1800, function () use ($slug) {
+            return $this->model->where('slug', $slug)->first();
+        });
     }
 
     /**
      * Получить список бизнесов для каталога с пагинацией
+     * Uses caching to avoid repeated DB queries.
      */
     public function getPaginated(int $page = 1, int $perPage = 10): Collection
     {
-        $offset = ($page - 1) * $perPage;
+        $cacheKey = "businesses_paginated_{$page}_{$perPage}";
 
-        return $this->model->select('id', 'name', 'slug')
-            ->orderBy('name')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+        return Cache::remember($cacheKey, 1800, function () use ($page, $perPage) {
+            $offset = ($page - 1) * $perPage;
+
+            return $this->model->select('id', 'name', 'slug')
+                ->orderBy('name')
+                ->offset($offset)
+                ->limit($perPage)
+                ->get();
+        });
     }
 
     /**
      * Получить общее количество бизнесов
+     * Uses caching to avoid repeated DB queries.
      */
     public function getTotalCount(): int
     {
-        return $this->model->count();
+        return Cache::remember('businesses_total_count', 1800, function () {
+            return $this->model->count();
+        });
     }
 
     /**
@@ -80,10 +95,49 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
     }
 
     /**
+     * Получить список всех бизнесов для фильтров
+     * Uses caching to avoid repeated DB queries.
+     */
+    public function getAllForFilter(): Collection
+    {
+        return Cache::remember('businesses_list_filter', 1800, function () {
+            return $this->model->orderBy('name')->get();
+        });
+    }
+
+    /**
      * Обновить чат ID Telegram для бизнеса
      */
     public function updateTelegramChatId(Business $business, int $chatId): bool
     {
         return $business->update(['telegram_chat_id' => $chatId]);
+    }
+
+    /**
+     * Clear business cache.
+     * Call this method when business data is changed.
+     *
+     * @param  Business|null  $business  Business instance or null to clear all
+     */
+    public function clearCache(?Business $business = null): void
+    {
+        if ($business) {
+            Cache::forget("business_{$business->id}");
+            Cache::forget("business_slug_{$business->slug}");
+            if ($business->telegram_token) {
+                Cache::forget("business_telegram_token_{$business->telegram_token}");
+            }
+        }
+
+        // Очищаем общие кеши
+        Cache::forget('businesses_total_count');
+        Cache::forget('businesses_list_filter');
+        // Очищаем все страницы пагинации (можно использовать теги кеша в будущем)
+        // Для простоты очищаем первые 10 страниц
+        for ($page = 1; $page <= 10; $page++) {
+            for ($perPage = 10; $perPage <= 50; $perPage += 10) {
+                Cache::forget("businesses_paginated_{$page}_{$perPage}");
+            }
+        }
     }
 }

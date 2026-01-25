@@ -8,10 +8,18 @@ use App\Models\Country;
 use App\Models\Location;
 use App\Models\Master;
 use App\Models\Service;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of masters.
      */
@@ -53,7 +61,7 @@ class MasterController extends Controller
         $masters = $query->paginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.masters.index', compact(
             'masters',
@@ -83,7 +91,7 @@ class MasterController extends Controller
     public function edit(Master $master)
     {
         $master->load(['business', 'locations', 'services']);
-        $businesses = Business::orderBy('name')->get();
+        $businesses = $this->businessRepository->getAllForFilter();
 
         // Загружаем локации и услуги для текущего бизнеса мастера
         $locations = collect();
@@ -94,7 +102,7 @@ class MasterController extends Controller
             $services = Service::where('business_id', $master->business_id)->orderBy('name')->get();
         }
 
-        $countries = Country::orderBy('name')->get();
+        $countries = Country::getCached();
 
         return view('panel.masters.edit', compact('master', 'businesses', 'locations', 'services', 'countries'));
     }

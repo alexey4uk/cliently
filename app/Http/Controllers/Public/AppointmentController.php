@@ -7,6 +7,7 @@ use App\Http\Requests\PublicAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
+use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentNotificationService;
 use App\Services\AppointmentSlotService;
 use App\Services\SubscriptionService;
@@ -17,6 +18,15 @@ use Illuminate\Support\Facades\Log;
 class AppointmentController extends Controller
 {
     protected AppointmentSlotService $slotService;
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(
+        AppointmentSlotService $slotService,
+        BusinessRepositoryInterface $businessRepository
+    ) {
+        $this->slotService = $slotService;
+        $this->businessRepository = $businessRepository;
+    }
 
     public function __construct(AppointmentSlotService $slotService)
     {
@@ -28,7 +38,10 @@ class AppointmentController extends Controller
      */
     public function show(string $slug)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
@@ -45,7 +58,10 @@ class AppointmentController extends Controller
      */
     public function selectLocation(string $slug, $locationId)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
@@ -68,7 +84,10 @@ class AppointmentController extends Controller
      */
     public function selectService(string $slug, $locationId, $serviceId)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
@@ -116,7 +135,10 @@ class AppointmentController extends Controller
      */
     public function selectTime(string $slug, $locationId, $serviceId, $masterId)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
@@ -223,7 +245,7 @@ class AppointmentController extends Controller
             // Если пользователь явно выбрал дату без слотов - показываем пустой список
         }
 
-        $countries = \App\Models\Country::orderBy('name')->get();
+        $countries = \App\Models\Country::getCached();
 
         return view('appointments.public.select-time', compact(
             'business',
@@ -288,7 +310,10 @@ class AppointmentController extends Controller
      */
     public function store(PublicAppointmentRequest $request, string $slug)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
@@ -391,7 +416,10 @@ class AppointmentController extends Controller
     {
         $appointment = null;
 
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
 
         if ($token) {
             $appointment = Appointment::where('token', $token)
@@ -449,7 +477,10 @@ class AppointmentController extends Controller
      */
     public function view(string $slug, string $token)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
         $appointment = Appointment::where('token', $token)
             ->where('business_id', $business->id)
             ->with(['service', 'master', 'location', 'client'])
@@ -463,7 +494,10 @@ class AppointmentController extends Controller
      */
     public function cancel(Request $request, string $slug, string $token)
     {
-        $business = Business::where('slug', $slug)->firstOrFail();
+        $business = $this->businessRepository->findBySlug($slug);
+        if (!$business) {
+            abort(404);
+        }
         $appointment = Appointment::where('token', $token)
             ->where('business_id', $business->id)
             ->firstOrFail();

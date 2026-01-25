@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class BusinessRole extends Model
 {
@@ -63,6 +64,67 @@ class BusinessRole extends Model
         return $query->where(function ($q) use ($ownerId) {
             $q->where('is_system', true)
                 ->orWhere('owner_id', $ownerId);
+        });
+    }
+
+    /**
+     * Get cached role by ID.
+     *
+     * @param  int  $id  Role ID
+     * @return BusinessRole|null
+     */
+    public static function getCached(int $id): ?self
+    {
+        return Cache::remember("business_role_{$id}", 3600, function () use ($id) {
+            return static::find($id);
+        });
+    }
+
+    /**
+     * Get cached role by slug.
+     *
+     * @param  string  $slug  Role slug
+     * @return BusinessRole|null
+     */
+    public static function getCachedBySlug(string $slug): ?self
+    {
+        return Cache::remember("business_role_slug_{$slug}", 3600, function () use ($slug) {
+            return static::where('slug', $slug)->first();
+        });
+    }
+
+    /**
+     * Get owner role with caching.
+     *
+     * @return BusinessRole|null
+     */
+    public static function getOwnerRole(): ?self
+    {
+        return static::getCachedBySlug('owner');
+    }
+
+    /**
+     * Clear cache for this role.
+     */
+    public function clearCache(): void
+    {
+        Cache::forget("business_role_{$this->id}");
+        Cache::forget("business_role_slug_{$this->slug}");
+    }
+
+    /**
+     * Boot method to clear cache on model changes.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($role) {
+            $role->clearCache();
+        });
+
+        static::deleted(function ($role) {
+            $role->clearCache();
         });
     }
 }

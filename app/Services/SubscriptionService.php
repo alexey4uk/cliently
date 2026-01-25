@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\SubscriptionUsage;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class SubscriptionService
 {
@@ -157,6 +158,7 @@ class SubscriptionService
 
     /**
      * Получить текущее использование метрики
+     * Uses caching to avoid repeated DB queries.
      */
     public function getCurrentUsage(User $user, string $featureKey): int
     {
@@ -166,26 +168,34 @@ class SubscriptionService
             return 0;
         }
 
-        // Для месячных метрик (max_appointments_per_month) используем usage
+        // Для месячных метрик используем usage с кешированием
         if ($this->isMonthlyMetric($featureKey)) {
-            $usage = SubscriptionUsage::where('user_id', $user->id)
-                ->where('feature_key', $featureKey)
-                ->where('period_start', '<=', now())
-                ->where('period_end', '>=', now())
-                ->first();
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
 
-            return $usage ? $usage->current_usage : 0;
+            return Cache::remember($cacheKey, 300, function () use ($user, $featureKey) {
+                $usage = SubscriptionUsage::where('user_id', $user->id)
+                    ->where('feature_key', $featureKey)
+                    ->where('period_start', '<=', now())
+                    ->where('period_end', '>=', now())
+                    ->first();
+
+                return $usage ? $usage->current_usage : 0;
+            });
         }
 
-        // Для остальных метрик считаем суммарно по всем бизнесам пользователя
-        return match ($featureKey) {
-            'max_locations' => $user->businesses()->withCount('locations')->get()->sum('locations_count'),
-            'max_masters' => $user->businesses()->withCount('masters')->get()->sum('masters_count'),
-            'max_services' => $user->businesses()->withCount('services')->get()->sum('services_count'),
-            'max_clients' => $user->businesses()->withCount('clients')->get()->sum('clients_count'),
-            'max_business_users' => $this->getBusinessUsersCount($user),
-            default => 0,
-        };
+        // Для остальных метрик кешируем на 10 минут
+        $cacheKey = "usage_{$user->id}_{$featureKey}";
+
+        return Cache::remember($cacheKey, 600, function () use ($user, $featureKey) {
+            return match ($featureKey) {
+                'max_locations' => $user->businesses()->withCount('locations')->get()->sum('locations_count'),
+                'max_masters' => $user->businesses()->withCount('masters')->get()->sum('masters_count'),
+                'max_services' => $user->businesses()->withCount('services')->get()->sum('services_count'),
+                'max_clients' => $user->businesses()->withCount('clients')->get()->sum('clients_count'),
+                'max_business_users' => $this->getBusinessUsersCount($user),
+                default => 0,
+            };
+        });
     }
 
     /**
@@ -232,8 +242,14 @@ class SubscriptionService
             );
 
             $usage->increment('current_usage', $amount);
+
+            // Очищаем кеш
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
+            Cache::forget($cacheKey);
+        } else {
+            // Очищаем кеш для немесячных метрик
+            Cache::forget("usage_{$user->id}_{$featureKey}");
         }
-        // Для остальных метрик не нужно обновлять - они считаются напрямую из БД
     }
 
     /**
@@ -261,8 +277,14 @@ class SubscriptionService
                     $usage->update(['current_usage' => 0]);
                 }
             }
+
+            // Очищаем кеш
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
+            Cache::forget($cacheKey);
+        } else {
+            // Очищаем кеш для немесячных метрик
+            Cache::forget("usage_{$user->id}_{$featureKey}");
         }
-        // Для остальных метрик не нужно обновлять - они считаются напрямую из БД
     }
 
     /**

@@ -34,5 +34,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Register model observers
         \App\Models\Master::observe(\App\Observers\MasterObserver::class);
+        \App\Models\BusinessRolePermission::observe(\App\Observers\BusinessRolePermissionObserver::class);
     }
 }
