@@ -9,6 +9,7 @@ use BeGateway\Payment;
 use BeGateway\QueryByUid;
 use BeGateway\RefundOperation;
 use BeGateway\Settings as BeGatewaySettings;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BepaidService
@@ -17,6 +18,16 @@ class BepaidService
 
     /**
      * Инициализировать настройки SDK из БД
+     * 
+     * ВАЖНО: Эти shop_id и secret_key используются для:
+     * 1. API запросов к bePaid (создание платежей, проверка статуса, возвраты)
+     * 2. Проверки webhook от bePaid (в BepaidWebhookController::validateBasicAuth)
+     * 
+     * Когда bePaid отправляет webhook, они используют те же shop_id и secret_key
+     * для формирования заголовка Authorization: Basic base64(shop_id:secret_key)
+     * 
+     * Поэтому важно, чтобы shop_id и secret_key в нашей БД совпадали с теми,
+     * которые указаны в настройках магазина в системе bePaid.
      */
     public function initializeSettings(): void
     {
@@ -26,6 +37,7 @@ class BepaidService
             throw new \RuntimeException('bePaid настройки не включены. Включите их в админ панели.');
         }
 
+        // Получаем текущие настройки (test или production в зависимости от test_mode)
         $currentSettings = $settings->getCurrentSettings();
 
         if (empty($currentSettings['shop_id']) || empty($currentSettings['secret_key'])) {
@@ -39,6 +51,9 @@ class BepaidService
         }
 
         // Убеждаемся, что shop_id - это строка (не число), так как SDK может ожидать строку
+        // Эти значения используются для:
+        // - API запросов к bePaid (авторизация запросов)
+        // - Проверки webhook (сравнение с credentials из заголовка Authorization)
         BeGatewaySettings::$shopId = (string) $shopId;
         BeGatewaySettings::$shopKey = (string) trim($currentSettings['secret_key']);
         
@@ -96,8 +111,30 @@ class BepaidService
         $transaction->setLanguage('ru');
 
         // URL для уведомлений (webhook)
+        // 
+        // ВАЖНО: Как работает webhook URL и HTTP Basic Auth
+        // 
+        // 1. Мы указываем webhook URL через setNotificationUrl()
+        //    - URL берется из настроек БД (webhook_url) или из конфига
+        //    - bePaid сохраняет этот URL и будет отправлять на него уведомления
+        // 
+        // 2. Когда bePaid отправляет webhook на этот URL:
+        //    - bePaid АВТОМАТИЧЕСКИ добавляет заголовок Authorization с Basic Auth
+        //    - Формат: Authorization: Basic base64(shop_id:secret_key)
+        //    - shop_id и secret_key берутся из настроек магазина в системе bePaid
+        //    - Это те же credentials, которые мы указываем в админ-панели
+        // 
+        // 3. На нашей стороне (BepaidWebhookController::validateBasicAuth):
+        //    - Мы извлекаем shop_id и secret_key из заголовка Authorization
+        //    - Сравниваем с настройками из нашей БД (BepaidSettings)
+        //    - Если совпадают - обрабатываем webhook, если нет - возвращаем 401
+        // 
+        // ВАЖНО: Мы НЕ задаем Basic Auth здесь!
+        // bePaid сам использует shop_id и secret_key из настроек магазина.
+        // Мы только указываем URL, куда отправлять webhook.
         $webhookUrl = $this->settings->webhook_url ?? config('bepaid.webhook.url');
         if ($webhookUrl) {
+            // url() - формирует полный URL (например: https://example.com/webhooks/bepaid)
             $transaction->setNotificationUrl(url($webhookUrl));
         }
 
@@ -272,6 +309,26 @@ class BepaidService
             return false;
         }
 
+        $transaction = $data['transaction'];
+
+        // Проверка обязательных полей
+        if (empty($transaction['uid'])) {
+            return false;
+        }
+
+        if (empty($transaction['tracking_id'])) {
+            return false;
+        }
+
+        if (empty($transaction['status'])) {
+            return false;
+        }
+
+        // Проверка наличия суммы для валидации
+        if (!isset($transaction['amount'])) {
+            return false;
+        }
+
         return true;
     }
 
@@ -303,45 +360,119 @@ class BepaidService
         }
 
         $invoiceId = (int) str_replace('invoice_', '', $trackingId);
-        $invoice = Invoice::find($invoiceId);
 
-        if (! $invoice) {
-            throw new \RuntimeException("Инвойс #{$invoiceId} не найден");
-        }
+        // Используем транзакцию БД и блокировку для защиты от race conditions
+        return DB::transaction(function () use ($invoiceId, $transactionUid, $transaction, $data) {
+            // Блокируем строку для обновления
+            $invoice = Invoice::where('id', $invoiceId)->lockForUpdate()->first();
 
-        // Обновляем статус инвойса
-        $status = $transaction['status'] ?? null;
-        $newStatus = match ($status) {
-            'successful' => 'paid',
-            'failed' => 'failed',
-            'canceled' => 'cancelled',
-            default => 'pending',
-        };
+            if (! $invoice) {
+                throw new \RuntimeException("Инвойс #{$invoiceId} не найден");
+            }
 
-        $updateData = [
-            'bepaid_transaction_id' => $transactionUid,
-            'status' => $newStatus,
-            'metadata' => array_merge($invoice->metadata ?? [], [
-                'webhook_data' => $data,
-                'processed_at' => now()->toIso8601String(),
-            ]),
-        ];
+            // Идемпотентность: если инвойс уже обработан с тем же transaction_id
+            if ($invoice->bepaid_transaction_id === $transactionUid) {
+                if (config('bepaid.logging.enabled')) {
+                    Log::info('bePaid webhook: duplicate transaction, already processed', [
+                        'invoice_id' => $invoice->id,
+                        'transaction_uid' => $transactionUid,
+                        'current_status' => $invoice->status,
+                    ]);
+                }
+                return $invoice;
+            }
 
-        if ($newStatus === 'paid') {
-            $updateData['paid_at'] = now();
-        }
+            // Если инвойс уже оплачен, но приходит другой transaction_id - логируем
+            if ($invoice->isPaid() && $invoice->bepaid_transaction_id !== $transactionUid) {
+                if (config('bepaid.logging.enabled')) {
+                    Log::warning('bePaid webhook: invoice already paid with different transaction', [
+                        'invoice_id' => $invoice->id,
+                        'existing_transaction_id' => $invoice->bepaid_transaction_id,
+                        'new_transaction_uid' => $transactionUid,
+                    ]);
+                }
+                return $invoice;
+            }
 
-        $invoice->update($updateData);
+            // Проверка суммы платежа
+            $webhookAmount = $transaction['amount'] ?? null;
+            if ($webhookAmount !== null) {
+                // bePaid отправляет сумму в минимальных единицах (копейки/центы)
+                $invoiceAmountInCents = (int) round($invoice->amount * 100);
+                $webhookAmountInt = (int) $webhookAmount;
 
-        if (config('bepaid.logging.enabled')) {
-            Log::info('bePaid webhook processed', [
-                'invoice_id' => $invoice->id,
-                'transaction_uid' => $transactionUid,
+                if ($webhookAmountInt !== $invoiceAmountInCents) {
+                    Log::error('bePaid webhook: amount mismatch', [
+                        'invoice_id' => $invoice->id,
+                        'invoice_amount' => $invoice->amount,
+                        'invoice_amount_cents' => $invoiceAmountInCents,
+                        'webhook_amount_cents' => $webhookAmountInt,
+                        'transaction_uid' => $transactionUid,
+                    ]);
+                    throw new \RuntimeException("Сумма платежа не совпадает. Ожидалось: {$invoiceAmountInCents}, получено: {$webhookAmountInt}");
+                }
+            }
+
+            // Проверка валюты (дополнительная защита)
+            $webhookCurrency = $transaction['currency'] ?? null;
+            if ($webhookCurrency !== null && $webhookCurrency !== $invoice->currency) {
+                Log::error('bePaid webhook: currency mismatch', [
+                    'invoice_id' => $invoice->id,
+                    'invoice_currency' => $invoice->currency,
+                    'webhook_currency' => $webhookCurrency,
+                    'transaction_uid' => $transactionUid,
+                ]);
+                throw new \RuntimeException("Валюта платежа не совпадает. Ожидалось: {$invoice->currency}, получено: {$webhookCurrency}");
+            }
+
+            // Обновляем статус инвойса
+            $status = $transaction['status'] ?? null;
+            $newStatus = match ($status) {
+                'successful' => 'paid',
+                'failed' => 'failed',
+                'canceled', 'cancelled' => 'cancelled',
+                'expired' => 'failed', // expired обрабатываем как failed
+                'pending', 'processing' => 'pending',
+                default => 'pending',
+            };
+
+            // Логируем неизвестные статусы
+            if (!in_array($status, ['successful', 'failed', 'canceled', 'cancelled', 'expired', 'pending', 'processing'])) {
+                if (config('bepaid.logging.enabled')) {
+                    Log::warning('bePaid webhook: unknown transaction status', [
+                        'invoice_id' => $invoice->id,
+                        'transaction_uid' => $transactionUid,
+                        'status' => $status,
+                    ]);
+                }
+            }
+
+            $updateData = [
+                'bepaid_transaction_id' => $transactionUid,
                 'status' => $newStatus,
-            ]);
-        }
+                'metadata' => array_merge($invoice->metadata ?? [], [
+                    'webhook_data' => $data,
+                    'processed_at' => now()->toIso8601String(),
+                ]),
+            ];
 
-        return $invoice;
+            if ($newStatus === 'paid') {
+                $updateData['paid_at'] = now();
+            }
+
+            $invoice->update($updateData);
+
+            if (config('bepaid.logging.enabled')) {
+                Log::info('bePaid webhook processed', [
+                    'invoice_id' => $invoice->id,
+                    'transaction_uid' => $transactionUid,
+                    'status' => $newStatus,
+                    'original_status' => $status,
+                ]);
+            }
+
+            return $invoice;
+        });
     }
 
     /**

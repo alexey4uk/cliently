@@ -27,7 +27,7 @@ class BepaidSettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'test_mode' => 'boolean',
+            'test_mode' => ['nullable', 'in:0,1'],
             'test_shop_id' => ['nullable', 'string', 'max:255', function ($attribute, $value, $fail) {
                 if ($value && !is_numeric(trim($value))) {
                     $fail('Shop ID должен быть числом.');
@@ -45,8 +45,12 @@ class BepaidSettingsController extends Controller
             'production_gateway_base' => 'nullable|url|max:255',
             'production_checkout_base' => 'nullable|url|max:255',
             'webhook_url' => 'nullable|string|max:255',
-            'enabled' => 'boolean',
+            'enabled' => ['nullable', 'in:0,1'],
         ]);
+
+        // Преобразуем строковые значения в boolean
+        $validated['test_mode'] = isset($validated['test_mode']) ? (bool) $validated['test_mode'] : false;
+        $validated['enabled'] = isset($validated['enabled']) ? (bool) $validated['enabled'] : false;
 
         $settings = BepaidSettings::getSettings();
 

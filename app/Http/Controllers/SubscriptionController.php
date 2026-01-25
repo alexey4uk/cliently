@@ -9,6 +9,7 @@ use App\Services\BepaidService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionController extends Controller
 {
@@ -323,6 +324,15 @@ class SubscriptionController extends Controller
 
         // Проверяем статус инвойса
         if ($invoice->isPaid()) {
+            // Проверяем, не пытаемся ли мы повторно активировать подписку
+            if ($invoice->subscription_id && $invoice->subscription->status === 'active') {
+                if (config('bepaid.logging.enabled')) {
+                    Log::info('Payment success callback: subscription already active', [
+                        'invoice_id' => $invoice->id,
+                        'subscription_id' => $invoice->subscription_id,
+                    ]);
+                }
+            }
             return redirect()->route('subscription.current')
                 ->with('success', 'Платеж успешно обработан! Подписка активирована.');
         }
@@ -344,21 +354,52 @@ class SubscriptionController extends Controller
                     $subscriptionService = app(SubscriptionService::class);
                     if ($invoice->subscription_id) {
                         $subscription = $invoice->subscription;
-                        $subscription->update([
-                            'status' => 'active',
-                            'payment_status' => 'paid',
-                            'invoice_id' => $invoice->id,
-                        ]);
+                        
+                        // Идемпотентность: проверяем, не активирована ли уже подписка
+                        if ($subscription->status === 'active' && $subscription->invoice_id === $invoice->id) {
+                            if (config('bepaid.logging.enabled')) {
+                                Log::info('Payment success callback: subscription already activated for this invoice', [
+                                    'invoice_id' => $invoice->id,
+                                    'subscription_id' => $subscription->id,
+                                ]);
+                            }
+                        } else {
+                            $subscription->update([
+                                'status' => 'active',
+                                'payment_status' => 'paid',
+                                'invoice_id' => $invoice->id,
+                            ]);
+                            
+                            if (config('bepaid.logging.enabled')) {
+                                Log::info('Payment success callback: subscription activated', [
+                                    'invoice_id' => $invoice->id,
+                                    'subscription_id' => $subscription->id,
+                                ]);
+                            }
+                        }
                     } else {
                         // Создаем подписку, если её еще нет
                         $subscription = $subscriptionService->createSubscription($invoice->user, $invoice->plan, false, $invoice);
+                        
+                        if (config('bepaid.logging.enabled')) {
+                            Log::info('Payment success callback: subscription created', [
+                                'invoice_id' => $invoice->id,
+                                'subscription_id' => $subscription->id,
+                            ]);
+                        }
                     }
 
                     return redirect()->route('subscription.current')
                         ->with('success', 'Платеж успешно обработан! Подписка активирована.');
                 }
             } catch (\Exception $e) {
-                // Игнорируем ошибку, просто показываем сообщение
+                // Логируем все ошибки при проверке статуса платежа
+                Log::error('Payment success callback: error checking payment status', [
+                    'invoice_id' => $invoice->id,
+                    'transaction_id' => $invoice->bepaid_transaction_id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         }
 

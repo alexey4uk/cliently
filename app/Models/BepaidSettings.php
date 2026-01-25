@@ -44,9 +44,29 @@ class BepaidSettings extends Model
 
     /**
      * Получить текущие настройки для использования
+     * 
+     * ВАЖНО: Эти shop_id и secret_key используются для:
+     * 
+     * 1. API запросов к bePaid:
+     *    - Создание платежных токенов (BepaidService::createPaymentToken)
+     *    - Проверка статуса платежа (BepaidService::checkPaymentStatus)
+     *    - Возврат средств (BepaidService::refund)
+     * 
+     * 2. Проверки webhook от bePaid:
+     *    - В BepaidWebhookController::validateBasicAuth
+     *    - bePaid отправляет webhook с заголовком: Authorization: Basic base64(shop_id:secret_key)
+     *    - Мы сравниваем shop_id и secret_key из заголовка с настройками из БД
+     *    - Если совпадают - обрабатываем webhook, если нет - возвращаем 401
+     * 
+     * ВАЖНО: shop_id и secret_key должны совпадать с настройками магазина в системе bePaid!
+     * bePaid использует эти же credentials для формирования Basic Auth в webhook.
+     * 
+     * @return array Массив с настройками: shop_id, secret_key, gateway_base, checkout_base
      */
     public function getCurrentSettings(): array
     {
+        // Если включен тестовый режим - используем тестовые настройки
+        // Иначе - используем продакшн настройки
         if ($this->test_mode) {
             return [
                 'shop_id' => $this->test_shop_id,
