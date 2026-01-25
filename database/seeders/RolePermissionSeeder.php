@@ -156,6 +156,9 @@ class RolePermissionSeeder extends Seeder
             // Системные уведомления
             'panel.notifications.view' => 'Просмотр системных уведомлений (админ-панель)',
             'client.notifications.view' => 'Просмотр системных уведомлений (клиентская часть)',
+
+            // Рассылки (админ-панель)
+            'panel.broadcasts.send' => 'Рассылка уведомлений (админ-панель)',
         ];
 
         foreach ($permissions as $name => $description) {
@@ -221,6 +224,9 @@ class RolePermissionSeeder extends Seeder
 
             // Системные уведомления
             'panel.notifications.view',
+
+            // Рассылки
+            'panel.broadcasts.send',
 
             // Доступ к панели
             'panel.access',

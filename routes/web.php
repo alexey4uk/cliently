@@ -470,6 +470,13 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::get('/support', [\App\Http\Controllers\Panel\SupportController::class, 'index'])->name('support');
         });
 
+        // Рассылки (админ, менеджер)
+        Route::middleware(['check.permission:panel.broadcasts.send'])->group(function () {
+            Route::get('/broadcasts', [\App\Http\Controllers\Panel\BroadcastController::class, 'index'])->name('broadcasts.index');
+            Route::get('/broadcasts/create', [\App\Http\Controllers\Panel\BroadcastController::class, 'create'])->name('broadcasts.create');
+            Route::post('/broadcasts', [\App\Http\Controllers\Panel\BroadcastController::class, 'store'])->name('broadcasts.store');
+        });
+
         // Настройки тикетов (админ) - должно быть ПЕРЕД resource роутом тикетов
         Route::middleware(['check.permission:panel.tickets.settings'])->group(function () {
             Route::get('/tickets/settings', [\App\Http\Controllers\Settings\TicketSettingsController::class, 'index'])->name('tickets.settings');

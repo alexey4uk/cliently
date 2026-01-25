@@ -107,6 +107,20 @@ class TelegramNotificationService
     }
 
     /**
+     * Отправить рассылку (broadcast) пользователю в Telegram.
+     * Только для пользователей с привязанным аккаунтом (isTelegramConnected).
+     */
+    public static function sendBroadcastToUser(User $user, string $title, string $message): void
+    {
+        if (! $user->isTelegramConnected()) {
+            return;
+        }
+
+        $text = "📢 {$title}\n\n{$message}";
+        self::sendMessageToUser($user, $text);
+    }
+
+    /**
      * Отправить сообщение в личный чат пользователя
      */
     private static function sendMessageToUser(User $user, string $message)
