@@ -3,7 +3,7 @@
 @section('title', 'Создать рассылку')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="max-w-2xl mx-auto">
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <div class="flex items-center gap-4 mb-6">
                 <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">

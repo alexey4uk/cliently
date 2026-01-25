@@ -3,12 +3,13 @@
 @section('title', 'Редактировать Telegram бота')
 
 @section('content')
-    <div class="space-y-6">
-        <!-- Заголовок -->
-        <div>
-            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Редактировать Telegram бота</h1>
-            <p class="text-slate-600 dark:text-slate-400 mt-1">Обновление настроек Telegram бота</p>
-        </div>
+    <div class="max-w-2xl mx-auto">
+        <div class="space-y-6">
+            <!-- Заголовок -->
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Редактировать Telegram бота</h1>
+                <p class="text-slate-600 dark:text-slate-400 mt-1">Обновление настроек Telegram бота</p>
+            </div>
 
         <!-- Форма редактирования бота -->
         <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -82,5 +83,6 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 @endsection

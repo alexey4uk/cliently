@@ -50,7 +50,8 @@
         </div>
     @endif
 
-    <div x-data="{
+    <div class="max-w-7xl mx-auto">
+        <div x-data="{
         showFilters: {{ $search || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 20 ? 'true' : 'false' }}
     }" class="space-y-6">
 
@@ -564,4 +565,6 @@
             document.getElementById('sort-direction').value = direction;
         }
     </script>
+        </div>
+    </div>
 @endsection

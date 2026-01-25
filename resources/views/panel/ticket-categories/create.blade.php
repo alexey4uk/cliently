@@ -3,7 +3,8 @@
 @section('title', 'Создать категорию')
 
 @section('content')
-    <div class="max-w-2xl mx-auto space-y-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="space-y-6">
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Создать категорию</h2>
@@ -78,5 +79,6 @@
                 </div>
             </div>
         </form>
+        </div>
     </div>
 @endsection

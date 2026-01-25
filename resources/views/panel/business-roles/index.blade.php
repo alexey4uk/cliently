@@ -20,7 +20,8 @@
     ];
 @endphp
 
-<div class="max-w-5xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto">
+    <div class="space-y-6">
     <!-- Заголовок -->
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -151,6 +152,7 @@
                 </ul>
             </div>
         </div>
+    </div>
     </div>
 </div>
 @endsection

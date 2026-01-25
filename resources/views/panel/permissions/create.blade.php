@@ -7,7 +7,8 @@
 @endpush
 
 @section('content')
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="space-y-6">
         <!-- Заголовок -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
             <div class="flex items-center gap-3 sm:gap-4">
@@ -68,6 +69,7 @@
                     </button>
                 </div>
             </form>
+        </div>
         </div>
     </div>
 @endsection

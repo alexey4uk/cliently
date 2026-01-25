@@ -50,9 +50,10 @@
         </div>
     @endif
 
-    <div x-data="{
-        showFilters: {{ $search || $roleFilter || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 20 ? 'true' : 'false' }}
-    }" class="space-y-6">
+    <div class="max-w-7xl mx-auto">
+        <div x-data="{
+            showFilters: {{ $search || $roleFilter || $sort !== 'created_at' || $direction !== 'desc' || $perPage != 20 ? 'true' : 'false' }}
+        }" class="space-y-6">
 
         <!-- Заголовок с статистикой -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
@@ -487,6 +488,7 @@
                 {{ $users->links() }}
             </div>
         @endif
+        </div>
     </div>
 
     <script>

@@ -54,9 +54,10 @@
         </div>
     @endif
 
-    <div class="space-y-6">
-        <!-- Заголовок -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="space-y-6">
+            <!-- Заголовок -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="flex items-center gap-3 sm:gap-4">
                     <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm flex-shrink-0">
@@ -468,6 +469,7 @@
                     {{ $plans->links() }}
                 </div>
             @endif
+        </div>
         </div>
     </div>
 

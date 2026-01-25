@@ -3,7 +3,7 @@
 @section('title', 'Инвойс #'.$invoice->id)
 
 @section('content')
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-8">
+    <div class="max-w-6xl mx-auto">
         <!-- Breadcrumbs -->
         <nav class="mb-4 sm:mb-6" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">

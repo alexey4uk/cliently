@@ -3,8 +3,9 @@
 @section('title', 'Редактирование пользователя')
 
 @section('content')
-    <div class="space-y-6">
-        <!-- Заголовок -->
+    <div class="max-w-2xl mx-auto">
+        <div class="space-y-6">
+            <!-- Заголовок -->
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Редактирование пользователя</h2>
@@ -82,6 +83,7 @@
                     </div>
                 </div>
             </form>
+        </div>
         </div>
     </div>
 @endsection

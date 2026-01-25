@@ -3,8 +3,9 @@
 @section('title', 'Категории тикетов')
 
 @section('content')
-    <div class="space-y-6">
-        <div class="flex items-center justify-between">
+    <div class="max-w-7xl mx-auto">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Категории тикетов</h2>
                 <p class="text-slate-600 dark:text-slate-400 mt-1">Управление категориями для системы тикетов</p>
@@ -96,6 +97,7 @@
                     {{ $categories->links() }}
                 </div>
             @endif
+        </div>
         </div>
     </div>
 @endsection

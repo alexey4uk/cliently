@@ -22,9 +22,10 @@
         </div>
     @endif
 
-    <div class="space-y-6">
-        <!-- Заголовок со статистикой -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="space-y-6">
+            <!-- Заголовок со статистикой -->
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
@@ -205,6 +206,7 @@
                 <p class="text-sm text-slate-600 dark:text-slate-400">Попробуйте изменить фильтры поиска</p>
             </div>
         @endif
+        </div>
     </div>
 
     <!-- Модальное окно возврата -->

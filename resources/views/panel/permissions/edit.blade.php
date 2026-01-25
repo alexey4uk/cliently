@@ -7,7 +7,8 @@
 @endpush
 
 @section('content')
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div class="max-w-2xl mx-auto">
+        <div class="space-y-6">
     <!-- Flash сообщения -->
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
@@ -199,6 +200,6 @@
                 </div>
             </form>
         </div>
-    </div>
+        </div>
     </div>
 @endsection
