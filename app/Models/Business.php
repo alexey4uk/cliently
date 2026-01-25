@@ -21,6 +21,11 @@ class Business extends Model
         'slug',
         'telegram_chat_id',
         'telegram_token',
+        'online_booking_enabled',
+    ];
+
+    protected $casts = [
+        'online_booking_enabled' => 'boolean',
     ];
 
     protected static function boot()

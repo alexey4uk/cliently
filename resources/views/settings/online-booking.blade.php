@@ -31,6 +31,7 @@
 
 <div x-data="{
     isEnabled: {{ $isEnabled ? 'true' : 'false' }},
+    isLoading: false,
     copiedWeb: false,
     copiedTelegram: false,
     showQrModal: false,
@@ -39,28 +40,56 @@
     isDownloading: false,
 
     async toggleBooking() {
+        if (this.isLoading) return;
+        
+        this.isLoading = true;
+        const newValue = !this.isEnabled;
+        
         try {
-            const form = document.getElementById('booking-form');
-            const formData = new FormData(form);
-            formData.set('online_booking_enabled', !this.isEnabled);
+            const csrfToken = document.querySelector('meta[name=csrf-token]');
+            if (!csrfToken) {
+                throw new Error('CSRF токен не найден');
+            }
+            
+            const formData = new FormData();
+            formData.append('online_booking_enabled', newValue ? '1' : '0');
+            formData.append('_token', csrfToken.content);
+            formData.append('_method', 'PATCH');
             
             const response = await fetch('{{ route('settings.online-booking.update') }}', {
-                method: 'PATCH',
+                method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'X-CSRF-TOKEN': csrfToken.content,
                     'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: formData
             });
 
-            if (response.ok) {
-                this.isEnabled = !this.isEnabled;
+            if (!response.ok) {
+                let errorMessage = 'Ошибка при сохранении';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                this.isEnabled = data.online_booking_enabled;
             } else {
-                throw new Error('Ошибка при сохранении');
+                throw new Error(data.message || 'Ошибка при сохранении');
             }
         } catch (error) {
             console.error('Ошибка при изменении состояния:', error);
-            alert('Не удалось изменить состояние онлайн-записи');
+            alert(error.message || 'Не удалось изменить состояние онлайн-записи');
+        } finally {
+            this.isLoading = false;
         }
     },
 
@@ -138,7 +167,7 @@
     <form id="booking-form" method="POST" action="{{ route('settings.online-booking.update') }}" class="hidden">
         @csrf
         @method('PATCH')
-        <input type="hidden" name="online_booking_enabled" :value="isEnabled ? '1' : '0'">
+        <input type="hidden" name="online_booking_enabled" value="1">
     </form>
 
     <!-- Заголовок страницы -->
@@ -157,8 +186,9 @@
                 </div>
                 <button type="button" 
                         @click="toggleBooking()"
+                        :disabled="isLoading"
                         :class="isEnabled ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'"
-                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span class="sr-only">Включить онлайн-запись</span>
                     <span :class="isEnabled ? 'translate-x-6' : 'translate-x-1'"
                           class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm"></span>
@@ -351,6 +381,23 @@
                         <span class="text-sm text-slate-700 dark:text-slate-300">В мессенджерах при общении с клиентами</span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Сообщение если запись отключена -->
+    <template x-if="!isEnabled">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="h-20 w-20 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-toggle-off text-amber-600 dark:text-amber-400 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                    Онлайн-запись отключена
+                </h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                    Клиенты не смогут записываться через веб-форму или Telegram бота. Включите онлайн-запись, чтобы возобновить прием записей.
+                </p>
             </div>
         </div>
     </template>

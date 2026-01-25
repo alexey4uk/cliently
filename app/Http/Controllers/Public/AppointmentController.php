@@ -29,6 +29,12 @@ class AppointmentController extends Controller
     public function show(string $slug)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
+
+        // Проверяем, включена ли онлайн-запись
+        if ($business->online_booking_enabled === false) {
+            return view('appointments.public.disabled', compact('business'));
+        }
+
         $locations = $business->locations()->orderBy('name')->get();
 
         return view('appointments.public.select-location', compact('business', 'locations'))->with('currentStep', 1);
@@ -40,6 +46,12 @@ class AppointmentController extends Controller
     public function selectLocation(string $slug, $locationId)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
+
+        // Проверяем, включена ли онлайн-запись
+        if ($business->online_booking_enabled === false) {
+            return view('appointments.public.disabled', compact('business'));
+        }
+
         $location = $business->locations()->findOrFail($locationId);
 
         // Получаем все активные услуги бизнеса
@@ -57,6 +69,12 @@ class AppointmentController extends Controller
     public function selectService(string $slug, $locationId, $serviceId)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
+
+        // Проверяем, включена ли онлайн-запись
+        if ($business->online_booking_enabled === false) {
+            return view('appointments.public.disabled', compact('business'));
+        }
+
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
 
@@ -99,6 +117,12 @@ class AppointmentController extends Controller
     public function selectTime(string $slug, $locationId, $serviceId, $masterId)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
+
+        // Проверяем, включена ли онлайн-запись
+        if ($business->online_booking_enabled === false) {
+            return view('appointments.public.disabled', compact('business'));
+        }
+
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
         $master = $business->masters()->findOrFail($masterId);
@@ -265,6 +289,13 @@ class AppointmentController extends Controller
     public function store(PublicAppointmentRequest $request, string $slug)
     {
         $business = Business::where('slug', $slug)->firstOrFail();
+
+        // Проверяем, включена ли онлайн-запись
+        if ($business->online_booking_enabled === false) {
+            return redirect()->route('public.appointments.show', ['slug' => $slug])
+                ->with('error', 'Онлайн-запись временно недоступна. Пожалуйста, свяжитесь с нами напрямую.');
+        }
+
         $validated = $request->validated();
 
         // Получаем пользователя через бизнес
@@ -284,14 +315,14 @@ class AppointmentController extends Controller
         }
 
         $client = Client::where('business_id', $business->id)
-            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
+            ->whereHas('phones', fn($q) => $q->where('phone', $validated['phone']))
             ->first();
 
         if (! $client) {
             if (! $subscriptionService->canCreateClient($user)) {
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
             }
 
             $client = Client::create([

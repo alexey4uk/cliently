@@ -115,28 +115,28 @@ class BusinessSettingsController extends Controller
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
-        
+
         // Проверяем доступ к Telegram боту для записи
         $subscriptionService = app(SubscriptionService::class);
         $ownerRole = BusinessRole::where('slug', 'owner')->first();
         $owner = null;
-        
+
         if ($ownerRole) {
             $ownerPivot = DB::table('business_user')
                 ->where('business_id', $business->id)
                 ->where('role_id', $ownerRole->id)
                 ->first();
-            
+
             if ($ownerPivot) {
                 $owner = \App\Models\User::find($ownerPivot->user_id);
             }
         }
-        
+
         // Fallback: если не нашли по роли, берем первого пользователя
         if (! $owner) {
             $owner = $business->users()->first();
         }
-        
+
         $telegramBotEnabled = false;
         if ($owner) {
             $telegramBotEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled') === true;
@@ -157,13 +157,33 @@ class BusinessSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Сначала создайте бизнес или примите приглашение.',
+                ], 422);
+            }
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
+        $enabled = $request->input('online_booking_enabled');
+        $enabled = $enabled === '1' || $enabled === 1 || $enabled === true || $enabled === 'true';
+
         $business->update([
-            'online_booking_enabled' => $request->boolean('online_booking_enabled'),
+            'online_booking_enabled' => $enabled,
         ]);
+
+        // Обновляем модель после сохранения
+        $business->refresh();
+
+        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Настройки онлайн-записи обновлены',
+                'online_booking_enabled' => (bool) $business->online_booking_enabled,
+            ]);
+        }
 
         return redirect()->route('settings.online-booking')->with('success', 'Настройки онлайн-записи обновлены');
     }
