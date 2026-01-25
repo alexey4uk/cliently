@@ -3,7 +3,7 @@
 @section('title', 'Панель управления')
 
 @section('content')
-    <div class="max-w-7xl 2xl:max-w-[1600px] mx-auto space-y-8">
+    <div class="max-w-6xl 2xl:max-w-[1400px] mx-auto space-y-8">
         <!-- Заголовок с улучшенным дизайном -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div>
