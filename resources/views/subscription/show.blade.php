@@ -117,13 +117,44 @@
                 <span>Текущий тариф</span>
             </button>
         @else
+            @php
+                $subscriptionService = app(\App\Services\SubscriptionService::class);
+                $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
+                $hasUsedTrial = false;
+                if ($canUseTrial) {
+                    $hasUsedTrial = $subscriptionService->hasUsedTrialForPlan($user, $plan);
+                }
+            @endphp
+
             <form action="{{ route('subscription.subscribe', $plan) }}" method="POST">
                 @csrf
-                <button type="submit"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
-                    <i class="fa-solid fa-check"></i>
-                    <span>Оформить подписку</span>
-                </button>
+                @if($plan->price && $plan->price > 0)
+                    @if($canUseTrial && !$hasUsedTrial)
+                        <div class="mb-4 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-gift text-green-600 dark:text-green-400"></i>
+                                <span class="text-sm font-medium text-green-900 dark:text-green-300">
+                                    Доступен пробный период {{ $plan->trial_days }} {{ $plan->trial_days === 1 ? 'день' : ($plan->trial_days < 5 ? 'дня' : 'дней') }}
+                                </span>
+                            </div>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="use_trial" value="1" checked class="rounded">
+                                <span class="text-sm text-green-800 dark:text-green-300">Использовать пробный период</span>
+                            </label>
+                        </div>
+                    @endif
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>Оплатить подписку</span>
+                    </button>
+                @else
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Оформить подписку</span>
+                    </button>
+                @endif
             </form>
         @endif
     </div>

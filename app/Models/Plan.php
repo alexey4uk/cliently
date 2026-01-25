@@ -40,6 +40,11 @@ class Plan extends Model
         return $this->hasMany(Subscription::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     /**
      * Получить значение метрики тарифа
      */

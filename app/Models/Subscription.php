@@ -20,6 +20,8 @@ class Subscription extends Model
         'trial_ends_at',
         'cancelled_at',
         'metadata',
+        'invoice_id',
+        'payment_status',
     ];
 
     protected $casts = [
@@ -43,6 +45,16 @@ class Subscription extends Model
     public function usages(): HasMany
     {
         return $this->hasMany(SubscriptionUsage::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class, 'invoice_id');
     }
 
     /**

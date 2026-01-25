@@ -86,4 +86,22 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | bePaid Payment Gateway
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for bePaid payment gateway.
+    | Main configuration is in config/bepaid.php
+    |
+    */
+
+    'bepaid' => [
+        'test_mode' => env('BEPAID_TEST_MODE', true),
+        'test_shop_id' => env('BEPAID_TEST_SHOP_ID'),
+        'test_secret_key' => env('BEPAID_TEST_SECRET_KEY'),
+        'production_shop_id' => env('BEPAID_PRODUCTION_SHOP_ID'),
+        'production_secret_key' => env('BEPAID_PRODUCTION_SECRET_KEY'),
+    ],
+
 ];

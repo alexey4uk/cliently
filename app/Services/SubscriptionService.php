@@ -12,7 +12,7 @@ class SubscriptionService
     /**
      * Создать подписку для пользователя
      */
-    public function createSubscription(User $user, Plan $plan, bool $isTrial = false): Subscription
+    public function createSubscription(User $user, Plan $plan, bool $isTrial = false, ?\App\Models\Invoice $invoice = null): Subscription
     {
         $now = now();
         $trialEndsAt = null;
@@ -53,26 +53,32 @@ class SubscriptionService
             }
         }
 
+        $subscriptionData = [
+            'plan_id' => $plan->id,
+            'status' => $status,
+            'starts_at' => $now,
+            'ends_at' => $endsAt,
+            'trial_ends_at' => $trialEndsAt,
+            'cancelled_at' => null,
+            'metadata' => $metadata,
+        ];
+
+        // Если есть инвойс, связываем его с подпиской
+        if ($invoice) {
+            $subscriptionData['invoice_id'] = $invoice->id;
+            $subscriptionData['payment_status'] = $invoice->isPaid() ? 'paid' : 'pending';
+        }
+
         if ($subscription) {
-            $subscription->update([
-                'plan_id' => $plan->id,
-                'status' => $status,
-                'starts_at' => $now,
-                'ends_at' => $endsAt,
-                'trial_ends_at' => $trialEndsAt,
-                'cancelled_at' => null,
-                'metadata' => $metadata,
-            ]);
+            $subscription->update($subscriptionData);
         } else {
-            $subscription = Subscription::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'status' => $status,
-                'starts_at' => $now,
-                'ends_at' => $endsAt,
-                'trial_ends_at' => $trialEndsAt,
-                'metadata' => $metadata,
-            ]);
+            $subscriptionData['user_id'] = $user->id;
+            $subscription = Subscription::create($subscriptionData);
+        }
+
+        // Если инвойс был передан, обновляем его subscription_id
+        if ($invoice && ! $invoice->subscription_id) {
+            $invoice->update(['subscription_id' => $subscription->id]);
         }
 
         // Инициализируем usage для всех метрик тарифа

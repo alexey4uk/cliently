@@ -216,6 +216,57 @@
             </div>
         </div>
     </div>
+
+    <!-- История платежей -->
+    @if($subscription && $subscription->invoices && $subscription->invoices->count() > 0)
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden mt-6 sm:mt-8">
+            <div class="px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">История платежей</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Все платежи по вашей подписке</p>
+            </div>
+            
+            <div class="px-6 sm:px-8 py-6">
+                <div class="space-y-4">
+                    @foreach($subscription->invoices->sortByDesc('created_at') as $invoice)
+                        <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div class="flex items-center gap-4">
+                                <div class="h-12 w-12 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                                    <i class="fa-solid fa-receipt text-indigo-600 dark:text-indigo-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">Инвойс #{{ $invoice->id }}</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400">{{ $invoice->created_at->format('d.m.Y H:i') }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-base font-bold text-slate-900 dark:text-white">{{ number_format($invoice->amount, 2) }} {{ $invoice->currency }}</p>
+                                @php
+                                    $statusColors = [
+                                        'pending' => 'text-amber-600 dark:text-amber-400',
+                                        'paid' => 'text-emerald-600 dark:text-emerald-400',
+                                        'failed' => 'text-rose-600 dark:text-rose-400',
+                                        'cancelled' => 'text-slate-600 dark:text-slate-400',
+                                        'refunded' => 'text-blue-600 dark:text-blue-400',
+                                    ];
+                                    $statusLabels = [
+                                        'pending' => 'Ожидает',
+                                        'paid' => 'Оплачено',
+                                        'failed' => 'Ошибка',
+                                        'cancelled' => 'Отменено',
+                                        'refunded' => 'Возврат',
+                                    ];
+                                @endphp
+                                <p class="text-xs font-medium {{ $statusColors[$invoice->status] ?? 'text-slate-600' }}">
+                                    {{ $statusLabels[$invoice->status] ?? $invoice->status }}
+                                </p>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 @endsection
+

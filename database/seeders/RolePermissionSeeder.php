@@ -143,6 +143,12 @@ class RolePermissionSeeder extends Seeder
             // Подписки
             'client.subscription.view' => 'Просмотр информации о подписке',
             'client.subscription.manage' => 'Управление подпиской',
+            'client.subscription.pay' => 'Оплата подписки',
+
+            // Платежи (админ-панель)
+            'panel.payments.settings' => 'Настройки bePaid (только админ)',
+            'panel.payments.view' => 'Просмотр платежей/инвойсов в админ панели',
+            'panel.payments.manage' => 'Управление платежами в админ панели (возвраты и т.д.)',
 
             // Управление базовыми правами ролей бизнеса (админ-панель)
             'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',
@@ -207,6 +213,9 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.assign',
             'panel.tickets.categories.manage',
 
+            // Платежи - просмотр (админ-панель)
+            'panel.payments.view',
+
             // Управление базовыми правами ролей бизнеса
             'panel.business.roles.manage',
 
@@ -240,6 +249,7 @@ class RolePermissionSeeder extends Seeder
         $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $userPermissions = [
             'client.access',
+            'client.subscription.pay', // Оплата подписки
         ];
         foreach ($userPermissions as $permission) {
             $userRole->givePermissionTo($permission);

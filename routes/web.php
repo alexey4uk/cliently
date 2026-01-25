@@ -13,6 +13,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Webhook для bePaid (без CSRF и авторизации)
+Route::post('/webhooks/bepaid', [\App\Http\Controllers\Webhook\BepaidWebhookController::class, 'handle'])
+    ->name('webhooks.bepaid')
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 // Короткая ссылка для просмотра записи (упрощенная)
 Route::get('/a/{token}', [\App\Http\Controllers\Public\AppointmentController::class, 'viewByToken'])->name('public.appointment.view');
 Route::post('/a/{token}/cancel', [\App\Http\Controllers\Public\AppointmentController::class, 'cancelByToken'])->name('public.appointment.cancel');
@@ -193,6 +198,15 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         Route::middleware(['check.business.permission:client.subscription.manage'])->group(function () {
             Route::post('/subscription/{plan}/subscribe', [\App\Http\Controllers\SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
             Route::post('/subscription/cancel', [\App\Http\Controllers\SubscriptionController::class, 'cancel'])->name('subscription.cancel');
+        });
+
+        // Оплата подписки
+        Route::middleware(['check.business.permission:client.subscription.pay'])->group(function () {
+            Route::get('/subscription/payment/{invoice}', [\App\Http\Controllers\SubscriptionController::class, 'payment'])->name('subscription.payment');
+            Route::get('/subscription/payment/success', [\App\Http\Controllers\SubscriptionController::class, 'paymentSuccess'])->name('subscription.payment.success');
+            Route::get('/subscription/payment/decline', [\App\Http\Controllers\SubscriptionController::class, 'paymentDecline'])->name('subscription.payment.decline');
+            Route::get('/subscription/payment/fail', [\App\Http\Controllers\SubscriptionController::class, 'paymentFail'])->name('subscription.payment.fail');
+            Route::get('/subscription/payment/cancel', [\App\Http\Controllers\SubscriptionController::class, 'paymentCancel'])->name('subscription.payment.cancel');
         });
 
         // Настройки бизнеса
@@ -550,6 +564,23 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::get('/business-roles/{role}', [\App\Http\Controllers\Panel\BusinessRolePermissionsController::class, 'show'])->name('business-roles.show');
             Route::put('/business-roles/{role}', [\App\Http\Controllers\Panel\BusinessRolePermissionsController::class, 'update'])->name('business-roles.update');
             Route::delete('/business-roles/{role}', [\App\Http\Controllers\Panel\BusinessRolePermissionsController::class, 'destroy'])->name('business-roles.destroy');
+        });
+
+        // Настройки bePaid (только админ)
+        Route::middleware(['check.permission:panel.payments.settings'])->group(function () {
+            Route::get('/settings/bepaid', [\App\Http\Controllers\Panel\BepaidSettingsController::class, 'index'])->name('settings.bepaid');
+            Route::patch('/settings/bepaid', [\App\Http\Controllers\Panel\BepaidSettingsController::class, 'update'])->name('settings.bepaid.update');
+            Route::post('/settings/bepaid/test-connection', [\App\Http\Controllers\Panel\BepaidSettingsController::class, 'testConnection'])->name('settings.bepaid.test-connection');
+        });
+
+        // Управление платежами (инвойсы)
+        Route::middleware(['check.permission:panel.payments.view'])->group(function () {
+            Route::get('/invoices', [\App\Http\Controllers\Panel\InvoiceController::class, 'index'])->name('invoices');
+            Route::get('/invoices/{invoice}', [\App\Http\Controllers\Panel\InvoiceController::class, 'show'])->name('invoices.show');
+        });
+
+        Route::middleware(['check.permission:panel.payments.manage'])->group(function () {
+            Route::post('/invoices/{invoice}/refund', [\App\Http\Controllers\Panel\InvoiceController::class, 'refund'])->name('invoices.refund');
         });
     });
 });
