@@ -3,14 +3,12 @@
 namespace App\Services;
 
 use App\Models\Business;
+use App\Models\Subscription;
 use App\Models\Ticket;
 use App\Models\User;
-use App\Models\Subscription;
 use App\Notifications\Admin\BusinessCreated as BusinessCreatedNotification;
-use App\Notifications\Admin\TicketCreated as TicketCreatedNotification;
 use App\Notifications\Admin\SubscriptionExpiring as SubscriptionExpiringNotification;
-use App\Services\NotificationSettingsService;
-use App\Services\TelegramNotificationService;
+use App\Notifications\Admin\TicketCreated as TicketCreatedNotification;
 use Illuminate\Support\Facades\Log;
 
 class AdminNotificationService
@@ -49,6 +47,7 @@ class AdminNotificationService
 
         if ($admins->isEmpty()) {
             Log::info('AdminNotificationService: No admins found for business.created notification');
+
             return;
         }
 
@@ -69,8 +68,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.businesses.view',
                 'data' => [
                     'business_id' => $business->id,
-                    'url' => route('panel.businesses.show', $business)
-                ]
+                    'url' => route('panel.businesses.show', $business),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
@@ -81,7 +80,7 @@ class AdminNotificationService
                     Log::error('Failed to send email notification for admin.business.created', [
                         'admin_id' => $admin->id,
                         'business_id' => $business->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -94,7 +93,7 @@ class AdminNotificationService
                     Log::error('Failed to send telegram notification for admin.business.created', [
                         'admin_id' => $admin->id,
                         'business_id' => $business->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -102,7 +101,7 @@ class AdminNotificationService
 
         Log::info('AdminNotificationService: Business created notifications sent', [
             'business_id' => $business->id,
-            'admins_count' => $admins->count()
+            'admins_count' => $admins->count(),
         ]);
     }
 
@@ -134,8 +133,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.businesses.view',
                 'data' => [
                     'business_id' => $business->id,
-                    'url' => route('panel.businesses')
-                ]
+                    'url' => route('panel.businesses'),
+                ],
             ]);
         }
     }
@@ -173,8 +172,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.tickets.view',
                 'data' => [
                     'ticket_id' => $ticket->id,
-                    'url' => route('panel.tickets.show', $ticket)
-                ]
+                    'url' => route('panel.tickets.show', $ticket),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
@@ -185,7 +184,7 @@ class AdminNotificationService
                     Log::error('Failed to send email notification for admin.ticket.created', [
                         'admin_id' => $admin->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -198,7 +197,7 @@ class AdminNotificationService
                     Log::error('Failed to send telegram notification for admin.ticket.created', [
                         'admin_id' => $admin->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -233,8 +232,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.tickets.view',
                 'data' => [
                     'ticket_id' => $ticket->id,
-                    'url' => route('panel.tickets.show', $ticket)
-                ]
+                    'url' => route('panel.tickets.show', $ticket),
+                ],
             ]);
         }
     }
@@ -263,8 +262,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.users.view',
                 'data' => [
                     'user_id' => $user->id,
-                    'url' => route('panel.users.edit', $user)
-                ]
+                    'url' => route('panel.users.edit', $user),
+                ],
             ]);
         }
     }
@@ -306,8 +305,8 @@ class AdminNotificationService
                 'data' => [
                     'subscription_id' => $subscription->id,
                     'business_id' => $business?->id,
-                    'url' => $business ? route('panel.businesses.show', $business) : route('panel.businesses')
-                ]
+                    'url' => $business ? route('panel.businesses.show', $business) : route('panel.businesses'),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
@@ -318,7 +317,7 @@ class AdminNotificationService
                     Log::error('Failed to send email notification for admin.subscription.expiring', [
                         'admin_id' => $admin->id,
                         'subscription_id' => $subscription->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -358,8 +357,8 @@ class AdminNotificationService
                 'data' => [
                     'business_id' => $business->id,
                     'limit_type' => $limitType,
-                    'url' => route('panel.businesses.show', $business)
-                ]
+                    'url' => route('panel.businesses.show', $business),
+                ],
             ]);
         }
     }
@@ -389,8 +388,8 @@ class AdminNotificationService
                 'required_permission' => 'panel.businesses.view',
                 'data' => [
                     'business_id' => $business->id,
-                    'url' => route('panel.businesses.show', $business)
-                ]
+                    'url' => route('panel.businesses.show', $business),
+                ],
             ]);
         }
     }
@@ -419,8 +418,8 @@ class AdminNotificationService
                 'required_permission' => null, // Все админы должны видеть системные ошибки
                 'data' => [
                     'error_type' => $errorType,
-                    'url' => $url ?? route('panel.index')
-                ]
+                    'url' => $url ?? route('panel.index'),
+                ],
             ]);
         }
     }

@@ -19,8 +19,7 @@ class TicketCommentAdded extends Notification implements ShouldQueue
     public function __construct(
         public Ticket $ticket,
         public TicketComment $comment
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -37,15 +36,15 @@ class TicketCommentAdded extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $author = $this->comment->user 
-            ? $this->comment->user->name 
+        $author = $this->comment->user
+            ? $this->comment->user->name
             : ($this->comment->author_name ?? 'Анонимный пользователь');
 
         return (new MailMessage)
-            ->subject('Новый комментарий к тикету #' . $this->ticket->id)
-            ->line('Добавлен новый комментарий к тикету: ' . $this->ticket->title)
-            ->line('Автор: ' . $author)
-            ->line('Комментарий: ' . $this->comment->content)
+            ->subject('Новый комментарий к тикету #'.$this->ticket->id)
+            ->line('Добавлен новый комментарий к тикету: '.$this->ticket->title)
+            ->line('Автор: '.$author)
+            ->line('Комментарий: '.$this->comment->content)
             ->action('Просмотреть тикет', route('panel.tickets.show', $this->ticket))
             ->line('Спасибо за использование нашей системы!');
     }
@@ -61,7 +60,7 @@ class TicketCommentAdded extends Notification implements ShouldQueue
             'ticket_id' => $this->ticket->id,
             'comment_id' => $this->comment->id,
             'title' => $this->ticket->title,
-            'message' => 'Добавлен новый комментарий к тикету: ' . $this->ticket->title,
+            'message' => 'Добавлен новый комментарий к тикету: '.$this->ticket->title,
         ];
     }
 }

@@ -22,13 +22,13 @@ class NotificationSettingsController extends Controller
         // Получаем бота для генерации ссылки привязки
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
         $botUsername = $bot ? $bot->name : null;
-        
+
         // Генерируем токен, если отсутствует
         if (empty($user->telegram_token)) {
             $user->telegram_token = \Illuminate\Support\Str::random(32);
             $user->save();
         }
-        
+
         $telegramLink = $botUsername && $user->telegram_token
             ? "https://t.me/{$botUsername}?start=user_auth_{$user->telegram_token}"
             : null;
@@ -54,7 +54,7 @@ class NotificationSettingsController extends Controller
         // Валидация: проверяем, что все каналы из запроса существуют в конфиге
         $availableChannels = array_keys(NotificationSettingsService::getAvailableChannels());
         foreach (array_keys($channels) as $channel) {
-            if (!in_array($channel, $availableChannels)) {
+            if (! in_array($channel, $availableChannels)) {
                 return response()->json([
                     'success' => false,
                     'message' => "Неизвестный канал: {$channel}",

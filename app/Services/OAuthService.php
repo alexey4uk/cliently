@@ -4,9 +4,6 @@ namespace App\Services;
 
 use App\Models\Plan;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -20,7 +17,7 @@ class OAuthService
         $providers = config('oauth.providers', []);
 
         return collect($providers)
-            ->filter(fn($config) => $config['enabled'] ?? false)
+            ->filter(fn ($config) => $config['enabled'] ?? false)
             ->toArray();
     }
 
@@ -39,7 +36,7 @@ class OAuthService
      */
     public function getRedirectUrl(string $provider): \Symfony\Component\HttpFoundation\RedirectResponse
     {
-        if (!$this->isProviderEnabled($provider)) {
+        if (! $this->isProviderEnabled($provider)) {
             abort(404, "Provider {$provider} is not enabled");
         }
 
@@ -47,12 +44,12 @@ class OAuthService
         $driver = Socialite::driver($provider);
 
         // Применяем scopes если указаны
-        if (!empty($config['scopes'])) {
+        if (! empty($config['scopes'])) {
             $driver->scopes($config['scopes']);
         }
 
         // Применяем дополнительные параметры
-        if (!empty($config['with'])) {
+        if (! empty($config['with'])) {
             $driver->with($config['with']);
         }
 
@@ -64,14 +61,14 @@ class OAuthService
      */
     public function handleCallback(string $provider): User
     {
-        if (!$this->isProviderEnabled($provider)) {
+        if (! $this->isProviderEnabled($provider)) {
             abort(404, "Provider {$provider} is not enabled");
         }
 
         try {
             $socialiteUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
-            throw new \Exception("Failed to get user from {$provider}: " . $e->getMessage());
+            throw new \Exception("Failed to get user from {$provider}: ".$e->getMessage());
         }
 
         return $this->findOrCreateUser($socialiteUser, $provider);
@@ -90,6 +87,7 @@ class OAuthService
         if ($user) {
             // Обновляем данные пользователя
             $this->updateUserFromSocialite($user, $socialiteUser);
+
             return $user;
         }
 
@@ -100,12 +98,13 @@ class OAuthService
             if ($user) {
                 // Привязываем OAuth к существующему аккаунту
                 $this->linkOAuthToUser($user, $socialiteUser, $provider);
+
                 return $user;
             }
         }
 
         // Создаем нового пользователя
-        if (!config('oauth.settings.allow_registration', true)) {
+        if (! config('oauth.settings.allow_registration', true)) {
             throw new \Exception('Registration through OAuth is disabled');
         }
 
@@ -121,8 +120,8 @@ class OAuthService
         $email = $socialiteUser->getEmail();
 
         // Если email отсутствует, генерируем временный
-        if (!$email) {
-            $email = $provider . '_' . $socialiteUser->getId() . '@oauth.local';
+        if (! $email) {
+            $email = $provider.'_'.$socialiteUser->getId().'@oauth.local';
         }
 
         // OAuth пользователи считаются верифицированными автоматически,
@@ -184,12 +183,12 @@ class OAuthService
                 ->where('id', '!=', $user->id)
                 ->exists();
 
-            if (!$emailExists) {
+            if (! $emailExists) {
                 $data['email'] = $socialiteUser->getEmail();
             }
         }
 
-        if (!empty($data)) {
+        if (! empty($data)) {
             $user->update($data);
         }
     }
@@ -206,7 +205,7 @@ class OAuthService
         ]);
 
         // Автоматически верифицируем email
-        if (config('oauth.settings.auto_verify_email', true) && !$user->hasVerifiedEmail()) {
+        if (config('oauth.settings.auto_verify_email', true) && ! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
     }
@@ -217,7 +216,7 @@ class OAuthService
     public function unlinkOAuth(User $user): void
     {
         // Проверяем, что у пользователя установлен пароль
-        if (!$user->password) {
+        if (! $user->password) {
             throw new \Exception('Cannot unlink OAuth without setting a password first');
         }
 
@@ -232,6 +231,6 @@ class OAuthService
      */
     public function isOAuthUser(User $user): bool
     {
-        return !empty($user->oauth_provider) && !empty($user->oauth_id);
+        return ! empty($user->oauth_provider) && ! empty($user->oauth_id);
     }
 }

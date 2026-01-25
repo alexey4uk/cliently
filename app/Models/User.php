@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Traits\HasSubscription;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,7 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, HasRoles, Notifiable, HasSubscription;
+    use HasFactory, HasRoles, HasSubscription, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -159,7 +159,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isTelegramConnected(): bool
     {
-        return !empty($this->telegram_chat_id);
+        return ! empty($this->telegram_chat_id);
     }
 
     /**
@@ -168,7 +168,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getAvatarUrl(): ?string
     {
-        if (!$this->avatar) {
+        if (! $this->avatar) {
             return null;
         }
 
@@ -178,7 +178,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         // Иначе это локальный файл в storage
-        return asset('storage/' . $this->avatar);
+        return asset('storage/'.$this->avatar);
     }
 
     /**

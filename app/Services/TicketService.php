@@ -43,11 +43,11 @@ class TicketService
         $ticket->update(['status' => $status]);
 
         // Автоматически устанавливаем даты при изменении статуса
-        if ($status === 'resolved' && !$ticket->resolved_at) {
+        if ($status === 'resolved' && ! $ticket->resolved_at) {
             $ticket->update(['resolved_at' => now()]);
         }
 
-        if ($status === 'closed' && !$ticket->closed_at) {
+        if ($status === 'closed' && ! $ticket->closed_at) {
             $ticket->update(['closed_at' => now()]);
         }
     }

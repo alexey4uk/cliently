@@ -45,8 +45,8 @@ return new class extends Migration
     {
         // Получаем системную роль owner
         $ownerRole = BusinessRole::where('slug', 'owner')->first();
-        
-        if (!$ownerRole) {
+
+        if (! $ownerRole) {
             return;
         }
 
@@ -91,7 +91,7 @@ return new class extends Migration
             } else {
                 // Роль используется в бизнесах разных owners - создаем копии для каждого owner
                 $firstOwnerId = array_shift($ownerIds);
-                
+
                 // Обновляем текущую роль для первого owner
                 $role->update(['owner_id' => $firstOwnerId]);
 
@@ -160,7 +160,7 @@ return new class extends Migration
         Schema::table('business_roles', function (Blueprint $table) {
             // Удаляем составной индекс
             $table->dropUnique('business_roles_slug_owner_id_unique');
-            
+
             // Восстанавливаем уникальный индекс на slug
             $table->unique('slug');
         });

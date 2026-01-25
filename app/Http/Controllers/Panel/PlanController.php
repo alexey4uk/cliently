@@ -87,7 +87,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn($m) => [
+                ->map(fn ($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -98,14 +98,14 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn($m) => [
+                ->map(fn ($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
                 ])
                 ->toArray(),
         ];
-        
+
         return view('panel.plans.create', compact('availableFeatures'));
     }
 
@@ -156,17 +156,17 @@ class PlanController extends Controller
             foreach ($validated['features'] as $feature) {
                 $featureType = $feature['type'] ?? 'integer';
                 $featureValue = '';
-                
+
                 if (isset($feature['value']) && $feature['value'] !== null && $feature['value'] !== '') {
                     $featureValue = trim((string) $feature['value']);
-                    
+
                     if ($featureType === 'integer') {
                         // Если это boolean-подобное значение, очищаем
                         if ($featureValue === 'false' || $featureValue === 'true') {
                             $featureValue = '';
                         }
                         // Проверяем, что значение является числом
-                        elseif ($featureValue !== '' && !is_numeric($featureValue)) {
+                        elseif ($featureValue !== '' && ! is_numeric($featureValue)) {
                             $featureValue = '';
                         }
                     } elseif ($featureType === 'boolean') {
@@ -181,7 +181,7 @@ class PlanController extends Controller
                     // Для boolean типа, если значение не передано, устанавливаем false
                     $featureValue = 'false';
                 }
-                
+
                 PlanFeature::create([
                     'plan_id' => $plan->id,
                     'feature_key' => $feature['key'],
@@ -201,14 +201,14 @@ class PlanController extends Controller
     public function edit(Plan $plan)
     {
         $plan->load('features');
-        
+
         $availableFeatures = [
             'integer' => SubscriptionMetric::where('type', 'integer')
                 ->where('is_active', true)
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn($m) => [
+                ->map(fn ($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -219,7 +219,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn($m) => [
+                ->map(fn ($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -271,12 +271,12 @@ class PlanController extends Controller
         ]);
 
         // Если этот тариф помечен как "по умолчанию", снимаем флаг с остальных
-        if ($willBeDefault && !$wasDefault) {
+        if ($willBeDefault && ! $wasDefault) {
             Plan::where('id', '!=', $plan->id)->update(['is_default' => false]);
         }
 
         // Обновляем метрики
-        if (isset($validated['features']) && is_array($validated['features']) && !empty($validated['features'])) {
+        if (isset($validated['features']) && is_array($validated['features']) && ! empty($validated['features'])) {
             // Удаляем старые метрики
             $plan->features()->delete();
 
@@ -285,9 +285,9 @@ class PlanController extends Controller
                 if (isset($feature['key'])) {
                     // Убеждаемся, что тип валидный
                     $featureType = 'integer'; // По умолчанию
-                    
+
                     // Если тип передан из формы, используем его
-                    if (isset($feature['type']) && !empty($feature['type']) && in_array($feature['type'], ['integer', 'boolean'])) {
+                    if (isset($feature['type']) && ! empty($feature['type']) && in_array($feature['type'], ['integer', 'boolean'])) {
                         $featureType = $feature['type'];
                     } else {
                         // Если тип не передан, пытаемся определить из subscription_metrics
@@ -296,19 +296,19 @@ class PlanController extends Controller
                             $featureType = $metric->type;
                         }
                     }
-                    
+
                     // Обрабатываем значение в зависимости от типа
                     $featureValue = '';
                     if (isset($feature['value']) && $feature['value'] !== null && $feature['value'] !== '') {
                         $featureValue = trim((string) $feature['value']);
-                        
+
                         if ($featureType === 'integer') {
                             // Если это boolean-подобное значение, очищаем
                             if ($featureValue === 'false' || $featureValue === 'true') {
                                 $featureValue = '';
                             }
                             // Проверяем, что значение является числом (включая отрицательные и 0)
-                            elseif ($featureValue !== '' && !is_numeric($featureValue)) {
+                            elseif ($featureValue !== '' && ! is_numeric($featureValue)) {
                                 $featureValue = '';
                             }
                             // Если значение валидное число, оставляем как есть
@@ -324,7 +324,7 @@ class PlanController extends Controller
                         // Для boolean типа, если значение не передано, устанавливаем false
                         $featureValue = 'false';
                     }
-                    
+
                     PlanFeature::create([
                         'plan_id' => $plan->id,
                         'feature_key' => $feature['key'],
@@ -333,7 +333,7 @@ class PlanController extends Controller
                     ]);
                 }
             }
-        } elseif (!isset($validated['features'])) {
+        } elseif (! isset($validated['features'])) {
             // Если features не переданы в запросе, удаляем все существующие
             $plan->features()->delete();
         }
@@ -367,14 +367,14 @@ class PlanController extends Controller
     {
         // Находим элемент с sort_order на 1 больше (ниже в списке)
         $nextPlan = Plan::where('sort_order', $plan->sort_order + 1)->first();
-        
+
         if ($nextPlan) {
             // Меняем местами
             $currentOrder = $plan->sort_order;
             $plan->update(['sort_order' => $nextPlan->sort_order]);
             $nextPlan->update(['sort_order' => $currentOrder]);
         }
-        
+
         return redirect()->back()
             ->with('success', 'Элемент перемещен вниз.');
     }
@@ -387,14 +387,14 @@ class PlanController extends Controller
     {
         // Находим элемент с sort_order на 1 меньше (выше в списке)
         $prevPlan = Plan::where('sort_order', $plan->sort_order - 1)->first();
-        
+
         if ($prevPlan) {
             // Меняем местами
             $currentOrder = $plan->sort_order;
             $plan->update(['sort_order' => $prevPlan->sort_order]);
             $prevPlan->update(['sort_order' => $currentOrder]);
         }
-        
+
         return redirect()->back()
             ->with('success', 'Элемент перемещен вверх.');
     }

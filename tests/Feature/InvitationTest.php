@@ -28,7 +28,7 @@ class InvitationTest extends TestCase
         // Создаем тестовые данные
         $business = Business::factory()->create();
         $user = User::factory()->create();
-        
+
         $role = BusinessRole::create([
             'slug' => 'master',
             'name' => 'Мастер',
@@ -47,7 +47,7 @@ class InvitationTest extends TestCase
         ]);
 
         // Пытаемся получить доступ к странице приглашения без аутентификации
-        $response = $this->get('/invite/' . $invitation->token);
+        $response = $this->get('/invite/'.$invitation->token);
 
         // Должно вернуть успешный ответ, а не редирект на логин
         $response->assertStatus(200);
@@ -62,7 +62,7 @@ class InvitationTest extends TestCase
         // Создаем тестовые данные
         $business = Business::factory()->create();
         $user = User::factory()->create();
-        
+
         $role = BusinessRole::create([
             'slug' => 'master',
             'name' => 'Мастер',
@@ -81,7 +81,7 @@ class InvitationTest extends TestCase
         ]);
 
         // Пытаемся активировать приглашение без аутентификации
-        $response = $this->post('/invite/' . $invitation->token . '/activate', [
+        $response = $this->post('/invite/'.$invitation->token.'/activate', [
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);

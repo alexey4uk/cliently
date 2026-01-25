@@ -3,32 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Services\SubscriptionAccessService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class TelegramSettingsController extends Controller
 {
     public function index()
     {
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
-        
+
         $this->authorizeBusinessPermission('client.telegram.manage');
 
         // Проверяем доступ к Telegram боту согласно тарифу
         $accessService = app(SubscriptionAccessService::class);
         $redirect = $accessService->checkAccessWithRedirect(
-            $business, 
-            'telegram_bot_enabled', 
-            'client.telegram.manage', 
+            $business,
+            'telegram_bot_enabled',
+            'client.telegram.manage',
             'Telegram бот',
             'subscription.index'
         );
-        
+
         if ($redirect) {
             return $redirect;
         }
@@ -58,15 +56,15 @@ class TelegramSettingsController extends Controller
     public function disconnect()
     {
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
-        
+
         $this->authorizeBusinessPermission('client.telegram.manage');
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }

@@ -108,7 +108,7 @@ class TicketController extends Controller
             'client',
             'attachments',
             'comments.user',
-            'comments.attachments'
+            'comments.attachments',
         ]);
 
         $users = User::orderBy('name')->get();
@@ -205,7 +205,7 @@ class TicketController extends Controller
         if ($validated['assigned_to'] && $validated['assigned_to'] !== $oldAssignedTo) {
             $assignedUser = User::find($validated['assigned_to']);
             if ($assignedUser) {
-                $notificationService = new TicketNotificationService();
+                $notificationService = new TicketNotificationService;
                 $notificationService->notifyTicketAssigned($ticket, $assignedUser);
             }
         }
@@ -227,7 +227,7 @@ class TicketController extends Controller
 
         // Отправляем уведомление об изменении статуса
         if ($oldStatus !== $validated['status']) {
-            $notificationService = new TicketNotificationService();
+            $notificationService = new TicketNotificationService;
             $notificationService->notifyStatusChanged($ticket, $oldStatus, $validated['status']);
         }
 
@@ -274,7 +274,7 @@ class TicketController extends Controller
         }
 
         // Отправляем уведомление о новом комментарии
-        $notificationService = new TicketNotificationService();
+        $notificationService = new TicketNotificationService;
         $notificationService->notifyCommentAdded($ticket, $comment);
 
         return redirect()->route('panel.tickets.show', $ticket)->with('success', 'Комментарий добавлен.');

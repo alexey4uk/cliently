@@ -45,10 +45,6 @@ class UserNotificationSetting extends Model
 
     /**
      * Get or create a notification setting for a user and type.
-     *
-     * @param User $user
-     * @param string $type
-     * @return self
      */
     public static function getForUser(User $user, string $type): self
     {
@@ -65,21 +61,16 @@ class UserNotificationSetting extends Model
 
     /**
      * Check if a specific channel is enabled for this setting.
-     *
-     * @param string $channel
-     * @return bool
      */
     public function isChannelEnabled(string $channel): bool
     {
         $channels = $this->channels ?? [];
+
         return $channels[$channel] ?? true; // По умолчанию включено
     }
 
     /**
      * Update channels for this setting.
-     *
-     * @param array $channels
-     * @return bool
      */
     public function updateChannels(array $channels): bool
     {

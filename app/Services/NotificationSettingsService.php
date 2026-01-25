@@ -10,11 +10,6 @@ class NotificationSettingsService
 {
     /**
      * Универсальный метод проверки, нужно ли отправлять уведомление через указанный канал.
-     *
-     * @param User $user
-     * @param string $notificationType
-     * @param string $channel
-     * @return bool
      */
     public static function shouldSend(User $user, string $notificationType, string $channel): bool
     {
@@ -24,7 +19,7 @@ class NotificationSettingsService
             ->first();
 
         // Если настройки нет - по умолчанию все каналы включены
-        if (!$setting) {
+        if (! $setting) {
             return true;
         }
 
@@ -34,10 +29,6 @@ class NotificationSettingsService
 
     /**
      * Проверить, нужно ли отправлять email уведомление.
-     *
-     * @param User $user
-     * @param string $notificationType
-     * @return bool
      */
     public static function shouldSendEmail(User $user, string $notificationType): bool
     {
@@ -46,10 +37,6 @@ class NotificationSettingsService
 
     /**
      * Проверить, нужно ли отправлять telegram уведомление.
-     *
-     * @param User $user
-     * @param string $notificationType
-     * @return bool
      */
     public static function shouldSendTelegram(User $user, string $notificationType): bool
     {
@@ -58,9 +45,6 @@ class NotificationSettingsService
 
     /**
      * Получить все настройки пользователя с дефолтными значениями.
-     *
-     * @param User $user
-     * @return array
      */
     public static function getUserSettings(User $user): array
     {
@@ -85,11 +69,6 @@ class NotificationSettingsService
 
     /**
      * Обновить настройку для пользователя.
-     *
-     * @param User $user
-     * @param string $notificationType
-     * @param array $channels
-     * @return UserNotificationSetting
      */
     public static function updateSetting(User $user, string $notificationType, array $channels): UserNotificationSetting
     {
@@ -107,8 +86,6 @@ class NotificationSettingsService
 
     /**
      * Получить список доступных каналов из конфига.
-     *
-     * @return array
      */
     public static function getAvailableChannels(): array
     {
@@ -117,8 +94,6 @@ class NotificationSettingsService
 
     /**
      * Получить дефолтные значения для всех каналов.
-     *
-     * @return array
      */
     public static function getDefaultChannels(): array
     {
@@ -136,8 +111,6 @@ class NotificationSettingsService
 
     /**
      * Получить список всех типов уведомлений с дефолтными значениями.
-     *
-     * @return array
      */
     public static function getDefaultSettings(): array
     {
@@ -157,8 +130,6 @@ class NotificationSettingsService
 
     /**
      * Получить все типы уведомлений из конфига (плоский список).
-     *
-     * @return array
      */
     public static function getAllNotificationTypes(): array
     {
@@ -176,8 +147,6 @@ class NotificationSettingsService
 
     /**
      * Получить типы уведомлений сгруппированные по категориям.
-     *
-     * @return array
      */
     public static function getNotificationTypesByCategory(): array
     {

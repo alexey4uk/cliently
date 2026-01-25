@@ -32,13 +32,13 @@ return new class extends Migration
         });
 
         Schema::table('business_user', function (Blueprint $table) {
-            if (!Schema::hasColumn('business_user', 'role_id')) {
+            if (! Schema::hasColumn('business_user', 'role_id')) {
                 $table->foreignId('role_id')->nullable()->constrained('business_roles');
             }
         });
 
         Schema::table('business_user_invitations', function (Blueprint $table) {
-            if (!Schema::hasColumn('business_user_invitations', 'role_id')) {
+            if (! Schema::hasColumn('business_user_invitations', 'role_id')) {
                 $table->foreignId('role_id')->nullable()->constrained('business_roles');
             }
         });

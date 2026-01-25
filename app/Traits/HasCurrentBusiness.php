@@ -12,20 +12,18 @@ trait HasCurrentBusiness
     /**
      * Get the current business for the authenticated user.
      * Checks session first, then falls back to the first business.
-     *
-     * @return Business|null
      */
     protected function getCurrentBusiness(): ?Business
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return null;
         }
 
         // Check session for current business (for future multi-business support)
         $businessId = Session::get('current_business_id');
-        
+
         if ($businessId) {
             $business = Business::find($businessId);
             // Verify user has access to this business
@@ -41,6 +39,7 @@ trait HasCurrentBusiness
 
         // Fallback to first business (MVP approach)
         $user->load('businesses');
+
         return $user->businesses->first();
     }
 
@@ -51,13 +50,13 @@ trait HasCurrentBusiness
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return null;
         }
 
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return null;
         }
 
@@ -66,11 +65,11 @@ trait HasCurrentBusiness
             ->where('user_id', $user->id)
             ->where('business_id', $business->id)
             ->first();
-        
-        if (!$pivotData) {
+
+        if (! $pivotData) {
             return null;
         }
-        
+
         // First try to get role by role_id
         if ($pivotData->role_id) {
             $role = \App\Models\BusinessRole::find($pivotData->role_id);
@@ -78,7 +77,7 @@ trait HasCurrentBusiness
                 return $role;
             }
         }
-        
+
         // Fallback: try to get role by slug (for backward compatibility)
         if ($pivotData->role) {
             $role = \App\Models\BusinessRole::where('slug', $pivotData->role)->first();
@@ -88,27 +87,25 @@ trait HasCurrentBusiness
                     ->where('user_id', $user->id)
                     ->where('business_id', $business->id)
                     ->update(['role_id' => $role->id]);
+
                 return $role;
             }
         }
-        
+
         return null;
     }
 
     /**
      * Set the current business in session (for future multi-business support).
-     *
-     * @param Business $business
-     * @return void
      */
     protected function setCurrentBusiness(Business $business): void
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return;
         }
-        
+
         // Verify user has access to this business
         $user->load('businesses');
         if ($user->businesses->contains($business->id)) {

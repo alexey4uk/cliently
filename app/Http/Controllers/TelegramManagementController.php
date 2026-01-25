@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use DefStudio\Telegraph\Models\TelegraphBot;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
 
 class TelegramManagementController extends Controller
 {
@@ -54,17 +52,17 @@ class TelegramManagementController extends Controller
 
             Log::info('Bot created successfully', [
                 'bot_id' => $bot->id,
-                'bot_name' => $bot->name
+                'bot_name' => $bot->name,
             ]);
 
             return redirect()->route('panel.telegram.management')->with('success', 'Бот успешно создан');
         } catch (\Exception $e) {
             Log::error('Failed to create bot', [
                 'error' => $e->getMessage(),
-                'name' => $request->name
+                'name' => $request->name,
             ]);
 
-            return back()->withInput()->with('error', 'Ошибка при создании бота: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Ошибка при создании бота: '.$e->getMessage());
         }
     }
 
@@ -75,7 +73,7 @@ class TelegramManagementController extends Controller
     {
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return redirect()->route('panel.telegram.management')->with('error', 'Бот не найден');
         }
 
@@ -89,13 +87,13 @@ class TelegramManagementController extends Controller
     {
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return back()->with('error', 'Бот не найден');
         }
 
         $request->validate([
-            'name' => 'required|string|max:255|unique:telegraph_bots,name,' . $bot->id,
-            'token' => 'required|string|max:255|unique:telegraph_bots,token,' . $bot->id,
+            'name' => 'required|string|max:255|unique:telegraph_bots,name,'.$bot->id,
+            'token' => 'required|string|max:255|unique:telegraph_bots,token,'.$bot->id,
         ]);
 
         try {
@@ -106,17 +104,17 @@ class TelegramManagementController extends Controller
 
             Log::info('Bot updated successfully', [
                 'bot_id' => $bot->id,
-                'bot_name' => $bot->name
+                'bot_name' => $bot->name,
             ]);
 
             return redirect()->route('panel.telegram.management')->with('success', 'Бот успешно обновлен');
         } catch (\Exception $e) {
             Log::error('Failed to update bot', [
                 'error' => $e->getMessage(),
-                'bot_id' => $bot->id
+                'bot_id' => $bot->id,
             ]);
 
-            return back()->withInput()->with('error', 'Ошибка при обновлении бота: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Ошибка при обновлении бота: '.$e->getMessage());
         }
     }
 
@@ -127,7 +125,7 @@ class TelegramManagementController extends Controller
     {
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return back()->with('error', 'Бот не найден');
         }
 
@@ -144,7 +142,7 @@ class TelegramManagementController extends Controller
         /** @var TelegraphBot $bot */
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return back()->with('error', 'Бот не найден');
         }
 
@@ -167,7 +165,7 @@ class TelegramManagementController extends Controller
                     'response_json' => $reply->json(),
                 ]);
 
-                return back()->with('error', 'Ошибка при установке webhook: ' . $reply->telegraphError());
+                return back()->with('error', 'Ошибка при установке webhook: '.$reply->telegraphError());
             }
 
             Log::info('Webhook set successfully', [
@@ -182,7 +180,7 @@ class TelegramManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Ошибка при установке webhook: ' . $e->getMessage());
+            return back()->with('error', 'Ошибка при установке webhook: '.$e->getMessage());
         }
     }
 
@@ -194,7 +192,7 @@ class TelegramManagementController extends Controller
         /** @var TelegraphBot $bot */
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return back()->with('error', 'Бот не найден');
         }
 
@@ -202,7 +200,7 @@ class TelegramManagementController extends Controller
             // Логируем информацию перед удалением
             Log::info('Attempting to delete webhook', [
                 'bot_id' => $bot->id,
-                'bot_token' => substr($bot->token, 0, 10) . '***',
+                'bot_token' => substr($bot->token, 0, 10).'***',
             ]);
 
             // Используем именованный параметр для лучшей читаемости
@@ -215,7 +213,7 @@ class TelegramManagementController extends Controller
                     'response_json' => $reply->json(),
                 ]);
 
-                return back()->with('error', 'Ошибка при удалении webhook: ' . $reply->telegraphError());
+                return back()->with('error', 'Ошибка при удалении webhook: '.$reply->telegraphError());
             }
 
             Log::info('Webhook deleted successfully', [
@@ -230,7 +228,7 @@ class TelegramManagementController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Ошибка при удалении webhook: ' . $e->getMessage());
+            return back()->with('error', 'Ошибка при удалении webhook: '.$e->getMessage());
         }
     }
 
@@ -242,7 +240,7 @@ class TelegramManagementController extends Controller
         /** @var TelegraphBot $bot */
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::find($id);
 
-        if (!$bot) {
+        if (! $bot) {
             return back()->with('error', 'Бот не найден');
         }
 
@@ -259,16 +257,16 @@ class TelegramManagementController extends Controller
             ]);
 
             $webhookUrl = $webhookDebugInfo->json()['result']['url'] ?? 'не установлен';
-            $webhookStatus = !empty($webhookUrl) ? 'установлен' : 'не установлен';
+            $webhookStatus = ! empty($webhookUrl) ? 'установлен' : 'не установлен';
 
-            return back()->with('success', "Информация о боте: @" . ($botInfo['username'] ?? 'unknown') . ". Webhook: {$webhookStatus}" . (!empty($webhookUrl) ? " ({$webhookUrl})" : ""));
+            return back()->with('success', 'Информация о боте: @'.($botInfo['username'] ?? 'unknown').". Webhook: {$webhookStatus}".(! empty($webhookUrl) ? " ({$webhookUrl})" : ''));
         } catch (\Exception $e) {
             Log::error('Failed to get bot info', [
                 'bot_id' => $bot->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Ошибка при получении информации о боте: ' . $e->getMessage());
+            return back()->with('error', 'Ошибка при получении информации о боте: '.$e->getMessage());
         }
     }
 
@@ -295,7 +293,7 @@ class TelegramManagementController extends Controller
             $webhookInfo = $reply->json()['result'] ?? [];
 
             // Проверяем, установлен ли webhook
-            if (!empty($webhookInfo['url'])) {
+            if (! empty($webhookInfo['url'])) {
                 return [
                     'status' => 'connected',
                     'message' => 'Подключен',

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,12 +45,12 @@ class Ticket extends Model
 
         static::updating(function ($ticket) {
             // Автоматически устанавливаем resolved_at при изменении статуса на resolved
-            if ($ticket->isDirty('status') && $ticket->status === 'resolved' && !$ticket->resolved_at) {
+            if ($ticket->isDirty('status') && $ticket->status === 'resolved' && ! $ticket->resolved_at) {
                 $ticket->resolved_at = now();
             }
 
             // Автоматически устанавливаем closed_at при изменении статуса на closed
-            if ($ticket->isDirty('status') && $ticket->status === 'closed' && !$ticket->closed_at) {
+            if ($ticket->isDirty('status') && $ticket->status === 'closed' && ! $ticket->closed_at) {
                 $ticket->closed_at = now();
             }
         });
@@ -106,6 +105,7 @@ class Ticket extends Model
         if ($this->created_by_type === 'user' && $this->created_by_id) {
             return User::find($this->created_by_id);
         }
+
         return null;
     }
 

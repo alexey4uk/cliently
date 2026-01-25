@@ -71,15 +71,15 @@ class BusinessRolePermissionsController extends Controller
 
         $request->validate([
             'slug' => [
-                'required', 
-                'string', 
-                'max:100', 
-                'regex:/^[a-z][a-z0-9_]*$/', 
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-z][a-z0-9_]*$/',
                 Rule::notIn(['owner']),
                 // В панели админа создаем роли без owner_id (глобальные пользовательские)
                 Rule::unique('business_roles', 'slug')->where(function ($query) {
                     return $query->whereNull('owner_id')->where('is_system', false);
-                })
+                }),
             ],
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:255'],
@@ -237,5 +237,4 @@ class BusinessRolePermissionsController extends Controller
 
         return $allPermissions;
     }
-
 }

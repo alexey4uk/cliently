@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('resolved_at')->nullable();
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['business_id', 'status']);
             $table->index(['assigned_to', 'status']);
             $table->index('token');

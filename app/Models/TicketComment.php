@@ -45,7 +45,7 @@ class TicketComment extends Model
     public function getAuthorName(): string
     {
         if ($this->user) {
-            return $this->user->name ?? ($this->user->first_name . ' ' . $this->user->last_name);
+            return $this->user->name ?? ($this->user->first_name.' '.$this->user->last_name);
         }
 
         return $this->author_name ?? 'Анонимный пользователь';

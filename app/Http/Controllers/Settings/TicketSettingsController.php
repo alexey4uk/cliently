@@ -4,11 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TicketSettingsRequest;
-use App\Models\Business;
 use App\Models\TicketSettings;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TicketSettingsController extends Controller
 {
@@ -19,7 +15,7 @@ class TicketSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -39,7 +35,7 @@ class TicketSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -54,10 +50,10 @@ class TicketSettingsController extends Controller
 
         // Обработка массива email получателей
         $emailNotificationRecipients = $validated['email_notification_recipients'] ?? [];
-        
+
         // Фильтруем пустые значения из массива
-        $emailNotificationRecipients = array_filter($emailNotificationRecipients, function($email) {
-            return !empty(trim($email ?? ''));
+        $emailNotificationRecipients = array_filter($emailNotificationRecipients, function ($email) {
+            return ! empty(trim($email ?? ''));
         });
 
         // Подготавливаем данные для обновления

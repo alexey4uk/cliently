@@ -17,8 +17,7 @@ class SubscriptionExpiring extends Notification implements ShouldQueue
      */
     public function __construct(
         public Subscription $subscription
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -44,11 +43,11 @@ class SubscriptionExpiring extends Notification implements ShouldQueue
             : null;
 
         return (new MailMessage)
-            ->subject('Подписка истекает: ' . ($business ? $business->name : 'Не указан'))
+            ->subject('Подписка истекает: '.($business ? $business->name : 'Не указан'))
             ->line('Подписка бизнеса скоро истечет.')
-            ->line('Бизнес: ' . ($business ? $business->name : 'Не указан'))
-            ->line('Тариф: ' . ($plan ? $plan->name : 'Не указан'))
-            ->line('Дней до истечения: ' . ($daysLeft > 0 ? $daysLeft : 0))
+            ->line('Бизнес: '.($business ? $business->name : 'Не указан'))
+            ->line('Тариф: '.($plan ? $plan->name : 'Не указан'))
+            ->line('Дней до истечения: '.($daysLeft > 0 ? $daysLeft : 0))
             ->action('Просмотреть бизнес', $business ? route('panel.businesses.show', $business) : route('panel.businesses'))
             ->line('Спасибо за использование нашей системы!');
     }

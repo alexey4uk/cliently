@@ -86,7 +86,7 @@ class BusinessSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -108,7 +108,7 @@ class BusinessSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -128,7 +128,7 @@ class BusinessSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -147,7 +147,7 @@ class BusinessSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -165,7 +165,7 @@ class BusinessSettingsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }

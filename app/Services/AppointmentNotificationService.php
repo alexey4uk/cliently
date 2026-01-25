@@ -4,17 +4,14 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\Business;
-use App\Models\Subscription;
-use App\Models\User;
 use App\Models\BusinessRole;
 use App\Models\Client;
+use App\Models\User;
 use App\Notifications\AppointmentCreated as AppointmentCreatedNotification;
 use App\Notifications\AppointmentStatusChanged as AppointmentStatusChangedNotification;
 use App\Notifications\AppointmentUpcoming as AppointmentUpcomingNotification;
-use App\Services\NotificationSettingsService;
-use App\Services\TelegramNotificationService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentNotificationService
 {
@@ -61,7 +58,7 @@ class AppointmentNotificationService
         }
 
         // Если нет бизнес-прав, но есть административные права - используем админский маршрут (edit)
-        if (!$pivotData && $user->can('panel.appointments.view')) {
+        if (! $pivotData && $user->can('panel.appointments.view')) {
             return route('panel.appointments.edit', $appointment);
         }
 
@@ -112,7 +109,7 @@ class AppointmentNotificationService
         }
 
         // Если нет бизнес-прав, но есть административные права - используем админский маршрут (edit)
-        if (!$pivotData && $user->can('panel.clients.view')) {
+        if (! $pivotData && $user->can('panel.clients.view')) {
             return route('panel.clients.edit', $client);
         }
 
@@ -168,7 +165,7 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.appointments.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
@@ -186,19 +183,19 @@ class AppointmentNotificationService
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'appointment_id' => $appointment->id,
-                    'url' => self::getAppointmentRoute($user, $appointment)
-                ]
+                    'url' => self::getAppointmentRoute($user, $appointment),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
-            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.created')) {
+            if (! empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.created')) {
                 try {
                     $user->notify(new AppointmentCreatedNotification($appointment));
                 } catch (\Exception $e) {
                     Log::error('Failed to send email notification for appointment.created', [
                         'user_id' => $user->id,
                         'appointment_id' => $appointment->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -211,7 +208,7 @@ class AppointmentNotificationService
                     Log::error('Failed to send telegram notification for appointment.created', [
                         'user_id' => $user->id,
                         'appointment_id' => $appointment->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -271,7 +268,7 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.appointments.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
@@ -279,7 +276,7 @@ class AppointmentNotificationService
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.status_changed',
-                'title' => 'Запись ' . $statusText,
+                'title' => 'Запись '.$statusText,
                 'message' => sprintf(
                     '%s %s %s - %s',
                     $appointment->client->first_name ?? 'Клиент',
@@ -290,19 +287,19 @@ class AppointmentNotificationService
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'appointment_id' => $appointment->id,
-                    'url' => self::getAppointmentRoute($user, $appointment)
-                ]
+                    'url' => self::getAppointmentRoute($user, $appointment),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
-            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.status_changed')) {
+            if (! empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.status_changed')) {
                 try {
                     $user->notify(new AppointmentStatusChangedNotification($appointment, $oldStatus));
                 } catch (\Exception $e) {
                     Log::error('Failed to send email notification for appointment.status_changed', [
                         'user_id' => $user->id,
                         'appointment_id' => $appointment->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -315,7 +312,7 @@ class AppointmentNotificationService
                     Log::error('Failed to send telegram notification for appointment.status_changed', [
                         'user_id' => $user->id,
                         'appointment_id' => $appointment->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -368,7 +365,7 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.appointments.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
@@ -386,19 +383,19 @@ class AppointmentNotificationService
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'appointment_id' => $appointment->id,
-                    'url' => self::getAppointmentRoute($user, $appointment)
-                ]
+                    'url' => self::getAppointmentRoute($user, $appointment),
+                ],
             ]);
 
             // Email уведомление (если включено в настройках)
-            if (!empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.upcoming')) {
+            if (! empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'appointment.upcoming')) {
                 try {
                     $user->notify(new AppointmentUpcomingNotification($appointment));
                 } catch (\Exception $e) {
                     Log::error('Failed to send email notification for appointment.upcoming', [
                         'user_id' => $user->id,
                         'appointment_id' => $appointment->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -461,7 +458,7 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.settings.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
@@ -472,8 +469,8 @@ class AppointmentNotificationService
                 'message' => $messages[$limitType] ?? 'Достигнут один из лимитов подписки',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
-                    'url' => route('settings.subscription')
-                ]
+                    'url' => route('settings.subscription'),
+                ],
             ]);
         }
     }
@@ -522,13 +519,13 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.settings.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
             $subscription = $user->activeSubscription();
 
-            if (!$subscription) {
+            if (! $subscription) {
                 continue;
             }
 
@@ -546,12 +543,12 @@ class AppointmentNotificationService
                 'title' => 'Подписка истекает',
                 'message' => $daysLeft > 0
                     ? "Ваша подписка истекает через {$daysLeft} дн. Обновите для непрерывной работы."
-                    : "Подписка истекла сегодня. Обновите для восстановления доступа.",
+                    : 'Подписка истекла сегодня. Обновите для восстановления доступа.',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'subscription_id' => $subscription->id,
-                    'url' => route('settings.subscription')
-                ]
+                    'url' => route('settings.subscription'),
+                ],
             ]);
         }
     }
@@ -602,7 +599,7 @@ class AppointmentNotificationService
             $hasPanelPermission = $user->can('panel.clients.view');
 
             // Пропускаем пользователей без прав
-            if (!$hasPermission && !$hasPanelPermission) {
+            if (! $hasPermission && ! $hasPanelPermission) {
                 continue;
             }
 
@@ -618,8 +615,8 @@ class AppointmentNotificationService
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'client_id' => $appointment->client->id,
-                    'url' => self::getClientRoute($user, $appointment->client)
-                ]
+                    'url' => self::getClientRoute($user, $appointment->client),
+                ],
             ]);
         }
     }

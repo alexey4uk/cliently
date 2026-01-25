@@ -19,8 +19,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
         public Ticket $ticket,
         public string $oldStatus,
         public string $newStatus
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -45,10 +44,10 @@ class TicketStatusChanged extends Notification implements ShouldQueue
         ];
 
         return (new MailMessage)
-            ->subject('Изменен статус тикета #' . $this->ticket->id)
-            ->line('Статус тикета "' . $this->ticket->title . '" изменен')
-            ->line('Было: ' . ($statusLabels[$this->oldStatus] ?? $this->oldStatus))
-            ->line('Стало: ' . ($statusLabels[$this->newStatus] ?? $this->newStatus))
+            ->subject('Изменен статус тикета #'.$this->ticket->id)
+            ->line('Статус тикета "'.$this->ticket->title.'" изменен')
+            ->line('Было: '.($statusLabels[$this->oldStatus] ?? $this->oldStatus))
+            ->line('Стало: '.($statusLabels[$this->newStatus] ?? $this->newStatus))
             ->action('Просмотреть тикет', route('panel.tickets.show', $this->ticket))
             ->line('Спасибо за использование нашей системы!');
     }
@@ -65,7 +64,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
             'title' => $this->ticket->title,
             'old_status' => $this->oldStatus,
             'new_status' => $this->newStatus,
-            'message' => 'Статус тикета изменен: ' . $this->ticket->title,
+            'message' => 'Статус тикета изменен: '.$this->ticket->title,
         ];
     }
 }

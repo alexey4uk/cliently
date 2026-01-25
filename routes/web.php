@@ -554,4 +554,4 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

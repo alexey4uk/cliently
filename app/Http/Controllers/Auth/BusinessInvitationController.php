@@ -71,12 +71,12 @@ class BusinessInvitationController extends Controller
 
         // Автоматически создаем подписку на бесплатный тариф по умолчанию
         $defaultPlan = Plan::where('is_default', true)->first();
-        
+
         // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
-        if (!$defaultPlan) {
+        if (! $defaultPlan) {
             $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
         }
-        
+
         if ($defaultPlan) {
             $subscriptionService = app(SubscriptionService::class);
             $subscriptionService->createSubscription($user, $defaultPlan);
@@ -91,7 +91,7 @@ class BusinessInvitationController extends Controller
         // Если роль "мастер" и указан master_id в приглашении, добавляем его
         if ($invitation->role === 'master' && $invitation->master_id) {
             $pivotData['master_id'] = $invitation->master_id;
-        } elseif ($invitation->role === 'master' && !$invitation->master_id) {
+        } elseif ($invitation->role === 'master' && ! $invitation->master_id) {
             // Если роль "мастер" но master_id не указан, создаем нового мастера
             $master = $this->createMasterForUser($invitation->business, $user, $invitation);
             if ($master) {
@@ -134,6 +134,7 @@ class BusinessInvitationController extends Controller
         // Проверяем, не добавлен ли уже пользователь в этот бизнес
         if ($invitation->business->users()->where('user_id', $user->id)->exists()) {
             $invitation->update(['accepted_at' => now()]);
+
             return redirect()->route('dashboard')
                 ->with('info', 'Вы уже являетесь участником этого бизнеса.');
         }
@@ -147,7 +148,7 @@ class BusinessInvitationController extends Controller
         // Если роль "мастер" и указан master_id в приглашении, добавляем его
         if ($invitation->role === 'master' && $invitation->master_id) {
             $pivotData['master_id'] = $invitation->master_id;
-        } elseif ($invitation->role === 'master' && !$invitation->master_id) {
+        } elseif ($invitation->role === 'master' && ! $invitation->master_id) {
             // Если роль "мастер" но master_id не указан, создаем нового мастера
             $master = $this->createMasterForUser($invitation->business, $user, $invitation);
             if ($master) {
@@ -168,11 +169,6 @@ class BusinessInvitationController extends Controller
 
     /**
      * Создать мастера для пользователя
-     *
-     * @param Business $business
-     * @param User $user
-     * @param BusinessUserInvitation $invitation
-     * @return \App\Models\Master|null
      */
     private function createMasterForUser(Business $business, User $user, BusinessUserInvitation $invitation): ?\App\Models\Master
     {

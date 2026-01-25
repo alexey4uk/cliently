@@ -17,22 +17,22 @@ class MasterRequest extends FormRequest
     {
         $master = $this->route('master');
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return false;
         }
-        
+
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
-        
+
         $service = app(BusinessRolePermissionService::class);
-        
+
         if ($master) {
-        return $service->hasPermission($role->id, 'client.masters.update');
+            return $service->hasPermission($role->id, 'client.masters.update');
         }
-        
+
         return $service->hasPermission($role->id, 'client.masters.create');
     }
 

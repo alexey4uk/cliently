@@ -2,20 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\BusinessRole;
 use App\Models\Ticket;
 use App\Models\TicketComment;
 use App\Models\TicketSettings;
 use App\Models\User;
-use App\Models\BusinessRole;
 use App\Notifications\TicketAssigned;
 use App\Notifications\TicketCommentAdded;
 use App\Notifications\TicketCreated;
 use App\Notifications\TicketStatusChanged;
-use App\Services\NotificationSettingsService;
-use App\Services\TelegramNotificationService;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\DB;
-use App\Services\NotificationService;
+use Illuminate\Support\Facades\Notification;
 
 class TicketNotificationService
 {
@@ -64,13 +61,14 @@ class TicketNotificationService
         }
 
         // Если пользователь НЕ состоит в бизнесе, но имеет админские права - используем админский маршрут
-        if (!$pivotData && $hasPanelPermission) {
+        if (! $pivotData && $hasPanelPermission) {
             return route('panel.tickets.show', $ticket);
         }
 
         // По умолчанию - клиентский маршрут (для создателя тикета, даже если нет прав)
         return route('tickets.show', $ticket->id);
     }
+
     /**
      * Отправить уведомление о создании тикета
      */
@@ -87,19 +85,19 @@ class TicketNotificationService
         if ($ticket->assignedUser) {
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket created notification', [
                 'user_id' => $ticket->assignedUser->id,
-                'ticket_id' => $ticket->id
+                'ticket_id' => $ticket->id,
             ]);
 
             NotificationService::send([
                 'user_id' => $ticket->assignedUser->id,
                 'type' => 'ticket.created',
-                'title' => 'Новый тикет #' . $ticket->id,
-                'message' => 'Вам назначен тикет: ' . $ticket->title,
+                'title' => 'Новый тикет #'.$ticket->id,
+                'message' => 'Вам назначен тикет: '.$ticket->title,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
-                    'url' => $this->getTicketRoute($ticket->assignedUser, $ticket)
-                ]
+                    'url' => $this->getTicketRoute($ticket->assignedUser, $ticket),
+                ],
             ]);
         }
 
@@ -113,7 +111,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.created', [
                         'user_id' => $ticket->assignedUser->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -129,7 +127,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
                         'email' => $email,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -143,7 +141,7 @@ class TicketNotificationService
                 \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.created', [
                     'user_id' => $ticket->assignedUser->id,
                     'ticket_id' => $ticket->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -174,7 +172,7 @@ class TicketNotificationService
             'ticket_created_by_type' => $ticket->created_by_type,
             'ticket_created_by_id' => $ticket->created_by_id,
             'ticket_assigned_to' => $ticket->assigned_to,
-            'business_id' => $ticket->business_id
+            'business_id' => $ticket->business_id,
         ]);
 
         // Получаем создателя тикета
@@ -183,33 +181,33 @@ class TicketNotificationService
         $creator = $ticket->creator();
         \Illuminate\Support\Facades\Log::info('TicketNotificationService: creator check', [
             'creator' => $creator ? ['id' => $creator->id, 'name' => $creator->name] : null,
-            'comment_author_id' => $commentAuthorId
+            'comment_author_id' => $commentAuthorId,
         ]);
 
-        if ($creator && $creator->id !== $commentAuthorId && !in_array($creator->id, $notifiedUserIds)) {
+        if ($creator && $creator->id !== $commentAuthorId && ! in_array($creator->id, $notifiedUserIds)) {
             $usersToNotify[] = $creator;
             $notifiedUserIds[] = $creator->id;
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Creator added to notify list (always notified)', ['creator_id' => $creator->id]);
         }
 
         // Получаем назначенного пользователя (если комментарий не от него)
-        if ($ticket->assignedUser && $ticket->assignedUser->id !== $commentAuthorId && !in_array($ticket->assignedUser->id, $notifiedUserIds)) {
+        if ($ticket->assignedUser && $ticket->assignedUser->id !== $commentAuthorId && ! in_array($ticket->assignedUser->id, $notifiedUserIds)) {
             $usersToNotify[] = $ticket->assignedUser;
             $notifiedUserIds[] = $ticket->assignedUser->id;
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Assigned user added to notify list', ['assigned_user_id' => $ticket->assignedUser->id]);
         }
 
         // Если тикет не назначен никому, уведомляем всех пользователей бизнеса с правами просмотра тикетов
-        // ИЛИ если создатель тикета не получил уведомление (потому что он автор комментария), 
+        // ИЛИ если создатель тикета не получил уведомление (потому что он автор комментария),
         // но есть другие пользователи с правами - уведомляем их
-        if (!$ticket->assigned_to || count($usersToNotify) === 0) {
+        if (! $ticket->assigned_to || count($usersToNotify) === 0) {
             $business = $ticket->business;
             if ($business && $business->users) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
 
                 \Illuminate\Support\Facades\Log::info('TicketNotificationService: Checking business users', [
                     'business_id' => $business->id,
-                    'users_count' => $business->users->count()
+                    'users_count' => $business->users->count(),
                 ]);
 
                 foreach ($business->users as $user) {
@@ -257,7 +255,7 @@ class TicketNotificationService
                         'role_id' => $roleId,
                         'role_slug' => $role->slug ?? null,
                         'has_client_tickets_view' => $hasPermission,
-                        'has_panel_tickets_view' => $hasPanelPermission
+                        'has_panel_tickets_view' => $hasPanelPermission,
                     ]);
 
                     // Уведомляем пользователей с правами просмотра тикетов (бизнес или админ)
@@ -266,21 +264,21 @@ class TicketNotificationService
                         $notifiedUserIds[] = $user->id;
                         \Illuminate\Support\Facades\Log::info('TicketNotificationService: Business user with tickets permission added', [
                             'user_id' => $user->id,
-                            'permission_type' => $hasPermission ? 'client.tickets.view' : 'panel.tickets.view'
+                            'permission_type' => $hasPermission ? 'client.tickets.view' : 'panel.tickets.view',
                         ]);
                     }
                 }
             } else {
                 \Illuminate\Support\Facades\Log::warning('TicketNotificationService: Business or users not found', [
                     'business' => $business ? 'exists' : 'null',
-                    'users' => $business && $business->users ? $business->users->count() : 'null'
+                    'users' => $business && $business->users ? $business->users->count() : 'null',
                 ]);
             }
         }
 
         \Illuminate\Support\Facades\Log::info('TicketNotificationService: Users to notify', [
             'count' => count($usersToNotify),
-            'user_ids' => array_map(fn($u) => $u->id, $usersToNotify)
+            'user_ids' => array_map(fn ($u) => $u->id, $usersToNotify),
         ]);
 
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
@@ -290,20 +288,20 @@ class TicketNotificationService
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending comment notification', [
                 'user_id' => $user->id,
                 'ticket_id' => $ticket->id,
-                'comment_id' => $comment->id
+                'comment_id' => $comment->id,
             ]);
 
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.comment',
-                'title' => 'Новый комментарий к тикету #' . $ticket->id,
-                'message' => ($comment->user->name ?? 'Пользователь') . ' добавил(а) комментарий: ' . substr($comment->content, 0, 50) . '...',
+                'title' => 'Новый комментарий к тикету #'.$ticket->id,
+                'message' => ($comment->user->name ?? 'Пользователь').' добавил(а) комментарий: '.substr($comment->content, 0, 50).'...',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
                     'comment_id' => $comment->id,
-                    'url' => $this->getTicketRoute($user, $ticket)
-                ]
+                    'url' => $this->getTicketRoute($user, $ticket),
+                ],
             ]);
         }
 
@@ -318,7 +316,7 @@ class TicketNotificationService
                         \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.comment', [
                             'user_id' => $user->id,
                             'ticket_id' => $ticket->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -334,7 +332,7 @@ class TicketNotificationService
                         \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
                             'email' => $email,
                             'ticket_id' => $ticket->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -350,7 +348,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.comment', [
                         'user_id' => $user->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -366,19 +364,19 @@ class TicketNotificationService
             // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket assigned notification', [
                 'user_id' => $user->id,
-                'ticket_id' => $ticket->id
+                'ticket_id' => $ticket->id,
             ]);
 
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.assigned',
-                'title' => 'Вам назначен тикет #' . $ticket->id,
-                'message' => 'Тикет "' . $ticket->title . '" назначен вам',
+                'title' => 'Вам назначен тикет #'.$ticket->id,
+                'message' => 'Тикет "'.$ticket->title.'" назначен вам',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
-                    'url' => $this->getTicketRoute($user, $ticket)
-                ]
+                    'url' => $this->getTicketRoute($user, $ticket),
+                ],
             ]);
 
             // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
@@ -389,7 +387,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.assigned', [
                         'user_id' => $user->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -402,7 +400,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.assigned', [
                         'user_id' => $user->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -431,7 +429,7 @@ class TicketNotificationService
 
         // Получаем назначенного пользователя (если он не создатель)
         if ($ticket->assignedUser) {
-            if (!$creator || $ticket->assignedUser->id !== $creator->id) {
+            if (! $creator || $ticket->assignedUser->id !== $creator->id) {
                 $usersToNotify[] = $ticket->assignedUser;
             }
         }
@@ -449,19 +447,19 @@ class TicketNotificationService
                 'user_id' => $user->id,
                 'ticket_id' => $ticket->id,
                 'old_status' => $oldStatus,
-                'new_status' => $newStatus
+                'new_status' => $newStatus,
             ]);
 
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.updated',
-                'title' => 'Тикет #' . $ticket->id . ' обновлен',
-                'message' => 'Статус тикета изменен: ' . $statusText,
+                'title' => 'Тикет #'.$ticket->id.' обновлен',
+                'message' => 'Статус тикета изменен: '.$statusText,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
-                    'url' => $this->getTicketRoute($user, $ticket)
-                ]
+                    'url' => $this->getTicketRoute($user, $ticket),
+                ],
             ]);
         }
 
@@ -476,7 +474,7 @@ class TicketNotificationService
                         \Illuminate\Support\Facades\Log::error('Failed to send email notification for ticket.status_changed', [
                             'user_id' => $user->id,
                             'ticket_id' => $ticket->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -492,7 +490,7 @@ class TicketNotificationService
                         \Illuminate\Support\Facades\Log::error('Failed to send email notification to recipient', [
                             'email' => $email,
                             'ticket_id' => $ticket->id,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ]);
                     }
                 }
@@ -508,7 +506,7 @@ class TicketNotificationService
                     \Illuminate\Support\Facades\Log::error('Failed to send telegram notification for ticket.status_changed', [
                         'user_id' => $user->id,
                         'ticket_id' => $ticket->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }

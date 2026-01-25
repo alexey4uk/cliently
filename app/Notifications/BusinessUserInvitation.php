@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Models\Business;
 use App\Models\BusinessUserInvitation as BusinessUserInvitationModel;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -41,12 +40,12 @@ class BusinessUserInvitation extends Notification
         $url = route('invite.accept', ['token' => $this->invitation->token]);
 
         return (new MailMessage)
-            ->subject('Приглашение в бизнес ' . $this->business->name)
+            ->subject('Приглашение в бизнес '.$this->business->name)
             ->greeting('Здравствуйте!')
-            ->line('Вас пригласили присоединиться к бизнесу "' . $this->business->name . '" в роли ' . $this->getRoleLabel($this->invitation->role) . '.')
+            ->line('Вас пригласили присоединиться к бизнесу "'.$this->business->name.'" в роли '.$this->getRoleLabel($this->invitation->role).'.')
             ->line('Для активации аккаунта и присоединения к бизнесу перейдите по ссылке ниже:')
             ->action('Принять приглашение', $url)
-            ->line('Ссылка действительна до ' . $this->invitation->expires_at->format('d.m.Y H:i'))
+            ->line('Ссылка действительна до '.$this->invitation->expires_at->format('d.m.Y H:i'))
             ->line('Если вы не ожидали это приглашение, просто проигнорируйте это письмо.');
     }
 

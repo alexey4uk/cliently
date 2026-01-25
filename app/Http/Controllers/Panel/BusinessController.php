@@ -26,8 +26,8 @@ class BusinessController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -63,7 +63,7 @@ class BusinessController extends Controller
             'services',
             'masters',
             'locations',
-            'appointments'
+            'appointments',
         ]);
 
         $business->loadCount(['clients', 'services', 'masters', 'locations', 'appointments']);
@@ -101,7 +101,7 @@ class BusinessController extends Controller
     public function destroy(Business $business)
     {
         // Проверяем, есть ли связанные данные
-        if ($business->clients()->count() > 0 || 
+        if ($business->clients()->count() > 0 ||
             $business->appointments()->count() > 0 ||
             $business->services()->count() > 0 ||
             $business->masters()->count() > 0 ||

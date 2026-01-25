@@ -6,7 +6,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\SubscriptionUsage;
 use App\Models\User;
-use Carbon\Carbon;
 
 class SubscriptionService
 {
@@ -48,7 +47,7 @@ class SubscriptionService
 
         // Если пробный период активирован, добавляем plan_id в список использованных
         if ($isTrial && $plan->trial_days > 0) {
-            if (!in_array($plan->id, $usedTrials)) {
+            if (! in_array($plan->id, $usedTrials)) {
                 $usedTrials[] = $plan->id;
                 $metadata['used_trials'] = $usedTrials;
             }
@@ -327,7 +326,7 @@ class SubscriptionService
     protected function getBusinessUsersCount(User $user): int
     {
         $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-        if (!$ownerRole) {
+        if (! $ownerRole) {
             return 0;
         }
 
@@ -352,16 +351,12 @@ class SubscriptionService
 
     /**
      * Проверить, использовал ли пользователь пробный период для конкретного тарифа
-     *
-     * @param User $user
-     * @param Plan $plan
-     * @return bool
      */
     public function hasUsedTrialForPlan(User $user, Plan $plan): bool
     {
         $subscription = $user->subscription;
 
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 
@@ -380,11 +375,12 @@ class SubscriptionService
             // Если пробный период уже закончился, значит он был использован
             if ($subscription->trial_ends_at->isPast()) {
                 // Обновляем metadata для будущих проверок
-                if (!in_array($plan->id, $usedTrials)) {
+                if (! in_array($plan->id, $usedTrials)) {
                     $usedTrials[] = $plan->id;
                     $metadata['used_trials'] = $usedTrials;
                     $subscription->update(['metadata' => $metadata]);
                 }
+
                 return true;
             }
         }
@@ -395,16 +391,13 @@ class SubscriptionService
     /**
      * Отменить подписку пользователя
      * Подписка остается активной до окончания периода (ends_at)
-     *
-     * @param User $user
-     * @return bool
      */
     public function cancelSubscription(User $user): bool
     {
         $subscription = $user->activeSubscription();
 
         // Проверяем наличие активной подписки
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 

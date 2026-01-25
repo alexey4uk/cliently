@@ -16,24 +16,24 @@ class TicketRequest extends FormRequest
     public function authorize(): bool
     {
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return false;
         }
-        
+
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
-        
+
         $service = app(BusinessRolePermissionService::class);
-        
+
         // Для тикетов используется {id} вместо {ticket} в маршрутах
         // Проверяем по методу запроса
         if ($this->isMethod('post')) {
             return $service->hasPermission($role->id, 'client.tickets.create');
         }
-        
+
         // Для PATCH/PUT это обновление
         return $service->hasPermission($role->id, 'client.tickets.update');
     }

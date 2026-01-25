@@ -3,9 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Business;
-use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -41,9 +39,9 @@ class BusinessUserCreated extends Notification
         $loginUrl = route('login');
 
         return (new MailMessage)
-            ->subject('Аккаунт создан для бизнеса ' . $this->business->name)
+            ->subject('Аккаунт создан для бизнеса '.$this->business->name)
             ->greeting('Здравствуйте!')
-            ->line('Для вас был создан аккаунт в системе для работы с бизнесом "' . $this->business->name . '" в роли ' . $this->role . '.')
+            ->line('Для вас был создан аккаунт в системе для работы с бизнесом "'.$this->business->name.'" в роли '.$this->role.'.')
             ->line('Для входа в систему используйте ваш email и временный пароль, который был предоставлен администратором.')
             ->line('При первом входе вам необходимо будет сменить пароль.')
             ->action('Войти в систему', $loginUrl)

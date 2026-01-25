@@ -57,12 +57,12 @@ class RegisteredUserController extends Controller
 
         // Автоматически создаем подписку на бесплатный тариф по умолчанию
         $defaultPlan = Plan::where('is_default', true)->first();
-        
+
         // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
         if (! $defaultPlan) {
             $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
         }
-        
+
         if ($defaultPlan) {
             $subscriptionService = app(SubscriptionService::class);
             $subscriptionService->createSubscription($user, $defaultPlan);

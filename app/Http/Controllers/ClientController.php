@@ -10,11 +10,11 @@ use App\Services\SubscriptionService;
 use App\Traits\HasOwnDataFiltering;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ClientController extends Controller
 {
     use HasOwnDataFiltering;
+
     private ClientRepositoryInterface $clientRepository;
 
     public function __construct(ClientRepositoryInterface $clientRepository)
@@ -29,7 +29,7 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -124,7 +124,7 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -142,7 +142,7 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -184,13 +184,13 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
+        if ($role && ! $this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -254,13 +254,13 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
+        if ($role && ! $this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -279,13 +279,13 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
+        if ($role && ! $this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -321,13 +321,13 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
+        if (! $business || ! $this->clientRepository->belongsToBusiness($client->id, $business->id)) {
             return redirect()->route('clients.index');
         }
 
         // Проверяем право на просмотр этого конкретного клиента
         $role = $this->getCurrentBusinessRole();
-        if ($role && !$this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
+        if ($role && ! $this->canViewClient($business, $role->id, 'client.clients.view', $client->id)) {
             return redirect()->route('clients.index')
                 ->with('error', 'У вас нет доступа к этому клиенту.');
         }
@@ -346,7 +346,7 @@ class ClientController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -412,7 +412,7 @@ class ClientController extends Controller
 
         $clients = $query->get();
 
-        $filename = 'clients_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-type' => 'text/csv',

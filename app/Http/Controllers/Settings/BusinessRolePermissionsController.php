@@ -23,7 +23,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -55,7 +55,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -63,7 +63,7 @@ class BusinessRolePermissionsController extends Controller
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
         $allPermissions = $this->getAllPermissions();
-        
+
         // Получаем описания прав из БД
         $permissionDescriptions = Permission::whereIn('name', $allPermissions)
             ->pluck('description', 'name')
@@ -83,7 +83,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -92,7 +92,7 @@ class BusinessRolePermissionsController extends Controller
 
         // Определяем owner текущего бизнеса
         $ownerId = $this->getBusinessOwnerId($business);
-        if (!$ownerId) {
+        if (! $ownerId) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Не удалось определить владельца бизнеса.');
@@ -100,7 +100,7 @@ class BusinessRolePermissionsController extends Controller
 
         $allPermissions = $this->getAllPermissions();
         $service = app(BusinessRolePermissionService::class);
-        
+
         // Проверяем, что slug не конфликтует с системными ролями
         $systemRoles = BusinessRole::where('is_system', true)->pluck('slug')->toArray();
         if (in_array($request->role, $systemRoles)) {
@@ -111,14 +111,14 @@ class BusinessRolePermissionsController extends Controller
 
         $request->validate([
             'role' => [
-                'required', 
-                'string', 
-                'max:100', 
-                'regex:/^[a-z][a-z0-9_]*$/', 
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-z][a-z0-9_]*$/',
                 Rule::notIn(['owner']),
                 Rule::unique('business_roles', 'slug')->where(function ($query) use ($ownerId) {
                     return $query->where('owner_id', $ownerId)->where('is_system', false);
-                })
+                }),
             ],
             'name' => ['required', 'string', 'max:100'],
             'permissions' => ['required', 'array', 'min:1'],
@@ -160,7 +160,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -169,7 +169,7 @@ class BusinessRolePermissionsController extends Controller
 
         // Проверяем, что роль принадлежит owner текущего бизнеса или является системной
         $ownerId = $this->getBusinessOwnerId($business);
-        if (!$role->is_system && $role->owner_id !== $ownerId) {
+        if (! $role->is_system && $role->owner_id !== $ownerId) {
             abort(403, 'У вас нет доступа к этой роли.');
         }
 
@@ -179,7 +179,7 @@ class BusinessRolePermissionsController extends Controller
 
         $allPermissions = $this->getAllPermissions();
         $deniedPermissions = $service->getDeniedPermissions($role->id);
-        
+
         // Получаем описания прав из БД
         $permissionDescriptions = Permission::whereIn('name', $allPermissions)
             ->pluck('description', 'name')
@@ -202,7 +202,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -211,7 +211,7 @@ class BusinessRolePermissionsController extends Controller
 
         // Проверяем, что роль принадлежит owner текущего бизнеса или является системной
         $ownerId = $this->getBusinessOwnerId($business);
-        if (!$role->is_system && $role->owner_id !== $ownerId) {
+        if (! $role->is_system && $role->owner_id !== $ownerId) {
             abort(403, 'У вас нет доступа к этой роли.');
         }
 
@@ -252,7 +252,7 @@ class BusinessRolePermissionsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -323,15 +323,15 @@ class BusinessRolePermissionsController extends Controller
 
     /**
      * Get owner ID for a business.
-     * 
-     * @param \App\Models\Business $business
+     *
+     * @param  \App\Models\Business  $business
      * @return int|null Owner ID or null if not found
      */
     private function getBusinessOwnerId($business): ?int
     {
         $ownerRole = BusinessRole::where('slug', 'owner')->first();
-        
-        if (!$ownerRole) {
+
+        if (! $ownerRole) {
             return null;
         }
 
@@ -342,5 +342,4 @@ class BusinessRolePermissionsController extends Controller
 
         return $ownerPivot ? $ownerPivot->user_id : null;
     }
-
 }

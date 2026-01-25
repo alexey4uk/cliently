@@ -19,8 +19,7 @@ class TicketAssigned extends Notification implements ShouldQueue
     public function __construct(
         public Ticket $ticket,
         public ?User $assignedUser = null
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -38,9 +37,9 @@ class TicketAssigned extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
-            ->subject('Тикет #' . $this->ticket->id . ' назначен вам')
-            ->line('Вам назначен тикет: ' . $this->ticket->title)
-            ->line('Описание: ' . $this->ticket->description)
+            ->subject('Тикет #'.$this->ticket->id.' назначен вам')
+            ->line('Вам назначен тикет: '.$this->ticket->title)
+            ->line('Описание: '.$this->ticket->description)
             ->action('Просмотреть тикет', route('panel.tickets.show', $this->ticket));
 
         if ($this->ticket->priority === 'high' || $this->ticket->priority === 'critical') {
@@ -60,7 +59,7 @@ class TicketAssigned extends Notification implements ShouldQueue
         return [
             'ticket_id' => $this->ticket->id,
             'title' => $this->ticket->title,
-            'message' => 'Вам назначен тикет: ' . $this->ticket->title,
+            'message' => 'Вам назначен тикет: '.$this->ticket->title,
         ];
     }
 }

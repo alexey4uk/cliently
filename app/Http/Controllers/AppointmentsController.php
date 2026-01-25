@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 class AppointmentsController extends Controller
 {
     use HasOwnDataFiltering;
+
     private AppointmentRepositoryInterface $appointmentRepository;
 
     private ClientRepositoryInterface $clientRepository;
@@ -43,7 +44,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -62,7 +63,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -71,7 +72,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -155,7 +156,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -164,7 +165,7 @@ class AppointmentsController extends Controller
         $currentMonth = $request->get('month', Carbon::now()->format('Y-m'));
 
         try {
-            $selectedDate = Carbon::parse($currentMonth . '-01');
+            $selectedDate = Carbon::parse($currentMonth.'-01');
         } catch (\Exception $e) {
             $selectedDate = Carbon::now()->startOfMonth();
         }
@@ -236,7 +237,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -273,7 +274,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -329,7 +330,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -356,7 +357,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -387,7 +388,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -433,7 +434,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -465,7 +466,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -496,7 +497,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -528,7 +529,7 @@ class AppointmentsController extends Controller
         $role = $this->getCurrentBusinessRole();
 
         // Проверяем право на просмотр этой конкретной записи
-        if ($role && !$this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
             return redirect()->route('appointments.index')
                 ->with('error', 'У вас нет доступа к этой записи.');
         }
@@ -552,7 +553,7 @@ class AppointmentsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -584,7 +585,7 @@ class AppointmentsController extends Controller
 
         $appointments = $this->appointmentRepository->getAllFilteredForBusiness($business->id, $filters);
 
-        $filename = 'appointments_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'appointments_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-type' => 'text/csv',
@@ -615,9 +616,9 @@ class AppointmentsController extends Controller
                     $appointment->client->full_name,
                     $appointment->client->phone,
                     $appointment->service->name,
-                    $appointment->master ? $appointment->master->first_name . ' ' . $appointment->master->last_name : 'Не назначен',
+                    $appointment->master ? $appointment->master->first_name.' '.$appointment->master->last_name : 'Не назначен',
                     $statusLabels[$appointment->status] ?? $appointment->status,
-                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ') . ' Br' : '',
+                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' Br' : '',
                 ]);
             }
 

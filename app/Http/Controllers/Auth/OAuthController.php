@@ -22,7 +22,7 @@ class OAuthController extends Controller
             return $this->oauthService->getRedirectUrl($provider);
         } catch (\Exception $e) {
             return redirect()->route('login')
-                ->with('error', 'Ошибка авторизации: ' . $e->getMessage());
+                ->with('error', 'Ошибка авторизации: '.$e->getMessage());
         }
     }
 
@@ -51,11 +51,11 @@ class OAuthController extends Controller
             $redirectUrl = config('oauth.settings.redirect_after_login', '/dashboard');
 
             return redirect()->intended($redirectUrl)
-                ->with('success', 'Вы успешно авторизовались через ' . 
+                ->with('success', 'Вы успешно авторизовались через '.
                     config("oauth.providers.{$provider}.name"));
         } catch (\Exception $e) {
             return redirect()->route('login')
-                ->with('error', 'Ошибка авторизации: ' . $e->getMessage());
+                ->with('error', 'Ошибка авторизации: '.$e->getMessage());
         }
     }
 
@@ -67,7 +67,7 @@ class OAuthController extends Controller
         try {
             $user = $request->user();
 
-            if (!$user) {
+            if (! $user) {
                 return back()->with('error', 'Пользователь не авторизован');
             }
 

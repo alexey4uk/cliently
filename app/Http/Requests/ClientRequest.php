@@ -17,22 +17,22 @@ class ClientRequest extends FormRequest
     {
         $client = $this->route('client');
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return false;
         }
-        
+
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
-        
+
         $service = app(BusinessRolePermissionService::class);
-        
+
         if ($client) {
-        return $service->hasPermission($role->id, 'client.clients.update');
+            return $service->hasPermission($role->id, 'client.clients.update');
         }
-        
+
         return $service->hasPermission($role->id, 'client.clients.create');
     }
 

@@ -17,8 +17,7 @@ class TicketCreated extends Notification implements ShouldQueue
      */
     public function __construct(
         public Ticket $ticket
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -36,9 +35,9 @@ class TicketCreated extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Создан новый тикет #' . $this->ticket->id)
-            ->line('Создан новый тикет: ' . $this->ticket->title)
-            ->line('Описание: ' . $this->ticket->description)
+            ->subject('Создан новый тикет #'.$this->ticket->id)
+            ->line('Создан новый тикет: '.$this->ticket->title)
+            ->line('Описание: '.$this->ticket->description)
             ->action('Просмотреть тикет', route('panel.tickets.show', $this->ticket))
             ->line('Спасибо за использование нашей системы!');
     }
@@ -53,7 +52,7 @@ class TicketCreated extends Notification implements ShouldQueue
         return [
             'ticket_id' => $this->ticket->id,
             'title' => $this->ticket->title,
-            'message' => 'Создан новый тикет: ' . $this->ticket->title,
+            'message' => 'Создан новый тикет: '.$this->ticket->title,
         ];
     }
 }

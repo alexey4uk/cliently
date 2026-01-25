@@ -17,8 +17,7 @@ class AppointmentCreated extends Notification implements ShouldQueue
      */
     public function __construct(
         public Appointment $appointment
-    ) {
-    }
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -40,12 +39,12 @@ class AppointmentCreated extends Notification implements ShouldQueue
         $service = $appointment->service;
 
         return (new MailMessage)
-            ->subject('Новая запись: ' . ($service->name ?? 'Услуга'))
+            ->subject('Новая запись: '.($service->name ?? 'Услуга'))
             ->line('Создана новая запись на услугу.')
-            ->line('Клиент: ' . ($client->first_name ?? '') . ' ' . ($client->last_name ?? ''))
-            ->line('Услуга: ' . ($service->name ?? ''))
-            ->line('Дата: ' . $appointment->date->format('d.m.Y'))
-            ->line('Время: ' . $appointment->time)
+            ->line('Клиент: '.($client->first_name ?? '').' '.($client->last_name ?? ''))
+            ->line('Услуга: '.($service->name ?? ''))
+            ->line('Дата: '.$appointment->date->format('d.m.Y'))
+            ->line('Время: '.$appointment->time)
             ->action('Просмотреть запись', route('appointments.show', $appointment))
             ->line('Спасибо за использование нашей системы!');
     }

@@ -25,7 +25,7 @@ class AppointmentSlotController extends Controller
     public function getAvailableSlots(Request $request): JsonResponse
     {
         // Проверка прав доступа
-        if (!Auth::check() || !Auth::user()->can('client.appointments.view')) {
+        if (! Auth::check() || ! Auth::user()->can('client.appointments.view')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Доступ запрещен',

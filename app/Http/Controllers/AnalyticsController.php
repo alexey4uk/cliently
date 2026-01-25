@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SubscriptionService;
 use App\Services\SubscriptionAccessService;
+use App\Services\SubscriptionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
 
 class AnalyticsController extends Controller
 {
@@ -16,7 +14,7 @@ class AnalyticsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
@@ -24,13 +22,13 @@ class AnalyticsController extends Controller
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
         $redirect = $accessService->checkAccessWithRedirect(
-            $business, 
-            'analytics_enabled', 
-            'client.analytics.view', 
+            $business,
+            'analytics_enabled',
+            'client.analytics.view',
             'Аналитика',
             'subscription.index'
         );
-        
+
         if ($redirect) {
             return $redirect;
         }
@@ -44,7 +42,7 @@ class AnalyticsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
@@ -52,20 +50,20 @@ class AnalyticsController extends Controller
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
         $redirect = $accessService->checkAccessWithRedirect(
-            $business, 
-            'analytics_enabled', 
-            'client.analytics.view', 
+            $business,
+            'analytics_enabled',
+            'client.analytics.view',
             'Аналитика',
             'subscription.index'
         );
-        
+
         if ($redirect) {
             return $redirect;
         }
 
         // Проверяем доступ к расширенной аналитике
         $hasAdvancedAnalytics = $this->hasAdvancedAnalytics($business);
-        
+
         $filters = $this->getFilters($request);
         $data = $this->getFinancialData($business->id, $filters);
 
@@ -81,7 +79,7 @@ class AnalyticsController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Добро пожаловать! Сначала создайте свой бизнес или примите приглашение.');
         }
@@ -89,20 +87,20 @@ class AnalyticsController extends Controller
         // Проверяем доступ к аналитике (проверяет подписку владельца бизнеса)
         $accessService = app(SubscriptionAccessService::class);
         $redirect = $accessService->checkAccessWithRedirect(
-            $business, 
-            'analytics_enabled', 
-            'client.analytics.view', 
+            $business,
+            'analytics_enabled',
+            'client.analytics.view',
             'Аналитика',
             'subscription.index'
         );
-        
+
         if ($redirect) {
             return $redirect;
         }
 
         // Проверяем доступ к расширенной аналитике
         $hasAdvancedAnalytics = $this->hasAdvancedAnalytics($business);
-        
+
         $filters = $this->getFilters($request);
         $data = $this->getGeneralData($business->id, $filters);
 
@@ -154,7 +152,7 @@ class AnalyticsController extends Controller
 
             // Общая выручка
             $totalRevenue = $appointments->sum(function ($appointment) {
-                return ($appointment->price ?? $appointment->service->price ?? 0);
+                return $appointment->price ?? $appointment->service->price ?? 0;
             });
 
             // Количество завершенных записей
@@ -263,20 +261,20 @@ class AnalyticsController extends Controller
             $query->where('location_id', $filters['location_id']);
         }
 
-            $appointments = $query->with('service')->get();
+        $appointments = $query->with('service')->get();
 
-            $revenueByDay = [];
-            $currentDate = $startDate->copy();
+        $revenueByDay = [];
+        $currentDate = $startDate->copy();
 
-            while ($currentDate->lte($endDate)) {
-                $dateStr = $currentDate->format('Y-m-d');
-                $dayRevenue = $appointments
-                    ->filter(function ($appointment) use ($dateStr) {
-                        return $appointment->date->format('Y-m-d') === $dateStr;
-                    })
-                    ->sum(function ($appointment) {
-                        return ($appointment->price ?? $appointment->service->price ?? 0);
-                    });
+        while ($currentDate->lte($endDate)) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $dayRevenue = $appointments
+                ->filter(function ($appointment) use ($dateStr) {
+                    return $appointment->date->format('Y-m-d') === $dateStr;
+                })
+                ->sum(function ($appointment) {
+                    return $appointment->price ?? $appointment->service->price ?? 0;
+                });
 
             $revenueByDay[] = [
                 'date' => $dateStr,
@@ -310,11 +308,12 @@ class AnalyticsController extends Controller
 
         $revenueByService = $appointments->groupBy('service_id')->map(function ($group, $serviceId) {
             $service = $group->first()->service;
+
             return [
                 'service_id' => $serviceId,
                 'service_name' => $service ? $service->name : 'Неизвестная услуга',
                 'revenue' => $group->sum(function ($appointment) {
-                    return ($appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0);
+                    return $appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0;
                 }),
                 'count' => $group->count(),
             ];
@@ -344,11 +343,12 @@ class AnalyticsController extends Controller
         $revenueByMaster = $appointments->groupBy('master_id')->map(function ($group, $masterId) {
             $master = $group->first()->master;
             $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+
             return [
                 'master_id' => $masterId,
                 'master_name' => $masterName,
                 'revenue' => $group->sum(function ($appointment) {
-                    return ($appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0);
+                    return $appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0;
                 }),
                 'count' => $group->count(),
             ];
@@ -377,11 +377,12 @@ class AnalyticsController extends Controller
 
         $revenueByLocation = $appointments->groupBy('location_id')->map(function ($group, $locationId) {
             $location = $group->first()->location;
+
             return [
                 'location_id' => $locationId,
                 'location_name' => $location ? $location->name : 'Неизвестная локация',
                 'revenue' => $group->sum(function ($appointment) {
-                    return ($appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0);
+                    return $appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0;
                 }),
                 'count' => $group->count(),
             ];
@@ -449,6 +450,7 @@ class AnalyticsController extends Controller
 
         $statsByService = $appointments->groupBy('service_id')->map(function ($group, $serviceId) {
             $service = $group->first()->service;
+
             return [
                 'service_id' => $serviceId,
                 'service_name' => $service ? $service->name : 'Неизвестная услуга',
@@ -481,6 +483,7 @@ class AnalyticsController extends Controller
         $statsByMaster = $appointments->groupBy('master_id')->map(function ($group, $masterId) {
             $master = $group->first()->master;
             $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+
             return [
                 'master_id' => $masterId,
                 'master_name' => $masterName,
@@ -500,12 +503,13 @@ class AnalyticsController extends Controller
     {
         $subscriptionService = app(SubscriptionService::class);
         $owner = $this->getBusinessOwner($business);
-        
-        if (!$owner) {
+
+        if (! $owner) {
             return false;
         }
-        
+
         $limit = $subscriptionService->getLimit($owner, 'advanced_analytics_enabled');
+
         return $limit === true;
     }
 
@@ -515,8 +519,8 @@ class AnalyticsController extends Controller
     private function getBusinessOwner(\App\Models\Business $business): ?\App\Models\User
     {
         $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-        
-        if (!$ownerRole) {
+
+        if (! $ownerRole) {
             return null;
         }
 
@@ -524,12 +528,11 @@ class AnalyticsController extends Controller
             ->where('business_id', $business->id)
             ->where('role_id', $ownerRole->id)
             ->first();
-        
-        if (!$ownerPivot) {
+
+        if (! $ownerPivot) {
             return null;
         }
 
         return \App\Models\User::find($ownerPivot->user_id);
     }
-
 }

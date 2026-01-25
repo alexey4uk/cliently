@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('permission', 255);
             $table->boolean('granted')->default(true);
             $table->timestamps();
-            
+
             // Unique index on (business_id, role, permission) - NULL values are considered distinct
             $table->unique(['business_id', 'role', 'permission'], 'business_role_permission_unique');
         });

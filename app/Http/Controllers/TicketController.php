@@ -6,7 +6,6 @@ use App\Http\Requests\TicketCommentRequest;
 use App\Http\Requests\TicketRequest;
 use App\Models\Ticket;
 use App\Models\TicketAttachment;
-use App\Models\TicketCategory;
 use App\Models\TicketComment;
 use App\Models\TicketSettings;
 use Illuminate\Http\Request;
@@ -22,7 +21,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -97,7 +96,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -128,7 +127,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -176,7 +175,7 @@ class TicketController extends Controller
 
         // Отправляем уведомление о создании тикета (если тикет назначен)
         if ($ticket->assigned_to) {
-            $notificationService = new \App\Services\TicketNotificationService();
+            $notificationService = new \App\Services\TicketNotificationService;
             $notificationService->notifyTicketCreated($ticket);
         }
 
@@ -190,14 +189,14 @@ class TicketController extends Controller
     public function show($id)
     {
         // Валидация ID
-        if (!is_numeric($id)) {
+        if (! is_numeric($id)) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Неверный идентификатор тикета.');
         }
 
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -205,7 +204,7 @@ class TicketController extends Controller
         $user = Auth::user();
 
         // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', (int)$id)
+        $ticket = Ticket::where('id', (int) $id)
             ->where('business_id', $business->id)
             ->where('created_by_type', 'user')
             ->where('created_by_id', $user->id)
@@ -235,7 +234,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -272,7 +271,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -328,7 +327,7 @@ class TicketController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }

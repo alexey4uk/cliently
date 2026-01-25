@@ -15,7 +15,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -38,9 +38,10 @@ class NotificationController extends Controller
 
         // Фильтруем по правам доступа ДО пагинации
         $filtered = $allNotifications->filter(function ($notification) use ($user) {
-            if (!$notification->required_permission) {
+            if (! $notification->required_permission) {
                 return true;
             }
+
             return $user->can($notification->required_permission);
         });
 
@@ -74,7 +75,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -98,7 +99,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -122,25 +123,27 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Не авторизован',
                 ], 401);
             }
+
             return redirect()->route('login');
         }
 
         $success = NotificationService::markAsRead($id, $user->id);
 
-        if (!$success) {
+        if (! $success) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Уведомление не найдено или недоступно',
                 ], 404);
             }
+
             return redirect()->back()
                 ->with('error', 'Уведомление не найдено или недоступно.');
         }
@@ -163,13 +166,14 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Не авторизован',
                 ], 401);
             }
+
             return redirect()->route('login');
         }
 
@@ -196,13 +200,13 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('login');
         }
 
         $success = NotificationService::delete($id, $user->id);
 
-        if (!$success) {
+        if (! $success) {
             return redirect()->back()
                 ->with('error', 'Уведомление не найдено или недоступно.');
         }

@@ -8,7 +8,6 @@ use App\Models\Client;
 use App\Models\TelegramUserState;
 use App\Services\AppointmentSlotService;
 use App\Services\TelegramBotService;
-use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use DefStudio\Telegraph\Keyboard\Keyboard;
@@ -1243,6 +1242,7 @@ class Handler extends WebhookHandler
             $user = $business->users()->first();
             if (! $user) {
                 $this->replyWithMessage('❌ Ошибка при обработке запроса. Пожалуйста, попробуйте позже.');
+
                 return;
             }
 
@@ -1251,6 +1251,7 @@ class Handler extends WebhookHandler
             // Проверяем лимит записей в месяц
             if (! $subscriptionService->canCreateAppointment($user)) {
                 $this->replyWithMessage('❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
+
                 return;
             }
 
@@ -1261,6 +1262,7 @@ class Handler extends WebhookHandler
             if (! $client) {
                 if (! $subscriptionService->canCreateClient($user)) {
                     $this->replyWithMessage('❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.');
+
                     return;
                 }
 
@@ -1316,7 +1318,7 @@ class Handler extends WebhookHandler
             $this->deleteBotMessage($this->lastMessageId);
 
             TelegramUserState::clearState($state->telegram_user_id, $business->id);
-            
+
             // Отправляем уведомления пользователям бизнеса (включая Telegram)
             \App\Services\AppointmentNotificationService::notifyCreated($appointment);
 

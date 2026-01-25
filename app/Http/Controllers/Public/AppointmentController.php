@@ -10,7 +10,6 @@ use App\Models\Client;
 use App\Services\AppointmentNotificationService;
 use App\Services\AppointmentSlotService;
 use App\Services\SubscriptionService;
-use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -302,7 +301,7 @@ class AppointmentController extends Controller
             if (! $subscriptionService->canCreateClient($user)) {
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
             }
 
             $client = Client::create([

@@ -97,25 +97,25 @@ class SubscriptionController extends Controller
         // Проверяем, может ли пользователь использовать пробный период
         $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
         $hasUsedTrial = false;
-        
+
         if ($canUseTrial) {
             $hasUsedTrial = $subscriptionService->hasUsedTrialForPlan($user, $plan);
         }
 
         // Создаем или обновляем подписку
         // Для бесплатных тарифов сразу активируем
-        $isTrial = $canUseTrial && !$hasUsedTrial;
+        $isTrial = $canUseTrial && ! $hasUsedTrial;
         $subscription = $subscriptionService->createSubscription($user, $plan, $isTrial);
 
         $message = "Тариф «{$plan->name}» успешно активирован!";
-        
+
         if ($isTrial) {
             $trialDays = $plan->trial_days;
             $trialText = $trialDays === 1 ? 'день' : ($trialDays < 5 ? 'дня' : 'дней');
             $message .= " У вас {$trialDays} {$trialText} пробного периода.";
         } elseif ($hasUsedTrial && $canUseTrial) {
             // Пробный период уже использован для этого тарифа
-            $message .= " Пробный период для этого тарифа уже был использован ранее.";
+            $message .= ' Пробный период для этого тарифа уже был использован ранее.';
         }
 
         return redirect()->route('subscription.current')
@@ -188,7 +188,7 @@ class SubscriptionController extends Controller
         $subscription = $user->activeSubscription();
 
         // Проверяем наличие активной подписки
-        if (!$subscription) {
+        if (! $subscription) {
             return redirect()->route('subscription.current')
                 ->with('error', 'У вас нет активной подписки.');
         }
@@ -210,7 +210,7 @@ class SubscriptionController extends Controller
 
         if ($result) {
             return redirect()->route('subscription.current')
-                ->with('success', 'Подписка успешно отменена. Она будет активна до ' . $subscription->fresh()->ends_at->format('d.m.Y') . '.');
+                ->with('success', 'Подписка успешно отменена. Она будет активна до '.$subscription->fresh()->ends_at->format('d.m.Y').'.');
         }
 
         return redirect()->route('subscription.current')

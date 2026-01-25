@@ -23,22 +23,22 @@ class AppointmentRequest extends FormRequest
     {
         $appointment = $this->route('appointment');
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return false;
         }
-        
+
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
-        
+
         $service = app(BusinessRolePermissionService::class);
-        
+
         if ($appointment) {
-        return $service->hasPermission($role->id, 'client.appointments.update');
+            return $service->hasPermission($role->id, 'client.appointments.update');
         }
-        
+
         return $service->hasPermission($role->id, 'client.appointments.create');
     }
 

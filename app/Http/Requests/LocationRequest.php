@@ -17,22 +17,22 @@ class LocationRequest extends FormRequest
     {
         $location = $this->route('location');
         $business = $this->getCurrentBusiness();
-        
-        if (!$business) {
+
+        if (! $business) {
             return false;
         }
-        
+
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
-        
+
         $service = app(BusinessRolePermissionService::class);
-        
+
         if ($location) {
-        return $service->hasPermission($role->id, 'client.locations.update');
+            return $service->hasPermission($role->id, 'client.locations.update');
         }
-        
+
         return $service->hasPermission($role->id, 'client.locations.create');
     }
 

@@ -20,7 +20,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -66,7 +66,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -91,7 +91,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -116,7 +116,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -137,7 +137,7 @@ class NotificationController extends Controller
         $notificationId = $request->input('notification_id');
         $success = NotificationService::markAsRead($notificationId, $user->id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'success' => false,
                 'message' => 'Уведомление не найдено или недоступно',
@@ -163,7 +163,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -194,7 +194,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -203,7 +203,7 @@ class NotificationController extends Controller
 
         $success = NotificationService::delete($id, $user->id);
 
-        if (!$success) {
+        if (! $success) {
             return response()->json([
                 'success' => false,
                 'message' => 'Уведомление не найдено или недоступно',
@@ -229,7 +229,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -253,7 +253,7 @@ class NotificationController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json([
                 'success' => false,
                 'message' => 'Уведомление не найдено или недоступно',

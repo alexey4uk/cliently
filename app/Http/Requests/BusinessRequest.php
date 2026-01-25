@@ -27,33 +27,35 @@ class BusinessRequest extends FormRequest
             $business = $this->getCurrentBusiness();
 
             // Если бизнеса нет - разрешаем создание
-            if (!$business) {
+            if (! $business) {
                 return true;
             }
 
             // Если бизнес есть - проверяем права на создание нового бизнеса
             // (для будущей поддержки нескольких бизнесов)
             $role = $this->getCurrentBusinessRole();
-            if (!$role) {
+            if (! $role) {
                 return false;
             }
 
             $service = app(BusinessRolePermissionService::class);
+
             return $service->hasPermission($role->id, 'client.businesses.create');
         }
 
         // Для редактирования бизнеса нужен текущий бизнес
         $business = $this->getCurrentBusiness();
-        if (!$business) {
+        if (! $business) {
             return false;
         }
 
         $role = $this->getCurrentBusinessRole();
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
         $service = app(BusinessRolePermissionService::class);
+
         return $service->hasPermission($role->id, 'client.businesses.update');
     }
 

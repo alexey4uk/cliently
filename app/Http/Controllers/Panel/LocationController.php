@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\Location;
 use App\Models\Business;
 use App\Models\Country;
+use App\Models\Location;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
@@ -28,10 +28,10 @@ class LocationController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('street', 'like', "%{$search}%")
-                  ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('street', 'like', "%{$search}%")
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -145,7 +145,7 @@ class LocationController extends Controller
     {
         // Проверяем, есть ли связанные данные
         $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
-        
+
         if ($appointmentsCount > 0 || $location->services()->count() > 0 || $location->masters()->count() > 0) {
             return redirect()->route('panel.locations.show', $location)
                 ->with('error', 'Невозможно удалить локацию, так как у неё есть связанные данные (записи, услуги или мастера)');

@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use App\Models\Business;
 use App\Models\Master;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,17 +16,14 @@ trait HasOwnDataFiltering
 {
     /**
      * Получить ID мастера для текущего пользователя в бизнесе
-     * 
-     * Сначала проверяет связь через business_user.master_id (если пользователь 
-     * привязан к конкретному мастеру), затем ищет мастера по user_id.
      *
-     * @param Business $business
-     * @return int|null
+     * Сначала проверяет связь через business_user.master_id (если пользователь
+     * привязан к конкретному мастеру), затем ищет мастера по user_id.
      */
     protected function getCurrentUserMasterId(Business $business): ?int
     {
         $user = Auth::user();
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
@@ -42,7 +38,7 @@ trait HasOwnDataFiltering
             $master = Master::where('id', $businessUser->master_id)
                 ->where('business_id', $business->id)
                 ->first();
-            
+
             if ($master) {
                 return $master->id;
             }
@@ -60,11 +56,7 @@ trait HasOwnDataFiltering
      * Применить фильтр "только свои данные" для записей (appointments)
      * Фильтрует по master_id, если у пользователя есть роль master
      *
-     * @param Builder $query
-     * @param Business $business
-     * @param int $roleId
-     * @param string $permission Base permission like 'appointments.view'
-     * @return Builder
+     * @param  string  $permission  Base permission like 'appointments.view'
      */
     protected function applyOwnDataFilterForAppointments(
         Builder $query,
@@ -73,7 +65,7 @@ trait HasOwnDataFiltering
         string $permission
     ): Builder {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        
+
         // Проверяем, есть ли право на просмотр только своих данных
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
@@ -92,10 +84,8 @@ trait HasOwnDataFiltering
      * Применить фильтр "только свои данные" для клиентов
      * Фильтрует клиентов, которые имеют записи с текущим мастером
      *
-     * @param Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query
-     * @param Business $business
-     * @param int $roleId
-     * @param string $permission Base permission like 'clients.view'
+     * @param  Builder|\Illuminate\Database\Eloquent\Relations\HasMany  $query
+     * @param  string  $permission  Base permission like 'clients.view'
      * @return Builder|\Illuminate\Database\Eloquent\Relations\HasMany
      */
     protected function applyOwnDataFilterForClients(
@@ -105,7 +95,7 @@ trait HasOwnDataFiltering
         string $permission
     ) {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        
+
         // Проверяем, есть ли право на просмотр только своих данных
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
@@ -125,12 +115,6 @@ trait HasOwnDataFiltering
 
     /**
      * Проверить, может ли пользователь просматривать конкретную запись
-     *
-     * @param Business $business
-     * @param int $roleId
-     * @param string $permission
-     * @param int $appointmentId
-     * @return bool
      */
     protected function canViewAppointment(
         Business $business,
@@ -139,35 +123,29 @@ trait HasOwnDataFiltering
         int $appointmentId
     ): bool {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        
+
         // Если есть полное право, можно просматривать все
         if ($permissionService->hasPermission($roleId, $permission)) {
             return true;
         }
-        
+
         // Если есть право только на свои данные, проверяем принадлежность
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
-            if (!$masterId) {
+            if (! $masterId) {
                 return false;
             }
-            
+
             return \App\Models\Appointment::where('id', $appointmentId)
                 ->where('master_id', $masterId)
                 ->exists();
         }
-        
+
         return false;
     }
 
     /**
      * Проверить, может ли пользователь просматривать конкретного клиента
-     *
-     * @param Business $business
-     * @param int $roleId
-     * @param string $permission
-     * @param int $clientId
-     * @return bool
      */
     protected function canViewClient(
         Business $business,
@@ -176,26 +154,26 @@ trait HasOwnDataFiltering
         int $clientId
     ): bool {
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        
+
         // Если есть полное право, можно просматривать все
         if ($permissionService->hasPermission($roleId, $permission)) {
             return true;
         }
-        
+
         // Если есть право только на свои данные, проверяем принадлежность
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
-            if (!$masterId) {
+            if (! $masterId) {
                 return false;
             }
-            
+
             return \App\Models\Client::where('id', $clientId)
                 ->whereHas('appointments', function ($q) use ($masterId) {
                     $q->where('master_id', $masterId);
                 })
                 ->exists();
         }
-        
+
         return false;
     }
 }

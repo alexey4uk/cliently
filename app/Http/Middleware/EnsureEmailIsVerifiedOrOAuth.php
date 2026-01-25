@@ -25,17 +25,17 @@ class EnsureEmailIsVerifiedOrOAuth
         $user = $request->user();
 
         // Если пользователь не авторизован, пропускаем дальше (обработает middleware auth)
-        if (!$user) {
+        if (! $user) {
             return $next($request);
         }
 
         // Если пользователь зарегистрирован через OAuth - пропускаем проверку верификации
-        if (!empty($user->oauth_provider)) {
+        if (! empty($user->oauth_provider)) {
             return $next($request);
         }
 
         // Если модель реализует MustVerifyEmail и email не верифицирован
-        if ($user instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
+        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
             return $request->expectsJson()
                 ? abort(403, 'Your email address is not verified.')
                 : Redirect::guest(URL::route($redirectToRoute ?: 'verification.notice'));

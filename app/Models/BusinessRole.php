@@ -62,7 +62,7 @@ class BusinessRole extends Model
     {
         return $query->where(function ($q) use ($ownerId) {
             $q->where('is_system', true)
-              ->orWhere('owner_id', $ownerId);
+                ->orWhere('owner_id', $ownerId);
         });
     }
 }

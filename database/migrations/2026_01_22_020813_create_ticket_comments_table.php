@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('content');
             $table->boolean('is_internal')->default(false);
             $table->timestamps();
-            
+
             $table->index('ticket_id');
         });
     }

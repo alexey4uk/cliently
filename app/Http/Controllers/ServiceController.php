@@ -24,7 +24,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -44,7 +44,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -61,7 +61,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
@@ -88,7 +88,7 @@ class ServiceController extends Controller
         ]);
 
         // Привязываем мастеров к услуге
-        if (!empty($validated['masters'])) {
+        if (! empty($validated['masters'])) {
             $service->masters()->attach($validated['masters']);
         }
 
@@ -110,7 +110,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -129,7 +129,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 
@@ -160,7 +160,7 @@ class ServiceController extends Controller
     {
         $business = $this->getCurrentBusiness();
 
-        if (!$business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
+        if (! $business || ! $this->serviceRepository->belongsToBusiness($service->id, $business->id)) {
             return redirect()->route('services.index');
         }
 

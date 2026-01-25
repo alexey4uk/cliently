@@ -51,11 +51,11 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
 
         // Admin: limited access (no delete, no businesses.update, no analytics, no telegram, no business.users.*, no business.roles.manage)
         $adminPermissions = array_filter(array_values($clientPermissions), function ($permission) {
-            return !str_ends_with($permission, '.delete')
+            return ! str_ends_with($permission, '.delete')
                 && $permission !== 'client.businesses.update'
                 && $permission !== 'client.analytics.view'
                 && $permission !== 'client.telegram.manage'
-                && !str_starts_with($permission, 'client.business.users.')
+                && ! str_starts_with($permission, 'client.business.users.')
                 && $permission !== 'client.business.roles.manage';
         });
 
@@ -93,15 +93,15 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
             $currentPermissions = BusinessRolePermission::where('role_id', $role->id)
                 ->pluck('permission')
                 ->toArray();
-            
+
             // Remove permissions that are no longer in the list
             $permissionsToRemove = array_diff($currentPermissions, $permissions);
-            if (!empty($permissionsToRemove)) {
+            if (! empty($permissionsToRemove)) {
                 BusinessRolePermission::where('role_id', $role->id)
                     ->whereIn('permission', $permissionsToRemove)
                     ->delete();
             }
-            
+
             // Add or update permissions
             foreach ($permissions as $permission) {
                 BusinessRolePermission::updateOrCreate(
@@ -124,15 +124,15 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
         DB::table('business_user')
             ->whereNull('role_id')
             ->whereNotNull('role')
-            ->update(['role_id' => DB::raw("(
+            ->update(['role_id' => DB::raw('(
                 select id from business_roles where slug = business_user.role limit 1
-            )")]);
+            )')]);
 
         DB::table('business_user_invitations')
             ->whereNull('role_id')
             ->whereNotNull('role')
-            ->update(['role_id' => DB::raw("(
+            ->update(['role_id' => DB::raw('(
                 select id from business_roles where slug = business_user_invitations.role limit 1
-            )")]);
+            )')]);
     }
 }

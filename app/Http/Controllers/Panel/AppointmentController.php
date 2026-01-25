@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Business;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
 
 class AppointmentController extends Controller
 {
@@ -30,15 +29,15 @@ class AppointmentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereHas('client', function ($clientQuery) use ($search) {
                     $clientQuery->where('first_name', 'like', "%{$search}%")
-                               ->orWhere('last_name', 'like', "%{$search}%")
-                               ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
                 })
-                ->orWhereHas('service', function ($serviceQuery) use ($search) {
-                    $serviceQuery->where('name', 'like', "%{$search}%");
-                })
-                ->orWhereHas('master', function ($masterQuery) use ($search) {
-                    $masterQuery->where('name', 'like', "%{$search}%");
-                });
+                    ->orWhereHas('service', function ($serviceQuery) use ($search) {
+                        $serviceQuery->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('master', function ($masterQuery) use ($search) {
+                        $masterQuery->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -62,16 +61,16 @@ class AppointmentController extends Controller
         if (in_array($sort, $allowedSorts)) {
             if ($sort === 'client') {
                 $query->join('clients', 'appointments.client_id', '=', 'clients.id')
-                      ->orderByRaw("CONCAT(COALESCE(clients.first_name, ''), ' ', COALESCE(clients.last_name, '')) {$direction}")
-                      ->select('appointments.*');
+                    ->orderByRaw("CONCAT(COALESCE(clients.first_name, ''), ' ', COALESCE(clients.last_name, '')) {$direction}")
+                    ->select('appointments.*');
             } elseif ($sort === 'service') {
                 $query->join('services', 'appointments.service_id', '=', 'services.id')
-                      ->orderBy("services.name", $direction)
-                      ->select('appointments.*');
+                    ->orderBy('services.name', $direction)
+                    ->select('appointments.*');
             } elseif ($sort === 'master') {
                 $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
-                      ->orderBy("masters.name", $direction)
-                      ->select('appointments.*');
+                    ->orderBy('masters.name', $direction)
+                    ->select('appointments.*');
             } else {
                 $query->orderByRaw("CONCAT(date, ' ', time) {$direction}");
             }

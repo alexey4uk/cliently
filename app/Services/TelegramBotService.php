@@ -278,6 +278,7 @@ class TelegramBotService
     public function updateUserChatId(User $user, int $chatId): bool
     {
         $user->telegram_chat_id = (string) $chatId;
+
         return $user->save();
     }
 }

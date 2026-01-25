@@ -87,7 +87,7 @@ class SubscriptionMetricController extends Controller
 
         // Обрабатываем чекбокс is_active
         $validated['is_active'] = isset($validated['is_active']) ? (bool) $validated['is_active'] : false;
-        
+
         // Автоматически назначаем sort_order (максимальное значение + 1)
         $maxSortOrder = SubscriptionMetric::max('sort_order') ?? -1;
         $validated['sort_order'] = $maxSortOrder + 1;
@@ -112,7 +112,7 @@ class SubscriptionMetricController extends Controller
     public function update(Request $request, SubscriptionMetric $metric)
     {
         $validated = $request->validate([
-            'key' => ['required', 'string', 'max:255', 'unique:subscription_metrics,key,' . $metric->id, 'regex:/^[a-z][a-z0-9_]*$/'],
+            'key' => ['required', 'string', 'max:255', 'unique:subscription_metrics,key,'.$metric->id, 'regex:/^[a-z][a-z0-9_]*$/'],
             'label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:100'],
@@ -158,14 +158,14 @@ class SubscriptionMetricController extends Controller
     {
         // Находим элемент с sort_order на 1 больше (ниже в списке)
         $nextMetric = SubscriptionMetric::where('sort_order', $metric->sort_order + 1)->first();
-        
+
         if ($nextMetric) {
             // Меняем местами
             $currentOrder = $metric->sort_order;
             $metric->update(['sort_order' => $nextMetric->sort_order]);
             $nextMetric->update(['sort_order' => $currentOrder]);
         }
-        
+
         return redirect()->back()
             ->with('success', 'Элемент перемещен вниз.');
     }
@@ -178,14 +178,14 @@ class SubscriptionMetricController extends Controller
     {
         // Находим элемент с sort_order на 1 меньше (выше в списке)
         $prevMetric = SubscriptionMetric::where('sort_order', $metric->sort_order - 1)->first();
-        
+
         if ($prevMetric) {
             // Меняем местами
             $currentOrder = $metric->sort_order;
             $metric->update(['sort_order' => $prevMetric->sort_order]);
             $prevMetric->update(['sort_order' => $currentOrder]);
         }
-        
+
         return redirect()->back()
             ->with('success', 'Элемент перемещен вверх.');
     }
