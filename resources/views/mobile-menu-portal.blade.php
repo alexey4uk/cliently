@@ -532,7 +532,7 @@ style="width: 0; height: 0;">
                 <div class="px-3">
                     @auth
                         <!-- Информация о пользователе (кликабельная, ведет на профиль) -->
-                        <a href="{{ route('profile.edit') }}" @click="closeMenu()"
+                        <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.profile.edit') : route('profile.edit') }}" @click="closeMenu()"
                             class="block mb-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             <div class="flex items-center gap-3">
                                 <div

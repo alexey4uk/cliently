@@ -20,7 +20,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request)
     {
-        return view('profile', [
+        // Определяем контекст: panel или client
+        $isPanel = $request->routeIs('panel.profile.edit') || str_starts_with($request->path(), 'panel');
+        $view = $isPanel ? 'profile-panel' : 'profile';
+        
+        return view($view, [
             'user' => $request->user(),
             'countries' => Country::orderBy('name')->get(),
         ]);
@@ -105,7 +109,11 @@ class ProfileController extends Controller
             $user->primaryPhone->delete();
         }
 
-        return back()->with('success', 'Профиль успешно обновлен');
+        // Определяем контекст для редиректа
+        $isPanel = $request->routeIs('panel.profile.update') || str_starts_with($request->path(), 'panel');
+        $redirectRoute = $isPanel ? 'panel.profile.edit' : 'profile.edit';
+        
+        return redirect()->route($redirectRoute)->with('success', 'Профиль успешно обновлен');
     }
 
     /**
@@ -127,7 +135,11 @@ class ProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('success', 'Пароль успешно изменен');
+        // Определяем контекст для редиректа
+        $isPanel = $request->routeIs('panel.profile.password.update') || str_starts_with($request->path(), 'panel');
+        $redirectRoute = $isPanel ? 'panel.profile.edit' : 'profile.edit';
+        
+        return redirect()->route($redirectRoute)->with('success', 'Пароль успешно изменен');
     }
 
     /**

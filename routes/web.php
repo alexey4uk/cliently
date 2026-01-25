@@ -314,6 +314,15 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Panel\PanelController::class, 'index'])->name('index');
         Route::post('/refresh', [\App\Http\Controllers\Panel\PanelController::class, 'refresh'])->name('refresh');
 
+        // Профиль пользователя в панели
+        Route::prefix('profile')->group(function () {
+            Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+            Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+            Route::patch('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+            Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
+            Route::delete('/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
+        });
+
         // Пользователи (только админ): /users/create перед /users/{user}
         Route::middleware(['check.permission:panel.users.create'])->group(function () {
             Route::get('/users/create', [\App\Http\Controllers\Panel\UserController::class, 'create'])->name('users.create');

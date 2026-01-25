@@ -77,7 +77,7 @@
         <!-- Информация о пользователе -->
         @auth
             <div class="px-4 py-3.5 bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-800/50 dark:to-slate-900/50 border-b border-slate-200/50 dark:border-slate-800/50">
-                <a href="{{ route('profile.edit') }}" 
+                <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.profile.edit') : route('profile.edit') }}" 
                    class="flex items-center gap-3 group hover:opacity-90 transition-opacity">
                     <div class="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden shrink-0 ring-2 ring-white/50 dark:ring-slate-700/50 shadow-sm">
                         @if(Auth::user()->getAvatarUrl())
@@ -104,7 +104,7 @@
         
         <!-- Действия -->
         <div class="py-1.5">
-            <a href="{{ route('profile.edit') }}"
+            <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.profile.edit') : route('profile.edit') }}"
                 class="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                 <div class="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-500/30 transition-colors">
                     <i class="fa-solid fa-user text-xs text-indigo-600 dark:text-indigo-400"></i>
