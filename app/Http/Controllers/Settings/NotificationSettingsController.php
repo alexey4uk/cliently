@@ -45,13 +45,14 @@ class NotificationSettingsController extends Controller
             'notification_type' => 'required|string',
             'channels' => 'required|array',
             'channels.*' => 'boolean',
+            'enabled' => 'sometimes|boolean',
         ]);
 
         $user = Auth::user();
         $notificationType = $request->input('notification_type');
         $channels = $request->input('channels');
+        $enabled = $request->has('enabled') ? (bool) $request->input('enabled') : null;
 
-        // Валидация: проверяем, что все каналы из запроса существуют в конфиге
         $availableChannels = array_keys(NotificationSettingsService::getAvailableChannels());
         foreach (array_keys($channels) as $channel) {
             if (! in_array($channel, $availableChannels)) {
@@ -62,7 +63,7 @@ class NotificationSettingsController extends Controller
             }
         }
 
-        NotificationSettingsService::updateSetting($user, $notificationType, $channels);
+        NotificationSettingsService::updateSetting($user, $notificationType, $channels, $enabled);
 
         return response()->json([
             'success' => true,

@@ -169,7 +169,11 @@ class AppointmentNotificationService
                 continue;
             }
 
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($user, 'appointment.created')) {
+                continue;
+            }
+
+            // Системное уведомление
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.created',
@@ -272,7 +276,11 @@ class AppointmentNotificationService
                 continue;
             }
 
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($user, 'appointment.status_changed')) {
+                continue;
+            }
+
+            // Системное уведомление
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.status_changed',
@@ -369,7 +377,11 @@ class AppointmentNotificationService
                 continue;
             }
 
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($user, 'appointment.upcoming')) {
+                continue;
+            }
+
+            // Системное уведомление
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'appointment.upcoming',
@@ -462,6 +474,10 @@ class AppointmentNotificationService
                 continue;
             }
 
+            if (! NotificationSettingsService::isTypeEnabled($user, 'subscription.limit')) {
+                continue;
+            }
+
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'subscription.limit',
@@ -537,6 +553,10 @@ class AppointmentNotificationService
                 continue;
             }
 
+            if (! NotificationSettingsService::isTypeEnabled($user, 'subscription.expiring')) {
+                continue;
+            }
+
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'subscription.expiring',
@@ -600,6 +620,10 @@ class AppointmentNotificationService
 
             // Пропускаем пользователей без прав
             if (! $hasPermission && ! $hasPanelPermission) {
+                continue;
+            }
+
+            if (! NotificationSettingsService::isTypeEnabled($user, 'client.new')) {
                 continue;
             }
 

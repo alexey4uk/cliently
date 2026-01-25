@@ -49,11 +49,13 @@ return [
         'admin' => [
             'admin.business.created' => 'Новый бизнес',
             'admin.business.deleted' => 'Удаление бизнеса',
+            'admin.business.inactive' => 'Неактивный бизнес',
             'admin.ticket.created' => 'Новый тикет от пользователя',
             'admin.ticket.critical' => 'Критический тикет',
             'admin.user.created' => 'Новый пользователь',
             'admin.subscription.expiring' => 'Истечение подписки',
             'admin.subscription.limit.exceeded' => 'Превышение лимитов',
+            'admin.system.error' => 'Системная ошибка',
         ],
         'subscription' => [
             'subscription.expiring' => 'Подписка истекает',

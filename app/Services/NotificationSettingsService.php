@@ -9,21 +9,41 @@ use Illuminate\Support\Facades\Log;
 class NotificationSettingsService
 {
     /**
-     * Универсальный метод проверки, нужно ли отправлять уведомление через указанный канал.
+     * Проверить, включён ли тип уведомлений для пользователя.
+     * Если отключён — не отправлять ничего (in-app, email, telegram).
+     * Нет настройки = по умолчанию включено.
      */
-    public static function shouldSend(User $user, string $notificationType, string $channel): bool
+    public static function isTypeEnabled(User $user, string $notificationType): bool
     {
-        // Получаем настройку пользователя для данного типа уведомления
         $setting = UserNotificationSetting::where('user_id', $user->id)
             ->where('notification_type', $notificationType)
             ->first();
 
-        // Если настройки нет - по умолчанию все каналы включены
         if (! $setting) {
             return true;
         }
 
-        // Проверяем, включен ли канал в настройках
+        return $setting->isEnabled();
+    }
+
+    /**
+     * Универсальный метод проверки, нужно ли отправлять уведомление через указанный канал.
+     * Если тип отключён (enabled=false), всегда false.
+     */
+    public static function shouldSend(User $user, string $notificationType, string $channel): bool
+    {
+        if (! self::isTypeEnabled($user, $notificationType)) {
+            return false;
+        }
+
+        $setting = UserNotificationSetting::where('user_id', $user->id)
+            ->where('notification_type', $notificationType)
+            ->first();
+
+        if (! $setting) {
+            return true;
+        }
+
         return $setting->isChannelEnabled($channel);
     }
 
@@ -60,6 +80,7 @@ class NotificationSettingsService
             $setting = $userSettings->get($type);
             $settings[$type] = [
                 'name' => $name,
+                'enabled' => $setting ? $setting->isEnabled() : true,
                 'channels' => $setting ? $setting->channels : $defaultChannels,
             ];
         }
@@ -69,15 +90,23 @@ class NotificationSettingsService
 
     /**
      * Обновить настройку для пользователя.
+     *
+     * @param  array<string, bool>  $channels
      */
-    public static function updateSetting(User $user, string $notificationType, array $channels): UserNotificationSetting
+    public static function updateSetting(User $user, string $notificationType, array $channels, ?bool $enabled = null): UserNotificationSetting
     {
         $setting = UserNotificationSetting::getForUser($user, $notificationType);
-        $setting->updateChannels($channels);
+
+        $data = ['channels' => $channels];
+        if ($enabled !== null) {
+            $data['enabled'] = $enabled;
+        }
+        $setting->update($data);
 
         Log::info('NotificationSettingsService: Setting updated', [
             'user_id' => $user->id,
             'notification_type' => $notificationType,
+            'enabled' => $enabled,
             'channels' => $channels,
         ]);
 
@@ -121,6 +150,7 @@ class NotificationSettingsService
         foreach ($allTypes as $type => $name) {
             $settings[$type] = [
                 'name' => $name,
+                'enabled' => true,
                 'channels' => $defaultChannels,
             ];
         }

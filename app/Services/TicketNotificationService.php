@@ -80,9 +80,7 @@ class TicketNotificationService
         $ticket->loadMissing('assignedUser');
 
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
-        // Уведомляем назначенного пользователя
-        // Не проверяем права при создании - права проверяются при отображении уведомления
-        if ($ticket->assignedUser) {
+        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created')) {
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket created notification', [
                 'user_id' => $ticket->assignedUser->id,
                 'ticket_id' => $ticket->id,
@@ -102,8 +100,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        // Проверяем настройки пользователя и настройки тикетов
-        if ($ticket->assignedUser && $settings->email_notifications_enabled) {
+        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && $settings->email_notifications_enabled) {
             if (NotificationSettingsService::shouldSendEmail($ticket->assignedUser, 'ticket.created')) {
                 try {
                     $ticket->assignedUser->notify(new TicketCreated($ticket));
@@ -134,7 +131,7 @@ class TicketNotificationService
         }
 
         // === TELEGRAM УВЕДОМЛЕНИЕ ===
-        if ($ticket->assignedUser && NotificationSettingsService::shouldSendTelegram($ticket->assignedUser, 'ticket.created')) {
+        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && NotificationSettingsService::shouldSendTelegram($ticket->assignedUser, 'ticket.created')) {
             try {
                 TelegramNotificationService::sendTicketCreated($ticket, $ticket->assignedUser);
             } catch (\Exception $e) {
@@ -282,9 +279,10 @@ class TicketNotificationService
         ]);
 
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
-        // Уведомляем всех пользователей, которым нужно отправить уведомление
-        // Не проверяем права при создании - права проверяются при отображении уведомления
         foreach ($usersToNotify as $user) {
+            if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
+                continue;
+            }
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending comment notification', [
                 'user_id' => $user->id,
                 'ticket_id' => $ticket->id,
@@ -307,8 +305,10 @@ class TicketNotificationService
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
         if ($settings->email_notifications_enabled) {
-            // Уведомляем всех пользователей по email (если включено в их настройках)
             foreach ($usersToNotify as $user) {
+                if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
+                    continue;
+                }
                 if (NotificationSettingsService::shouldSendEmail($user, 'ticket.comment')) {
                     try {
                         $user->notify(new TicketCommentAdded($ticket, $comment));
@@ -341,6 +341,9 @@ class TicketNotificationService
 
         // === TELEGRAM УВЕДОМЛЕНИЕ ===
         foreach ($usersToNotify as $user) {
+            if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
+                continue;
+            }
             if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.comment')) {
                 try {
                     TelegramNotificationService::sendTicketCommentAdded($ticket, $comment, $user);
@@ -360,7 +363,7 @@ class TicketNotificationService
      */
     public function notifyTicketAssigned(Ticket $ticket, ?User $user): void
     {
-        if ($user) {
+        if ($user && NotificationSettingsService::isTypeEnabled($user, 'ticket.assigned')) {
             // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket assigned notification', [
                 'user_id' => $user->id,
@@ -443,6 +446,9 @@ class TicketNotificationService
         };
 
         foreach ($usersToNotify as $user) {
+            if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
+                continue;
+            }
             \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending status changed notification', [
                 'user_id' => $user->id,
                 'ticket_id' => $ticket->id,
@@ -452,7 +458,7 @@ class TicketNotificationService
 
             NotificationService::send([
                 'user_id' => $user->id,
-                'type' => 'ticket.updated',
+                'type' => 'ticket.status_changed',
                 'title' => 'Тикет #'.$ticket->id.' обновлен',
                 'message' => 'Статус тикета изменен: '.$statusText,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
@@ -465,8 +471,10 @@ class TicketNotificationService
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
         if ($settings->email_notifications_enabled) {
-            // Уведомляем всех пользователей по email (если включено в их настройках)
             foreach ($usersToNotify as $user) {
+                if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
+                    continue;
+                }
                 if (NotificationSettingsService::shouldSendEmail($user, 'ticket.status_changed')) {
                     try {
                         $user->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));
@@ -499,6 +507,9 @@ class TicketNotificationService
 
         // === TELEGRAM УВЕДОМЛЕНИЕ ===
         foreach ($usersToNotify as $user) {
+            if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
+                continue;
+            }
             if (NotificationSettingsService::shouldSendTelegram($user, 'ticket.status_changed')) {
                 try {
                     TelegramNotificationService::sendTicketStatusChanged($ticket, $user, $oldStatus, $newStatus);

@@ -55,7 +55,9 @@ class AdminNotificationService
         $owner = $business->users()->wherePivot('role', 'owner')->first();
 
         foreach ($admins as $admin) {
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.business.created')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.business.created',
@@ -121,6 +123,9 @@ class AdminNotificationService
             : '';
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.business.deleted')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.business.deleted',
@@ -159,7 +164,9 @@ class AdminNotificationService
         $creator = $ticket->creator();
 
         foreach ($admins as $admin) {
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.ticket.created')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.ticket.created',
@@ -219,6 +226,9 @@ class AdminNotificationService
         $business = $ticket->business;
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.ticket.critical')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.ticket.critical',
@@ -250,6 +260,9 @@ class AdminNotificationService
         }
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.user.created')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.user.created',
@@ -290,7 +303,9 @@ class AdminNotificationService
         }
 
         foreach ($admins as $admin) {
-            // Системное уведомление (всегда отправляется)
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.subscription.expiring')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.subscription.expiring',
@@ -344,6 +359,9 @@ class AdminNotificationService
         $limitName = $limitNames[$limitType] ?? $limitType;
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.subscription.limit.exceeded')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.subscription.limit.exceeded',
@@ -375,6 +393,9 @@ class AdminNotificationService
         }
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.business.inactive')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.business.inactive',
@@ -406,6 +427,9 @@ class AdminNotificationService
         }
 
         foreach ($admins as $admin) {
+            if (! NotificationSettingsService::isTypeEnabled($admin, 'admin.system.error')) {
+                continue;
+            }
             NotificationService::send([
                 'user_id' => $admin->id,
                 'type' => 'admin.system.error',

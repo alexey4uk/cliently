@@ -18,6 +18,7 @@ class UserNotificationSetting extends Model
     protected $fillable = [
         'user_id',
         'notification_type',
+        'enabled',
         'channels',
     ];
 
@@ -29,6 +30,7 @@ class UserNotificationSetting extends Model
     protected function casts(): array
     {
         return [
+            'enabled' => 'boolean',
             'channels' => 'array',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
@@ -54,9 +56,19 @@ class UserNotificationSetting extends Model
                 'notification_type' => $type,
             ],
             [
+                'enabled' => true,
                 'channels' => config('notifications.default_channels', []),
             ]
         );
+    }
+
+    /**
+     * Проверить, включён ли данный тип уведомлений для пользователя.
+     * Если тип отключён — не отправляются ни in-app, ни email, ни telegram.
+     */
+    public function isEnabled(): bool
+    {
+        return $this->enabled ?? true;
     }
 
     /**
