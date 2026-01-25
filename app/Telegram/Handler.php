@@ -260,6 +260,10 @@ class Handler extends WebhookHandler
                         'app_user_id' => $user->id,
                         'app_user_name' => $user->name,
                     ]);
+                    
+                    // Уведомляем о подключении Telegram
+                    \App\Services\TelegramNotificationService::notifyConnected($user);
+                    
                     $this->replyWithMessage(TelegramMessages::MSG_ACCOUNT_CONNECTED);
                 } else {
                     Log::warning('User not found for auth token', [

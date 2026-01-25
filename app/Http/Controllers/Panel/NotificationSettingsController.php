@@ -134,6 +134,12 @@ class NotificationSettingsController extends Controller
     public function disconnectTelegram()
     {
         $user = Auth::user();
+        
+        // Уведомляем об отключении Telegram перед отвязкой
+        if ($user->telegram_chat_id) {
+            \App\Services\TelegramNotificationService::notifyDisconnected($user);
+        }
+        
         $user->telegram_chat_id = null;
         $user->save();
 

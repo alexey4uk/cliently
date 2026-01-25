@@ -41,6 +41,9 @@ class SubscriptionService
         // Если уже есть подписка, обновляем её
         $subscription = $user->subscription;
 
+        // Сохраняем старый план для проверки изменения
+        $oldPlan = $subscription?->plan;
+
         // Получаем текущий metadata или создаем новый
         $metadata = $subscription?->metadata ?? [];
         $usedTrials = $metadata['used_trials'] ?? [];
@@ -83,6 +86,16 @@ class SubscriptionService
 
         // Инициализируем usage для всех метрик тарифа
         $this->initializeUsage($subscription);
+
+        // Проверяем изменение тарифа
+        if ($subscription && $oldPlan && $oldPlan->id !== $plan->id) {
+            \App\Services\SubscriptionNotificationService::notifyPlanChanged($subscription, $oldPlan, $plan);
+        }
+
+        // Проверяем начало пробного периода
+        if ($isTrial && $trialEndsAt !== null) {
+            \App\Services\SubscriptionNotificationService::notifyTrialStarted($subscription);
+        }
 
         return $subscription;
     }

@@ -367,4 +367,261 @@ class TelegramNotificationService
 
         self::sendMessageToUser($admin, $message);
     }
+
+    /**
+     * Отправить уведомление о приглашении пользователя в бизнес
+     */
+    public static function sendBusinessUserInvited(\App\Models\BusinessUserInvitation $invitation, User $invitedBy, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $business = $invitation->business;
+        $role = $invitation->businessRole;
+
+        $message = "👤 Отправлено приглашение\n\n";
+        $message .= "🏢 Бизнес: {$business->name}\n";
+        $message .= "📧 Email: {$invitation->email}\n";
+        $message .= "👔 Роль: {$role->name}\n";
+        $message .= "👤 Отправил: {$invitedBy->name}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление о присоединении пользователя к бизнесу
+     */
+    public static function sendBusinessUserJoined(Business $business, User $joinedUser, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $message = "✅ Пользователь присоединился\n\n";
+        $message .= "🏢 Бизнес: {$business->name}\n";
+        $message .= "👤 Пользователь: {$joinedUser->name} ({$joinedUser->email})\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об удалении пользователя из бизнеса
+     */
+    public static function sendBusinessUserRemoved(Business $business, User $removedUser, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $message = "❌ Пользователь удалён\n\n";
+        $message .= "🏢 Бизнес: {$business->name}\n";
+        $message .= "👤 Пользователь: {$removedUser->name} ({$removedUser->email})\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об изменении роли пользователя
+     */
+    public static function sendBusinessUserRoleChanged(Business $business, User $user, string $oldRole, string $newRole, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $oldRoleName = \App\Models\BusinessRole::where('slug', $oldRole)->first()?->name ?? $oldRole;
+        $newRoleName = \App\Models\BusinessRole::where('slug', $newRole)->first()?->name ?? $newRole;
+
+        $message = "🔄 Изменена роль пользователя\n\n";
+        $message .= "🏢 Бизнес: {$business->name}\n";
+        $message .= "👤 Пользователь: {$user->name} ({$user->email})\n";
+        $message .= "👔 Было: {$oldRoleName}\n";
+        $message .= "👔 Стало: {$newRoleName}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об успешной оплате подписки
+     */
+    public static function sendSubscriptionPaymentSuccess(\App\Models\Invoice $invoice, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $invoice->plan;
+
+        $message = "✅ Оплата успешна\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "💰 Сумма: {$invoice->amount} {$invoice->currency}\n";
+        $message .= "📅 Дата: {$invoice->paid_at->format('d.m.Y H:i')}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление о неудачной оплате подписки
+     */
+    public static function sendSubscriptionPaymentFailed(\App\Models\Invoice $invoice, User $recipient, ?string $reason = null): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $invoice->plan;
+
+        $message = "❌ Оплата не прошла\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "💰 Сумма: {$invoice->amount} {$invoice->currency}\n";
+        if ($reason) {
+            $message .= "⚠️ Причина: {$reason}\n";
+        }
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об изменении тарифа подписки
+     */
+    public static function sendSubscriptionPlanChanged(\App\Models\Subscription $subscription, \App\Models\Plan $oldPlan, \App\Models\Plan $newPlan, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $message = "🔄 Тариф изменён\n\n";
+        $message .= "📦 Было: {$oldPlan->name}\n";
+        $message .= "📦 Стало: {$newPlan->name}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление о продлении подписки
+     */
+    public static function sendSubscriptionRenewed(\App\Models\Subscription $subscription, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $subscription->plan;
+        $endsAt = $subscription->ends_at ? $subscription->ends_at->format('d.m.Y') : 'не указано';
+
+        $message = "🔄 Подписка продлена\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "📅 Действует до: {$endsAt}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление о начале пробного периода
+     */
+    public static function sendSubscriptionTrialStarted(\App\Models\Subscription $subscription, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $subscription->plan;
+        $trialEndsAt = $subscription->trial_ends_at ? $subscription->trial_ends_at->format('d.m.Y') : 'не указано';
+
+        $message = "🎁 Начат пробный период\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "📅 Пробный период до: {$trialEndsAt}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление о скором окончании пробного периода
+     */
+    public static function sendSubscriptionTrialEnding(\App\Models\Subscription $subscription, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $subscription->plan;
+        $trialEndsAt = $subscription->trial_ends_at ? $subscription->trial_ends_at->format('d.m.Y H:i') : 'не указано';
+        $daysLeft = $subscription->trial_ends_at ? now()->diffInDays($subscription->trial_ends_at, false) : 0;
+
+        $message = "⏰ Пробный период заканчивается\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "📅 Заканчивается: {$trialEndsAt}\n";
+        $message .= "⏳ Осталось дней: {$daysLeft}\n";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Уведомить о подключении Telegram
+     */
+    public static function notifyConnected(User $user): void
+    {
+        if (! $user->isTelegramConnected()) {
+            return;
+        }
+
+        // Проверяем, включен ли тип уведомления
+        if (! \App\Services\NotificationSettingsService::isTypeEnabled($user, 'telegram.connected')) {
+            return;
+        }
+
+        // In-app уведомление
+        \App\Services\NotificationService::send([
+            'user_id' => $user->id,
+            'type' => 'telegram.connected',
+            'title' => 'Telegram подключен',
+            'message' => 'Ваш Telegram аккаунт успешно подключен. Теперь вы будете получать уведомления в Telegram.',
+            'data' => [],
+        ]);
+
+        // Email уведомление (если включено)
+        if (\App\Services\NotificationSettingsService::shouldSendEmail($user, 'telegram.connected') && $user->hasVerifiedEmail()) {
+            try {
+                $user->notify(new \App\Notifications\Telegram\Connected($user));
+            } catch (\Exception $e) {
+                Log::error('Failed to send email notification for telegram.connected', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Уведомить об отключении Telegram
+     */
+    public static function notifyDisconnected(User $user): void
+    {
+        // Проверяем, включен ли тип уведомления
+        if (! \App\Services\NotificationSettingsService::isTypeEnabled($user, 'telegram.disconnected')) {
+            return;
+        }
+
+        // In-app уведомление
+        \App\Services\NotificationService::send([
+            'user_id' => $user->id,
+            'type' => 'telegram.disconnected',
+            'title' => 'Telegram отключен',
+            'message' => 'Ваш Telegram аккаунт отключен. Вы больше не будете получать уведомления в Telegram.',
+            'data' => [],
+        ]);
+
+        // Email уведомление (если включено)
+        if (\App\Services\NotificationSettingsService::shouldSendEmail($user, 'telegram.disconnected') && $user->hasVerifiedEmail()) {
+            try {
+                $user->notify(new \App\Notifications\Telegram\Disconnected($user));
+            } catch (\Exception $e) {
+                Log::error('Failed to send email notification for telegram.disconnected', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
 }

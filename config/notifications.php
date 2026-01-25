@@ -61,6 +61,22 @@ return [
         'subscription' => [
             'subscription.expiring' => 'Подписка истекает',
             'subscription.limit' => 'Достигнут лимит',
+            'subscription.payment.success' => 'Оплата успешна',
+            'subscription.payment.failed' => 'Оплата не прошла',
+            'subscription.plan.changed' => 'Тариф изменён',
+            'subscription.renewed' => 'Подписка продлена',
+            'subscription.trial.started' => 'Начат пробный период',
+            'subscription.trial.ending' => 'Пробный период заканчивается',
+        ],
+        'business' => [
+            'business.user.invited' => 'Приглашение отправлено',
+            'business.user.joined' => 'Пользователь присоединился',
+            'business.user.removed' => 'Пользователь удалён',
+            'business.user.role_changed' => 'Изменена роль пользователя',
+        ],
+        'telegram' => [
+            'telegram.connected' => 'Telegram подключен',
+            'telegram.disconnected' => 'Telegram отключен',
         ],
     ],
 

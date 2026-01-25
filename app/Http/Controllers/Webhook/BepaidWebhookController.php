@@ -99,6 +99,9 @@ class BepaidWebhookController extends Controller
             // Если платеж успешен, активируем/продлеваем подписку
             if ($invoice->isPaid()) {
                 $this->activateSubscription($invoice);
+            } elseif ($invoice->status === 'failed') {
+                // Уведомляем о неудачной оплате
+                \App\Services\SubscriptionNotificationService::notifyPaymentFailed($invoice);
             }
 
             // Возвращаем успешный ответ
@@ -201,6 +204,9 @@ class BepaidWebhookController extends Controller
         $plan = $invoice->plan;
         $user = $invoice->user;
 
+        // Сохраняем старые значения для проверки продления
+        $oldEndsAt = $subscription?->ends_at;
+
         // Идемпотентность: если подписка уже активна и оплачена этим инвойсом - не обновляем
         if ($subscription && $subscription->invoice_id === $invoice->id && $subscription->status === 'active') {
             if (config('bepaid.logging.enabled')) {
@@ -245,6 +251,14 @@ class BepaidWebhookController extends Controller
                 'invoice_id' => $invoice->id,
                 'plan_id' => $plan->id,
             ]);
+
+            // Уведомляем об успешной оплате
+            \App\Services\SubscriptionNotificationService::notifyPaymentSuccess($invoice);
+
+            // Проверяем, является ли это продлением (старый ends_at < новый ends_at)
+            if ($oldEndsAt && $subscription->ends_at && $oldEndsAt->lt($subscription->ends_at)) {
+                \App\Services\SubscriptionNotificationService::notifyRenewed($subscription);
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Business;
 use App\Models\BusinessUserInvitation;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\BusinessUserNotificationService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -106,6 +107,9 @@ class BusinessInvitationController extends Controller
             'accepted_at' => now(),
         ]);
 
+        // Уведомляем владельцев/админов о присоединении пользователя
+        BusinessUserNotificationService::notifyUserJoined($invitation->business, $user, $invitation);
+
         // Авторизуем пользователя
         Auth::login($user);
 
@@ -162,6 +166,9 @@ class BusinessInvitationController extends Controller
         $invitation->update([
             'accepted_at' => now(),
         ]);
+
+        // Уведомляем владельцев/админов о присоединении пользователя
+        BusinessUserNotificationService::notifyUserJoined($invitation->business, $user, $invitation);
 
         return redirect()->route('dashboard')
             ->with('success', 'Вы успешно присоединились к бизнесу.');

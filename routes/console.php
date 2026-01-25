@@ -9,5 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('subscription:notify-expiring')->daily();
+Schedule::command('subscription:notify-trial-ending')->daily();
 Schedule::command('business:notify-inactive')->daily();
 Schedule::command('ticket:notify-critical')->daily();

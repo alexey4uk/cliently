@@ -11,6 +11,7 @@ use App\Notifications\BusinessUserCreated;
 use App\Notifications\BusinessUserCreatedWithPassword;
 use App\Notifications\BusinessUserInvitation as BusinessUserInvitationNotification;
 use App\Services\BusinessRolePermissionService;
+use App\Services\BusinessUserNotificationService;
 use App\Services\SubscriptionService;
 use App\Traits\HasCurrentBusiness;
 use Illuminate\Http\Request;
@@ -178,6 +179,9 @@ class BusinessUsersController extends Controller
             $tempUser->notify(new BusinessUserInvitationNotification($invitation, $business));
         }
 
+        // Уведомляем владельцев/админов о приглашении
+        BusinessUserNotificationService::notifyUserInvited($invitation, Auth::user());
+
         return redirect()->route('settings.users.index')
             ->with('success', 'Приглашение отправлено на email '.$request->email);
     }
@@ -261,6 +265,9 @@ class BusinessUsersController extends Controller
 
             // Отправляем уведомление о добавлении в бизнес
             $existingUser->notify(new BusinessUserCreated($business, $role->name));
+
+            // Уведомляем владельцев/админов о присоединении пользователя
+            BusinessUserNotificationService::notifyUserJoined($business, $existingUser, null);
 
             return redirect()->route('settings.users.index')
                 ->with('success', 'Существующий пользователь добавлен в бизнес. Уведомление отправлено на email.');
@@ -417,6 +424,9 @@ class BusinessUsersController extends Controller
             'role_id' => $nextRole->id,
         ]);
 
+        // Уведомляем об изменении роли
+        BusinessUserNotificationService::notifyUserRoleChanged($business, $user, $currentRole?->slug ?? 'unknown', $nextRole->slug, Auth::user());
+
         return redirect()->route('settings.users.index')
             ->with('success', 'Роль пользователя обновлена.');
     }
@@ -455,6 +465,9 @@ class BusinessUsersController extends Controller
                     ->with('error', 'Нельзя удалить последнего владельца бизнеса.');
             }
         }
+
+        // Уведомляем об удалении пользователя
+        BusinessUserNotificationService::notifyUserRemoved($business, $user, Auth::user());
 
         // Удаляем пользователя из бизнеса
         $business->users()->detach($user->id);
