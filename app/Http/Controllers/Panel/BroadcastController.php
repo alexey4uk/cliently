@@ -40,7 +40,7 @@ class BroadcastController extends Controller
             'channels.*' => 'in:system,email,telegram',
         ]);
 
-        $count = BroadcastNotificationService::send(
+        BroadcastNotificationService::send(
             $validated['title'],
             $validated['message'],
             $validated['target'],
@@ -50,6 +50,6 @@ class BroadcastController extends Controller
 
         return redirect()
             ->route('panel.broadcasts.index')
-            ->with('success', "Рассылка отправлена {$count} получателям.");
+            ->with('success', 'Рассылка поставлена в очередь. Уведомления будут разосланы в ближайшее время.');
     }
 }

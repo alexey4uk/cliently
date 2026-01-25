@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\BusinessRole;
 use App\Models\NotificationBroadcast;
 use App\Models\User;
-use App\Notifications\BroadcastNotification;
+use App\Jobs\SendBroadcastJob;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -22,43 +24,64 @@ class BroadcastNotificationService
     public const CHANNEL_TELEGRAM = 'telegram';
 
     /**
+     * Базовый запрос получателей по целевой аудитории (owners / all).
+     */
+    public static function getRecipientsQuery(string $target): Builder
+    {
+        $subquery = DB::table('business_user')->distinct()->select('user_id');
+
+        if ($target === self::TARGET_OWNERS) {
+            $ownerRole = BusinessRole::where('slug', 'owner')->first();
+            if (! $ownerRole) {
+                $subquery->whereRaw('1 = 0');
+
+                return User::whereIn('id', $subquery);
+            }
+            $subquery->where(function ($q) use ($ownerRole) {
+                $q->where('role_id', $ownerRole->id)
+                    ->orWhere('role', 'owner');
+            });
+        } elseif ($target !== self::TARGET_ALL) {
+            $subquery->whereRaw('1 = 0');
+        }
+
+        return User::whereIn('id', $subquery);
+    }
+
+    /**
      * Получить получателей рассылки по целевой аудитории.
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, User>
      */
     public static function getRecipients(string $target): \Illuminate\Database\Eloquent\Collection
     {
-        if ($target === self::TARGET_OWNERS) {
-            $ownerRole = BusinessRole::where('slug', 'owner')->first();
-            if (! $ownerRole) {
-                return collect();
-            }
-            $userIds = DB::table('business_user')
-                ->where(function ($q) use ($ownerRole) {
-                    $q->where('role_id', $ownerRole->id)
-                        ->orWhere('role', 'owner');
-                })
-                ->distinct()
-                ->pluck('user_id');
-
-            return User::whereIn('id', $userIds)->get();
-        }
-
-        if ($target === self::TARGET_ALL) {
-            $userIds = DB::table('business_user')->distinct()->pluck('user_id');
-
-            return User::whereIn('id', $userIds)->get();
-        }
-
-        return collect();
+        return self::getRecipientsQuery($target)->get();
     }
 
     /**
-     * Отправить рассылку.
+     * Lazy-итерация по получателям (чанк 1000).
+     *
+     * @return LazyCollection<int, User>
+     */
+    public static function getRecipientsLazy(string $target): LazyCollection
+    {
+        return self::getRecipientsQuery($target)->lazy();
+    }
+
+    /**
+     * Количество получателей по целевой аудитории.
+     */
+    public static function getRecipientsCount(string $target): int
+    {
+        return self::getRecipientsQuery($target)->count();
+    }
+
+    /**
+     * Поставить рассылку в очередь. Отправка выполняется в SendBroadcastJob.
      *
      * @param  array<int, string>  $channels  ['system', 'email', 'telegram']
      */
-    public static function send(string $title, string $message, string $target, array $channels, User $sentBy): int
+    public static function send(string $title, string $message, string $target, array $channels, User $sentBy): NotificationBroadcast
     {
         $validTargets = [self::TARGET_OWNERS, self::TARGET_ALL];
         if (! in_array($target, $validTargets, true)) {
@@ -85,60 +108,8 @@ class BroadcastNotificationService
             'recipients_count' => 0,
         ]);
 
-        $recipients = self::getRecipients($target);
-        $count = $recipients->count();
+        SendBroadcastJob::dispatch($broadcast);
 
-        foreach ($recipients as $user) {
-            if (in_array(self::CHANNEL_SYSTEM, $channels, true)) {
-                try {
-                    NotificationService::send([
-                        'user_id' => $user->id,
-                        'type' => 'admin.broadcast',
-                        'title' => $title,
-                        'message' => $message,
-                        'data' => ['broadcast_id' => $broadcast->id],
-                        'required_permission' => null,
-                    ]);
-                } catch (\Throwable $e) {
-                    Log::error('BroadcastNotificationService: system send failed', [
-                        'user_id' => $user->id,
-                        'broadcast_id' => $broadcast->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            }
-
-            if (in_array(self::CHANNEL_EMAIL, $channels, true)) {
-                if (! empty($user->email) && $user->email_verified_at !== null) {
-                    try {
-                        $user->notify(new BroadcastNotification($title, $message));
-                    } catch (\Throwable $e) {
-                        Log::error('BroadcastNotificationService: email send failed', [
-                            'user_id' => $user->id,
-                            'broadcast_id' => $broadcast->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-            }
-
-            if (in_array(self::CHANNEL_TELEGRAM, $channels, true)) {
-                if ($user->isTelegramConnected()) {
-                    try {
-                        TelegramNotificationService::sendBroadcastToUser($user, $title, $message);
-                    } catch (\Throwable $e) {
-                        Log::error('BroadcastNotificationService: telegram send failed', [
-                            'user_id' => $user->id,
-                            'broadcast_id' => $broadcast->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
-                }
-            }
-        }
-
-        $broadcast->update(['recipients_count' => $count]);
-
-        return $count;
+        return $broadcast;
     }
 }
