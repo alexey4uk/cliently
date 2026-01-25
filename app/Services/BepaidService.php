@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\BepaidSettings;
 use App\Models\Invoice;
 use BeGateway\GetPaymentToken;
-use BeGateway\Payment;
 use BeGateway\QueryByUid;
 use BeGateway\RefundOperation;
 use BeGateway\Settings as BeGatewaySettings;
@@ -18,14 +17,14 @@ class BepaidService
 
     /**
      * Инициализировать настройки SDK из БД
-     * 
+     *
      * ВАЖНО: Эти shop_id и secret_key используются для:
      * 1. API запросов к bePaid (создание платежей, проверка статуса, возвраты)
      * 2. Проверки webhook от bePaid (в BepaidWebhookController::validateBasicAuth)
-     * 
+     *
      * Когда bePaid отправляет webhook, они используют те же shop_id и secret_key
      * для формирования заголовка Authorization: Basic base64(shop_id:secret_key)
-     * 
+     *
      * Поэтому важно, чтобы shop_id и secret_key в нашей БД совпадали с теми,
      * которые указаны в настройках магазина в системе bePaid.
      */
@@ -46,7 +45,7 @@ class BepaidService
 
         // Валидация Shop ID - должен быть числом
         $shopId = trim($currentSettings['shop_id']);
-        if (!is_numeric($shopId)) {
+        if (! is_numeric($shopId)) {
             throw new \RuntimeException('Shop ID должен быть числом. Текущее значение: '.$shopId.'. Проверьте настройки в админ панели.');
         }
 
@@ -56,7 +55,7 @@ class BepaidService
         // - Проверки webhook (сравнение с credentials из заголовка Authorization)
         BeGatewaySettings::$shopId = (string) $shopId;
         BeGatewaySettings::$shopKey = (string) trim($currentSettings['secret_key']);
-        
+
         // Устанавливаем базовые URL
         // Если не указаны в БД, используются дефолтные значения из config/bepaid.php
         BeGatewaySettings::$gatewayBase = $currentSettings['gateway_base'] ?? 'https://demo-gateway.begateway.com';
@@ -69,7 +68,7 @@ class BepaidService
                 'test_mode' => $settings->test_mode,
                 'shop_id' => $currentSettings['shop_id'],
                 'shop_id_type' => gettype(BeGatewaySettings::$shopId),
-                'has_secret_key' => !empty($currentSettings['secret_key']),
+                'has_secret_key' => ! empty($currentSettings['secret_key']),
                 'gateway_base' => BeGatewaySettings::$gatewayBase ?? 'default',
                 'checkout_base' => BeGatewaySettings::$checkoutBase ?? 'default',
             ]);
@@ -86,8 +85,8 @@ class BepaidService
         // Проверяем, что настройки действительно установлены
         if (empty(BeGatewaySettings::$shopId) || empty(BeGatewaySettings::$shopKey)) {
             Log::error('bePaid settings not properly initialized', [
-                'shop_id_set' => !empty(BeGatewaySettings::$shopId),
-                'shop_key_set' => !empty(BeGatewaySettings::$shopKey),
+                'shop_id_set' => ! empty(BeGatewaySettings::$shopId),
+                'shop_key_set' => ! empty(BeGatewaySettings::$shopKey),
             ]);
             throw new \RuntimeException('Настройки bePaid не инициализированы. Проверьте Shop ID и Secret Key в админ панели.');
         }
@@ -111,24 +110,24 @@ class BepaidService
         $transaction->setLanguage('ru');
 
         // URL для уведомлений (webhook)
-        // 
+        //
         // ВАЖНО: Как работает webhook URL и HTTP Basic Auth
-        // 
+        //
         // 1. Мы указываем webhook URL через setNotificationUrl()
         //    - URL берется из настроек БД (webhook_url) или из конфига
         //    - bePaid сохраняет этот URL и будет отправлять на него уведомления
-        // 
+        //
         // 2. Когда bePaid отправляет webhook на этот URL:
         //    - bePaid АВТОМАТИЧЕСКИ добавляет заголовок Authorization с Basic Auth
         //    - Формат: Authorization: Basic base64(shop_id:secret_key)
         //    - shop_id и secret_key берутся из настроек магазина в системе bePaid
         //    - Это те же credentials, которые мы указываем в админ-панели
-        // 
+        //
         // 3. На нашей стороне (BepaidWebhookController::validateBasicAuth):
         //    - Мы извлекаем shop_id и secret_key из заголовка Authorization
         //    - Сравниваем с настройками из нашей БД (BepaidSettings)
         //    - Если совпадают - обрабатываем webhook, если нет - возвращаем 401
-        // 
+        //
         // ВАЖНО: Мы НЕ задаем Basic Auth здесь!
         // bePaid сам использует shop_id и secret_key из настроек магазина.
         // Мы только указываем URL, куда отправлять webhook.
@@ -325,7 +324,7 @@ class BepaidService
         }
 
         // Проверка наличия суммы для валидации
-        if (!isset($transaction['amount'])) {
+        if (! isset($transaction['amount'])) {
             return false;
         }
 
@@ -379,6 +378,7 @@ class BepaidService
                         'current_status' => $invoice->status,
                     ]);
                 }
+
                 return $invoice;
             }
 
@@ -391,6 +391,7 @@ class BepaidService
                         'new_transaction_uid' => $transactionUid,
                     ]);
                 }
+
                 return $invoice;
             }
 
@@ -437,7 +438,7 @@ class BepaidService
             };
 
             // Логируем неизвестные статусы
-            if (!in_array($status, ['successful', 'failed', 'canceled', 'cancelled', 'expired', 'pending', 'processing'])) {
+            if (! in_array($status, ['successful', 'failed', 'canceled', 'cancelled', 'expired', 'pending', 'processing'])) {
                 if (config('bepaid.logging.enabled')) {
                     Log::warning('bePaid webhook: unknown transaction status', [
                         'invoice_id' => $invoice->id,

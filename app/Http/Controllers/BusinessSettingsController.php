@@ -167,6 +167,7 @@ class BusinessSettingsController extends Controller
                     'message' => 'Сначала создайте бизнес или примите приглашение.',
                 ], 422);
             }
+
             return redirect()->route('welcome')
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }

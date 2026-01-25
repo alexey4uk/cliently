@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Jobs\SendBroadcastJob;
-use App\Models\NotificationBroadcast;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;

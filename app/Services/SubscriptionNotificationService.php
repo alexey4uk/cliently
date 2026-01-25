@@ -26,6 +26,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'invoice_id' => $invoice->id,
             ]);
+
             return;
         }
 
@@ -92,6 +93,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'invoice_id' => $invoice->id,
             ]);
+
             return;
         }
 
@@ -160,6 +162,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'subscription_id' => $subscription->id,
             ]);
+
             return;
         }
 
@@ -223,6 +226,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'subscription_id' => $subscription->id,
             ]);
+
             return;
         }
 
@@ -287,6 +291,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'subscription_id' => $subscription->id,
             ]);
+
             return;
         }
 
@@ -351,6 +356,7 @@ class SubscriptionNotificationService
                 'user_id' => $user->id,
                 'subscription_id' => $subscription->id,
             ]);
+
             return;
         }
 

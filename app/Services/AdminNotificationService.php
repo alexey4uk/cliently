@@ -345,7 +345,7 @@ class AdminNotificationService
      */
     public static function notifySubscriptionLimitExceededIfNotThrottled(Business $business, string $limitType): void
     {
-        $key = 'admin_limit_notify_' . $business->id . '_' . $limitType;
+        $key = 'admin_limit_notify_'.$business->id.'_'.$limitType;
         if (! Cache::add($key, 1, now()->addMinutes(15))) {
             return;
         }

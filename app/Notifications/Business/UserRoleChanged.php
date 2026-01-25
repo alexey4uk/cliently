@@ -40,7 +40,7 @@ class UserRoleChanged extends Notification implements ShouldQueue
 
         // Если уведомление отправляется администратору
         $userName = $this->user ? $this->user->name.' ('.$this->user->email.')' : 'пользователь';
-        
+
         return (new MailMessage)
             ->subject('Изменена роль пользователя в бизнесе '.$this->business->name)
             ->greeting('Здравствуйте!')

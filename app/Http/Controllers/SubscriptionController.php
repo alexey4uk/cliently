@@ -309,7 +309,7 @@ class SubscriptionController extends Controller
     public function paymentSuccess(Request $request)
     {
         $invoiceId = $request->input('invoice');
-        
+
         if (! $invoiceId) {
             return redirect()->route('subscription.index')
                 ->with('error', 'Неверные параметры запроса.');
@@ -333,6 +333,7 @@ class SubscriptionController extends Controller
                     ]);
                 }
             }
+
             return redirect()->route('subscription.current')
                 ->with('success', 'Платеж успешно обработан! Подписка активирована.');
         }
@@ -342,7 +343,7 @@ class SubscriptionController extends Controller
             try {
                 $bepaidService = app(BepaidService::class);
                 $status = $bepaidService->checkPaymentStatus($invoice->bepaid_transaction_id);
-                
+
                 if ($status['paid']) {
                     $invoice->update([
                         'status' => 'paid',
@@ -354,7 +355,7 @@ class SubscriptionController extends Controller
                     $subscriptionService = app(SubscriptionService::class);
                     if ($invoice->subscription_id) {
                         $subscription = $invoice->subscription;
-                        
+
                         // Идемпотентность: проверяем, не активирована ли уже подписка
                         if ($subscription->status === 'active' && $subscription->invoice_id === $invoice->id) {
                             if (config('bepaid.logging.enabled')) {
@@ -369,7 +370,7 @@ class SubscriptionController extends Controller
                                 'payment_status' => 'paid',
                                 'invoice_id' => $invoice->id,
                             ]);
-                            
+
                             if (config('bepaid.logging.enabled')) {
                                 Log::info('Payment success callback: subscription activated', [
                                     'invoice_id' => $invoice->id,
@@ -380,7 +381,7 @@ class SubscriptionController extends Controller
                     } else {
                         // Создаем подписку, если её еще нет
                         $subscription = $subscriptionService->createSubscription($invoice->user, $invoice->plan, false, $invoice);
-                        
+
                         if (config('bepaid.logging.enabled')) {
                             Log::info('Payment success callback: subscription created', [
                                 'invoice_id' => $invoice->id,
@@ -413,7 +414,7 @@ class SubscriptionController extends Controller
     public function paymentDecline(Request $request)
     {
         $invoiceId = $request->input('invoice');
-        
+
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
             if ($invoice && $invoice->isPending()) {
@@ -431,7 +432,7 @@ class SubscriptionController extends Controller
     public function paymentFail(Request $request)
     {
         $invoiceId = $request->input('invoice');
-        
+
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
             if ($invoice && $invoice->isPending()) {
@@ -449,7 +450,7 @@ class SubscriptionController extends Controller
     public function paymentCancel(Request $request)
     {
         $invoiceId = $request->input('invoice');
-        
+
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
             if ($invoice && $invoice->isPending()) {

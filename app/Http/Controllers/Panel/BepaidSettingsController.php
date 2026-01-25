@@ -29,7 +29,7 @@ class BepaidSettingsController extends Controller
         $validated = $request->validate([
             'test_mode' => ['nullable', 'in:0,1'],
             'test_shop_id' => ['nullable', 'string', 'max:255', function ($attribute, $value, $fail) {
-                if ($value && !is_numeric(trim($value))) {
+                if ($value && ! is_numeric(trim($value))) {
                     $fail('Shop ID должен быть числом.');
                 }
             }],
@@ -37,7 +37,7 @@ class BepaidSettingsController extends Controller
             'test_gateway_base' => 'nullable|url|max:255',
             'test_checkout_base' => 'nullable|url|max:255',
             'production_shop_id' => ['nullable', 'string', 'max:255', function ($attribute, $value, $fail) {
-                if ($value && !is_numeric(trim($value))) {
+                if ($value && ! is_numeric(trim($value))) {
                     $fail('Shop ID должен быть числом.');
                 }
             }],

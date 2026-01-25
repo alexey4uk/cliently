@@ -2,7 +2,6 @@
 
 namespace App\Notifications\Business;
 
-use App\Models\Business;
 use App\Models\BusinessUserInvitation;
 use App\Models\User;
 use Illuminate\Bus\Queueable;

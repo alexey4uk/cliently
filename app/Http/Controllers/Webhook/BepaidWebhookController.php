@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 class BepaidWebhookController extends Controller
 {
     protected BepaidService $bepaidService;
+
     protected SubscriptionService $subscriptionService;
 
     public function __construct(BepaidService $bepaidService, SubscriptionService $subscriptionService)
@@ -23,28 +24,28 @@ class BepaidWebhookController extends Controller
 
     /**
      * Обработка webhook от bePaid
-     * 
+     *
      * ВАЖНО: Как работает HTTP Basic Auth для webhook bePaid
-     * 
+     *
      * 1. При создании платежа (BepaidService::createPaymentToken):
      *    - Мы указываем webhook URL через setNotificationUrl()
      *    - bePaid сохраняет этот URL для отправки уведомлений
-     * 
+     *
      * 2. Когда bePaid отправляет webhook:
      *    - bePaid АВТОМАТИЧЕСКИ формирует заголовок Authorization с Basic Auth
      *    - Формат: Authorization: Basic base64(shop_id:secret_key)
      *    - shop_id и secret_key берутся из настроек магазина в системе bePaid
      *    - Это те же credentials, которые мы указываем в админ-панели
-     * 
+     *
      * 3. На нашей стороне (validateBasicAuth):
      *    - Извлекаем shop_id и secret_key из заголовка Authorization
      *    - Сравниваем с настройками из нашей БД (BepaidSettings)
      *    - Если совпадают - пропускаем, если нет - возвращаем 401
-     * 
+     *
      * ВАЖНО: Мы НЕ задаем Basic Auth на стороне bePaid!
      * bePaid сам использует shop_id и secret_key из настроек магазина.
      * Мы только проверяем, что пришедшие credentials совпадают с нашими.
-     * 
+     *
      * bePaid отправляет webhook с HTTP Basic Auth
      * Данные приходят в формате JSON
      */
@@ -66,6 +67,7 @@ class BepaidWebhookController extends Controller
             // Если не совпадают - это может быть поддельный webhook
             if (! $this->validateBasicAuth($request)) {
                 Log::warning('bePaid webhook: invalid Basic Auth credentials');
+
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
 
@@ -79,12 +81,14 @@ class BepaidWebhookController extends Controller
 
             if (empty($data)) {
                 Log::warning('bePaid webhook: empty data');
+
                 return response()->json(['error' => 'Empty data'], 400);
             }
 
             // Валидация данных через сервис
             if (! $this->bepaidService->validateWebhookRequest($data)) {
                 Log::warning('bePaid webhook: invalid data', ['data' => $data]);
+
                 return response()->json(['error' => 'Invalid data'], 400);
             }
 
@@ -93,6 +97,7 @@ class BepaidWebhookController extends Controller
 
             if (! $invoice) {
                 Log::warning('bePaid webhook: invoice not found');
+
                 return response()->json(['error' => 'Invoice not found'], 404);
             }
 
@@ -113,6 +118,7 @@ class BepaidWebhookController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $request->all(),
             ]);
+
             return response()->json(['error' => $e->getMessage()], 400);
         } catch (\Exception $e) {
             // Неожиданные ошибки - возвращаем 500, чтобы bePaid мог повторить запрос
@@ -121,34 +127,35 @@ class BepaidWebhookController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'data' => $request->all(),
             ]);
+
             return response()->json(['error' => 'Processing error'], 500);
         }
     }
 
     /**
      * Проверка HTTP Basic Auth от bePaid
-     * 
+     *
      * КАК ЭТО РАБОТАЕТ:
-     * 
+     *
      * 1. bePaid отправляет webhook с заголовком:
      *    Authorization: Basic base64(shop_id:secret_key)
-     * 
+     *
      * 2. shop_id и secret_key берутся из настроек магазина в системе bePaid
      *    (это те же данные, которые мы указываем в админ-панели)
-     * 
+     *
      * 3. Мы извлекаем shop_id и secret_key из заголовка
-     * 
+     *
      * 4. Сравниваем с настройками из нашей БД (BepaidSettings)
      *    - Если test_mode = true → используем test_shop_id и test_secret_key
      *    - Если test_mode = false → используем production_shop_id и production_secret_key
-     * 
+     *
      * 5. Если совпадают - возвращаем true, если нет - false
-     * 
+     *
      * ВАЖНО: bePaid автоматически формирует этот заголовок при отправке webhook.
      * Мы НЕ задаем Basic Auth на стороне bePaid - они используют свои настройки.
      * Мы только проверяем, что пришедшие credentials совпадают с нашими.
-     * 
-     * @param Request $request HTTP запрос от bePaid
+     *
+     * @param  Request  $request  HTTP запрос от bePaid
      * @return bool true если credentials валидны, false если нет
      */
     protected function validateBasicAuth(Request $request): bool
@@ -156,7 +163,7 @@ class BepaidWebhookController extends Controller
         // Получаем заголовок Authorization
         // Формат: "Basic base64(shop_id:secret_key)"
         $authHeader = $request->header('Authorization');
-        
+
         // Проверяем, что заголовок есть и начинается с "Basic "
         if (! $authHeader || ! str_starts_with($authHeader, 'Basic ')) {
             return false;
@@ -166,7 +173,7 @@ class BepaidWebhookController extends Controller
         // Убираем "Basic " (6 символов) и декодируем остальное
         // Результат: "shop_id:secret_key"
         $credentials = base64_decode(substr($authHeader, 6));
-        
+
         // Проверяем, что декодирование прошло успешно и есть разделитель ":"
         if (! $credentials || ! str_contains($credentials, ':')) {
             return false;
@@ -177,7 +184,7 @@ class BepaidWebhookController extends Controller
 
         // Получаем настройки bePaid из нашей БД
         $settings = BepaidSettings::getSettings();
-        
+
         // Если bePaid не включен в настройках - отклоняем
         if (! $settings->enabled) {
             return false;
@@ -215,6 +222,7 @@ class BepaidWebhookController extends Controller
                     'invoice_id' => $invoice->id,
                 ]);
             }
+
             return;
         }
 

@@ -26,7 +26,7 @@ class NotifyTicketCritical extends Command
 
         $count = 0;
         foreach ($tickets as $ticket) {
-            $key = 'admin_ticket_critical_notify_' . $ticket->id;
+            $key = 'admin_ticket_critical_notify_'.$ticket->id;
             if (Cache::add($key, 1, now()->addHours(24))) {
                 AdminNotificationService::notifyTicketCritical($ticket);
                 $count++;

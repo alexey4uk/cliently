@@ -64,15 +64,15 @@ class DashboardController extends Controller
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
 
         // Получаем данные с фильтрацией по правам
-        $stats = Cache::remember('dashboard_stats_' . $user->id . '_' . ($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $stats = Cache::remember('dashboard_stats_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
             return $this->getStats($business, $role);
         });
 
-        $appointments = Cache::remember('dashboard_appointments_' . $user->id . '_' . ($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $appointments = Cache::remember('dashboard_appointments_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
             return $this->getAppointments($business, $role);
         });
 
-        $clients = Cache::remember('dashboard_clients_' . $user->id . '_' . ($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
+        $clients = Cache::remember('dashboard_clients_'.$user->id.'_'.($role ? $role->id : 'no_role'), 300, function () use ($business, $role) {
             return $this->getRecentClients($business, $role, 5);
         });
 
@@ -81,7 +81,7 @@ class DashboardController extends Controller
         if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $financialStats = Cache::remember('dashboard_financial_' . $user->id . '_' . $role->id, 300, function () use ($business, $role) {
+                $financialStats = Cache::remember('dashboard_financial_'.$user->id.'_'.$role->id, 300, function () use ($business, $role) {
                     return $this->getFinancialStats($business, $role);
                 });
             }
@@ -95,7 +95,7 @@ class DashboardController extends Controller
         ) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topServices = Cache::remember('dashboard_top_services_' . $user->id . '_' . $role->id, 300, function () use ($business) {
+                $topServices = Cache::remember('dashboard_top_services_'.$user->id.'_'.$role->id, 300, function () use ($business) {
                     return $this->getTopServices($business);
                 });
             }
@@ -109,7 +109,7 @@ class DashboardController extends Controller
         ) {
             $accessService = app(\App\Services\SubscriptionAccessService::class);
             if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topMasters = Cache::remember('dashboard_top_masters_' . $user->id . '_' . $role->id, 300, function () use ($business) {
+                $topMasters = Cache::remember('dashboard_top_masters_'.$user->id.'_'.$role->id, 300, function () use ($business) {
                     return $this->getTopMasters($business);
                 });
             }
@@ -118,7 +118,7 @@ class DashboardController extends Controller
         // Статус подписки (если есть доступ)
         $subscriptionStatus = null;
         if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
-            $subscriptionStatus = Cache::remember('dashboard_subscription_' . $user->id . '_' . $role->id, 300, function () use ($business) {
+            $subscriptionStatus = Cache::remember('dashboard_subscription_'.$user->id.'_'.$role->id, 300, function () use ($business) {
                 return $this->getSubscriptionStatus($business);
             });
         }
@@ -143,13 +143,13 @@ class DashboardController extends Controller
         $roleId = $role ? $role->id : 'no_role';
 
         // Очистка кэша
-        Cache::forget('dashboard_stats_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_appointments_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_clients_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_financial_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_top_services_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_top_masters_' . $user->id . '_' . $roleId);
-        Cache::forget('dashboard_subscription_' . $user->id . '_' . $roleId);
+        Cache::forget('dashboard_stats_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_appointments_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_clients_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_financial_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_top_services_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_top_masters_'.$user->id.'_'.$roleId);
+        Cache::forget('dashboard_subscription_'.$user->id.'_'.$roleId);
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }
@@ -505,7 +505,7 @@ class DashboardController extends Controller
 
         $masters = $appointments->groupBy('master_id')->map(function ($group, $masterId) {
             $master = $group->first()->master;
-            $masterName = $master ? trim($master->first_name . ' ' . ($master->last_name ?? '')) : 'Неизвестный мастер';
+            $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
 
             return [
                 'master_id' => $masterId,

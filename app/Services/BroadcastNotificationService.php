@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
+use App\Jobs\SendBroadcastJob;
 use App\Models\BusinessRole;
 use App\Models\NotificationBroadcast;
 use App\Models\User;
-use App\Jobs\SendBroadcastJob;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\LazyCollection;
 
 class BroadcastNotificationService
 {

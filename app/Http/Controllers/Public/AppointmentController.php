@@ -317,7 +317,7 @@ class AppointmentController extends Controller
         }
 
         $client = Client::where('business_id', $business->id)
-            ->whereHas('phones', fn($q) => $q->where('phone', $validated['phone']))
+            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
             ->first();
 
         if (! $client) {
@@ -326,7 +326,7 @@ class AppointmentController extends Controller
 
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
             }
 
             $client = Client::create([

@@ -23,7 +23,7 @@ class NotifyBusinessInactive extends Command
 
         $count = 0;
         foreach ($businesses as $business) {
-            $key = 'admin_business_inactive_notify_' . $business->id;
+            $key = 'admin_business_inactive_notify_'.$business->id;
             if (! Cache::add($key, 1, now()->addDays(30))) {
                 continue;
             }

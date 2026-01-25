@@ -38,7 +38,7 @@ class UserRemoved extends Notification implements ShouldQueue
 
         // Если уведомление отправляется администратору
         $removedUserName = $this->removedUser ? $this->removedUser->name.' ('.$this->removedUser->email.')' : 'пользователь';
-        
+
         return (new MailMessage)
             ->subject('Пользователь удалён из бизнеса '.$this->business->name)
             ->greeting('Здравствуйте!')

@@ -20,7 +20,7 @@ class PanelController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_' . $user->id;
+        $cacheKey = 'panel_dashboard_'.$user->id;
 
         // Собираем все возможные данные
         $data = Cache::remember($cacheKey, 300, function () use ($user) {
@@ -30,7 +30,7 @@ class PanelController extends Controller
         // Данные для графиков (если есть доступ к аналитике)
         $chartData = null;
         if ($user->can('panel.analytics.view')) {
-            $chartData = Cache::remember($cacheKey . '_charts', 300, function () {
+            $chartData = Cache::remember($cacheKey.'_charts', 300, function () {
                 return $this->getChartData();
             });
         }
@@ -53,7 +53,7 @@ class PanelController extends Controller
      */
     private function adminDashboard()
     {
-        $cacheKey = 'panel_dashboard_admin_' . Auth::id();
+        $cacheKey = 'panel_dashboard_admin_'.Auth::id();
 
         $stats = Cache::remember($cacheKey, 300, function () {
             $today = Carbon::today();
@@ -137,7 +137,7 @@ class PanelController extends Controller
         });
 
         // Данные для графиков (последние 30 дней)
-        $chartData = Cache::remember($cacheKey . '_charts', 300, function () {
+        $chartData = Cache::remember($cacheKey.'_charts', 300, function () {
             $days = 30;
 
             $usersData = [];
@@ -213,7 +213,7 @@ class PanelController extends Controller
      */
     private function supportDashboard()
     {
-        $cacheKey = 'panel_dashboard_support_' . Auth::id();
+        $cacheKey = 'panel_dashboard_support_'.Auth::id();
         $today = Carbon::today();
         $weekAgo = Carbon::now()->subWeek();
         $monthAgo = Carbon::now()->subMonth();
@@ -289,7 +289,7 @@ class PanelController extends Controller
      */
     private function generalDashboard()
     {
-        $cacheKey = 'panel_dashboard_general_' . Auth::id();
+        $cacheKey = 'panel_dashboard_general_'.Auth::id();
 
         $stats = Cache::remember($cacheKey, 300, function () {
             $today = Carbon::today();
@@ -462,7 +462,7 @@ class PanelController extends Controller
         // Данные для поддержки (активные и неактивные бизнесы)
         if ($user->can('panel.analytics.view') || $user->can('panel.support.view')) {
             // Активные бизнесы за неделю
-            if (!isset($data['activeBusinesses'])) {
+            if (! isset($data['activeBusinesses'])) {
                 $data['activeBusinesses'] = Business::withCount(['appointments' => function ($query) use ($weekAgo) {
                     $query->where('created_at', '>=', $weekAgo);
                 }])
@@ -472,7 +472,7 @@ class PanelController extends Controller
             }
 
             // Неактивные бизнесы
-            if (!isset($data['inactiveBusinesses'])) {
+            if (! isset($data['inactiveBusinesses'])) {
                 $data['inactiveBusinesses'] = Business::whereDoesntHave('appointments', function ($query) use ($monthAgo) {
                     $query->where('created_at', '>=', $monthAgo);
                 })
@@ -529,10 +529,10 @@ class PanelController extends Controller
     public function refresh()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_' . $user->id;
+        $cacheKey = 'panel_dashboard_'.$user->id;
 
         Cache::forget($cacheKey);
-        Cache::forget($cacheKey . '_charts');
+        Cache::forget($cacheKey.'_charts');
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }
