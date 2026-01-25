@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::get('/analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->name('analytics.index');
             Route::get('/analytics/financial', [\App\Http\Controllers\AnalyticsController::class, 'financial'])->name('analytics.financial');
             Route::get('/analytics/general', [\App\Http\Controllers\AnalyticsController::class, 'general'])->name('analytics.general');
+            Route::get('/analytics/clients', [\App\Http\Controllers\AnalyticsController::class, 'clients'])->name('analytics.clients');
         });
 
         // Клиенты

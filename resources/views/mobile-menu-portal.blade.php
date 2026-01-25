@@ -441,6 +441,15 @@ style="width: 0; height: 0;">
                             </div>
                             <span class="ml-3 whitespace-nowrap">Общая</span>
                         </a>
+                        <a href="{{ route('analytics.clients') }}" @click="closeMenu()"
+                            class="flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-200 {{ Request::routeIs('analytics.clients')
+                                ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0">
+                                <i class="fa-solid fa-users text-base"></i>
+                            </div>
+                            <span class="ml-3 whitespace-nowrap">Клиенты</span>
+                        </a>
                     </div>
                 </div>
                 @endif
