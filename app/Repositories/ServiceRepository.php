@@ -19,16 +19,6 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
     }
 
     /**
-     * Получить активные услуги для локации
-     */
-    public function getActiveByLocation(int $locationId): Collection
-    {
-        return $this->model->whereHas('locations', function ($q) use ($locationId) {
-            $q->where('locations.id', $locationId);
-        })->where('is_active', true)->orderBy('name')->get();
-    }
-
-    /**
      * Получить активные услуги для бизнеса
      */
     public function getActiveByBusiness(int $businessId): Collection

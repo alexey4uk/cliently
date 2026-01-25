@@ -22,7 +22,7 @@ class LocationController extends Controller
         $businessFilter = request('business_id', '');
 
         $query = Location::with('business')
-            ->withCount(['services', 'masters']);
+            ->withCount(['masters']);
 
         // Поиск
         if ($search) {
@@ -69,8 +69,8 @@ class LocationController extends Controller
      */
     public function show(Location $location)
     {
-        $location->load(['business', 'services', 'masters']);
-        $location->loadCount(['services', 'masters']);
+        $location->load(['business', 'masters']);
+        $location->loadCount(['masters']);
 
         // Подсчитываем записи для этой локации
         $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
@@ -146,9 +146,9 @@ class LocationController extends Controller
         // Проверяем, есть ли связанные данные
         $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
 
-        if ($appointmentsCount > 0 || $location->services()->count() > 0 || $location->masters()->count() > 0) {
+        if ($appointmentsCount > 0 || $location->masters()->count() > 0) {
             return redirect()->route('panel.locations.show', $location)
-                ->with('error', 'Невозможно удалить локацию, так как у неё есть связанные данные (записи, услуги или мастера)');
+                ->with('error', 'Невозможно удалить локацию, так как у неё есть связанные данные (записи или мастера)');
         }
 
         $location->delete();

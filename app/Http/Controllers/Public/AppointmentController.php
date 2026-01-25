@@ -42,21 +42,11 @@ class AppointmentController extends Controller
         $business = Business::where('slug', $slug)->firstOrFail();
         $location = $business->locations()->findOrFail($locationId);
 
-        // Получаем услуги, которые:
-        // 1. Привязаны к этой локации через связь location->services
-        // 2. ИЛИ все активные услуги бизнеса (если связь не используется)
-        $services = $location->services()
+        // Получаем все активные услуги бизнеса
+        $services = $business->services()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
-
-        // Если нет услуг, привязанных к локации, показываем все услуги бизнеса
-        if ($services->isEmpty()) {
-            $services = $business->services()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get();
-        }
 
         return view('appointments.public.select-service', compact('business', 'location', 'services'))->with('currentStep', 2);
     }

@@ -427,26 +427,19 @@
     </div>
 
     @push('scripts')
+    @php
+        $featuresData = $plan->features->map(function($f) {
+            return [
+                'key' => $f->feature_key,
+                'value' => $f->feature_value,
+                'type' => $f->feature_type,
+            ];
+        })->toArray();
+    @endphp
+    <x-plan-features-init :availableFeatures="$availableFeatures ?? []" :existingFeatures="$featuresData" />
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const availableFeatures = @json($availableFeatures ?? []);
-            @php
-                $featuresData = $plan->features->map(function($f) {
-                    return [
-                        'key' => $f->feature_key,
-                        'value' => $f->feature_value,
-                        'type' => $f->feature_type,
-                    ];
-                })->toArray();
-            @endphp
-            const existingFeatures = @json($featuresData);
-            
-            // Инициализируем менеджер свойств тарифа
-            const featuresManager = new PlanFeaturesManager(
-                'features-container',
-                availableFeatures,
-                existingFeatures
-            );
 
             // Счетчик символов для описания
             const descriptionTextarea = document.getElementById('description');

@@ -401,17 +401,10 @@
     </div>
 
     @push('scripts')
+    <x-plan-features-init :availableFeatures="$availableFeatures ?? []" :existingFeatures="[]" />
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const availableFeatures = @json($availableFeatures ?? []);
-            
-            // Инициализируем менеджер свойств тарифа
-            const featuresManager = new PlanFeaturesManager(
-                'features-container',
-                availableFeatures,
-                []
-            );
-
             // Счетчик символов для описания
             const descriptionTextarea = document.getElementById('description');
             const descriptionCount = document.getElementById('description-length');

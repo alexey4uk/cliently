@@ -256,10 +256,6 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded border border-indigo-200 dark:border-indigo-600/30">
-                                                <i class="fa-solid fa-briefcase text-xs"></i>
-                                                {{ $location->services_count }}
-                                            </span>
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded border border-amber-200 dark:border-amber-600/30">
                                                 <i class="fa-solid fa-user-tie text-xs"></i>
                                                 {{ $location->masters_count }}
@@ -323,10 +319,6 @@
                                             {{ $location->name }}
                                         </h3>
                                         <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                            <span class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-600/30">
-                                                <i class="fa-solid fa-briefcase text-xs"></i>
-                                                {{ $location->services_count }}
-                                            </span>
                                             <span class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-semibold bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 rounded-lg border border-amber-200 dark:border-amber-600/30">
                                                 <i class="fa-solid fa-user-tie text-xs"></i>
                                                 {{ $location->masters_count }}

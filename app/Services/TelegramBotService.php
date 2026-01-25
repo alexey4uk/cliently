@@ -115,14 +115,6 @@ class TelegramBotService
     }
 
     /**
-     * Получить услуги для локации
-     */
-    public function getServicesForLocation(int $locationId): Collection
-    {
-        return $this->serviceRepository->getActiveByLocation($locationId);
-    }
-
-    /**
      * Получить услуги для бизнеса
      */
     public function getServicesForBusiness(int $businessId): Collection

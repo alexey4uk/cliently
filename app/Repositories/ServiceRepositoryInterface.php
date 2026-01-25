@@ -11,11 +11,6 @@ use Illuminate\Database\Eloquent\Collection;
 interface ServiceRepositoryInterface extends RepositoryInterface
 {
     /**
-     * Получить активные услуги для локации
-     */
-    public function getActiveByLocation(int $locationId): Collection;
-
-    /**
      * Получить активные услуги для бизнеса
      */
     public function getActiveByBusiness(int $businessId): Collection;

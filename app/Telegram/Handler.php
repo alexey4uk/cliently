@@ -684,11 +684,7 @@ class Handler extends WebhookHandler
     {
         Log::info('showServiceSelection called', ['location_id' => $locationId]);
 
-        $services = $this->botService->getServicesForLocation($locationId);
-
-        if ($services->isEmpty()) {
-            $services = $this->botService->getServicesForBusiness($business->id);
-        }
+        $services = $this->botService->getServicesForBusiness($business->id);
 
         if ($services->isEmpty()) {
             $this->replyWithMessage(TelegramMessages::MSG_NO_SERVICES);

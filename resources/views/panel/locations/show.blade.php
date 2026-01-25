@@ -171,15 +171,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4 sm:mb-6">Статистика</h2>
             
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                    <div class="flex items-center gap-2 mb-2">
-                        <i class="fa-solid fa-briefcase text-indigo-600 dark:text-indigo-400 text-sm"></i>
-                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Услуги</p>
-                    </div>
-                    <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ $location->services_count }}</p>
-                </div>
-                
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="fa-solid fa-user-tie text-amber-600 dark:text-amber-400 text-sm"></i>

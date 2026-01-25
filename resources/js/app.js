@@ -1,5 +1,11 @@
 import './bootstrap';
-import './plan-features';
+import PlanFeaturesManager from './plan-features';
+
+// Явно устанавливаем в window для использования в blade шаблонах
+// Делаем это синхронно при загрузке модуля
+if (typeof window !== 'undefined') {
+    window.PlanFeaturesManager = PlanFeaturesManager;
+}
 
 // import Alpine from 'alpinejs';
 // import './theme';

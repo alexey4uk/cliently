@@ -18,17 +18,32 @@ class PlanFeaturesManager {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.setup());
         } else {
-            this.setup();
+            // Если DOM уже загружен, вызываем setup сразу, но с небольшой задержкой
+            // чтобы убедиться, что все элементы отрендерены
+            setTimeout(() => this.setup(), 0);
         }
     }
     
     setup() {
         this.container = document.getElementById(this.containerId);
         if (!this.container) {
-            console.error(`Container with id "${this.containerId}" not found`);
+            console.error(`Container with id "${this.containerId}" not found, повторная попытка через 100ms...`);
+            // Повторная попытка найти контейнер через небольшую задержку
+            setTimeout(() => {
+                this.container = document.getElementById(this.containerId);
+                if (this.container) {
+                    this.continueSetup();
+                } else {
+                    console.error(`Container with id "${this.containerId}" still not found after retry`);
+                }
+            }, 100);
             return;
         }
         
+        this.continueSetup();
+    }
+    
+    continueSetup() {
         // Загружаем существующие свойства
         if (this.existingFeatures.length > 0) {
             this.existingFeatures.forEach(feature => {
@@ -37,19 +52,36 @@ class PlanFeaturesManager {
         }
         
         // Находим кнопку добавления свойства и привязываем обработчик
-        // Ищем кнопку рядом с контейнером (в родительском элементе)
-        const parentElement = this.container.parentElement;
-        if (parentElement) {
-            // Ищем кнопку с текстом "Добавить метрику" или просто кнопку после контейнера
-            const addButton = parentElement.querySelector('button:not(.remove-feature-btn)');
-            if (addButton && addButton.textContent.includes('Добавить')) {
-                // Удаляем старый обработчик onclick, если есть
-                addButton.removeAttribute('onclick');
-                addButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.addFeature();
-                });
+        // Сначала пытаемся найти по id
+        let addButton = document.getElementById('add-feature-btn');
+        
+        // Если не найдена по id, ищем в родительском элементе
+        if (!addButton) {
+            const parentElement = this.container.parentElement;
+            if (parentElement) {
+                // Ищем кнопку с текстом "Добавить" или просто кнопку после контейнера
+                addButton = parentElement.querySelector('button:not(.remove-feature-btn)');
+                if (addButton && !addButton.textContent.includes('Добавить')) {
+                    addButton = null;
+                }
             }
+        }
+        
+        if (addButton) {
+            // Удаляем старый обработчик onclick, если есть
+            addButton.removeAttribute('onclick');
+            // Удаляем все предыдущие обработчики событий, создавая новую кнопку
+            const newButton = addButton.cloneNode(true);
+            addButton.parentNode.replaceChild(newButton, addButton);
+            addButton = newButton;
+            
+            addButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.addFeature();
+            });
+        } else {
+            console.warn('Кнопка добавления свойства не найдена');
         }
         
         // Находим форму и добавляем валидацию
@@ -67,9 +99,14 @@ class PlanFeaturesManager {
     
     addFeature(key = '', value = '', type = 'integer') {
         if (!this.container) {
-            console.error('Container not initialized');
-            return;
+            console.error('Container not initialized, пытаемся найти снова...');
+            this.container = document.getElementById(this.containerId);
+            if (!this.container) {
+                console.error(`Container with id "${this.containerId}" still not found`);
+                return;
+            }
         }
+        
         
         const currentFeatureIndex = this.featureIndex;
         const featureDiv = document.createElement('div');
@@ -609,8 +646,15 @@ class PlanFeaturesManager {
 }
 
 // Экспортируем для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = PlanFeaturesManager;
-} else {
+// Убеждаемся, что класс доступен глобально сразу
+if (typeof window !== 'undefined') {
     window.PlanFeaturesManager = PlanFeaturesManager;
 }
+
+// Также экспортируем для ES6 модулей
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = PlanFeaturesManager;
+}
+
+// Для Vite/ES modules - экспортируем по умолчанию
+export default PlanFeaturesManager;
