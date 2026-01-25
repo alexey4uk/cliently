@@ -65,13 +65,30 @@ class RegisteredUserController extends Controller
         }
 
         if ($defaultPlan) {
-            $subscriptionService = app(SubscriptionService::class);
-            $subscriptionService->createSubscription($user, $defaultPlan);
+            try {
+                $subscriptionService = app(SubscriptionService::class);
+                $subscriptionService->createSubscription($user, $defaultPlan);
+            } catch (\Exception $e) {
+                // Логируем ошибку, но не прерываем регистрацию
+                \Illuminate\Support\Facades\Log::error('Failed to create subscription during registration', [
+                    'user_id' => $user->id,
+                    'plan_id' => $defaultPlan->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         event(new Registered($user));
 
-        AdminNotificationService::notifyUserCreated($user);
+        try {
+            AdminNotificationService::notifyUserCreated($user);
+        } catch (\Exception $e) {
+            // Логируем ошибку, но не прерываем регистрацию
+            \Illuminate\Support\Facades\Log::error('Failed to send admin notification during registration', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         Auth::login($user);
 
