@@ -11,7 +11,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Создать рассылку</h1>
-                    <p class="text-slate-600 dark:text-slate-400 mt-1">Отправка уведомлений владельцам или всем пользователям бизнесов</p>
+                    <p class="text-slate-600 dark:text-slate-400 mt-1">Отправка уведомлений владельцам или всем пользователям системы</p>
                 </div>
             </div>
 
@@ -50,8 +50,8 @@
                     <label for="target" class="block text-sm font-semibold text-slate-900 dark:text-white mb-2">Кому</label>
                     <select name="target" id="target" required
                             class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white">
-                        <option value="owners" {{ old('target') === 'owners' ? 'selected' : '' }}>Только владельцы бизнесов</option>
-                        <option value="all" {{ old('target') === 'all' ? 'selected' : '' }}>Все пользователи бизнесов</option>
+                        <option value="owners" {{ old('target') === 'owners' ? 'selected' : '' }}>Только владельцы</option>
+                        <option value="all" {{ old('target') === 'all' ? 'selected' : '' }}>Все пользователи системы</option>
                     </select>
                 </div>
 

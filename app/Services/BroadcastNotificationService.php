@@ -28,24 +28,27 @@ class BroadcastNotificationService
      */
     public static function getRecipientsQuery(string $target): Builder
     {
-        $subquery = DB::table('business_user')->distinct()->select('user_id');
-
         if ($target === self::TARGET_OWNERS) {
             $ownerRole = BusinessRole::where('slug', 'owner')->first();
             if (! $ownerRole) {
-                $subquery->whereRaw('1 = 0');
-
-                return User::whereIn('id', $subquery);
+                return User::whereRaw('1 = 0');
             }
-            $subquery->where(function ($q) use ($ownerRole) {
-                $q->where('role_id', $ownerRole->id)
-                    ->orWhere('role', 'owner');
-            });
-        } elseif ($target !== self::TARGET_ALL) {
-            $subquery->whereRaw('1 = 0');
+            $subquery = DB::table('business_user')
+                ->where(function ($q) use ($ownerRole) {
+                    $q->where('role_id', $ownerRole->id)
+                        ->orWhere('role', 'owner');
+                })
+                ->distinct()
+                ->select('user_id');
+
+            return User::whereIn('id', $subquery);
         }
 
-        return User::whereIn('id', $subquery);
+        if ($target === self::TARGET_ALL) {
+            return User::query();
+        }
+
+        return User::whereRaw('1 = 0');
     }
 
     /**

@@ -59,7 +59,7 @@
                                     <span class="text-sm font-medium text-slate-900 dark:text-white">{{ Str::limit($b->title, 50) }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
-                                    {{ $b->target === 'owners' ? 'Только владельцы' : 'Все пользователи бизнесов' }}
+                                    {{ $b->target === 'owners' ? 'Только владельцы' : 'Все пользователи системы' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex flex-wrap gap-1.5">
