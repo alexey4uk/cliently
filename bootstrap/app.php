@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.business.permission' => \App\Http\Middleware\CheckBusinessRolePermission::class,
             'verified.or.oauth' => \App\Http\Middleware\EnsureEmailIsVerifiedOrOAuth::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\RedirectToSetupIfNoAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

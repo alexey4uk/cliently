@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\RedirectsAfterAuth;
 use App\Models\Business;
 use App\Models\BusinessUserInvitation;
 use App\Models\Plan;
@@ -17,6 +18,7 @@ use Illuminate\View\View;
 
 class BusinessInvitationController extends Controller
 {
+    use RedirectsAfterAuth;
     /**
      * Display the invitation acceptance page.
      */
@@ -113,7 +115,7 @@ class BusinessInvitationController extends Controller
         // Авторизуем пользователя
         Auth::login($user);
 
-        return redirect()->route('dashboard')
+        return redirect($this->getRedirectAfterAuth($user))
             ->with('success', 'Добро пожаловать! Вы успешно присоединились к бизнесу.');
     }
 
@@ -139,7 +141,7 @@ class BusinessInvitationController extends Controller
         if ($invitation->business->users()->where('user_id', $user->id)->exists()) {
             $invitation->update(['accepted_at' => now()]);
 
-            return redirect()->route('dashboard')
+            return redirect($this->getRedirectAfterAuth($user))
                 ->with('info', 'Вы уже являетесь участником этого бизнеса.');
         }
 
@@ -170,7 +172,7 @@ class BusinessInvitationController extends Controller
         // Уведомляем владельцев/админов о присоединении пользователя
         BusinessUserNotificationService::notifyUserJoined($invitation->business, $user, $invitation);
 
-        return redirect()->route('dashboard')
+        return redirect($this->getRedirectAfterAuth($user))
             ->with('success', 'Вы успешно присоединились к бизнесу.');
     }
 

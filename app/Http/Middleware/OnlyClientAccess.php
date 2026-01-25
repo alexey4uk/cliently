@@ -29,7 +29,7 @@ class OnlyClientAccess
 
         // Если нет доступа к клиентской части, но есть доступ к админке
         if ($user->can('panel.access')) {
-            return redirect()->route('panel.index')->with('error', 'У вас нет доступа к клиентской части');
+            return redirect()->route('panel.index');
         }
 
         // Если нет доступа никуда

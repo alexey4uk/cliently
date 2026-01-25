@@ -13,6 +13,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Первоначальная настройка (создание админа при первом запуске)
+Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'show'])->name('setup');
+Route::post('/setup', [\App\Http\Controllers\SetupController::class, 'store']);
+
 // Webhook для bePaid (без CSRF и авторизации)
 Route::post('/webhooks/bepaid', [\App\Http\Controllers\Webhook\BepaidWebhookController::class, 'handle'])
     ->name('webhooks.bepaid')

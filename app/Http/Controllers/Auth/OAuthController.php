@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Traits\RedirectsAfterAuth;
 use App\Services\OAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OAuthController extends Controller
 {
+    use RedirectsAfterAuth;
+
     public function __construct(
         protected OAuthService $oauthService
     ) {}
@@ -47,8 +50,8 @@ class OAuthController extends Controller
             // пишется после ответа; редирект уходит раньше — на /dashboard приходят без сессии.
             $request->session()->save();
 
-            // Редиректим на главную страницу
-            $redirectUrl = config('oauth.settings.redirect_after_login', '/dashboard');
+            // Редиректим на главную страницу (с учетом прав пользователя)
+            $redirectUrl = $this->getRedirectAfterAuth($user);
 
             return redirect()->intended($redirectUrl)
                 ->with('success', 'Вы успешно авторизовались через '.

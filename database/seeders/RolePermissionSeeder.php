@@ -169,73 +169,48 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Создание роли Админ
-        // Админ имеет все права доступа
+        // Админ имеет все права админ-панели (panel.*), без доступа к клиентской части (client.*)
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        // Синхронизируем все права (удаляем старые и добавляем новые)
-        $adminRole->syncPermissions(array_keys($permissions));
+        $adminPermissions = array_filter(array_keys($permissions), fn (string $name) => ! str_starts_with($name, 'client.'));
+        $adminRole->syncPermissions($adminPermissions);
 
         // Создание роли Менеджер
+        // Только panel.*, без доступа к клиентской части (client.*)
         $managerRole = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
         $managerPermissions = [
-            // Бизнесы - только просмотр (админ-панель)
             'panel.businesses.view',
-
-            // Записи - полный доступ (админ-панель)
             'panel.appointments.view',
             'panel.appointments.update',
             'panel.appointments.delete',
-
-            // Клиенты - полный доступ (админ-панель)
             'panel.clients.view',
             'panel.clients.create',
             'panel.clients.update',
             'panel.clients.delete',
-
-            // Услуги - только просмотр и редактирование (админ-панель)
             'panel.services.view',
             'panel.services.update',
             'panel.services.delete',
-
-            // Локации - только просмотр и редактирование (админ-панель)
             'panel.locations.view',
             'panel.locations.update',
             'panel.locations.delete',
-
-            // Мастера - только просмотр и редактирование (админ-панель)
             'panel.masters.view',
             'panel.masters.update',
             'panel.masters.delete',
-
-            // Аналитика (админ-панель)
             'panel.analytics.view',
-
-            // Тикеты - полный доступ (админ-панель)
             'panel.tickets.view',
             'panel.tickets.update',
             'panel.tickets.delete',
             'panel.tickets.assign',
             'panel.tickets.categories.manage',
-
-            // Платежи - просмотр (админ-панель)
             'panel.payments.view',
-
-            // Управление базовыми правами ролей бизнеса
             'panel.business.roles.manage',
-
-            // Системные уведомления
             'panel.notifications.view',
-
-            // Рассылки
             'panel.broadcasts.send',
-
-            // Доступ к панели
             'panel.access',
         ];
-        foreach ($managerPermissions as $permission) {
-            $managerRole->givePermissionTo($permission);
-        }
+        $managerRole->syncPermissions($managerPermissions);
 
         // Создание роли Поддержка
+        // Только panel.*, без доступа к клиентской части (client.*)
         $supportRole = Role::firstOrCreate(['name' => 'support', 'guard_name' => 'web']);
         $supportPermissions = [
             'panel.analytics.view',
@@ -246,19 +221,16 @@ class RolePermissionSeeder extends Seeder
             'panel.notifications.view',
             'panel.access',
         ];
-        foreach ($supportPermissions as $permission) {
-            $supportRole->givePermissionTo($permission);
-        }
+        $supportRole->syncPermissions($supportPermissions);
 
-        // Создание роли Пользователь (для обычных пользователей)
-        // Теперь роль user имеет только client.access - конкретные права проверяются через роль в бизнесе
+        // Создание роли Пользователь
+        // Единственная роль с доступом к клиентской части (client.*) по умолчанию.
+        // Конкретные права в бизнесе проверяются через роль в бизнесе.
         $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
         $userPermissions = [
             'client.access',
-            'client.subscription.pay', // Оплата подписки
+            'client.subscription.pay',
         ];
-        foreach ($userPermissions as $permission) {
-            $userRole->givePermissionTo($permission);
-        }
+        $userRole->syncPermissions($userPermissions);
     }
 }

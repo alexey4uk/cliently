@@ -29,8 +29,9 @@ class DatabaseSeeder extends Seeder
             DefaultBusinessRolePermissionsSeeder::class,
             SubscriptionMetricSeeder::class, // Метрики подписки должны быть созданы до тарифов
             PlanSeeder::class, // Тарифы используют метрики
-            UserSeeder::class,
-            OnboardingSeeder::class,
+            // Админ создаётся через /setup при первом запуске, не через сидер.
+            // UserSeeder::class,
+            // OnboardingSeeder::class, // зависит от UserSeeder (a@a.ru)
         ]);
 
         // Business::factory(20)->create();
