@@ -59,7 +59,25 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.dev', '.env');"
+        continue-on-error: true
 
+      - name: Install Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Generate key
+        run: php artisan key:generate
+        continue-on-error: true
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+        continue-on-error: true
+
+      - name: Create Database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -157,7 +175,3 @@ jobs:
             # Database operations
             php artisan migrate:fresh --force
             php artisan db:seed --force
-            
-            # Set permissions (adjust as needed)
-            chmod -R 775 storage bootstrap/cache
-            chown -R www-data:www-data storage bootstrap/cache
