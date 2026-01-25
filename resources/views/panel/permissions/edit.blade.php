@@ -2,7 +2,12 @@
 
 @section('title', 'Редактирование права')
 
+@push('breadcrumbs')
+    <x-breadcrumbs :base="['title' => 'Главная', 'url' => route('panel.index')]" :items="[['title' => 'Роли и доступы', 'url' => null], ['title' => 'Права доступа', 'url' => route('panel.permissions')], ['title' => 'Редактирование', 'url' => null]]" />
+@endpush
+
 @section('content')
+    <div class="max-w-5xl mx-auto space-y-6">
     <!-- Flash сообщения -->
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
@@ -178,7 +183,7 @@
                             <span>Отмена</span>
                         </a>
                     </div>
-                    @can('panel.roles.view')
+                    @can('panel.permissions.delete')
                         <form method="POST" action="{{ route('panel.permissions.destroy', $permission) }}" 
                               onsubmit="return confirm('Вы уверены, что хотите удалить право {{ addslashes($permission->name) }}? Это действие нельзя отменить.');"
                               class="inline">
@@ -194,5 +199,6 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 @endsection

@@ -2,6 +2,10 @@
 
 @section('title', 'Роли')
 
+@push('breadcrumbs')
+    <x-breadcrumbs :base="['title' => 'Главная', 'url' => route('panel.index')]" :items="[['title' => 'Роли и доступы', 'url' => null], ['title' => 'Роли', 'url' => null]]" />
+@endpush
+
 @section('content')
     <!-- Flash сообщения -->
     @if (session('success'))

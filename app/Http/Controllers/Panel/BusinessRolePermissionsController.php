@@ -22,8 +22,10 @@ class BusinessRolePermissionsController extends Controller
         Gate::authorize('panel.business.roles.manage');
 
         $service = app(BusinessRolePermissionService::class);
-        // В панели админа показываем только системные роли (owner_id = null)
-        $roles = $service->getAvailableRoles(true, null);
+        // В панели админа: системные роли + глобальные кастомные (owner_id = null)
+        $roles = \App\Models\BusinessRole::whereNull('owner_id')
+            ->orderBy('name')
+            ->get();
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
             $permissions = $service->getPermissionsForRole($role->id);
@@ -46,9 +48,13 @@ class BusinessRolePermissionsController extends Controller
         Gate::authorize('panel.business.roles.manage');
 
         $allPermissions = $this->getAllPermissions();
+        $permissionDescriptions = Permission::whereIn('name', $allPermissions)
+            ->pluck('description', 'name')
+            ->toArray();
 
         return view('panel.business-roles.create', [
             'allPermissions' => $allPermissions,
+            'permissionDescriptions' => $permissionDescriptions,
         ]);
     }
 
@@ -125,13 +131,19 @@ class BusinessRolePermissionsController extends Controller
 
         $service = app(BusinessRolePermissionService::class);
         $defaultPermissions = $service->getPermissionsForRole($role->id);
-
+        $deniedPermissions = $service->getDeniedPermissions($role->id);
         $allPermissions = $this->getAllPermissions();
+
+        $permissionDescriptions = Permission::whereIn('name', $allPermissions)
+            ->pluck('description', 'name')
+            ->toArray();
 
         return view('panel.business-roles.show', [
             'role' => $role,
             'allPermissions' => $allPermissions,
             'defaultPermissions' => $defaultPermissions,
+            'deniedPermissions' => $deniedPermissions,
+            'permissionDescriptions' => $permissionDescriptions,
         ]);
     }
 
