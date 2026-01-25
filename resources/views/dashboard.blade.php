@@ -60,7 +60,7 @@
     $canViewSubscription = $hasBusinessPermission('client.subscription.view');
 @endphp
 
-<div class="max-w-[1400px] mx-auto">
+<div class="max-w-7xl 2xl:max-w-[1600px] mx-auto">
     <!-- Page Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
@@ -79,7 +79,7 @@
         </form>
     </div>
 
-    <!-- Stats Cards - Гибкая сетка в зависимости от доступных виджетов -->
+    <!-- Stats Cards - Переработанный дизайн с градиентами -->
     @php
         $statsCards = [];
         if ($canViewAppointments) {
@@ -105,139 +105,141 @@
     @endphp
     
     @if($statsCount > 0)
-    <div class="grid {{ $gridCols }} gap-4 mb-6">
-        <!-- Today's Appointments -->
+    <div class="grid {{ $gridCols }} gap-6 mb-6">
+        <!-- Today's Appointments - Приоритет #1: Самая важная операционная метрика -->
         @if($canViewAppointments)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Записей сегодня</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['appointments_today'] ?? 0 }}</p>
-                    @if(isset($stats['appointments_week']) && $stats['appointments_week'] > 0)
-                        <p class="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                            </svg>
-                            {{ $stats['appointments_week'] }} за неделю
-                        </p>
-                    @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Нет записей</p>
-                    @endif
+        <div class="group relative bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/10 rounded-2xl p-6 border border-indigo-200/50 dark:border-indigo-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-200/30 dark:bg-indigo-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Записей сегодня</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['appointments_today'] ?? 0 }}</p>
+                @if(isset($stats['appointments_week']) && $stats['appointments_week'] > 0)
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <span class="font-medium text-indigo-600 dark:text-indigo-400">{{ $stats['appointments_week'] }}</span> за неделю
+                    </p>
+                @else
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Нет записей</p>
+                @endif
             </div>
         </div>
         @endif
 
-        <!-- Total Clients -->
+        <!-- Total Clients - Приоритет #2: Ключевая бизнес-метрика -->
         @if($canViewClients)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Всего клиентов</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($stats['total_clients'] ?? 0, 0, ',', ' ') }}</p>
+        <div class="group relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 dark:bg-emerald-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
                     @if(isset($stats['new_clients_week']) && $stats['new_clients_week'] > 0)
-                        <p class="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                            </svg>
-                            +{{ $stats['new_clients_week'] }} новых за неделю
-                        </p>
-                    @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Нет новых клиентов</p>
+                        <span class="px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
+                            +{{ $stats['new_clients_week'] }}
+                        </span>
                     @endif
                 </div>
-                <div class="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Всего клиентов</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ number_format($stats['total_clients'] ?? 0, 0, ',', ' ') }}</p>
+                @if(isset($stats['new_clients_week']) && $stats['new_clients_week'] > 0)
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <span class="font-medium text-emerald-600 dark:text-emerald-400">+{{ $stats['new_clients_week'] }}</span> новых за неделю
+                    </p>
+                @else
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Нет новых клиентов</p>
+                @endif
             </div>
         </div>
         @endif
 
-        <!-- Revenue / Completed Appointments -->
+        <!-- Completed Appointments - Приоритет #3: Операционная метрика эффективности -->
         @if($canViewAppointments)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Завершено за месяц</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $stats['completed_month'] ?? 0 }}</p>
-                    @if(isset($stats['completed_week']) && $stats['completed_week'] > 0)
-                        <p class="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                            </svg>
-                            {{ $stats['completed_week'] }} за неделю
-                        </p>
-                    @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Нет завершенных</p>
-                    @endif
+        <div class="group relative bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/10 rounded-2xl p-6 border border-amber-200/50 dark:border-amber-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-200/30 dark:bg-amber-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-amber-500/10 dark:bg-amber-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Завершено за месяц</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['completed_month'] ?? 0 }}</p>
+                @if(isset($stats['completed_week']) && $stats['completed_week'] > 0)
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        <span class="font-medium text-amber-600 dark:text-amber-400">{{ $stats['completed_week'] }}</span> за неделю
+                    </p>
+                @else
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Нет завершенных</p>
+                @endif
             </div>
         </div>
         @endif
 
-        <!-- Services -->
+        <!-- Services - Приоритет #4: Справочная информация -->
         @if($canViewServices)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Активных услуг</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $business->services->count() ?? 0 }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">В системе</p>
+        <div class="group relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/10 rounded-2xl p-6 border border-purple-200/50 dark:border-purple-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-200/30 dark:bg-purple-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-purple-500/10 dark:bg-purple-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Активных услуг</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $business->services->count() ?? 0 }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">В системе</p>
             </div>
         </div>
         @endif
 
-        <!-- Masters -->
+        <!-- Masters - Приоритет #5: Справочная информация -->
         @if($canViewMasters)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Мастеров</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $business->masters->count() ?? 0 }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">В системе</p>
+        <div class="group relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10 rounded-2xl p-6 border border-blue-200/50 dark:border-blue-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 dark:bg-blue-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Мастеров</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $business->masters->count() ?? 0 }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">В системе</p>
             </div>
         </div>
         @endif
 
-        <!-- Locations -->
+        <!-- Locations - Приоритет #6: Справочная информация -->
         @if($canViewLocations)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Локаций</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $business->locations->count() ?? 0 }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">В системе</p>
+        <div class="group relative bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/10 rounded-2xl p-6 border border-rose-200/50 dark:border-rose-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-rose-200/30 dark:bg-rose-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-3 bg-rose-500/10 dark:bg-rose-500/20 rounded-xl">
+                        <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-rose-100 dark:bg-rose-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                </div>
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Локаций</p>
+                <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $business->locations->count() ?? 0 }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">В системе</p>
             </div>
         </div>
         @endif
@@ -376,130 +378,28 @@
         @endif
     </div>
 
-    <!-- Financial Metrics - На всю ширину -->
-    @if($hasAnalyticsAccess && isset($financialStats))
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Выручка за месяц</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($financialStats['revenue_month'] ?? 0, 0, ',', ' ') }} BYN</p>
-                    @if(isset($financialStats['revenue_growth']) && $financialStats['revenue_growth'] > 0)
-                        <p class="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                            </svg>
-                            +{{ $financialStats['revenue_growth'] }}%
-                        </p>
-                    @elseif(isset($financialStats['revenue_growth']) && $financialStats['revenue_growth'] < 0)
-                        <p class="text-sm text-red-600 dark:text-red-400 mt-1 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                            </svg>
-                            {{ $financialStats['revenue_growth'] }}%
-                        </p>
-                    @endif
-                </div>
-                <div class="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Выручка за неделю</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($financialStats['revenue_week'] ?? 0, 0, ',', ' ') }} BYN</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Analytics Link - Ссылка на детальную аналитику -->
+    @if($hasAnalyticsAccess)
+    <div class="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-200/50 dark:border-indigo-800/50 p-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-xl">
+                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                 </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Средний чек</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($financialStats['average_check'] ?? 0, 2, ',', ' ') }} BYN</p>
-                </div>
-                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-5m-6 5h.01M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                    </svg>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Детальная аналитика</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Просмотрите графики, финансовые метрики и топ услуги/мастера</p>
                 </div>
             </div>
+            <a href="{{ route('analytics.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+                <span>Открыть аналитику</span>
+            </a>
         </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Рост выручки</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $financialStats['revenue_growth'] ?? 0 }}%</p>
-                </div>
-                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Top Services and Masters - На всю ширину -->
-    @if($hasAnalyticsAccess && (($canViewServices && isset($topServices) && count($topServices) > 0) || ($canViewMasters && isset($topMasters) && count($topMasters) > 0)))
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        @if($canViewServices && isset($topServices) && count($topServices) > 0)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
-            <div class="p-5 border-b border-gray-200 dark:border-slate-800">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Топ услуги</h2>
-            </div>
-            <div class="p-5">
-                <div class="space-y-4">
-                    @foreach($topServices as $service)
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $service['service_name'] }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $service['count'] }} записей</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($service['revenue'], 0, ',', ' ') }} BYN</p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
-
-        @if($canViewMasters && isset($topMasters) && count($topMasters) > 0)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800">
-            <div class="p-5 border-b border-gray-200 dark:border-slate-800">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Топ мастера</h2>
-            </div>
-            <div class="p-5">
-                <div class="space-y-4">
-                    @foreach($topMasters as $master)
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $master['master_name'] }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $master['count'] }} записей</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($master['revenue'], 0, ',', ' ') }} BYN</p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
     @endif
 

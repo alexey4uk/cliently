@@ -3,7 +3,7 @@
 @section('title', 'Панель управления')
 
 @section('content')
-    <div class="w-full max-w-none space-y-8">
+    <div class="max-w-7xl 2xl:max-w-[1600px] mx-auto space-y-8">
         <!-- Заголовок с улучшенным дизайном -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div>
@@ -38,12 +38,8 @@
             @php
                 $mainStatsCount = 0;
                 if ($canViewBusinesses && isset($stats['total_businesses'])) $mainStatsCount++;
-                if ($canViewBusinesses && isset($stats['active_businesses_month'])) $mainStatsCount++;
                 if ($canViewUsers && isset($stats['total_users'])) $mainStatsCount++;
-                if ($canViewUsers && isset($stats['active_users_month'])) $mainStatsCount++;
-                if ($canViewSupport && isset($stats['active_users_week'])) $mainStatsCount++;
                 if ($canViewAppointments && isset($stats['appointments_today'])) $mainStatsCount++;
-                if ($canViewAppointments && isset($stats['appointments_pending'])) $mainStatsCount++;
                 if ($canViewUsers && isset($stats['new_users_week'])) $mainStatsCount++;
                 $mainGridCols = $mainStatsCount <= 2 ? 'grid-cols-1 sm:grid-cols-2' : ($mainStatsCount <= 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4');
             @endphp
@@ -71,25 +67,6 @@
                         <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['total_businesses'] }}</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
                             <span class="font-medium text-indigo-600 dark:text-indigo-400">+{{ $stats['new_businesses_month'] ?? 0 }}</span> за месяц
-                        </p>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Активные бизнесы -->
-                @if($canViewBusinesses && isset($stats['active_businesses_month']))
-                <div class="group relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 dark:bg-emerald-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl">
-                                <i class="fa-solid fa-chart-line text-emerald-600 dark:text-emerald-400 text-xl"></i>
-                            </div>
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Активные бизнесы</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['active_businesses_month'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                            {{ ($stats['total_businesses'] ?? 0) > 0 ? round((($stats['active_businesses_month'] ?? 0) / $stats['total_businesses']) * 100, 1) : 0 }}% от общего
                         </p>
                     </div>
                 </div>
@@ -123,44 +100,6 @@
                 </div>
                 @endif
 
-                <!-- Активные пользователи -->
-                @if($canViewUsers && isset($stats['active_users_month']))
-                <div class="group relative bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/10 rounded-2xl p-6 border border-purple-200/50 dark:border-purple-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-200/30 dark:bg-purple-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 bg-purple-500/10 dark:bg-purple-500/20 rounded-xl">
-                                <i class="fa-solid fa-user-check text-purple-600 dark:text-purple-400 text-xl"></i>
-                            </div>
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Активные пользователи</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['active_users_month'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                            {{ ($stats['total_users'] ?? 0) > 0 ? round((($stats['active_users_month'] ?? 0) / $stats['total_users']) * 100, 1) : 0 }}% от общего
-                        </p>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Активные пользователи за неделю (для поддержки) -->
-                @if($canViewSupport && isset($stats['active_users_week']))
-                <div class="group relative bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/10 rounded-2xl p-6 border border-cyan-200/50 dark:border-cyan-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-200/30 dark:bg-cyan-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-xl">
-                                <i class="fa-solid fa-users text-cyan-600 dark:text-cyan-400 text-xl"></i>
-                            </div>
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Активных пользователей</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['active_users_week'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                            за неделю
-                        </p>
-                    </div>
-                </div>
-                @endif
-
                 <!-- Записи сегодня (для поддержки) -->
                 @if($canViewAppointments && isset($stats['appointments_today']))
                 <div class="group relative bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/10 rounded-2xl p-6 border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
@@ -180,30 +119,6 @@
                 </div>
                 @endif
 
-                <!-- Ожидают подтверждения (для поддержки) -->
-                @if($canViewAppointments && isset($stats['appointments_pending']))
-                <div class="group relative bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/10 rounded-2xl p-6 border border-yellow-200/50 dark:border-yellow-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-200/30 dark:bg-yellow-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-xl">
-                                <i class="fa-solid fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
-                            </div>
-                            @if(($stats['appointments_pending'] ?? 0) > 0)
-                            <span class="px-2 py-1 text-xs font-semibold text-yellow-700 dark:text-yellow-400 bg-yellow-200 dark:bg-yellow-500/30 rounded-lg">
-                                Требуют внимания
-                            </span>
-                            @endif
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Ожидают подтверждения</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['appointments_pending'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                            требуют внимания
-                        </p>
-                    </div>
-                </div>
-                @endif
-
                 <!-- Новые регистрации за неделю (для поддержки) -->
                 @if($canViewUsers && isset($stats['new_users_week']))
                 <div class="group relative bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/10 rounded-2xl p-6 border border-blue-200/50 dark:border-blue-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
@@ -218,30 +133,6 @@
                         <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['new_users_week'] ?? 0 }}</p>
                         <p class="text-xs text-slate-500 dark:text-slate-400">
                             {{ $stats['new_users_month'] ?? 0 }} за месяц
-                        </p>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Отмененные записи за неделю (для поддержки) -->
-                @if($canViewAppointments && isset($stats['cancelled_week']))
-                <div class="group relative bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/10 rounded-2xl p-6 border border-rose-200/50 dark:border-rose-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-rose-200/30 dark:bg-rose-800/20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-                    <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="p-3 bg-rose-500/10 dark:bg-rose-500/20 rounded-xl">
-                                <i class="fa-solid fa-times-circle text-rose-600 dark:text-rose-400 text-xl"></i>
-                            </div>
-                            @if(($stats['cancelled_week'] ?? 0) > 0)
-                            <span class="px-2 py-1 text-xs font-semibold text-rose-700 dark:text-rose-400 bg-rose-200 dark:bg-rose-500/30 rounded-lg">
-                                Проблемные
-                            </span>
-                            @endif
-                        </div>
-                        <p class="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Отменено за неделю</p>
-                        <p class="text-4xl font-bold text-slate-900 dark:text-white mb-2">{{ $stats['cancelled_week'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">
-                            требуют внимания
                         </p>
                     </div>
                 </div>
@@ -316,43 +207,23 @@
         </div>
         @endif
 
-        <!-- Графики аналитики -->
-        @if($canViewAnalytics && $chartData)
-        <div>
-            <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Аналитика и тренды</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- График роста -->
-                <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Рост пользователей</h3>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">30 дней</span>
+        <!-- Analytics Link - Ссылка на детальную аналитику -->
+        @if($canViewAnalytics)
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-xl border border-indigo-200/50 dark:border-indigo-800/50 p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="p-3 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-xl">
+                        <i class="fa-solid fa-chart-bar text-indigo-600 dark:text-indigo-400 text-xl"></i>
                     </div>
-                    <div class="relative h-64">
-                        <canvas id="growthChart"></canvas>
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Детальная аналитика</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Просмотрите графики роста, активности системы и детальную статистику</p>
                     </div>
                 </div>
-
-                <!-- График активности -->
-                <div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Активность системы</h3>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">30 дней</span>
-                    </div>
-                    <div class="relative h-64">
-                        <canvas id="activityChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- График регистраций на всю ширину -->
-            <div class="mt-6 bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Новые регистрации</h3>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">30 дней</span>
-                </div>
-                <div class="relative h-64">
-                    <canvas id="registrationsChart"></canvas>
-                </div>
+                <a href="{{ route('panel.analytics') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-arrow-right text-sm"></i>
+                    <span>Открыть аналитику</span>
+                </a>
             </div>
         </div>
         @endif
@@ -644,145 +515,4 @@
         </div>
     </div>
 
-    @if($canViewAnalytics && $chartData)
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chartData = @json($chartData);
-            const isDarkMode = () => document.documentElement.classList.contains('dark');
-            const getThemeColors = () => ({
-                text: isDarkMode() ? '#e2e8f0' : '#1e293b',
-                textSecondary: isDarkMode() ? '#94a3b8' : '#64748b',
-                grid: 'rgba(148, 163, 184, 0.1)'
-            });
-
-            // График роста
-            const growthCtx = document.getElementById('growthChart');
-            if (growthCtx) {
-                const colors = getThemeColors();
-                new Chart(growthCtx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [
-                            {
-                                label: 'Бизнесы',
-                                data: chartData.businesses,
-                                borderColor: 'rgb(99, 102, 241)',
-                                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            },
-                            {
-                                label: 'Пользователи',
-                                data: chartData.users,
-                                borderColor: 'rgb(16, 185, 129)',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top', labels: { color: colors.text } },
-                            tooltip: { mode: 'index', intersect: false }
-                        },
-                        scales: {
-                            x: { ticks: { color: colors.textSecondary }, grid: { color: colors.grid } },
-                            y: { beginAtZero: true, ticks: { color: colors.textSecondary }, grid: { color: colors.grid } }
-                        }
-                    }
-                });
-            }
-
-            // График активности
-            const activityCtx = document.getElementById('activityChart');
-            if (activityCtx) {
-                const colors = getThemeColors();
-                new Chart(activityCtx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [
-                            {
-                                label: 'Активные бизнесы',
-                                data: chartData.active_businesses,
-                                borderColor: 'rgb(139, 92, 246)',
-                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            },
-                            {
-                                label: 'Созданные записи',
-                                data: chartData.appointments,
-                                borderColor: 'rgb(59, 130, 246)',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top', labels: { color: colors.text } },
-                            tooltip: { mode: 'index', intersect: false }
-                        },
-                        scales: {
-                            x: { ticks: { color: colors.textSecondary }, grid: { color: colors.grid } },
-                            y: { beginAtZero: true, ticks: { color: colors.textSecondary }, grid: { color: colors.grid } }
-                        }
-                    }
-                });
-            }
-
-            // График регистраций
-            const registrationsCtx = document.getElementById('registrationsChart');
-            if (registrationsCtx) {
-                const colors = getThemeColors();
-                new Chart(registrationsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.labels,
-                        datasets: [
-                            {
-                                label: 'Новые бизнесы',
-                                data: chartData.businesses,
-                                borderColor: 'rgb(99, 102, 241)',
-                                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            },
-                            {
-                                label: 'Новые пользователи',
-                                data: chartData.users,
-                                borderColor: 'rgb(16, 185, 129)',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                tension: 0.4,
-                                fill: true,
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: true, position: 'top', labels: { color: colors.text } },
-                            tooltip: { mode: 'index', intersect: false }
-                        },
-                        scales: {
-                            x: { ticks: { color: colors.textSecondary }, grid: { color: colors.grid } },
-                            y: { beginAtZero: true, ticks: { color: colors.textSecondary }, grid: { color: colors.grid } }
-                        }
-                    }
-                });
-            }
-        });
-    </script>
-    @endpush
-    @endif
 @endsection
