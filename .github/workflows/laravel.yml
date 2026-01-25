@@ -28,7 +28,6 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
-
       - name: Copy .env
         run: php -r "file_exists('.env') || copy('.env.dev', '.env');"
         continue-on-error: true
@@ -48,7 +47,6 @@ jobs:
         run: |
           mkdir -p database
           touch database/database.sqlite
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -157,4 +155,3 @@ jobs:
             php artisan view:cache
             php artisan migrate:fresh --force
             php artisan db:seed --force
-
