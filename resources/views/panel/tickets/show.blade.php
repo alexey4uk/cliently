@@ -139,6 +139,7 @@
                     @endif
 
                     <!-- Форма комментария -->
+                    @can('panel.tickets.update')
                     <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
                         <form method="POST" action="{{ route('panel.tickets.comments.store', $ticket) }}" enctype="multipart/form-data" 
                             x-data="{ submitting: false }"
@@ -215,6 +216,7 @@
                             </div>
                         </form>
                     </div>
+                    @endcan
                 </div>
             </div>
 
@@ -225,6 +227,7 @@
                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Действия</h3>
                     
                     <div class="space-y-4">
+                        @can('panel.tickets.assign')
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Назначить на</label>
                             <form method="POST" action="{{ route('panel.tickets.assign', $ticket) }}" class="inline-block w-full">
@@ -238,7 +241,9 @@
                                 </select>
                             </form>
                         </div>
+                        @endcan
 
+                        @can('panel.tickets.update')
                         <div>
                             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Изменить статус</label>
                             <form method="POST" action="{{ route('panel.tickets.status', $ticket) }}" class="inline-block w-full">
@@ -259,6 +264,7 @@
                                 <i class="fa-solid fa-edit mr-2"></i>Редактировать
                             </a>
                         </div>
+                        @endcan
                     </div>
                 </div>
 

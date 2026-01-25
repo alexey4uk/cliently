@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('ticket_settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('business_id')->constrained()->cascadeOnDelete()->unique();
             $table->boolean('enabled')->default(true);
             $table->boolean('auto_assign_enabled')->default(false);
             $table->foreignId('auto_assign_to_user_id')->nullable()->constrained('users')->nullOnDelete();

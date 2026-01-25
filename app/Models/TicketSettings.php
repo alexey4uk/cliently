@@ -11,7 +11,6 @@ class TicketSettings extends Model
     use HasFactory;
 
     protected $fillable = [
-        'business_id',
         'enabled',
         'auto_assign_enabled',
         'auto_assign_to_user_id',
@@ -32,31 +31,29 @@ class TicketSettings extends Model
         'sla_response_time' => 'integer',
     ];
 
-    public function business(): BelongsTo
-    {
-        return $this->belongsTo(Business::class);
-    }
-
     public function autoAssignUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'auto_assign_to_user_id');
     }
 
     /**
-     * Получить или создать настройки для бизнеса
+     * Получить или создать глобальные настройки тикет-системы
      */
-    public static function getForBusiness(int $businessId): self
+    public static function getGlobal(): self
     {
-        return self::firstOrCreate(
-            ['business_id' => $businessId],
-            [
+        $settings = self::first();
+        
+        if (! $settings) {
+            $settings = self::create([
                 'enabled' => true,
                 'auto_assign_enabled' => false,
                 'public_form_enabled' => true,
                 'email_notifications_enabled' => true,
                 'public_form_required_fields' => ['name', 'email', 'title', 'description'],
                 'email_notification_recipients' => [],
-            ]
-        );
+            ]);
+        }
+        
+        return $settings;
     }
 }

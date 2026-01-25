@@ -13,17 +13,9 @@ class TicketSettingsController extends Controller
      */
     public function index()
     {
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
-        }
-
-        $settings = TicketSettings::getForBusiness($business->id);
+        $settings = TicketSettings::getGlobal();
 
         return view('settings.tickets.index', [
-            'business' => $business,
             'settings' => $settings,
         ]);
     }
@@ -33,15 +25,8 @@ class TicketSettingsController extends Controller
      */
     public function update(TicketSettingsRequest $request)
     {
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
-        }
-
         $validated = $request->validated();
-        $settings = TicketSettings::getForBusiness($business->id);
+        $settings = TicketSettings::getGlobal();
 
         // Обработка чекбоксов
         // После prepareForValidation значения уже преобразованы в boolean

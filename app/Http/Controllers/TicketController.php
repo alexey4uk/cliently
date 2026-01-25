@@ -28,7 +28,7 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getForBusiness($business->id);
+        $settings = TicketSettings::getGlobal();
 
         if (! $settings->enabled) {
             return redirect()->route('dashboard')
@@ -103,7 +103,7 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getForBusiness($business->id);
+        $settings = TicketSettings::getGlobal();
 
         if (! $settings->enabled) {
             return redirect()->route('tickets.index')
@@ -134,7 +134,7 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getForBusiness($business->id);
+        $settings = TicketSettings::getGlobal();
 
         if (! $settings->enabled) {
             return redirect()->route('tickets.index')

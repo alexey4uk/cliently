@@ -74,7 +74,7 @@ class TicketNotificationService
      */
     public function notifyTicketCreated(Ticket $ticket): void
     {
-        $settings = TicketSettings::getForBusiness($ticket->business_id);
+        $settings = TicketSettings::getGlobal();
 
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
@@ -149,7 +149,7 @@ class TicketNotificationService
      */
     public function notifyCommentAdded(Ticket $ticket, TicketComment $comment): void
     {
-        $settings = TicketSettings::getForBusiness($ticket->business_id);
+        $settings = TicketSettings::getGlobal();
 
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
@@ -415,7 +415,7 @@ class TicketNotificationService
      */
     public function notifyStatusChanged(Ticket $ticket, string $oldStatus, string $newStatus): void
     {
-        $settings = TicketSettings::getForBusiness($ticket->business_id);
+        $settings = TicketSettings::getGlobal();
 
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');

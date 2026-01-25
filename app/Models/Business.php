@@ -81,11 +81,6 @@ class Business extends Model
         return $this->hasMany(Ticket::class);
     }
 
-    public function ticketSettings(): HasOne
-    {
-        return $this->hasOne(TicketSettings::class);
-    }
-
     public function phones(): MorphMany
     {
         return $this->morphMany(Phone::class, 'phoneable');

@@ -621,8 +621,8 @@
                         <span class="text-sm font-medium text-slate-900 dark:text-white text-center">Аналитика</span>
                     </a>
                     @endif
-                    @if(auth()->user()->can('panel.support.view'))
-                    <a href="{{ route('panel.support') }}" 
+                    @if(auth()->user()->can('panel.support.view') || auth()->user()->can('panel.tickets.view'))
+                    <a href="{{ route('panel.tickets') }}" 
                        class="flex flex-col items-center justify-center p-4 bg-teal-50 dark:bg-teal-500/10 hover:bg-teal-100 dark:hover:bg-teal-500/20 rounded-xl border border-teal-200 dark:border-teal-800 transition-all duration-200 group">
                         <div class="w-12 h-12 bg-teal-600 dark:bg-teal-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <i class="fa-solid fa-headset text-white text-lg"></i>

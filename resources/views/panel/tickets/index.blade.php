@@ -112,11 +112,38 @@
                                     {{ $ticket->created_at->format('d.m.Y H:i') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('panel.tickets.show', $ticket) }}" 
-                                       class="inline-flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
-                                        <i class="fa-solid fa-eye text-xs"></i>
-                                        Просмотр
-                                    </a>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('panel.tickets.show', $ticket) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors"
+                                           title="Просмотр">
+                                            <i class="fa-solid fa-eye text-xs"></i>
+                                            <span class="hidden sm:inline">Просмотр</span>
+                                        </a>
+                                        
+                                        @can('panel.tickets.update')
+                                        <a href="{{ route('panel.tickets.edit', $ticket) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
+                                           title="Редактировать">
+                                            <i class="fa-solid fa-edit text-xs"></i>
+                                            <span class="hidden sm:inline">Редактировать</span>
+                                        </a>
+                                        @endcan
+                                        
+                                        @can('panel.tickets.delete')
+                                        <form method="POST" action="{{ route('panel.tickets.destroy', $ticket) }}" 
+                                              class="inline-block"
+                                              onsubmit="return confirm('Вы уверены, что хотите удалить этот тикет?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                                                    title="Удалить">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                                <span class="hidden sm:inline">Удалить</span>
+                                            </button>
+                                        </form>
+                                        @endcan
+                                    </div>
                                 </td>
                             </tr>
                         @empty

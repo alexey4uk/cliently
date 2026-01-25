@@ -12,7 +12,7 @@ class TicketService
      */
     public function createTicket(array $data, int $businessId): Ticket
     {
-        $settings = TicketSettings::getForBusiness($businessId);
+        $settings = TicketSettings::getGlobal();
 
         // Автоматическое назначение, если включено
         if ($settings->auto_assign_enabled && $settings->auto_assign_to_user_id) {

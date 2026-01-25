@@ -218,7 +218,7 @@
                     <i class="fa-solid fa-chart-line"></i>
                     <span>Аналитика</span>
                 </a>
-                <a href="{{ route('panel.support') }}" 
+                <a href="{{ route('panel.tickets') }}" 
                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">
                     <i class="fa-solid fa-headset"></i>
                     <span>Поддержка</span>

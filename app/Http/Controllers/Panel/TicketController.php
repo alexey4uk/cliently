@@ -154,24 +154,12 @@ class TicketController extends Controller
             'client_id' => ['nullable', 'exists:clients,id'],
         ]);
 
-        $ticket->update($validated);
-
-        // Обработка загрузки новых файлов
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('tickets/attachments', 'public');
-
-                TicketAttachment::create([
-                    'ticket_id' => $ticket->id,
-                    'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'uploaded_by_type' => 'user',
-                    'uploaded_by_id' => Auth::id(),
-                ]);
-            }
+        // Если у пользователя нет права на назначение, не обновляем assigned_to
+        if (! Auth::user()->can('panel.tickets.assign')) {
+            unset($validated['assigned_to']);
         }
+
+        $ticket->update($validated);
 
         return redirect()->route('panel.tickets.show', $ticket)
             ->with('success', 'Тикет успешно обновлен.');

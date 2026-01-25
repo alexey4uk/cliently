@@ -485,9 +485,11 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             Route::get('/analytics/subscriptions', [\App\Http\Controllers\Panel\AnalyticsController::class, 'subscriptions'])->name('analytics.subscriptions');
         });
 
-        // Поддержка (админ и поддержка)
+        // Поддержка - перенаправление на тикеты (для обратной совместимости)
         Route::middleware(['check.permission:panel.support.view'])->group(function () {
-            Route::get('/support', [\App\Http\Controllers\Panel\SupportController::class, 'index'])->name('support');
+            Route::get('/support', function () {
+                return redirect()->route('panel.tickets');
+            })->name('support');
         });
 
         // Рассылки (админ, менеджер)

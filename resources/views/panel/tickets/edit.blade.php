@@ -16,7 +16,7 @@
             </a>
         </div>
 
-        <form method="POST" action="{{ route('panel.tickets.update', $ticket) }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('panel.tickets.update', $ticket) }}">
             @csrf
             @method('PATCH')
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm space-y-6">
@@ -60,6 +60,7 @@
                     </div>
                 </div>
 
+                @can('panel.tickets.assign')
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                         <i class="fa-solid fa-user mr-2 text-slate-400"></i>Назначен
@@ -72,15 +73,7 @@
                         @endforeach
                     </select>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        <i class="fa-solid fa-paperclip mr-2 text-slate-400"></i>Добавить файлы
-                    </label>
-                    <input type="file" name="attachments[]" multiple 
-                        class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                    <p class="mt-1 text-xs text-slate-500">Максимальный размер файла: 10 МБ</p>
-                </div>
+                @endcan
 
                 <div class="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <button type="submit" 
