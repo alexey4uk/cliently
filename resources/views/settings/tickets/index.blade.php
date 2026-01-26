@@ -31,13 +31,6 @@
             </p>
         </div>
 
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-lg flex items-center gap-3">
-                <i class="fa-solid fa-check-circle text-emerald-600 dark:text-emerald-400"></i>
-                <span class="text-emerald-800 dark:text-emerald-300">{{ session('success') }}</span>
-            </div>
-        @endif
-
         @if($errors->any())
             <div class="mb-6 p-4 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg">
                 <div class="flex items-center gap-3 mb-2">

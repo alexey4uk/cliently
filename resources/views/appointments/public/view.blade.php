@@ -5,15 +5,6 @@
 @section('content')
     <div class="max-w-xl mx-auto px-2 sm:px-4 pb-10"> {{-- pb-10 чтобы кнопки не прилипали к низу экрана --}}
 
-        <!-- Компактные уведомления -->
-        @if (session('success') || session('error'))
-            <div
-                class="mb-4 p-4 rounded-2xl text-center text-sm font-bold animate-in fade-in slide-in-from-top-4 duration-300 border {{ session('success') ? 'bg-emerald-50 text-emerald-800 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-rose-50 text-rose-800 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20' }}">
-                <i class="fa-solid {{ session('success') ? 'fa-circle-check' : 'fa-circle-exclamation' }} mr-2"></i>
-                {{ session('success') ?? session('error') }}
-            </div>
-        @endif
-
         <div
             class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-2xl shadow-slate-200/50 dark:shadow-none overflow-hidden">
 

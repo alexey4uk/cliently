@@ -19,18 +19,6 @@
             </ol>
         </nav>
 
-        @if(session('success'))
-            <div class="mb-6 p-4 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-lg">
-                <p class="text-emerald-800 dark:text-emerald-300">{{ session('success') }}</p>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="mb-6 p-4 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg">
-                <p class="text-red-800 dark:text-red-300">{{ session('error') }}</p>
-            </div>
-        @endif
-
         <!-- Заголовок -->
         <div class="mb-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
             <div class="flex items-center justify-between">

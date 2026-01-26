@@ -44,53 +44,6 @@
                                $hasBusinessPermission('client.appointments.delete');
 @endphp
 
-<!-- Flash сообщения -->
-@if (session('success'))
-    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform -translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform -translate-y-2"
-         class="bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-700/50 rounded-lg p-5 flex items-center gap-4 shadow-sm">
-        <div class="flex-shrink-0">
-            <div class="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-lg"></i>
-            </div>
-        </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-emerald-800 dark:text-emerald-300">{{ session('success') }}</p>
-        </div>
-        <button @click="show = false"
-            class="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-@endif
-
-@if (session('error'))
-    <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform -translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform -translate-y-2"
-         class="bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-700/50 rounded-lg p-5 flex items-center gap-4 shadow-sm">
-        <div class="flex-shrink-0">
-            <div class="h-10 w-10 rounded-lg bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
-                <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-lg"></i>
-            </div>
-        </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-rose-800 dark:text-rose-300">{{ session('error') }}</p>
-        </div>
-        <button @click="show = false"
-            class="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-@endif
-
 @php
     $hasActiveFilters = $date || $status || request('service_id') || request('master_id') || $search;
 @endphp

@@ -10,50 +10,6 @@
 
 @section('content')
 
-<!-- Flash сообщения -->
-@if (session('success'))
-    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform -translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform -translate-y-2"
-         class="shrink-0 mb-3 sm:mb-4 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-700/50 rounded-xl p-3 sm:p-4 flex items-center gap-3 shadow-sm">
-        <div class="shrink-0">
-            <div class="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                <i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 text-sm"></i>
-            </div>
-        </div>
-        <p class="text-sm font-medium text-emerald-800 dark:text-emerald-300 flex-1">{{ session('success') }}</p>
-        <button @click="show = false"
-            class="ml-auto shrink-0 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 transition-colors">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-@endif
-
-@if (session('error'))
-    <div x-data="{ show: true }" x-show="show" x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform -translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform -translate-y-2"
-         class="shrink-0 mb-3 sm:mb-4 bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-700/50 rounded-xl p-3 sm:p-4 flex items-center gap-3 shadow-sm">
-        <div class="shrink-0">
-            <div class="h-8 w-8 rounded-lg bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center">
-                <i class="fa-solid fa-circle-exclamation text-rose-600 dark:text-rose-400 text-sm"></i>
-            </div>
-        </div>
-        <p class="text-sm font-medium text-rose-800 dark:text-rose-300 flex-1">{{ session('error') }}</p>
-        <button @click="show = false"
-            class="ml-auto shrink-0 text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-200 transition-colors">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-@endif
-
 @php
     $hasActiveFilters = $date || $status || request('service_id') || request('master_id');
     $startOfMonth = $selectedDate->copy()->startOfMonth();

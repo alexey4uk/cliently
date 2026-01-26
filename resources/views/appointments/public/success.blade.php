@@ -15,14 +15,6 @@
         </p>
     </div>
     
-    @if(session('success'))
-    <div class="mb-4 sm:mb-5 lg:mb-4 p-3 sm:p-4 lg:p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
-        <p class="text-sm sm:text-base lg:text-sm text-emerald-800 dark:text-emerald-200 text-center">
-            {{ session('success') }}
-        </p>
-    </div>
-    @endif
-    
     <!-- Детали записи -->
     @if(isset($appointment))
     <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl lg:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 lg:p-4 mb-4 sm:mb-5 lg:mb-4">

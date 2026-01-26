@@ -128,12 +128,6 @@
             </div>
         @endif
 
-        <!-- Сообщения об ошибках -->
-        @if(session('error'))
-            <div class="mt-4 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg">
-                <p class="text-sm text-rose-600 dark:text-rose-400">{{ session('error') }}</p>
-            </div>
-        @endif
     </div>
 </div>
 @endsection
