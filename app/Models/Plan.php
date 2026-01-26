@@ -47,29 +47,50 @@ class Plan extends Model
     }
 
     /**
-     * Получить значение метрики тарифа
+     * Получить значение метрики тарифа (с кешированием)
      */
     public function getFeatureValue(string $key): mixed
     {
-        $feature = $this->features()->where('feature_key', $key)->first();
+        $cacheKey = "plan_{$this->id}_feature_{$key}";
 
-        if (! $feature) {
-            return null;
-        }
+        return Cache::remember($cacheKey, 3600, function () use ($key) {
+            $feature = $this->features()->where('feature_key', $key)->first();
 
-        return match ($feature->feature_type) {
-            'boolean' => $feature->feature_value === 'true',
-            'integer' => (int) $feature->feature_value,
-            default => $feature->feature_value,
-        };
+            if (! $feature) {
+                return null;
+            }
+
+            return match ($feature->feature_type) {
+                'boolean' => $feature->feature_value === 'true',
+                'integer' => (int) $feature->feature_value,
+                default => $feature->feature_value,
+            };
+        });
     }
 
     /**
-     * Проверить наличие метрики
+     * Проверить наличие метрики (с кешированием)
      */
     public function hasFeature(string $key): bool
     {
-        return $this->features()->where('feature_key', $key)->exists();
+        $cacheKey = "plan_{$this->id}_has_feature_{$key}";
+
+        return Cache::remember($cacheKey, 3600, function () use ($key) {
+            return $this->features()->where('feature_key', $key)->exists();
+        });
+    }
+
+    /**
+     * Очистить кеш features для плана
+     */
+    public function clearFeaturesCache(): void
+    {
+        // Очищаем все features для этого плана
+        $features = $this->features;
+        foreach ($features as $feature) {
+            Cache::forget("plan_{$this->id}_feature_{$feature->feature_key}");
+            Cache::forget("plan_{$this->id}_has_feature_{$feature->feature_key}");
+        }
     }
 
     /**

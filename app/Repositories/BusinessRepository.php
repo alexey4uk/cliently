@@ -20,6 +20,17 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
     }
 
     /**
+     * Найти бизнес по ID (с кешированием)
+     * Uses caching to avoid repeated DB queries.
+     */
+    public function findById(int $id): ?Business
+    {
+        return Cache::remember("business_{$id}", 1800, function () use ($id) {
+            return $this->model->find($id);
+        });
+    }
+
+    /**
      * Найти бизнес по токену Telegram
      * Uses caching to avoid repeated DB queries.
      */

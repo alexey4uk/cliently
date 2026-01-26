@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Master;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Репозиторий для работы с мастерами
@@ -19,37 +20,45 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
     }
 
     /**
-     * Получить активных мастеров для локации
+     * Получить активных мастеров для локации (с кешированием)
      */
     public function getActiveByLocation(int $locationId, ?int $serviceId = null): Collection
     {
-        $query = $this->model->whereHas('locations', function ($q) use ($locationId) {
-            $q->where('locations.id', $locationId);
-        })->where('is_active', true);
+        $cacheKey = "masters_active_location_{$locationId}" . ($serviceId ? "_service_{$serviceId}" : '');
 
-        if ($serviceId) {
-            $query->whereHas('services', function ($q) use ($serviceId) {
-                $q->where('services.id', $serviceId);
-            });
-        }
+        return Cache::remember($cacheKey, 1800, function () use ($locationId, $serviceId) {
+            $query = $this->model->whereHas('locations', function ($q) use ($locationId) {
+                $q->where('locations.id', $locationId);
+            })->where('is_active', true);
 
-        return $query->orderBy('first_name')->get();
+            if ($serviceId) {
+                $query->whereHas('services', function ($q) use ($serviceId) {
+                    $q->where('services.id', $serviceId);
+                });
+            }
+
+            return $query->orderBy('first_name')->get();
+        });
     }
 
     /**
-     * Получить активных мастеров для бизнеса
+     * Получить активных мастеров для бизнеса (с кешированием)
      */
     public function getActiveByBusiness(int $businessId, ?int $serviceId = null): Collection
     {
-        $query = $this->model->where('business_id', $businessId)->where('is_active', true);
+        $cacheKey = "masters_active_business_{$businessId}" . ($serviceId ? "_service_{$serviceId}" : '');
 
-        if ($serviceId) {
-            $query->whereHas('services', function ($q) use ($serviceId) {
-                $q->where('services.id', $serviceId);
-            });
-        }
+        return Cache::remember($cacheKey, 1800, function () use ($businessId, $serviceId) {
+            $query = $this->model->where('business_id', $businessId)->where('is_active', true);
 
-        return $query->orderBy('first_name')->get();
+            if ($serviceId) {
+                $query->whereHas('services', function ($q) use ($serviceId) {
+                    $q->where('services.id', $serviceId);
+                });
+            }
+
+            return $query->orderBy('first_name')->get();
+        });
     }
 
     /**

@@ -29,9 +29,7 @@ class SubscriptionController extends Controller
         $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
 
         // Получаем активные метрики с сортировкой
-        $metrics = SubscriptionMetric::where('is_active', true)
-            ->ordered()
-            ->get();
+        $metrics = SubscriptionMetric::getActiveCached();
 
         // Проверяем для каждого тарифа, использовал ли пользователь пробный период
         $subscriptionService = app(SubscriptionService::class);
@@ -72,9 +70,7 @@ class SubscriptionController extends Controller
         $plan->load('features');
 
         // Получаем активные метрики с сортировкой
-        $metrics = SubscriptionMetric::where('is_active', true)
-            ->ordered()
-            ->get();
+        $metrics = SubscriptionMetric::getActiveCached();
 
         return view('subscription.show', [
             'plan' => $plan,

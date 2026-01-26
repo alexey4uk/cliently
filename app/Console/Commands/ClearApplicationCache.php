@@ -148,6 +148,7 @@ class ClearApplicationCache extends Command
             case 'subscription':
                 if ($userId) {
                     $this->clearSubscriptionCache($userId);
+                    $this->clearPlanFeaturesCache();
                     $this->info("Subscription cache cleared for user ID: {$userId}");
                 } else {
                     $this->warn('Please specify --user option to clear subscription cache');
@@ -215,6 +216,9 @@ class ClearApplicationCache extends Command
             }
             Cache::forget("business_owner_{$businessId}");
             
+            // Очищаем связанные кеши
+            $this->clearBusinessRelatedCache((int) $businessId);
+            
             $this->info("Cache cleared for business ID: {$businessId} ({$business->name})");
         } else {
             $this->warn("Business with ID {$businessId} not found");
@@ -261,6 +265,9 @@ class ClearApplicationCache extends Command
         // Очищаем метрики выручки
         Cache::forget('analytics_revenue_metrics_'.today()->format('Y-m-d'));
         Cache::forget('analytics_invoice_status_stats');
+
+        // Clear plan features and subscription metrics
+        $this->clearPlanFeaturesCache();
 
         // Clear pivot caches (approximate - would need to know all user/business combinations)
         // These will expire naturally
@@ -321,6 +328,47 @@ class ClearApplicationCache extends Command
             Cache::forget("usage_{$userId}_{$featureKey}_" . now()->format('Y-m'));
             // Clear general cache
             Cache::forget("usage_{$userId}_{$featureKey}");
+        }
+    }
+
+    /**
+     * Clear plan features cache.
+     */
+    protected function clearPlanFeaturesCache(): void
+    {
+        // Очищаем кеш активных метрик подписок
+        Cache::forget('subscription_metrics_active');
+        
+        // Очищаем кеш планов (который включает features)
+        \App\Models\Plan::clearCache();
+        
+        // Примечание: Кеш отдельных features (plan_{id}_feature_{key}) очищается через PlanFeatureObserver
+    }
+
+    /**
+     * Clear business-related caches (masters, services, locations, clients).
+     */
+    protected function clearBusinessRelatedCache(?int $businessId = null): void
+    {
+        if ($businessId) {
+            // Очищаем кеш для конкретного бизнеса
+            // Мастера
+            Cache::forget("masters_active_business_{$businessId}");
+            // Очищаем все варианты с service_id (можно расширить при необходимости)
+            
+            // Услуги
+            Cache::forget("services_active_business_{$businessId}");
+            
+            // Локации
+            Cache::forget("locations_business_{$businessId}");
+            
+            // Клиенты (для всех возможных лимитов)
+            for ($limit = 5; $limit <= 20; $limit += 5) {
+                Cache::forget("clients_recent_dashboard_{$businessId}_{$limit}");
+            }
+        } else {
+            // Очищаем все кеши (не рекомендуется, но возможно)
+            // В этом случае лучше использовать теги кеша или полную очистку
         }
     }
 

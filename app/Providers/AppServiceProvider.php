@@ -38,5 +38,11 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Appointment::observe(\App\Observers\AppointmentObserver::class);
         \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
         \App\Models\Subscription::observe(\App\Observers\SubscriptionObserver::class);
+        \App\Models\PlanFeature::observe(\App\Observers\PlanFeatureObserver::class);
+        \App\Models\Business::observe(\App\Observers\BusinessObserver::class);
+        \App\Models\SubscriptionMetric::observe(\App\Observers\SubscriptionMetricObserver::class);
+        \App\Models\Service::observe(\App\Observers\ServiceObserver::class);
+        \App\Models\Location::observe(\App\Observers\LocationObserver::class);
+        \App\Models\Client::observe(\App\Observers\ClientObserver::class);
     }
 }
