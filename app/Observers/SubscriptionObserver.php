@@ -13,6 +13,7 @@ class SubscriptionObserver
     public function saved(Subscription $subscription): void
     {
         $this->clearAnalyticsCache();
+        $this->clearSubscriptionCache($subscription);
     }
 
     /**
@@ -21,6 +22,7 @@ class SubscriptionObserver
     public function deleted(Subscription $subscription): void
     {
         $this->clearAnalyticsCache();
+        $this->clearSubscriptionCache($subscription);
     }
 
     /**
@@ -32,6 +34,17 @@ class SubscriptionObserver
         $supportsTags = method_exists(Cache::getStore(), 'tags');
         if ($supportsTags) {
             Cache::tags(['panel_analytics'])->flush();
+        }
+    }
+
+    /**
+     * Clear subscription cache for user.
+     */
+    protected function clearSubscriptionCache(Subscription $subscription): void
+    {
+        if ($subscription->user_id) {
+            Cache::forget("user_subscription_{$subscription->user_id}");
+            Cache::forget("user_active_subscription_{$subscription->user_id}");
         }
     }
 }

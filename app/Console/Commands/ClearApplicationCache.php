@@ -302,6 +302,11 @@ class ClearApplicationCache extends Command
      */
     protected function clearSubscriptionCache(string $userId): void
     {
+        // Очищаем кеш подписок пользователя
+        Cache::forget("user_subscription_{$userId}");
+        Cache::forget("user_active_subscription_{$userId}");
+
+        // Очищаем кеш usage метрик
         $featureKeys = [
             'max_locations',
             'max_masters',

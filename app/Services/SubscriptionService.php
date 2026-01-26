@@ -109,6 +109,9 @@ class SubscriptionService
             $invoice->update(['subscription_id' => $subscription->id]);
         }
 
+        // Очищаем кеш подписок пользователя
+        $user->clearSubscriptionCache();
+
         // Инициализируем usage для всех метрик тарифа
         $this->initializeUsage($subscription);
 

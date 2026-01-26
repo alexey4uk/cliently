@@ -297,6 +297,9 @@ class BepaidWebhookController extends Controller
                 'metadata' => $metadata, // Обновляем metadata с информацией о предыдущем тарифе
             ]);
 
+            // Очищаем кеш подписок пользователя
+            $user->clearSubscriptionCache();
+
             Log::info('Subscription activated after payment', [
                 'subscription_id' => $subscription->id,
                 'invoice_id' => $invoice->id,
