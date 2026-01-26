@@ -824,17 +824,21 @@ class AnalyticsController extends Controller
             $clientIdsInPeriod = $appointmentsInPeriod->pluck('client_id')->unique();
 
             // Новые клиенты (первая запись в периоде)
+            // Оптимизация: получаем все первые записи одним запросом вместо N+1
+            $firstAppointments = \App\Models\Appointment::where('business_id', $businessId)
+                ->whereIn('client_id', $clientIdsInPeriod)
+                ->select('client_id', \DB::raw('MIN(date) as first_date'))
+                ->groupBy('client_id')
+                ->get()
+                ->keyBy('client_id');
+
             $newClients = [];
             $returningClients = [];
 
             foreach ($clientIdsInPeriod as $clientId) {
-                $firstAppointmentEver = \App\Models\Appointment::where('business_id', $businessId)
-                    ->where('client_id', $clientId)
-                    ->orderBy('date', 'asc')
-                    ->orderBy('time', 'asc')
-                    ->first();
+                $firstAppointment = $firstAppointments->get($clientId);
 
-                if ($firstAppointmentEver && $firstAppointmentEver->date->format('Y-m-d') >= $startDate->format('Y-m-d')) {
+                if ($firstAppointment && $firstAppointment->first_date >= $startDate->format('Y-m-d')) {
                     $newClients[] = $clientId;
                 } else {
                     $returningClients[] = $clientId;

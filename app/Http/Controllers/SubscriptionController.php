@@ -31,14 +31,12 @@ class SubscriptionController extends Controller
         // Получаем активные метрики с сортировкой
         $metrics = SubscriptionMetric::getActiveCached();
 
-        // Проверяем для каждого тарифа, использовал ли пользователь пробный период
+        // Проверяем для всех тарифов сразу, использовал ли пользователь пробный период (оптимизация N+1)
         $subscriptionService = app(SubscriptionService::class);
-        $trialUsage = [];
-        foreach ($plans as $plan) {
-            if ($plan->trial_days > 0 && $plan->price !== null) {
-                $trialUsage[$plan->id] = $subscriptionService->hasUsedTrialForPlan($user, $plan);
-            }
-        }
+        $plansWithTrial = $plans->filter(fn($plan) => $plan->trial_days > 0 && $plan->price !== null);
+        $trialUsage = $plansWithTrial->isNotEmpty() 
+            ? $subscriptionService->hasUsedTrialForPlans($user, $plansWithTrial) 
+            : [];
 
         return view('subscription.index', [
             'plans' => $plans,

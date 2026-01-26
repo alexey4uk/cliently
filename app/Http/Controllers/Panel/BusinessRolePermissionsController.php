@@ -26,12 +26,16 @@ class BusinessRolePermissionsController extends Controller
         $roles = \App\Models\BusinessRole::whereNull('owner_id')
             ->orderBy('name')
             ->get();
+        
+        // Получаем permissions для всех ролей одним запросом (оптимизация N+1)
+        $roleIds = $roles->pluck('id')->toArray();
+        $allPermissions = $service->getPermissionsForRoles($roleIds);
+        
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
-            $permissions = $service->getPermissionsForRole($role->id);
             $rolesWithPermissions[] = [
                 'role' => $role,
-                'permissions' => $permissions,
+                'permissions' => $allPermissions[$role->id] ?? [],
             ];
         }
 
