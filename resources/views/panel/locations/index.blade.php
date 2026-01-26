@@ -21,8 +21,13 @@
                 </div>
                 <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                     <div class="text-left sm:text-right">
-                        <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $locations->total() }}</p>
-                        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего локаций</p>
+                        @if(method_exists($locations, 'total'))
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $locations->total() }}</p>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего локаций</p>
+                        @else
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $locations->count() }}</p>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">На странице</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -395,12 +400,16 @@
                     <div class="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-5">
                         <div class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 text-center sm:text-left">
                             <span class="font-medium">Показано</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $locations->firstItem() }}</span>
-                            <span class="font-medium">—</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $locations->lastItem() }}</span>
-                            <span class="font-medium">из</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $locations->total() }}</span>
-                            <span class="font-medium">локаций</span>
+                            @if(method_exists($locations, 'total'))
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $locations->firstItem() }}</span>
+                                <span class="font-medium">—</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $locations->lastItem() }}</span>
+                                <span class="font-medium">из</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $locations->total() }}</span>
+                                <span class="font-medium">локаций</span>
+                            @else
+                                <span class="font-medium">Страница {{ $locations->currentPage() }}</span>
+                            @endif
                         </div>
                         <div class="flex items-center justify-center">
                             {{ $locations->links() }}
