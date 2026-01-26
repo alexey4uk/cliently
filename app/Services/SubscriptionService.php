@@ -256,10 +256,10 @@ class SubscriptionService
         }
 
         // Получаем все usage для месячных метрик одним запросом
-        $monthlyKeys = array_filter($featureKeys, fn($key) => $this->isMonthlyMetric($key));
-        
+        $monthlyKeys = array_filter($featureKeys, fn ($key) => $this->isMonthlyMetric($key));
+
         $usageData = [];
-        if (!empty($monthlyKeys)) {
+        if (! empty($monthlyKeys)) {
             $usages = SubscriptionUsage::where('user_id', $user->id)
                 ->whereIn('feature_key', $monthlyKeys)
                 ->where('period_start', '<=', now())
@@ -274,7 +274,7 @@ class SubscriptionService
 
         // Для остальных метрик считаем напрямую
         foreach ($featureKeys as $key) {
-            if (!isset($usageData[$key])) {
+            if (! isset($usageData[$key])) {
                 $usageData[$key] = $this->getCurrentUsage($user, $key);
             }
         }
@@ -284,7 +284,7 @@ class SubscriptionService
         foreach ($featureKeys as $key) {
             $current = $usageData[$key] ?? 0;
             $limit = $subscription->getFeatureLimit($key);
-            
+
             $result[$key] = [
                 'current' => $current,
                 'limit' => $limit,
@@ -496,6 +496,7 @@ class SubscriptionService
             // Проверяем в metadata
             if (in_array($plan->id, $usedTrials)) {
                 $result[$plan->id] = true;
+
                 continue;
             }
 

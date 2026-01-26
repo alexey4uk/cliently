@@ -97,7 +97,7 @@ class BusinessRolePermissionService
 
         // Заполняем пустые роли
         foreach ($roleIds as $roleId) {
-            if (!isset($permissions[$roleId])) {
+            if (! isset($permissions[$roleId])) {
                 $permissions[$roleId] = [];
             }
         }

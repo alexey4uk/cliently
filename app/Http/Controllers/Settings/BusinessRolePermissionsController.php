@@ -33,11 +33,11 @@ class BusinessRolePermissionsController extends Controller
         $service = app(BusinessRolePermissionService::class);
         $ownerId = $this->getBusinessOwnerId($business);
         $roles = $service->getAvailableRoles(false, $ownerId);
-        
+
         // Получаем permissions для всех ролей одним запросом (оптимизация N+1)
         $roleIds = $roles->pluck('id')->toArray();
         $allPermissions = $service->getPermissionsForRoles($roleIds);
-        
+
         $rolesWithPermissions = [];
         foreach ($roles as $role) {
             $rolesWithPermissions[] = [

@@ -144,7 +144,7 @@ class AppointmentController extends Controller
         try {
             $location = $business->locations()->findOrFail($locationId);
             $service = $business->services()->findOrFail($serviceId);
-            
+
             // Загружаем мастера с предзагрузкой связей для проверки
             $master = $business->masters()
                 ->with(['locations', 'services'])
@@ -186,7 +186,7 @@ class AppointmentController extends Controller
         // Используем единый метод, который вернет и слоты для текущей даты, и информацию о других датах
         // Это избегает дублирующихся запросов к БД
         $endOfNextMonth = Carbon::today()->endOfMonth()->addMonth()->endOfMonth();
-        
+
         $result = $this->slotService->getAvailableSlotsWithCalendar(
             $service,       // Передаем объект service вместо ID
             $master,        // Передаем объект master вместо ID
@@ -194,7 +194,7 @@ class AppointmentController extends Controller
             Carbon::today(),
             $endOfNextMonth
         );
-        
+
         $availableSlots = $result['slots'];
         $datesWithSlots = $result['calendar'];
 

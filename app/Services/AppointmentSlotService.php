@@ -445,7 +445,7 @@ class AppointmentSlotService
     ): array {
         $duration = $service->duration;
         $masterId = $master->id;
-        
+
         // Используем уже загруженного мастера вместо запроса к БД
         $masters = collect([$master]);
 
@@ -482,6 +482,7 @@ class AppointmentSlotService
             if (empty($timeWindows)) {
                 $calendar[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -491,6 +492,7 @@ class AppointmentSlotService
             if (empty($slots)) {
                 $calendar[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -500,6 +502,7 @@ class AppointmentSlotService
             if (empty($slotsFittingDuration)) {
                 $calendar[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -512,7 +515,7 @@ class AppointmentSlotService
                 $masterId
             );
 
-            $hasSlots = !empty($availableSlots);
+            $hasSlots = ! empty($availableSlots);
             $calendar[$dateString] = $hasSlots;
 
             // Если это выбранная дата - сохраняем её слоты
@@ -596,6 +599,7 @@ class AppointmentSlotService
             if ($currentDate && $dateString === $currentDate) {
                 $datesWithSlots[$dateString] = ! empty($currentDateSlots);
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -605,6 +609,7 @@ class AppointmentSlotService
             if (empty($timeWindows)) {
                 $datesWithSlots[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -614,6 +619,7 @@ class AppointmentSlotService
             if (empty($slots)) {
                 $datesWithSlots[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 
@@ -623,6 +629,7 @@ class AppointmentSlotService
             if (empty($slotsFittingDuration)) {
                 $datesWithSlots[$dateString] = false;
                 $checkDate->addDay();
+
                 continue;
             }
 

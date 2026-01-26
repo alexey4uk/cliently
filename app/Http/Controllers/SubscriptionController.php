@@ -33,9 +33,9 @@ class SubscriptionController extends Controller
 
         // Проверяем для всех тарифов сразу, использовал ли пользователь пробный период (оптимизация N+1)
         $subscriptionService = app(SubscriptionService::class);
-        $plansWithTrial = $plans->filter(fn($plan) => $plan->trial_days > 0 && $plan->price !== null);
-        $trialUsage = $plansWithTrial->isNotEmpty() 
-            ? $subscriptionService->hasUsedTrialForPlans($user, $plansWithTrial) 
+        $plansWithTrial = $plans->filter(fn ($plan) => $plan->trial_days > 0 && $plan->price !== null);
+        $trialUsage = $plansWithTrial->isNotEmpty()
+            ? $subscriptionService->hasUsedTrialForPlans($user, $plansWithTrial)
             : [];
 
         return view('subscription.index', [

@@ -229,7 +229,7 @@ class BepaidWebhookController extends Controller
         // Если подписки нет, создаем её
         if (! $subscription) {
             $subscription = $this->subscriptionService->createSubscription($user, $plan, false, $invoice);
-            
+
             if (config('bepaid.logging.enabled')) {
                 Log::info('Subscription created after payment', [
                     'subscription_id' => $subscription->id,
