@@ -30,7 +30,7 @@ class ServiceObserver
     {
         if ($service->business_id) {
             Cache::forget("services_active_business_{$service->business_id}");
-            
+
             // Также очищаем кеш мастеров, так как они зависят от услуг
             // Очищаем все варианты кеша мастеров для этого бизнеса
             // Это будет сделано через MasterObserver при обновлении связей

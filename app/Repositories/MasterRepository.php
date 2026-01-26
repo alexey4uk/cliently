@@ -24,7 +24,7 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
      */
     public function getActiveByLocation(int $locationId, ?int $serviceId = null): Collection
     {
-        $cacheKey = "masters_active_location_{$locationId}" . ($serviceId ? "_service_{$serviceId}" : '');
+        $cacheKey = "masters_active_location_{$locationId}".($serviceId ? "_service_{$serviceId}" : '');
 
         return Cache::remember($cacheKey, 1800, function () use ($locationId, $serviceId) {
             $query = $this->model->whereHas('locations', function ($q) use ($locationId) {
@@ -46,7 +46,7 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
      */
     public function getActiveByBusiness(int $businessId, ?int $serviceId = null): Collection
     {
-        $cacheKey = "masters_active_business_{$businessId}" . ($serviceId ? "_service_{$serviceId}" : '');
+        $cacheKey = "masters_active_business_{$businessId}".($serviceId ? "_service_{$serviceId}" : '');
 
         return Cache::remember($cacheKey, 1800, function () use ($businessId, $serviceId) {
             $query = $this->model->where('business_id', $businessId)->where('is_active', true);

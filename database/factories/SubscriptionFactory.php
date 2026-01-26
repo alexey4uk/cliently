@@ -44,7 +44,7 @@ class SubscriptionFactory extends Factory
     {
         $now = now();
 
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'trial',
             'trial_ends_at' => $now->copy()->addDays(7),
             'ends_at' => null,
@@ -58,7 +58,7 @@ class SubscriptionFactory extends Factory
     {
         $now = now();
 
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'active',
             'ends_at' => $now->copy()->subDay(),
         ]);
@@ -71,7 +71,7 @@ class SubscriptionFactory extends Factory
     {
         $now = now();
 
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'active',
             'cancelled_at' => $now,
             'ends_at' => $now->copy()->addMonth(),
@@ -85,7 +85,7 @@ class SubscriptionFactory extends Factory
     {
         $now = now();
 
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'trial',
             'trial_ends_at' => $now->copy()->subDay(),
             'ends_at' => null,
@@ -99,7 +99,7 @@ class SubscriptionFactory extends Factory
     {
         $now = now();
 
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'metadata' => [
                 'previous_plan_id' => $previousPlanId,
                 'previous_plan_name' => $previousPlanName,
@@ -114,7 +114,7 @@ class SubscriptionFactory extends Factory
      */
     public function withUsedTrials(array $planIds): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'metadata' => [
                 'used_trials' => $planIds,
             ],

@@ -67,7 +67,7 @@ class RedirectToSetupIfNoAdmin
             if (! \Illuminate\Support\Facades\Schema::hasTable('roles')) {
                 return false;
             }
-            
+
             return User::role('admin')->exists();
         } catch (\Exception $e) {
             // Если произошла ошибка (например, таблицы еще не созданы), считаем что админа нет

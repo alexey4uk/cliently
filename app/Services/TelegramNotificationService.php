@@ -573,7 +573,7 @@ class TelegramNotificationService
         $message .= "💳 Старый тариф: {$oldPlan->name}\n";
         $message .= "📅 Истек: {$trialEndedAt}\n";
         $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
-        $message .= "Ваш тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите подписку.";
+        $message .= 'Ваш тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите подписку.';
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -595,7 +595,7 @@ class TelegramNotificationService
         $message .= "💳 Тариф: {$plan->name}\n";
         $message .= "📅 Истекает: {$endsAt}\n";
         $message .= "⏳ Осталось дней: {$daysLeft}\n\n";
-        $message .= "Продлите подписку для продолжения использования всех функций.";
+        $message .= 'Продлите подписку для продолжения использования всех функций.';
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -616,7 +616,7 @@ class TelegramNotificationService
         $message .= "💳 Старый тариф: {$oldPlan->name}\n";
         $message .= "📅 Истекла: {$expiredAt}\n";
         $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
-        $message .= "Ваша подписка истекла. Тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите новую подписку.";
+        $message .= 'Ваша подписка истекла. Тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите новую подписку.';
 
         self::sendMessageToUser($recipient, $message);
     }

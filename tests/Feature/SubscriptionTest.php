@@ -3,9 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
-use App\Models\Invoice;
 use App\Models\Plan;
-use App\Models\PlanFeature;
 use App\Models\Subscription;
 use App\Models\SubscriptionMetric;
 use App\Models\User;
@@ -72,7 +70,7 @@ class SubscriptionTest extends TestCase
         \Illuminate\Support\Facades\Cache::forget("business_owner_{$business->id}");
         \Illuminate\Support\Facades\Cache::forget("business_{$business->id}");
         \Illuminate\Support\Facades\Cache::forget("business_role_{$ownerRole->id}");
-        \Illuminate\Support\Facades\Cache::forget("business_role_slug_owner");
+        \Illuminate\Support\Facades\Cache::forget('business_role_slug_owner');
 
         return ['user' => $user, 'business' => $business, 'role' => $ownerRole];
     }
@@ -86,6 +84,7 @@ class SubscriptionTest extends TestCase
         if (! $business) {
             throw new \InvalidArgumentException('createUserWithBusiness must return business');
         }
+
         return $this->withSession(['current_business_id' => $business->id]);
     }
 

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\Business;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentSlotService;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 class AppointmentSlotController extends Controller
 {
     protected AppointmentSlotService $slotService;
+
     protected BusinessRepositoryInterface $businessRepository;
 
     public function __construct(
@@ -31,7 +31,7 @@ class AppointmentSlotController extends Controller
     public function getAvailableSlots(Request $request, string $slug): JsonResponse
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 

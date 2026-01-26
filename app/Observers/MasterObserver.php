@@ -47,25 +47,25 @@ class MasterObserver
      */
     protected function clearMasterCache(Master $master): void
     {
-        if (!$master->business_id) {
+        if (! $master->business_id) {
             return;
         }
 
         // Очищаем кеш для бизнеса (со всеми возможными service_id)
         Cache::forget("masters_active_business_{$master->business_id}");
-        
+
         // Загружаем связи, если они еще не загружены
-        if (!$master->relationLoaded('services')) {
+        if (! $master->relationLoaded('services')) {
             $master->load('services');
         }
-        
+
         // Очищаем кеш для бизнеса с каждым service_id мастера
         foreach ($master->services as $service) {
             Cache::forget("masters_active_business_{$master->business_id}_service_{$service->id}");
         }
 
         // Загружаем связи локаций, если они еще не загружены
-        if (!$master->relationLoaded('locations')) {
+        if (! $master->relationLoaded('locations')) {
             $master->load('locations');
         }
 

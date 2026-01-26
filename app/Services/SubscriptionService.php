@@ -197,7 +197,7 @@ class SubscriptionService
 
         // Для месячных метрик используем usage с кешированием
         if ($this->isMonthlyMetric($featureKey)) {
-            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
 
             return Cache::remember($cacheKey, 300, function () use ($user, $featureKey) {
                 $usage = SubscriptionUsage::where('user_id', $user->id)
@@ -271,7 +271,7 @@ class SubscriptionService
             $usage->increment('current_usage', $amount);
 
             // Очищаем кеш
-            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
             Cache::forget($cacheKey);
         } else {
             // Очищаем кеш для немесячных метрик
@@ -306,7 +306,7 @@ class SubscriptionService
             }
 
             // Очищаем кеш
-            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
             Cache::forget($cacheKey);
         } else {
             // Очищаем кеш для немесячных метрик

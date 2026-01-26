@@ -7,7 +7,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -49,7 +48,7 @@ class SubscriptionWebhookTest extends TestCase
 
         $current = $settings->getCurrentSettings();
 
-        return 'Basic ' . base64_encode($current['shop_id'] . ':' . $current['secret_key']);
+        return 'Basic '.base64_encode($current['shop_id'].':'.$current['secret_key']);
     }
 
     public function test_webhook_activates_subscription_after_payment()
@@ -67,7 +66,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -140,7 +139,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -163,7 +162,6 @@ class SubscriptionWebhookTest extends TestCase
                 'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
-
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
@@ -214,7 +212,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -237,7 +235,6 @@ class SubscriptionWebhookTest extends TestCase
                 'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
-
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
@@ -281,7 +278,7 @@ class SubscriptionWebhookTest extends TestCase
         ];
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
-            'Authorization' => 'Basic ' . base64_encode('wrong:credentials'),
+            'Authorization' => 'Basic '.base64_encode('wrong:credentials'),
         ]);
 
         $response->assertStatus(401);

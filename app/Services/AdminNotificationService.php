@@ -301,7 +301,7 @@ class AdminNotificationService
         // 1. Уведомляем владельца бизнеса (owner)
         if ($business) {
             $owner = $business->users()->wherePivot('role', 'owner')->first();
-            
+
             if ($owner && NotificationSettingsService::isTypeEnabled($owner, 'subscription.expiring')) {
                 NotificationService::send([
                     'user_id' => $owner->id,

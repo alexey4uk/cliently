@@ -42,7 +42,7 @@ class TicketSettings extends Model
     public static function getGlobal(): self
     {
         $settings = self::first();
-        
+
         if (! $settings) {
             $settings = self::create([
                 'enabled' => true,
@@ -53,7 +53,7 @@ class TicketSettings extends Model
                 'email_notification_recipients' => [],
             ]);
         }
-        
+
         return $settings;
     }
 }

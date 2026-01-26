@@ -43,6 +43,7 @@ trait HasCurrentBusiness
                 $userBusinesses = $this->getUserBusinesses($user);
                 if ($userBusinesses->contains($business->id)) {
                     app()->instance($cacheKey, $business);
+
                     return $business;
                 }
             }
@@ -92,6 +93,7 @@ trait HasCurrentBusiness
 
         if (! $pivotData) {
             app()->instance($cacheKey, null);
+
             return null;
         }
 
@@ -102,6 +104,7 @@ trait HasCurrentBusiness
             $role = \App\Models\BusinessRole::getCached($pivotData->role_id);
             if ($role) {
                 app()->instance($cacheKey, $role);
+
                 return $role;
             }
         }
@@ -120,11 +123,13 @@ trait HasCurrentBusiness
                 Cache::forget("business_user_pivot_{$user->id}_{$business->id}");
 
                 app()->instance($cacheKey, $role);
+
                 return $role;
             }
         }
 
         app()->instance($cacheKey, null);
+
         return null;
     }
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PublicAppointmentRequest;
 use App\Models\Appointment;
-use App\Models\Business;
 use App\Models\Client;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentNotificationService;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 class AppointmentController extends Controller
 {
     protected AppointmentSlotService $slotService;
+
     protected BusinessRepositoryInterface $businessRepository;
 
     public function __construct(
@@ -34,7 +34,7 @@ class AppointmentController extends Controller
     public function show(string $slug)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -54,7 +54,7 @@ class AppointmentController extends Controller
     public function selectLocation(string $slug, $locationId)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -80,7 +80,7 @@ class AppointmentController extends Controller
     public function selectService(string $slug, $locationId, $serviceId)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -131,7 +131,7 @@ class AppointmentController extends Controller
     public function selectTime(string $slug, $locationId, $serviceId, $masterId)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -306,7 +306,7 @@ class AppointmentController extends Controller
     public function store(PublicAppointmentRequest $request, string $slug)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -337,7 +337,7 @@ class AppointmentController extends Controller
         }
 
         $client = Client::where('business_id', $business->id)
-            ->whereHas('phones', fn($q) => $q->where('phone', $validated['phone']))
+            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
             ->first();
 
         if (! $client) {
@@ -346,7 +346,7 @@ class AppointmentController extends Controller
 
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
             }
 
             $client = Client::create([
@@ -412,7 +412,7 @@ class AppointmentController extends Controller
         $appointment = null;
 
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
 
@@ -473,7 +473,7 @@ class AppointmentController extends Controller
     public function view(string $slug, string $token)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
         $appointment = Appointment::where('token', $token)
@@ -490,7 +490,7 @@ class AppointmentController extends Controller
     public function cancel(Request $request, string $slug, string $token)
     {
         $business = $this->businessRepository->findBySlug($slug);
-        if (!$business) {
+        if (! $business) {
             abort(404);
         }
         $appointment = Appointment::where('token', $token)

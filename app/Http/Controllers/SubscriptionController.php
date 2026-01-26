@@ -113,7 +113,7 @@ class SubscriptionController extends Controller
         $isPlanChange = $currentPlan && $currentPlan->id !== $plan->id;
         $isUpgrade = false;
         $isDowngrade = false;
-        
+
         if ($isPlanChange && $currentPlan && $plan->price) {
             $currentPrice = $currentPlan->price ?? 0;
             $newPrice = $plan->price ?? 0;
@@ -138,7 +138,7 @@ class SubscriptionController extends Controller
             } elseif ($hasUsedTrial && $canUseTrial) {
                 $message .= ' Пробный период для этого тарифа уже был использован ранее.';
             }
-            
+
             // Если это смена тарифа, добавляем информацию о сохранении времени
             if ($isPlanChange && $currentSubscription && $currentSubscription->ends_at && $currentSubscription->ends_at->isFuture()) {
                 $message .= " Оплаченное время сохранено до {$currentSubscription->ends_at->format('d.m.Y')}.";
@@ -162,7 +162,7 @@ class SubscriptionController extends Controller
                 'plan_name' => $plan->name,
                 'plan_interval' => $plan->interval,
             ];
-            
+
             // Если это смена тарифа, добавляем информацию в metadata
             if ($isPlanChange && $currentSubscription) {
                 $invoiceMetadata['is_plan_change'] = true;
@@ -174,7 +174,7 @@ class SubscriptionController extends Controller
                     $invoiceMetadata['old_ends_at'] = $currentSubscription->ends_at->toIso8601String();
                 }
             }
-            
+
             $invoice = Invoice::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,

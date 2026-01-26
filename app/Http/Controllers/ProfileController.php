@@ -23,7 +23,7 @@ class ProfileController extends Controller
         // Определяем контекст: panel или client
         $isPanel = $request->routeIs('panel.profile.edit') || str_starts_with($request->path(), 'panel');
         $view = $isPanel ? 'profile-panel' : 'profile';
-        
+
         return view($view, [
             'user' => $request->user(),
             'countries' => Country::getCached(),
@@ -112,7 +112,7 @@ class ProfileController extends Controller
         // Определяем контекст для редиректа
         $isPanel = $request->routeIs('panel.profile.update') || str_starts_with($request->path(), 'panel');
         $redirectRoute = $isPanel ? 'panel.profile.edit' : 'profile.edit';
-        
+
         return redirect()->route($redirectRoute)->with('success', 'Профиль успешно обновлен');
     }
 
@@ -138,7 +138,7 @@ class ProfileController extends Controller
         // Определяем контекст для редиректа
         $isPanel = $request->routeIs('panel.profile.password.update') || str_starts_with($request->path(), 'panel');
         $redirectRoute = $isPanel ? 'panel.profile.edit' : 'profile.edit';
-        
+
         return redirect()->route($redirectRoute)->with('success', 'Пароль успешно изменен');
     }
 

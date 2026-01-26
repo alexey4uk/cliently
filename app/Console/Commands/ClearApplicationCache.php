@@ -86,7 +86,7 @@ class ClearApplicationCache extends Command
                 } else {
                     Cache::forget('businesses_total_count');
                     Cache::forget('businesses_list_filter');
-                    $this->info("Business cache cleared");
+                    $this->info('Business cache cleared');
                 }
                 break;
 
@@ -161,12 +161,13 @@ class ClearApplicationCache extends Command
             default:
                 $this->error("Unknown tag: {$tag}");
                 $this->info('Available tags: dashboard, businesses, roles, permissions, countries, analytics, panel_analytics, subscription, all');
+
                 return 1;
         }
 
-        if (!empty($tags)) {
+        if (! empty($tags)) {
             Cache::tags($tags)->flush();
-            $this->info("Cache cleared for tags: " . implode(', ', $tags));
+            $this->info('Cache cleared for tags: '.implode(', ', $tags));
         }
 
         return 0;
@@ -180,7 +181,7 @@ class ClearApplicationCache extends Command
         // Clear user-specific cache
         Cache::forget("user_businesses_{$userId}");
         Cache::forget("current_business_{$userId}");
-        
+
         // Clear current business role cache for all businesses of this user
         $user = User::find($userId);
         if ($user) {
@@ -197,6 +198,7 @@ class ClearApplicationCache extends Command
         $this->clearSubscriptionCache($userId);
 
         $this->info("Cache cleared for user ID: {$userId}");
+
         return 0;
     }
 
@@ -207,7 +209,7 @@ class ClearApplicationCache extends Command
     {
         // Get business to clear by slug and token
         $business = Business::find($businessId);
-        
+
         if ($business) {
             Cache::forget("business_{$businessId}");
             Cache::forget("business_slug_{$business->slug}");
@@ -215,10 +217,10 @@ class ClearApplicationCache extends Command
                 Cache::forget("business_telegram_token_{$business->telegram_token}");
             }
             Cache::forget("business_owner_{$businessId}");
-            
+
             // Очищаем связанные кеши
             $this->clearBusinessRelatedCache((int) $businessId);
-            
+
             $this->info("Cache cleared for business ID: {$businessId} ({$business->name})");
         } else {
             $this->warn("Business with ID {$businessId} not found");
@@ -325,7 +327,7 @@ class ClearApplicationCache extends Command
 
         foreach ($featureKeys as $featureKey) {
             // Clear current month cache
-            Cache::forget("usage_{$userId}_{$featureKey}_" . now()->format('Y-m'));
+            Cache::forget("usage_{$userId}_{$featureKey}_".now()->format('Y-m'));
             // Clear general cache
             Cache::forget("usage_{$userId}_{$featureKey}");
         }
@@ -338,10 +340,10 @@ class ClearApplicationCache extends Command
     {
         // Очищаем кеш активных метрик подписок
         Cache::forget('subscription_metrics_active');
-        
+
         // Очищаем кеш планов (который включает features)
         \App\Models\Plan::clearCache();
-        
+
         // Примечание: Кеш отдельных features (plan_{id}_feature_{key}) очищается через PlanFeatureObserver
     }
 
@@ -355,13 +357,13 @@ class ClearApplicationCache extends Command
             // Мастера
             Cache::forget("masters_active_business_{$businessId}");
             // Очищаем все варианты с service_id (можно расширить при необходимости)
-            
+
             // Услуги
             Cache::forget("services_active_business_{$businessId}");
-            
+
             // Локации
             Cache::forget("locations_business_{$businessId}");
-            
+
             // Клиенты (для всех возможных лимитов)
             for ($limit = 5; $limit <= 20; $limit += 5) {
                 Cache::forget("clients_recent_dashboard_{$businessId}_{$limit}");
