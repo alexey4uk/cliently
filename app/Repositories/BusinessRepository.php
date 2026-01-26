@@ -113,12 +113,13 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить список всех бизнесов для фильтров
+     * ОПТИМИЗИРОВАНО: загружаем только id и name
      * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function getAllForFilter(): Collection
     {
         return Cache::remember('businesses_list_filter', 600, function () {
-            return $this->model->orderBy('name')->get();
+            return $this->model->select(['id', 'name'])->orderBy('name')->get();
         });
     }
 

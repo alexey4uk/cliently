@@ -21,8 +21,13 @@
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $appointments->total() }}</p>
-                    <p class="text-sm text-slate-600 dark:text-slate-400">Всего записей</p>
+                    @if(method_exists($appointments, 'total'))
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $appointments->total() }}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">Всего записей</p>
+                    @else
+                        <p class="text-3xl font-bold text-slate-900 dark:text-white">{{ $appointments->count() }}</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">На странице</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -445,15 +450,21 @@
             @if ($appointments->hasPages())
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm px-6 py-5">
                     <div class="flex flex-col lg:flex-row items-center justify-between gap-5">
-                        <div class="text-sm text-slate-600 dark:text-slate-400">
-                            <span class="font-medium">Показано</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->firstItem() }}</span>
-                            <span class="font-medium">—</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->lastItem() }}</span>
-                            <span class="font-medium">из</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->total() }}</span>
-                            <span class="font-medium">записей</span>
-                        </div>
+                        @if(method_exists($appointments, 'total'))
+                            <div class="text-sm text-slate-600 dark:text-slate-400">
+                                <span class="font-medium">Показано</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->firstItem() }}</span>
+                                <span class="font-medium">—</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->lastItem() }}</span>
+                                <span class="font-medium">из</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $appointments->total() }}</span>
+                                <span class="font-medium">записей</span>
+                            </div>
+                        @else
+                            <div class="text-sm text-slate-600 dark:text-slate-400">
+                                <span class="font-medium">Страница {{ $appointments->currentPage() }}</span>
+                            </div>
+                        @endif
 
                         <div class="flex items-center gap-1">
                             <!-- Кнопки навигации -->
@@ -467,18 +478,47 @@
                                 </a>
                             @endif
 
-                            <!-- Номера страниц -->
-                            @foreach ($appointments->getUrlRange(1, $appointments->lastPage()) as $page => $url)
-                                @if ($page == $appointments->currentPage())
-                                    <button disabled class="w-11 h-11 flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold cursor-default shadow-sm">
-                                        {{ $page }}
-                                    </button>
-                                @else
-                                    <a href="{{ $url }}" class="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md">
-                                        {{ $page }}
+                            <!-- Номера страниц (только для полной пагинации) -->
+                            @if(method_exists($appointments, 'lastPage'))
+                                @php
+                                    $currentPage = $appointments->currentPage();
+                                    $lastPage = $appointments->lastPage();
+                                    $range = 3; // Показываем по 3 страницы с каждой стороны
+                                    
+                                    $start = max(1, $currentPage - $range);
+                                    $end = min($lastPage, $currentPage + $range);
+                                @endphp
+                                
+                                @if ($start > 1)
+                                    <a href="{{ $appointments->url(1) }}" class="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md">
+                                        1
+                                    </a>
+                                    @if ($start > 2)
+                                        <span class="w-11 h-11 flex items-center justify-center text-slate-400">...</span>
+                                    @endif
+                                @endif
+                                
+                                @for ($page = $start; $page <= $end; $page++)
+                                    @if ($page == $currentPage)
+                                        <button disabled class="w-11 h-11 flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold cursor-default shadow-sm">
+                                            {{ $page }}
+                                        </button>
+                                    @else
+                                        <a href="{{ $appointments->url($page) }}" class="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endfor
+                                
+                                @if ($end < $lastPage)
+                                    @if ($end < $lastPage - 1)
+                                        <span class="w-11 h-11 flex items-center justify-center text-slate-400">...</span>
+                                    @endif
+                                    <a href="{{ $appointments->url($lastPage) }}" class="w-11 h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md">
+                                        {{ $lastPage }}
                                     </a>
                                 @endif
-                            @endforeach
+                            @endif
 
                             <!-- Кнопка "Вперед" -->
                             @if ($appointments->hasMorePages())

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
@@ -24,29 +25,49 @@ class AppointmentController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'date');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100); // ВАЖНО: максимум 100 записей
         $statusFilter = request('status', '');
         $businessFilter = request('business_id', '');
         $dateFilter = request('date', '');
 
-        $query = Appointment::with(['client', 'master', 'service', 'location', 'business']);
+        // ОПТИМИЗИРОВАНО: Используем JOIN вместо whereHas для поиска
+        $query = Appointment::query();
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК: Подзапросы с FULLTEXT индексами
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('client', function ($clientQuery) use ($search) {
-                    $clientQuery->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
-                })
-                    ->orWhereHas('service', function ($serviceQuery) use ($search) {
-                        $serviceQuery->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('master', function ($masterQuery) use ($search) {
-                        $masterQuery->where('name', 'like', "%{$search}%");
-                    });
-            });
+            // Добавляем * для частичного совпадения (как LIKE "%search%")
+            $searchTerm = $search . '*';
+            
+            // Находим ID подходящих записей через подзапросы (БЫСТРО!)
+            $clientIds = DB::table('clients')
+                ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->pluck('id');
+            
+            $serviceIds = DB::table('services')
+                ->whereRaw("MATCH(name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->pluck('id');
+            
+            $masterIds = DB::table('masters')
+                ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->pluck('id');
+            
+            // Фильтруем appointments по найденным ID
+            $query->where(function ($q) use ($clientIds, $serviceIds, $masterIds) {
+                if ($clientIds->isNotEmpty()) {
+                    $q->orWhereIn('client_id', $clientIds);
+                }
+                if ($serviceIds->isNotEmpty()) {
+                    $q->orWhereIn('service_id', $serviceIds);
+                }
+                if ($masterIds->isNotEmpty()) {
+                    $q->orWhereIn('master_id', $masterIds);
+                }
+            })->limit(1000); // Ограничение результатов поиска
         }
+
+        // Eager loading для отображения (после фильтрации)
+        // ВАЖНО: client.primaryPhone для избежания N+1 при отображении телефонов
+        $query->with(['client.primaryPhone', 'master', 'service', 'location', 'business']);
 
         // Фильтр по статусу
         if ($statusFilter) {
@@ -64,20 +85,25 @@ class AppointmentController extends Controller
         }
 
         // Сортировка
+        $needsDistinct = false; // Флаг для distinct (только при JOIN)
         $allowedSorts = ['date', 'client', 'service', 'master', 'status'];
+        
         if (in_array($sort, $allowedSorts)) {
             if ($sort === 'client') {
                 $query->join('clients', 'appointments.client_id', '=', 'clients.id')
                     ->orderByRaw("CONCAT(COALESCE(clients.first_name, ''), ' ', COALESCE(clients.last_name, '')) {$direction}")
                     ->select('appointments.*');
+                $needsDistinct = true;
             } elseif ($sort === 'service') {
                 $query->join('services', 'appointments.service_id', '=', 'services.id')
                     ->orderBy('services.name', $direction)
                     ->select('appointments.*');
+                $needsDistinct = true;
             } elseif ($sort === 'master') {
                 $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
-                    ->orderBy('masters.name', $direction)
+                    ->orderByRaw("CONCAT(COALESCE(masters.first_name, ''), ' ', COALESCE(masters.last_name, '')) {$direction}")
                     ->select('appointments.*');
+                $needsDistinct = true;
             } else {
                 $query->orderByRaw("CONCAT(date, ' ', time) {$direction}");
             }
@@ -85,7 +111,13 @@ class AppointmentController extends Controller
             $query->orderByRaw("CONCAT(date, ' ', time) desc");
         }
 
-        $appointments = $query->paginate($perPage)->withQueryString();
+        // distinct() только когда есть JOIN (избегаем дубликатов)
+        if ($needsDistinct) {
+            $query->distinct();
+        }
+
+        // ОПТИМИЗАЦИЯ: simplePaginate ВСЕГДА (без медленного COUNT)
+        $appointments = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
