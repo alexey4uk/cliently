@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class PanelController extends Controller
 {
@@ -22,8 +23,8 @@ class PanelController extends Controller
         $user = Auth::user();
         $cacheKey = 'panel_dashboard_'.$user->id;
 
-        // Объединяем ВСЕ данные (включая графики) в один кэш
-        $dashboardData = Cache::remember($cacheKey, 300, function () use ($user) {
+        // Объединяем ВСЕ данные (включая графики) в один кэш (1 час)
+        $dashboardData = Cache::remember($cacheKey, 3600, function () use ($user) {
             $data = $this->collectAllDashboardData($user);
 
             // Данные для графиков (если есть доступ к аналитике)
@@ -55,7 +56,7 @@ class PanelController extends Controller
     {
         $cacheKey = 'panel_dashboard_admin_'.Auth::id();
 
-        $stats = Cache::remember($cacheKey, 300, function () {
+        $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
             $weekAgo = Carbon::now()->subWeek();
             $monthAgo = Carbon::now()->subMonth();
@@ -66,10 +67,13 @@ class PanelController extends Controller
                 $query->where('created_at', '>=', $monthAgo);
             })->distinct()->count();
 
-            // Активные пользователи (MAU)
-            $activeUsersMonth = User::whereHas('businesses.appointments', function ($query) use ($monthAgo) {
-                $query->where('created_at', '>=', $monthAgo);
-            })->distinct()->count();
+            // ОПТИМИЗИРОВАНО: Активные пользователи (MAU) через pivot таблицу
+            $activeUsersMonth = DB::table('users')
+                ->join('business_user', 'users.id', '=', 'business_user.user_id')
+                ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+                ->where('appointments.created_at', '>=', $monthAgo)
+                ->distinct('users.id')
+                ->count('users.id');
 
             // Активные бизнесы за неделю
             $activeBusinessesWeek = Business::whereHas('appointments', function ($query) use ($weekAgo) {
@@ -137,7 +141,7 @@ class PanelController extends Controller
         });
 
         // Данные для графиков (последние 30 дней)
-        $chartData = Cache::remember($cacheKey.'_charts', 300, function () {
+        $chartData = Cache::remember($cacheKey.'_charts', 3600, function () {
             $days = 30;
 
             $usersData = [];
@@ -218,15 +222,21 @@ class PanelController extends Controller
         $weekAgo = Carbon::now()->subWeek();
         $monthAgo = Carbon::now()->subMonth();
 
-        $stats = Cache::remember($cacheKey, 300, function () use ($today, $weekAgo, $monthAgo) {
+        $stats = Cache::remember($cacheKey, 3600, function () use ($today, $weekAgo, $monthAgo) {
             return [
-                // Активность пользователей
-                'active_users_week' => User::whereHas('businesses.appointments', function ($query) use ($weekAgo) {
-                    $query->where('created_at', '>=', $weekAgo);
-                })->distinct()->count(),
-                'active_users_month' => User::whereHas('businesses.appointments', function ($query) use ($monthAgo) {
-                    $query->where('created_at', '>=', $monthAgo);
-                })->distinct()->count(),
+                // ОПТИМИЗИРОВАНО: Активность пользователей через pivot таблицу
+                'active_users_week' => DB::table('users')
+                    ->join('business_user', 'users.id', '=', 'business_user.user_id')
+                    ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+                    ->where('appointments.created_at', '>=', $weekAgo)
+                    ->distinct('users.id')
+                    ->count('users.id'),
+                'active_users_month' => DB::table('users')
+                    ->join('business_user', 'users.id', '=', 'business_user.user_id')
+                    ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+                    ->where('appointments.created_at', '>=', $monthAgo)
+                    ->distinct('users.id')
+                    ->count('users.id'),
 
                 // Статистика записей
                 'appointments_today' => Appointment::where('date', $today->format('Y-m-d'))
@@ -291,7 +301,7 @@ class PanelController extends Controller
     {
         $cacheKey = 'panel_dashboard_general_'.Auth::id();
 
-        $stats = Cache::remember($cacheKey, 300, function () {
+        $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
             $weekAgo = Carbon::now()->subWeek();
 
@@ -339,19 +349,25 @@ class PanelController extends Controller
             $totalBusinesses = Business::count();
             $data['stats']['total_businesses'] = $totalBusinesses;
 
-            // Активные бизнесы
-            $data['stats']['active_businesses_month'] = Business::whereHas('appointments', function ($query) use ($monthAgo) {
-                $query->where('created_at', '>=', $monthAgo);
-            })->distinct()->count();
+            // ОПТИМИЗИРОВАНО: Активные бизнесы (используем JOIN вместо whereHas)
+            $data['stats']['active_businesses_month'] = DB::table('appointments')
+                ->where('appointments.created_at', '>=', $monthAgo)
+                ->distinct('business_id')
+                ->count('business_id');
 
-            $data['stats']['active_businesses_week'] = Business::whereHas('appointments', function ($query) use ($weekAgo) {
-                $query->where('created_at', '>=', $weekAgo);
-            })->distinct()->count();
+            $data['stats']['active_businesses_week'] = DB::table('appointments')
+                ->where('appointments.created_at', '>=', $weekAgo)
+                ->distinct('business_id')
+                ->count('business_id');
 
-            // Неактивные бизнесы
-            $data['stats']['inactive_businesses'] = Business::whereDoesntHave('appointments', function ($query) use ($monthAgo) {
-                $query->where('created_at', '>=', $monthAgo);
-            })->count();
+            // ОПТИМИЗИРОВАНО: Неактивные бизнесы (используем LEFT JOIN)
+            $data['stats']['inactive_businesses'] = DB::table('businesses')
+                ->leftJoin('appointments', function ($join) use ($monthAgo) {
+                    $join->on('businesses.id', '=', 'appointments.business_id')
+                        ->where('appointments.created_at', '>=', $monthAgo);
+                })
+                ->whereNull('appointments.id')
+                ->count('businesses.id');
 
             // Рост бизнесов
             $newBusinessesLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
@@ -382,19 +398,23 @@ class PanelController extends Controller
                 ->limit(5)
                 ->get();
 
-            // Неактивные бизнесы
-            $data['inactiveBusinesses'] = Business::whereDoesntHave('appointments', function ($query) use ($monthAgo) {
-                $query->where('created_at', '>=', $monthAgo);
-            })
-                ->withCount(['appointments', 'clients'])
+            // ОПТИМИЗИРОВАНО: Неактивные бизнесы (через подзапрос)
+            $data['inactiveBusinesses'] = Business::select('businesses.*')
+                ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count')
+                ->selectRaw('(SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count')
+                ->whereNotIn('businesses.id', function ($query) use ($monthAgo) {
+                    $query->select('business_id')
+                        ->from('appointments')
+                        ->where('created_at', '>=', $monthAgo)
+                        ->distinct();
+                })
                 ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get();
 
-            // Активные бизнесы
-            $data['activeBusinesses'] = Business::withCount(['appointments' => function ($query) use ($weekAgo) {
-                $query->where('created_at', '>=', $weekAgo);
-            }])
+            // ОПТИМИЗИРОВАНО: Активные бизнесы (через подзапрос)
+            $data['activeBusinesses'] = Business::select('businesses.*')
+                ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id AND appointments.created_at >= ?) as appointments_count', [$weekAgo])
                 ->orderBy('appointments_count', 'desc')
                 ->limit(5)
                 ->get();
@@ -404,15 +424,20 @@ class PanelController extends Controller
         if ($user->can('panel.users.view')) {
             $data['stats']['total_users'] = User::count();
 
-            // Активные пользователи
-            $data['stats']['active_users_month'] = User::whereHas('businesses.appointments', function ($query) use ($monthAgo) {
-                $query->where('created_at', '>=', $monthAgo);
-            })->distinct()->count();
+            // ОПТИМИЗИРОВАНО: Активные пользователи (через pivot таблицу business_user)
+            $data['stats']['active_users_month'] = DB::table('users')
+                ->join('business_user', 'users.id', '=', 'business_user.user_id')
+                ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+                ->where('appointments.created_at', '>=', $monthAgo)
+                ->distinct('users.id')
+                ->count('users.id');
 
-            // Активные пользователи за неделю (для поддержки)
-            $data['stats']['active_users_week'] = User::whereHas('businesses.appointments', function ($query) use ($weekAgo) {
-                $query->where('created_at', '>=', $weekAgo);
-            })->distinct()->count();
+            $data['stats']['active_users_week'] = DB::table('users')
+                ->join('business_user', 'users.id', '=', 'business_user.user_id')
+                ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+                ->where('appointments.created_at', '>=', $weekAgo)
+                ->distinct('users.id')
+                ->count('users.id');
 
             // Рост пользователей
             $newUsersLastMonth = User::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
@@ -461,22 +486,26 @@ class PanelController extends Controller
 
         // Данные для поддержки (активные и неактивные бизнесы)
         if ($user->can('panel.analytics.view') || $user->can('panel.support.view')) {
-            // Активные бизнесы за неделю
+            // ОПТИМИЗИРОВАНО: Активные бизнесы за неделю
             if (! isset($data['activeBusinesses'])) {
-                $data['activeBusinesses'] = Business::withCount(['appointments' => function ($query) use ($weekAgo) {
-                    $query->where('created_at', '>=', $weekAgo);
-                }])
+                $data['activeBusinesses'] = Business::select('businesses.*')
+                    ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id AND appointments.created_at >= ?) as appointments_count', [$weekAgo])
                     ->orderBy('appointments_count', 'desc')
                     ->limit(5)
                     ->get();
             }
 
-            // Неактивные бизнесы
+            // ОПТИМИЗИРОВАНО: Неактивные бизнесы
             if (! isset($data['inactiveBusinesses'])) {
-                $data['inactiveBusinesses'] = Business::whereDoesntHave('appointments', function ($query) use ($monthAgo) {
-                    $query->where('created_at', '>=', $monthAgo);
-                })
-                    ->withCount(['appointments', 'clients'])
+                $data['inactiveBusinesses'] = Business::select('businesses.*')
+                    ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count')
+                    ->selectRaw('(SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count')
+                    ->whereNotIn('businesses.id', function ($query) use ($monthAgo) {
+                        $query->select('business_id')
+                            ->from('appointments')
+                            ->where('created_at', '>=', $monthAgo)
+                            ->distinct();
+                    })
                     ->orderBy('created_at', 'desc')
                     ->limit(5)
                     ->get();
@@ -487,11 +516,53 @@ class PanelController extends Controller
     }
 
     /**
-     * Получить данные для графиков
+     * Получить данные для графиков (ОПТИМИЗИРОВАНО)
+     * Вместо 155+ запросов используем 5 запросов с GROUP BY
      */
     private function getChartData()
     {
         $days = 30;
+        $startDate = Carbon::now()->subDays($days)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        // Один запрос для всех пользователей с группировкой по дате
+        $usersGrouped = User::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Один запрос для всех бизнесов
+        $businessesGrouped = Business::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Один запрос для всех клиентов
+        $clientsGrouped = Client::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Один запрос для всех записей
+        $appointmentsGrouped = Appointment::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Один ОПТИМИЗИРОВАННЫЙ запрос для активных бизнесов
+        // Вместо whereHas используем JOIN
+        $activeBusinessesGrouped = DB::table('appointments')
+            ->selectRaw('DATE(appointments.created_at) as date, COUNT(DISTINCT business_id) as count')
+            ->whereBetween('appointments.created_at', [$startDate, $endDate])
+            ->groupBy(DB::raw('DATE(appointments.created_at)'))
+            ->pluck('count', 'date')
+            ->toArray();
+
+        // Формируем массивы для каждого дня
         $usersData = [];
         $businessesData = [];
         $clientsData = [];
@@ -504,13 +575,11 @@ class PanelController extends Controller
             $dateStr = $date->format('Y-m-d');
             $labels[] = $date->format('d.m');
 
-            $usersData[] = User::whereDate('created_at', $dateStr)->count();
-            $businessesData[] = Business::whereDate('created_at', $dateStr)->count();
-            $clientsData[] = Client::whereDate('created_at', $dateStr)->count();
-            $appointmentsData[] = Appointment::whereDate('created_at', $dateStr)->count();
-            $activeBusinessesData[] = Business::whereHas('appointments', function ($query) use ($dateStr) {
-                $query->whereDate('created_at', $dateStr);
-            })->distinct()->count();
+            $usersData[] = $usersGrouped[$dateStr] ?? 0;
+            $businessesData[] = $businessesGrouped[$dateStr] ?? 0;
+            $clientsData[] = $clientsGrouped[$dateStr] ?? 0;
+            $appointmentsData[] = $appointmentsGrouped[$dateStr] ?? 0;
+            $activeBusinessesData[] = $activeBusinessesGrouped[$dateStr] ?? 0;
         }
 
         return [
