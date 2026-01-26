@@ -9,9 +9,7 @@ use App\Http\Controllers\TelegramManagementController;
 use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [\App\Http\Controllers\WelcomeController::class, 'index']);
 
 // Первоначальная настройка (создание админа при первом запуске)
 Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'show'])->name('setup');
@@ -641,4 +639,4 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

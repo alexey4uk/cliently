@@ -28,11 +28,6 @@ class AppointmentController extends Controller
         $this->businessRepository = $businessRepository;
     }
 
-    public function __construct(AppointmentSlotService $slotService)
-    {
-        $this->slotService = $slotService;
-    }
-
     /**
      * Шаг 1: Выбор локации
      */
@@ -342,7 +337,7 @@ class AppointmentController extends Controller
         }
 
         $client = Client::where('business_id', $business->id)
-            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
+            ->whereHas('phones', fn($q) => $q->where('phone', $validated['phone']))
             ->first();
 
         if (! $client) {
@@ -351,7 +346,7 @@ class AppointmentController extends Controller
 
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
             }
 
             $client = Client::create([
