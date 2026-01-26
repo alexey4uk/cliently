@@ -22,8 +22,13 @@
                 </div>
                 <div class="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                     <div class="text-left sm:text-right">
-                        <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $services->total() }}</p>
-                        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего услуг</p>
+                        @if(method_exists($services, 'total'))
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $services->total() }}</p>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Всего услуг</p>
+                        @else
+                            <p class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">{{ $services->count() }}</p>
+                            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">На странице</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -393,12 +398,16 @@
                     <div class="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-5">
                         <div class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 text-center sm:text-left">
                             <span class="font-medium">Показано</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $services->firstItem() }}</span>
-                            <span class="font-medium">—</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $services->lastItem() }}</span>
-                            <span class="font-medium">из</span>
-                            <span class="font-bold text-slate-900 dark:text-white">{{ $services->total() }}</span>
-                            <span class="font-medium">услуг</span>
+                            @if(method_exists($services, 'total'))
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $services->firstItem() }}</span>
+                                <span class="font-medium">—</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $services->lastItem() }}</span>
+                                <span class="font-medium">из</span>
+                                <span class="font-bold text-slate-900 dark:text-white">{{ $services->total() }}</span>
+                                <span class="font-medium">услуг</span>
+                            @else
+                                <span class="font-medium">Страница {{ $services->currentPage() }}</span>
+                            @endif
                         </div>
 
                         <div class="flex items-center gap-1 flex-wrap justify-center">
@@ -413,18 +422,20 @@
                                 </a>
                             @endif
 
-                            <!-- Номера страниц -->
-                            @foreach ($services->getUrlRange(1, min($services->lastPage(), 5)) as $page => $url)
-                                @if ($page == $services->currentPage())
-                                    <button disabled class="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold cursor-default shadow-sm text-xs sm:text-sm">
-                                        {{ $page }}
-                                    </button>
-                                @else
-                                    <a href="{{ $url }}" class="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md text-xs sm:text-sm">
-                                        {{ $page }}
-                                    </a>
-                                @endif
-                            @endforeach
+                            <!-- Номера страниц (только для полной пагинации) -->
+                            @if(method_exists($services, 'lastPage'))
+                                @foreach ($services->getUrlRange(1, min($services->lastPage(), 5)) as $page => $url)
+                                    @if ($page == $services->currentPage())
+                                        <button disabled class="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl font-bold cursor-default shadow-sm text-xs sm:text-sm">
+                                            {{ $page }}
+                                        </button>
+                                    @else
+                                        <a href="{{ $url }}" class="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-all duration-200 text-slate-700 dark:text-slate-300 font-medium shadow-sm hover:shadow-md text-xs sm:text-sm">
+                                            {{ $page }}
+                                        </a>
+                                    @endif
+                                @endforeach
+                            @endif
 
                             <!-- Кнопка "Вперед" -->
                             @if ($services->hasMorePages())

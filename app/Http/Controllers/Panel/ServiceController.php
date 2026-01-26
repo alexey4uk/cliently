@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ServiceController extends Controller
 {
@@ -24,17 +25,25 @@ class ServiceController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
-        $query = Service::with(['business'])->withCount('appointments');
+        // ОПТИМИЗИРОВАНО: Подзапрос вместо withCount
+        $query = Service::query()
+            ->with(['business'])
+            ->selectRaw('services.*, 
+                (SELECT COUNT(*) FROM appointments WHERE appointments.service_id = services.id) as appointments_count'
+            );
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+            $searchTerm = $search . '*';
+            $query->where(function ($q) use ($searchTerm, $search) {
+                // FULLTEXT поиск по названию (быстро!)
+                $q->whereRaw("MATCH(name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                    // Обычный LIKE для description (короткие тексты)
                     ->orWhere('description', 'like', "%{$search}%");
-            });
+            })->limit(1000); // Ограничение для поиска
         }
 
         // Фильтр по бизнесу
@@ -50,7 +59,8 @@ class ServiceController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $services = $query->paginate($perPage)->withQueryString();
+        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate
+        $services = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра (кешируется)
         $businesses = $this->businessRepository->getAllForFilter();
@@ -71,8 +81,11 @@ class ServiceController extends Controller
      */
     public function show(Service $service)
     {
-        $service->load(['business', 'appointments']);
-        $service->loadCount('appointments');
+        // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все appointments!
+        $service->load(['business']);
+        
+        // Только COUNT
+        $service->appointments_count = $service->appointments()->count();
 
         return view('panel.services.show', compact('service'));
     }
@@ -111,8 +124,8 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        // Проверяем, есть ли связанные записи
-        if ($service->appointments()->count() > 0) {
+        // ОПТИМИЗАЦИЯ: exists() вместо count()
+        if ($service->appointments()->exists()) {
             return redirect()->route('panel.services.show', $service)
                 ->with('error', 'Невозможно удалить услугу, так как у неё есть связанные записи');
         }
