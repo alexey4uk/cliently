@@ -9,6 +9,7 @@ use App\Models\Master;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MasterController extends Controller
 {
@@ -27,21 +28,32 @@ class MasterController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
-        $query = Master::with(['business'])->withCount('appointments');
+        // ОПТИМИЗИРОВАНО: Подзапрос вместо withCount
+        $query = Master::query()
+            ->with(['business'])
+            ->selectRaw('masters.*, 
+                (SELECT COUNT(*) FROM appointments WHERE appointments.master_id = masters.id) as appointments_count'
+            );
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
+            $searchTerm = $search . '*';
+            $query->where(function ($q) use ($searchTerm, $search) {
+                // FULLTEXT поиск по именам (быстро!)
+                $q->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('specialization', 'like', "%{$search}%");
-            });
+                    ->orWhere('specialization', 'like', "%{$search}%")
+                    // Поиск по телефону через подзапрос (быстрее whereHas)
+                    ->orWhereIn('id', function ($subquery) use ($search) {
+                        $subquery->select('phoneable_id')
+                            ->from('phones')
+                            ->where('phoneable_type', Master::class)
+                            ->where('phone', 'like', "%{$search}%");
+                    });
+            })->limit(1000); // Ограничение для поиска
         }
 
         // Фильтр по бизнесу
@@ -50,14 +62,15 @@ class MasterController extends Controller
         }
 
         // Сортировка
-        $allowedSorts = ['first_name', 'last_name', 'name', 'email', 'created_at'];
+        $allowedSorts = ['first_name', 'last_name', 'email', 'created_at'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction);
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
-        $masters = $query->paginate($perPage)->withQueryString();
+        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate
+        $masters = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
@@ -78,8 +91,13 @@ class MasterController extends Controller
      */
     public function show(Master $master)
     {
-        $master->load(['business', 'appointments', 'locations', 'services']);
-        $master->loadCount('appointments');
+        // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все appointments/locations/services!
+        $master->load(['business']);
+        
+        // Только COUNT
+        $master->appointments_count = $master->appointments()->count();
+        $master->locations_count = $master->locations()->count();
+        $master->services_count = $master->services()->count();
 
         return view('panel.masters.show', compact('master'));
     }
@@ -185,11 +203,10 @@ class MasterController extends Controller
      */
     public function destroy(Master $master)
     {
-        // Проверяем, есть ли связанные записи
-        $appointmentsCount = $master->appointments()->count();
-        if ($appointmentsCount > 0) {
+        // ОПТИМИЗАЦИЯ: exists() вместо count()
+        if ($master->appointments()->exists()) {
             return redirect()->back()
-                ->with('error', "Невозможно удалить мастера, так как у него есть {$appointmentsCount} связанных записей. Записи останутся без мастера.");
+                ->with('error', "Невозможно удалить мастера, так как у него есть связанные записи.");
         }
 
         $master->delete();
