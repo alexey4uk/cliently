@@ -19,6 +19,7 @@ use Illuminate\View\View;
 class BusinessInvitationController extends Controller
 {
     use RedirectsAfterAuth;
+
     /**
      * Display the invitation acceptance page.
      */

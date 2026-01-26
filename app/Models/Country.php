@@ -43,7 +43,6 @@ class Country extends Model
      * Find country by code with caching.
      *
      * @param  string  $code  Country code
-     * @return Country|null
      */
     public static function findByCodeCached(string $code): ?self
     {

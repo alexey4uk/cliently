@@ -33,7 +33,7 @@ class PlanFeatureFactory extends Factory
      */
     public function boolean(bool $value = true): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'feature_type' => 'boolean',
             'feature_value' => $value ? 'true' : 'false',
         ]);
@@ -44,7 +44,7 @@ class PlanFeatureFactory extends Factory
      */
     public function integer(int $value = 10): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'feature_type' => 'integer',
             'feature_value' => (string) $value,
         ]);
@@ -55,7 +55,7 @@ class PlanFeatureFactory extends Factory
      */
     public function unlimited(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'feature_type' => 'integer',
             'feature_value' => '-1',
         ]);

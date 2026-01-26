@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
-use App\Models\Business;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 

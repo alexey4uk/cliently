@@ -73,6 +73,7 @@ class DashboardController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 

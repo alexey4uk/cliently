@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\Business;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;

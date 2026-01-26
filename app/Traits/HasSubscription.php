@@ -24,7 +24,7 @@ trait HasSubscription
     public function getSubscription()
     {
         $cacheKey = "user_subscription_{$this->id}";
-        
+
         return Cache::remember($cacheKey, 7200, function () {
             return $this->subscription()->with('plan')->first();
         });
@@ -38,7 +38,7 @@ trait HasSubscription
     public function activeSubscription()
     {
         $cacheKey = "user_active_subscription_{$this->id}";
-        
+
         return Cache::remember($cacheKey, 1800, function () {
             return $this->subscription()
                 ->whereIn('status', ['active', 'trial'])

@@ -97,7 +97,7 @@ class Subscription extends Model
     {
         $metadata = $this->metadata ?? [];
         $previousPlanId = $metadata['previous_plan_id'] ?? null;
-        
+
         // Если есть предыдущий план и ends_at еще не истек - используем предыдущий план
         if ($previousPlanId && $this->ends_at && $this->ends_at->isFuture()) {
             $previousPlan = Plan::find($previousPlanId);
@@ -105,7 +105,7 @@ class Subscription extends Model
                 return $previousPlan;
             }
         }
-        
+
         // Иначе используем текущий план
         return $this->plan;
     }

@@ -179,6 +179,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -248,6 +249,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -704,6 +706,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -757,11 +760,11 @@ class AnalyticsController extends Controller
             for ($i = 0; $i < 3; $i++) {
                 $monthKey = $now->copy()->subMonths($i + 1)->format('Y-m');
                 $monthAppointments = $groupedByMonth->get($monthKey, collect());
-                
+
                 $monthRevenue = $monthAppointments->sum(function ($appointment) {
                     return $appointment->price ?? $appointment->service->price ?? 0;
                 });
-                
+
                 if ($monthRevenue > 0) {
                     $monthlyRevenues[] = $monthRevenue;
                 }
@@ -804,6 +807,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -846,6 +850,7 @@ class AnalyticsController extends Controller
 
             $clientsLTV = $completedAppointments->groupBy('client_id')->map(function ($group, $clientId) {
                 $client = $group->first()->client;
+
                 return [
                     'client_id' => $clientId,
                     'client_name' => $client ? $client->full_name : 'Неизвестный клиент',
@@ -895,7 +900,7 @@ class AnalyticsController extends Controller
         $firstAppointmentByClient = [];
         foreach ($allAppointments as $appointment) {
             $clientId = $appointment->client_id;
-            if (!isset($firstAppointmentByClient[$clientId])) {
+            if (! isset($firstAppointmentByClient[$clientId])) {
                 $firstAppointmentByClient[$clientId] = $appointment->date->format('Y-m-d');
             }
         }
@@ -911,13 +916,14 @@ class AnalyticsController extends Controller
 
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
-            
+
             // Клиенты, у которых первая запись в этот день
             $dayAppointments = $appointmentsByDate->get($dateStr, collect());
             $newClientsOnDay = $dayAppointments
                 ->filter(function ($appointment) use ($firstAppointmentByClient, $dateStr) {
                     $clientId = $appointment->client_id;
-                    return isset($firstAppointmentByClient[$clientId]) 
+
+                    return isset($firstAppointmentByClient[$clientId])
                         && $firstAppointmentByClient[$clientId] === $dateStr;
                 })
                 ->pluck('client_id')
@@ -950,6 +956,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -975,7 +982,7 @@ class AnalyticsController extends Controller
             // Heatmap по часам и дням недели
             $heatmapData = [];
             $daysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-            
+
             // Инициализация массива
             for ($day = 0; $day < 7; $day++) {
                 for ($hour = 0; $hour < 24; $hour++) {
@@ -989,10 +996,10 @@ class AnalyticsController extends Controller
                     $time = Carbon::parse($appointment->time);
                     $hour = (int) $time->format('H');
                     $dayOfWeek = $appointment->date->dayOfWeek; // 0 = воскресенье, 1 = понедельник
-                    
+
                     // Конвертируем в формат где 0 = понедельник
                     $dayIndex = $dayOfWeek == 0 ? 6 : $dayOfWeek - 1;
-                    
+
                     if (isset($heatmapData[$dayIndex][$hour])) {
                         $heatmapData[$dayIndex][$hour]++;
                     }
@@ -1035,7 +1042,7 @@ class AnalyticsController extends Controller
             $byMonth = [];
             foreach ($appointments as $appointment) {
                 $monthKey = $appointment->date->format('Y-m');
-                if (!isset($byMonth[$monthKey])) {
+                if (! isset($byMonth[$monthKey])) {
                     $date = Carbon::parse($appointment->date);
                     $byMonth[$monthKey] = [
                         'month' => $date->format('F Y'),

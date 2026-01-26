@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
-use App\Models\Business;
 use App\Models\Country;
 use App\Models\Location;
-use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller

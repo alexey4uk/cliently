@@ -42,15 +42,17 @@ class ProcessExpiredSubscriptions extends Command
 
         if (! $freePlan) {
             $this->error('Бесплатный тариф не найден! Создайте тариф со slug "free".');
+
             return self::FAILURE;
         }
 
         foreach ($expiredSubscriptions as $subscription) {
             try {
                 $user = $subscription->user;
-                
+
                 if (! $user) {
                     $this->warn("Пользователь не найден для подписки ID: {$subscription->id}");
+
                     continue;
                 }
 

@@ -71,7 +71,6 @@ class BusinessRole extends Model
      * Get cached role by ID.
      *
      * @param  int  $id  Role ID
-     * @return BusinessRole|null
      */
     public static function getCached(int $id): ?self
     {
@@ -84,7 +83,6 @@ class BusinessRole extends Model
      * Get cached role by slug.
      *
      * @param  string  $slug  Role slug
-     * @return BusinessRole|null
      */
     public static function getCachedBySlug(string $slug): ?self
     {
@@ -95,8 +93,6 @@ class BusinessRole extends Model
 
     /**
      * Get owner role with caching.
-     *
-     * @return BusinessRole|null
      */
     public static function getOwnerRole(): ?self
     {

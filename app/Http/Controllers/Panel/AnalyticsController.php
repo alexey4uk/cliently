@@ -86,6 +86,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -217,6 +218,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -244,15 +246,15 @@ class AnalyticsController extends Controller
                 $monthAgo = $now->copy()->subMonth();
 
                 $totalRevenue = Invoice::where('status', 'paid')->sum('amount');
-                
+
                 $revenueToday = Invoice::where('status', 'paid')
                     ->whereBetween('paid_at', [$today, $now])
                     ->sum('amount');
-                
+
                 $revenueWeek = Invoice::where('status', 'paid')
                     ->where('paid_at', '>=', $weekAgo)
                     ->sum('amount');
-                
+
                 $revenueMonth = Invoice::where('status', 'paid')
                     ->where('paid_at', '>=', $monthAgo)
                     ->sum('amount');
@@ -261,7 +263,7 @@ class AnalyticsController extends Controller
                 $avgCheckData = Invoice::where('status', 'paid')
                     ->selectRaw('SUM(amount) as total, COUNT(*) as count')
                     ->first();
-                
+
                 $averageCheck = $avgCheckData && $avgCheckData->count > 0
                     ? round($avgCheckData->total / $avgCheckData->count, 2)
                     : 0;
@@ -359,6 +361,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -444,6 +447,7 @@ class AnalyticsController extends Controller
                 ->map(function ($item) {
                     $master = $item->master;
                     $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+
                     return [
                         'master_id' => $item->master_id,
                         'master_name' => $masterName,
@@ -481,6 +485,7 @@ class AnalyticsController extends Controller
             if ($supportsTags) {
                 return Cache::tags($cacheTags)->remember($key, 300, $callback);
             }
+
             return Cache::remember($key, 300, $callback);
         };
 
@@ -697,7 +702,7 @@ class AnalyticsController extends Controller
     {
         $query = Appointment::whereBetween('date', [
             $startDate->format('Y-m-d'),
-            $endDate->format('Y-m-d')
+            $endDate->format('Y-m-d'),
         ]);
 
         if ($filters['status']) {

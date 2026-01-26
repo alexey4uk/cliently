@@ -42,7 +42,7 @@ class InvoiceFactory extends Factory
      */
     public function paid(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'paid',
             'paid_at' => now(),
             'bepaid_transaction_id' => $this->faker->uuid(),
@@ -54,7 +54,7 @@ class InvoiceFactory extends Factory
      */
     public function failed(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'status' => 'failed',
             'paid_at' => null,
         ]);
@@ -65,7 +65,7 @@ class InvoiceFactory extends Factory
      */
     public function renewal(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'metadata' => [
                 'is_renewal' => true,
             ],
@@ -77,7 +77,7 @@ class InvoiceFactory extends Factory
      */
     public function planChange(int $oldPlanId, string $oldPlanName): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'metadata' => [
                 'is_plan_change' => true,
                 'old_plan_id' => $oldPlanId,

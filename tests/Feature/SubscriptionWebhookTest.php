@@ -7,7 +7,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -22,7 +21,7 @@ class SubscriptionWebhookTest extends TestCase
 
         // Удаляем существующие настройки и создаем заново для чистоты тестов
         \App\Models\BepaidSettings::where('id', 1)->delete();
-        
+
         \App\Models\BepaidSettings::create([
             'id' => 1,
             'test_mode' => true,
@@ -43,13 +42,13 @@ class SubscriptionWebhookTest extends TestCase
                 'test_secret_key' => 'test_secret',
             ]
         );
-        
+
         // Убеждаемся, что модель обновлена из базы данных
         $settings->refresh();
-        
+
         $current = $settings->getCurrentSettings();
 
-        return 'Basic ' . base64_encode($current['shop_id'] . ':' . $current['secret_key']);
+        return 'Basic '.base64_encode($current['shop_id'].':'.$current['secret_key']);
     }
 
     public function test_webhook_activates_subscription_after_payment()
@@ -67,7 +66,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -87,7 +86,7 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
 
@@ -140,7 +139,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -160,7 +159,7 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
 
@@ -213,7 +212,7 @@ class SubscriptionWebhookTest extends TestCase
         $payload = [
             'transaction' => [
                 'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
-                'tracking_id' => 'invoice_' . $invoice->id,
+                'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
                 'currency' => 'BYN',
@@ -233,7 +232,7 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
 
@@ -279,7 +278,7 @@ class SubscriptionWebhookTest extends TestCase
         ];
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
-            'Authorization' => 'Basic ' . base64_encode('wrong:credentials'),
+            'Authorization' => 'Basic '.base64_encode('wrong:credentials'),
         ]);
 
         $response->assertStatus(401);
