@@ -3,7 +3,8 @@
 @section('title', 'Общая аналитика')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="max-w-6xl 2xl:max-w-[1400px] mx-auto">
+        <div class="space-y-6">
         <!-- Заголовок -->
         <div class="flex items-center justify-between">
             <div>
@@ -221,6 +222,7 @@
                     </tbody>
                 </table>
             </div>
+        </div>
         </div>
     </div>
 
