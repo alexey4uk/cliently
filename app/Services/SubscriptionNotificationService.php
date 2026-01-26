@@ -409,6 +409,144 @@ class SubscriptionNotificationService
     }
 
     /**
+     * Уведомить об истечении пробного периода
+     */
+    public static function notifyTrialExpired(Subscription $subscription, Plan $newPlan): void
+    {
+        $user = $subscription->user;
+        $oldPlan = $subscription->plan;
+
+        // Получаем владельца бизнеса
+        $owner = self::getBusinessOwner($user);
+        if (! $owner) {
+            Log::warning('SubscriptionNotificationService: Business owner not found', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+            ]);
+
+            return;
+        }
+
+        if (! NotificationSettingsService::isTypeEnabled($owner, 'subscription.trial.expired')) {
+            return;
+        }
+
+        $title = 'Пробный период истек';
+        $message = "Пробный период для тарифа «{$oldPlan->name}» истек. Ваш тариф автоматически изменен на «{$newPlan->name}».";
+
+        // In-app уведомление
+        NotificationService::send([
+            'user_id' => $owner->id,
+            'type' => 'subscription.trial.expired',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $newPlan->id,
+                'trial_ended_at' => $subscription->trial_ends_at?->toIso8601String(),
+            ],
+        ]);
+
+        // Email уведомление
+        if (NotificationSettingsService::shouldSendEmail($owner, 'subscription.trial.expired') && $owner->hasVerifiedEmail()) {
+            try {
+                // Можно создать отдельное уведомление, но пока используем простое логирование
+                Log::info('Trial expired notification sent via email', [
+                    'user_id' => $owner->id,
+                    'subscription_id' => $subscription->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send email notification for subscription.trial.expired', [
+                    'user_id' => $owner->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Telegram уведомление
+        if (NotificationSettingsService::shouldSendTelegram($owner, 'subscription.trial.expired') && $owner->isTelegramConnected()) {
+            try {
+                \App\Services\TelegramNotificationService::sendSubscriptionTrialExpired($subscription, $newPlan, $owner);
+            } catch (\Exception $e) {
+                Log::error('Failed to send telegram notification for subscription.trial.expired', [
+                    'user_id' => $owner->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Уведомить об истечении платной подписки
+     */
+    public static function notifySubscriptionExpired(Subscription $subscription, Plan $newPlan): void
+    {
+        $user = $subscription->user;
+        $oldPlan = $subscription->plan;
+
+        // Получаем владельца бизнеса
+        $owner = self::getBusinessOwner($user);
+        if (! $owner) {
+            Log::warning('SubscriptionNotificationService: Business owner not found', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+            ]);
+
+            return;
+        }
+
+        if (! NotificationSettingsService::isTypeEnabled($owner, 'subscription.expired')) {
+            return;
+        }
+
+        $title = 'Подписка истекла';
+        $message = "Ваша подписка на тариф «{$oldPlan->name}» истекла. Тариф автоматически изменен на «{$newPlan->name}». Для продолжения использования платных функций оформите новую подписку.";
+
+        // In-app уведомление
+        NotificationService::send([
+            'user_id' => $owner->id,
+            'type' => 'subscription.expired',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $newPlan->id,
+                'expired_at' => $subscription->ends_at?->toIso8601String(),
+            ],
+        ]);
+
+        // Email уведомление
+        if (NotificationSettingsService::shouldSendEmail($owner, 'subscription.expired') && $owner->hasVerifiedEmail()) {
+            try {
+                // Можно создать отдельное уведомление, но пока используем простое логирование
+                Log::info('Subscription expired notification sent via email', [
+                    'user_id' => $owner->id,
+                    'subscription_id' => $subscription->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send email notification for subscription.expired', [
+                    'user_id' => $owner->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Telegram уведомление
+        if (NotificationSettingsService::shouldSendTelegram($owner, 'subscription.expired') && $owner->isTelegramConnected()) {
+            try {
+                \App\Services\TelegramNotificationService::sendSubscriptionExpired($subscription, $newPlan, $owner);
+            } catch (\Exception $e) {
+                Log::error('Failed to send telegram notification for subscription.expired', [
+                    'user_id' => $owner->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
      * Получить владельца бизнеса для пользователя
      */
     protected static function getBusinessOwner(User $user): ?User

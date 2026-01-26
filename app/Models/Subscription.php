@@ -74,22 +74,6 @@ class Subscription extends Model
     }
 
     /**
-     * Проверить, может ли использовать метрику
-     */
-    public function canUseFeature(string $key): bool
-    {
-        return $this->plan->hasFeature($key);
-    }
-
-    /**
-     * Получить лимит для метрики
-     */
-    public function getFeatureLimit(string $key): int|bool|null
-    {
-        return $this->plan->getFeatureValue($key);
-    }
-
-    /**
      * Проверить, отменена ли подписка
      */
     public function isCancelled(): bool
@@ -104,4 +88,40 @@ class Subscription extends Model
     {
         return $this->isCancelled() && $this->isActive();
     }
-}
+
+    /**
+     * Получить эффективный план (если есть сохраненный предыдущий план и ends_at еще не истек)
+     * Используется при смене тарифа с сохранением оплаченного времени
+     */
+    public function getEffectivePlan(): Plan
+    {
+        $metadata = $this->metadata ?? [];
+        $previousPlanId = $metadata['previous_plan_id'] ?? null;
+        
+        // Если есть предыдущий план и ends_at еще не истек - используем предыдущий план
+        if ($previousPlanId && $this->ends_at && $this->ends_at->isFuture()) {
+            $previousPlan = Plan::find($previousPlanId);
+            if ($previousPlan) {
+                return $previousPlan;
+            }
+        }
+        
+        // Иначе используем текущий план
+        return $this->plan;
+    }
+
+    /**
+     * Проверить, может ли использовать метрику (с учетом эффективного плана)
+     */
+    public function canUseFeature(string $key): bool
+    {
+        return $this->getEffectivePlan()->hasFeature($key);
+    }
+
+    /**
+     * Получить лимит для метрики (с учетом эффективного плана)
+     */
+    public function getFeatureLimit(string $key): int|bool|null
+    {
+        return $this->getEffectivePlan()->getFeatureValue($key);
+    }

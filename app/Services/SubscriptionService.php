@@ -44,10 +44,34 @@ class SubscriptionService
 
         // Сохраняем старый план для проверки изменения
         $oldPlan = $subscription?->plan;
+        
+        // Если это смена тарифа (не новая подписка), сохраняем оплаченное время
+        $isPlanChange = $subscription && $oldPlan && $oldPlan->id !== $plan->id;
+        $preserveEndsAt = false;
+        
+        if ($isPlanChange && ! $isTrial) {
+            // Если старая подписка еще активна (ends_at в будущем), сохраняем ends_at
+            if ($subscription->ends_at && $subscription->ends_at->isFuture()) {
+                $preserveEndsAt = true;
+                $endsAt = $subscription->ends_at; // Сохраняем старую дату окончания
+            }
+        }
 
         // Получаем текущий metadata или создаем новый
         $metadata = $subscription?->metadata ?? [];
         $usedTrials = $metadata['used_trials'] ?? [];
+        
+        // Если сохраняем ends_at при смене тарифа, сохраняем информацию о предыдущем тарифе
+        if ($preserveEndsAt && $oldPlan) {
+            $metadata['previous_plan_id'] = $oldPlan->id;
+            $metadata['previous_plan_name'] = $oldPlan->name;
+            $metadata['preserved_ends_at'] = $subscription->ends_at->toIso8601String();
+        } else {
+            // Если не сохраняем ends_at, очищаем информацию о предыдущем тарифе
+            unset($metadata['previous_plan_id']);
+            unset($metadata['previous_plan_name']);
+            unset($metadata['preserved_ends_at']);
+        }
 
         // Если пробный период активирован, добавляем plan_id в список использованных
         if ($isTrial && $plan->trial_days > 0) {
@@ -61,7 +85,7 @@ class SubscriptionService
             'plan_id' => $plan->id,
             'status' => $status,
             'starts_at' => $now,
-            'ends_at' => $endsAt,
+            'ends_at' => $preserveEndsAt ? $subscription->ends_at : $endsAt, // Сохраняем ends_at при смене тарифа
             'trial_ends_at' => $trialEndsAt,
             'cancelled_at' => null,
             'metadata' => $metadata,

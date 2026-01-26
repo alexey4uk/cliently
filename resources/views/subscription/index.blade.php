@@ -21,32 +21,49 @@
 
 <div class="max-w-[1400px] mx-auto">
     <div x-data="{
-    showConfirmModal: false,
-    selectedPlan: null,
-    selectedForm: null,
-    openConfirmModal(planName, planPrice, planInterval, trialDays, hasUsedTrial, form) {
-        this.selectedPlan = {
-            name: planName,
-            price: planPrice ? parseFloat(planPrice) : 0,
-            interval: planInterval,
-            trialDays: trialDays ? parseInt(trialDays) : 0,
-            hasUsedTrial: hasUsedTrial === true || hasUsedTrial === 'true'
-        };
-        this.selectedForm = form;
-        this.showConfirmModal = true;
-    },
-    closeConfirmModal() {
-        this.showConfirmModal = false;
-        this.selectedPlan = null;
-        this.selectedForm = null;
-    },
-    confirmSubscription() {
-        if (this.selectedForm) {
+        showConfirmModal: false,
+        selectedPlan: null,
+        selectedForm: null,
+        useTrialInput: null,
+        useTrial: true,
+        openConfirmModal(planName, planPrice, planInterval, trialDays, hasUsedTrial, form) {
+            this.selectedPlan = {
+                name: planName,
+                price: planPrice ? parseFloat(planPrice) : 0,
+                interval: planInterval,
+                trialDays: trialDays ? parseInt(trialDays) : 0,
+                hasUsedTrial: hasUsedTrial === true || hasUsedTrial === 'true'
+            };
+            this.selectedForm = form;
+            // Находим скрытое поле use_trial в форме
+            if (form) {
+                this.useTrialInput = form.querySelector('input[name=\'use_trial\']');
+            } else {
+                this.useTrialInput = null;
+            }
+            // По умолчанию включаем пробный период, если он доступен
+            this.useTrial = this.selectedPlan.trialDays > 0 && !this.selectedPlan.hasUsedTrial;
+            this.showConfirmModal = true;
+        },
+        closeConfirmModal() {
             this.showConfirmModal = false;
-            this.selectedForm.submit();
+            this.selectedPlan = null;
+            this.selectedForm = null;
+            this.useTrialInput = null;
+            this.useTrial = true;
+        },
+        confirmSubscription() {
+            if (this.selectedForm) {
+                // Устанавливаем use_trial в зависимости от выбора пользователя
+                if (this.useTrialInput) {
+                    const shouldUseTrial = this.useTrial && this.selectedPlan.trialDays > 0 && !this.selectedPlan.hasUsedTrial;
+                    this.useTrialInput.value = shouldUseTrial ? '1' : '0';
+                }
+                this.showConfirmModal = false;
+                this.selectedForm.submit();
+            }
         }
-    }
-}">
+    }">
 
 <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
     <!-- Hero секция -->
@@ -182,16 +199,19 @@
                               class="subscription-form"
                               x-ref="form{{ $plan->id }}">
                             @csrf
+                            @php
+                                $hasUsedTrial = isset($trialUsage[$plan->id]) && $trialUsage[$plan->id];
+                                $canUseTrial = $plan->trial_days > 0 && $plan->price !== null && !$hasUsedTrial;
+                            @endphp
+                            @if($canUseTrial)
+                                <input type="hidden" name="use_trial" value="0" x-ref="useTrial{{ $plan->id }}">
+                            @endif
                             @if($isCurrent)
                                 <button type="button" disabled
                                     class="w-full py-2.5 sm:py-3 px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-sm sm:text-base font-semibold cursor-not-allowed">
                                     Текущий тариф
                                 </button>
                             @else
-                                @php
-                                    $hasUsedTrial = isset($trialUsage[$plan->id]) && $trialUsage[$plan->id];
-                                    $canUseTrial = $plan->trial_days > 0 && $plan->price !== null && !$hasUsedTrial;
-                                @endphp
                                 <button type="button"
                                     @click="openConfirmModal('{{ addslashes($plan->name) }}', {{ $plan->price ? number_format($plan->price, 2, '.', '') : 0 }}, '{{ $plan->interval }}', {{ $canUseTrial ? ($plan->trial_days ?? 0) : 0 }}, {{ $hasUsedTrial ? 'true' : 'false' }}, $refs.form{{ $plan->id }})"
                                     class="subscription-submit-btn w-full py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200
@@ -376,10 +396,18 @@
                             <p class="text-sm text-slate-600 dark:text-slate-400" x-text="'за ' + (selectedPlan.interval === 'monthly' ? 'месяц' : 'год')"></p>
                         </template>
                         <template x-if="selectedPlan && selectedPlan.trialDays > 0 && !selectedPlan.hasUsedTrial">
-                            <p class="text-sm text-green-600 dark:text-green-400 font-medium mt-2">
-                                <i class="fa-solid fa-gift mr-1"></i>
-                                <span x-text="selectedPlan.trialDays + ' ' + (selectedPlan.trialDays === 1 ? 'день' : (selectedPlan.trialDays < 5 ? 'дня' : 'дней')) + ' пробного периода'"></span>
-                            </p>
+                            <div class="mt-3 p-3 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" x-model="useTrial" checked class="rounded">
+                                    <div class="flex-1">
+                                        <p class="text-sm text-green-600 dark:text-green-400 font-medium">
+                                            <i class="fa-solid fa-gift mr-1"></i>
+                                            <span x-text="selectedPlan.trialDays + ' ' + (selectedPlan.trialDays === 1 ? 'день' : (selectedPlan.trialDays < 5 ? 'дня' : 'дней')) + ' пробного периода'"></span>
+                                        </p>
+                                        <p class="text-xs text-green-700 dark:text-green-300 mt-1">Пробный период начнется сразу после активации</p>
+                                    </div>
+                                </label>
+                            </div>
                         </template>
                         <template x-if="selectedPlan && selectedPlan.hasUsedTrial && selectedPlan.price > 0">
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">

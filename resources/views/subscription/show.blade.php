@@ -42,10 +42,24 @@
                         <h4 class="font-semibold text-blue-900 dark:text-blue-300 mb-1">Смена тарифа</h4>
                         <p class="text-sm text-blue-700 dark:text-blue-400">
                             Вы переходите с тарифа "{{ $currentPlan->name }}" на "{{ $plan->name }}".
+                            @php
+                                $currentSubscription = $user->activeSubscription();
+                                $hasActiveTime = $currentSubscription && $currentSubscription->ends_at && $currentSubscription->ends_at->isFuture();
+                            @endphp
                             @if($plan->price && $plan->price > ($currentPlan->price ?? 0))
                                 Новый тариф будет активирован сразу.
-                            @else
-                                Обратите внимание, что при переходе на более низкий тариф некоторые функции могут стать недоступны.
+                                @if($hasActiveTime)
+                                    <br><span class="text-green-600 dark:text-green-400 font-medium">✓ Оплаченное время будет сохранено до {{ $currentSubscription->ends_at->format('d.m.Y') }}.</span>
+                                @endif
+                            @elseif($plan->price && $plan->price < ($currentPlan->price ?? 0))
+                                @if($hasActiveTime)
+                                    <br><span class="text-green-600 dark:text-green-400 font-medium">✓ Оплаченное время будет сохранено до {{ $currentSubscription->ends_at->format('d.m.Y') }}.</span>
+                                    <br>Обратите внимание, что при переходе на более низкий тариф некоторые функции могут стать недоступны.
+                                @else
+                                    Обратите внимание, что при переходе на более низкий тариф некоторые функции могут стать недоступны.
+                                @endif
+                            @elseif($hasActiveTime)
+                                <br><span class="text-green-600 dark:text-green-400 font-medium">✓ Оплаченное время будет сохранено до {{ $currentSubscription->ends_at->format('d.m.Y') }}.</span>
                             @endif
                         </p>
                     </div>

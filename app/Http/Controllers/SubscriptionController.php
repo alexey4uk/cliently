@@ -64,7 +64,9 @@ class SubscriptionController extends Controller
                 ->with('error', 'Этот тариф недоступен.');
         }
 
-        $currentSubscription = $user->activeSubscription();
+        // Используем subscription, а не activeSubscription, чтобы показывать даже истекшие подписки
+        // Это нужно для правильного отображения информации о сохранении времени
+        $currentSubscription = $user->subscription;
         $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
 
         $plan->load('features');
@@ -102,9 +104,25 @@ class SubscriptionController extends Controller
         $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
         $hasUsedTrial = false;
         $useTrial = $request->input('use_trial', false);
+        // Преобразуем значение в boolean (строка "1" или "0" или true/false)
+        $useTrial = filter_var($useTrial, FILTER_VALIDATE_BOOLEAN);
 
         if ($canUseTrial) {
             $hasUsedTrial = $subscriptionService->hasUsedTrialForPlan($user, $plan);
+        }
+
+        // Проверяем текущую подписку для определения типа смены тарифа
+        $currentSubscription = $user->activeSubscription();
+        $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
+        $isPlanChange = $currentPlan && $currentPlan->id !== $plan->id;
+        $isUpgrade = false;
+        $isDowngrade = false;
+        
+        if ($isPlanChange && $currentPlan && $plan->price) {
+            $currentPrice = $currentPlan->price ?? 0;
+            $newPrice = $plan->price ?? 0;
+            $isUpgrade = $newPrice > $currentPrice;
+            $isDowngrade = $newPrice < $currentPrice && $newPrice > 0;
         }
 
         // Если тариф бесплатный или выбран пробный период - активируем сразу
@@ -124,6 +142,11 @@ class SubscriptionController extends Controller
             } elseif ($hasUsedTrial && $canUseTrial) {
                 $message .= ' Пробный период для этого тарифа уже был использован ранее.';
             }
+            
+            // Если это смена тарифа, добавляем информацию о сохранении времени
+            if ($isPlanChange && $currentSubscription && $currentSubscription->ends_at && $currentSubscription->ends_at->isFuture()) {
+                $message .= " Оплаченное время сохранено до {$currentSubscription->ends_at->format('d.m.Y')}.";
+            }
 
             return redirect()->route('subscription.current')
                 ->with('success', $message);
@@ -139,6 +162,23 @@ class SubscriptionController extends Controller
             }
 
             // Создаем Invoice
+            $invoiceMetadata = [
+                'plan_name' => $plan->name,
+                'plan_interval' => $plan->interval,
+            ];
+            
+            // Если это смена тарифа, добавляем информацию в metadata
+            if ($isPlanChange && $currentSubscription) {
+                $invoiceMetadata['is_plan_change'] = true;
+                $invoiceMetadata['old_plan_id'] = $currentPlan->id;
+                $invoiceMetadata['old_plan_name'] = $currentPlan->name;
+                // Сохраняем ends_at от старой подписки для сохранения оплаченного времени
+                if ($currentSubscription->ends_at && $currentSubscription->ends_at->isFuture()) {
+                    $invoiceMetadata['preserve_ends_at'] = true;
+                    $invoiceMetadata['old_ends_at'] = $currentSubscription->ends_at->toIso8601String();
+                }
+            }
+            
             $invoice = Invoice::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
@@ -147,10 +187,7 @@ class SubscriptionController extends Controller
                 'status' => 'pending',
                 'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
                 'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
-                'metadata' => [
-                    'plan_name' => $plan->name,
-                    'plan_interval' => $plan->interval,
-                ],
+                'metadata' => $invoiceMetadata,
             ]);
 
             // Создаем платежный токен
@@ -179,11 +216,13 @@ class SubscriptionController extends Controller
     {
         $user = Auth::user();
 
-        $subscription = $user->activeSubscription();
+        // Используем subscription, а не activeSubscription, чтобы показывать даже истекшие подписки
+        // Это нужно для возможности продления истекших подписок
+        $subscription = $user->subscription;
 
         if (! $subscription) {
             return redirect()->route('subscription.index')
-                ->with('info', 'У вас нет активной подписки. Выберите тариф.');
+                ->with('info', 'У вас нет подписки. Выберите тариф.');
         }
 
         $subscriptionService = app(SubscriptionService::class);
@@ -226,6 +265,77 @@ class SubscriptionController extends Controller
             'plan' => $plan,
             'usage' => $usage,
         ]);
+    }
+
+    /**
+     * Продлить подписку
+     */
+    public function renew(Request $request)
+    {
+        $this->authorizeBusinessPermission('client.subscription.manage');
+
+        $user = Auth::user();
+        // Используем subscription, а не activeSubscription, чтобы можно было продлить даже истекшую подписку
+        $subscription = $user->subscription;
+
+        // Проверяем наличие подписки
+        if (! $subscription) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'У вас нет подписки. Выберите тариф.');
+        }
+
+        $plan = $subscription->plan;
+
+        // Проверяем, что тариф платный
+        if ($plan->price === null || $plan->price == 0) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'Бесплатный тариф нельзя продлить.');
+        }
+
+        $bepaidService = app(BepaidService::class);
+
+        // Проверяем, включен ли bePaid
+        $bepaidSettings = \App\Models\BepaidSettings::getSettings();
+        if (! $bepaidSettings->enabled) {
+            return redirect()->back()
+                ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
+        }
+
+        try {
+            // Создаем новый Invoice для продления
+            $invoice = Invoice::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'amount' => $plan->price,
+                'currency' => config('bepaid.currency', 'BYN'),
+                'status' => 'pending',
+                'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
+                'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
+                'metadata' => [
+                    'plan_name' => $plan->name,
+                    'plan_interval' => $plan->interval,
+                    'is_renewal' => true, // Помечаем как продление
+                    'previous_subscription_id' => $subscription->id,
+                ],
+            ]);
+
+            // Создаем платежный токен
+            $paymentData = $bepaidService->createPaymentToken($invoice, $invoice->payment_method);
+
+            // Перенаправляем на страницу оплаты или сразу на bePaid
+            if ($invoice->payment_method === 'redirect') {
+                // Редирект на страницу bePaid
+                return redirect($paymentData['redirect_url']);
+            } else {
+                // Виджет - перенаправляем на страницу с виджетом
+                return redirect()->route('subscription.payment', $invoice)
+                    ->with('payment_token', $paymentData['token']);
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Ошибка при создании платежа для продления: '.$e->getMessage());
+        }
     }
 
     /**

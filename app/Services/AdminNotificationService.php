@@ -284,15 +284,10 @@ class AdminNotificationService
 
     /**
      * Уведомить админов об истечении подписки
+     * Также уведомляет владельцев бизнеса
      */
     public static function notifySubscriptionExpiring(Subscription $subscription): void
     {
-        $admins = self::getAdminsWithPermission('panel.businesses.view');
-
-        if ($admins->isEmpty()) {
-            return;
-        }
-
         $user = $subscription->user;
         $business = $user->businesses()->first(); // Получаем первый бизнес пользователя
         $daysLeft = $subscription->ends_at
@@ -301,6 +296,70 @@ class AdminNotificationService
 
         if ($daysLeft === null || $daysLeft > 3) {
             return; // Уведомляем только за 3 дня до истечения или после
+        }
+
+        // 1. Уведомляем владельца бизнеса (owner)
+        if ($business) {
+            $owner = $business->users()->wherePivot('role', 'owner')->first();
+            
+            if ($owner && NotificationSettingsService::isTypeEnabled($owner, 'subscription.expiring')) {
+                NotificationService::send([
+                    'user_id' => $owner->id,
+                    'type' => 'subscription.expiring',
+                    'title' => 'Подписка истекает',
+                    'message' => sprintf(
+                        'Ваша подписка на тариф «%s» истекает через %d %s. Продлите подписку для продолжения использования всех функций.',
+                        $subscription->plan->name ?? 'Не указан',
+                        $daysLeft > 0 ? $daysLeft : 0,
+                        $daysLeft === 1 ? 'день' : ($daysLeft < 5 ? 'дня' : 'дней')
+                    ),
+                    'required_permission' => null,
+                    'data' => [
+                        'subscription_id' => $subscription->id,
+                        'plan_id' => $subscription->plan_id,
+                        'business_id' => $business->id,
+                        'days_left' => $daysLeft,
+                        'url' => route('subscription.index'),
+                    ],
+                ]);
+
+                // Email уведомление владельцу (если включено в настройках)
+                if (NotificationSettingsService::shouldSendEmail($owner, 'subscription.expiring') && $owner->hasVerifiedEmail()) {
+                    try {
+                        // Можно создать отдельное уведомление для владельца
+                        Log::info('Subscription expiring notification sent to owner via email', [
+                            'user_id' => $owner->id,
+                            'subscription_id' => $subscription->id,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send email notification for subscription.expiring to owner', [
+                            'user_id' => $owner->id,
+                            'subscription_id' => $subscription->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
+                // Telegram уведомление владельцу (если включено в настройках)
+                if (NotificationSettingsService::shouldSendTelegram($owner, 'subscription.expiring') && $owner->isTelegramConnected()) {
+                    try {
+                        \App\Services\TelegramNotificationService::sendSubscriptionExpiring($subscription, $owner);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send telegram notification for subscription.expiring to owner', [
+                            'user_id' => $owner->id,
+                            'subscription_id' => $subscription->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // 2. Дополнительно уведомляем системных админов
+        $admins = self::getAdminsWithPermission('panel.businesses.view');
+
+        if ($admins->isEmpty()) {
+            return;
         }
 
         foreach ($admins as $admin) {

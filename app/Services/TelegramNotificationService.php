@@ -558,6 +558,70 @@ class TelegramNotificationService
     }
 
     /**
+     * Отправить уведомление об истечении пробного периода
+     */
+    public static function sendSubscriptionTrialExpired(\App\Models\Subscription $subscription, \App\Models\Plan $newPlan, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $oldPlan = $subscription->plan;
+        $trialEndedAt = $subscription->trial_ends_at ? $subscription->trial_ends_at->format('d.m.Y H:i') : 'не указано';
+
+        $message = "⏸️ Пробный период истек\n\n";
+        $message .= "💳 Старый тариф: {$oldPlan->name}\n";
+        $message .= "📅 Истек: {$trialEndedAt}\n";
+        $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
+        $message .= "Ваш тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите подписку.";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об истечении подписки (за 3 дня до окончания)
+     */
+    public static function sendSubscriptionExpiring(\App\Models\Subscription $subscription, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $plan = $subscription->plan;
+        $endsAt = $subscription->ends_at ? $subscription->ends_at->format('d.m.Y H:i') : 'не указано';
+        $daysLeft = $subscription->ends_at ? now()->diffInDays($subscription->ends_at, false) : 0;
+
+        $message = "⏰ Подписка истекает\n\n";
+        $message .= "💳 Тариф: {$plan->name}\n";
+        $message .= "📅 Истекает: {$endsAt}\n";
+        $message .= "⏳ Осталось дней: {$daysLeft}\n\n";
+        $message .= "Продлите подписку для продолжения использования всех функций.";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
+     * Отправить уведомление об истечении платной подписки
+     */
+    public static function sendSubscriptionExpired(\App\Models\Subscription $subscription, \App\Models\Plan $newPlan, User $recipient): void
+    {
+        if (! $recipient->isTelegramConnected()) {
+            return;
+        }
+
+        $oldPlan = $subscription->plan;
+        $expiredAt = $subscription->ends_at ? $subscription->ends_at->format('d.m.Y H:i') : 'не указано';
+
+        $message = "⏸️ Подписка истекла\n\n";
+        $message .= "💳 Старый тариф: {$oldPlan->name}\n";
+        $message .= "📅 Истекла: {$expiredAt}\n";
+        $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
+        $message .= "Ваша подписка истекла. Тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите новую подписку.";
+
+        self::sendMessageToUser($recipient, $message);
+    }
+
+    /**
      * Уведомить о подключении Telegram
      */
     public static function notifyConnected(User $user): void

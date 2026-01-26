@@ -59,7 +59,8 @@ return [
             'admin.broadcast' => 'Рассылки от админов',
         ],
         'subscription' => [
-            'subscription.expiring' => 'Подписка истекает',
+            'subscription.expiring' => 'Подписка истекает (за 3 дня)',
+            'subscription.expired' => 'Подписка истекла',
             'subscription.limit' => 'Достигнут лимит',
             'subscription.payment.success' => 'Оплата успешна',
             'subscription.payment.failed' => 'Оплата не прошла',
@@ -67,6 +68,7 @@ return [
             'subscription.renewed' => 'Подписка продлена',
             'subscription.trial.started' => 'Начат пробный период',
             'subscription.trial.ending' => 'Пробный период заканчивается',
+            'subscription.trial.expired' => 'Пробный период истек',
         ],
         'business' => [
             'business.user.invited' => 'Приглашение отправлено',

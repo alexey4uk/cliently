@@ -238,20 +238,63 @@ class BepaidWebhookController extends Controller
             // Обновляем существующую подписку
             $now = now();
             $endsAt = null;
+            $oldPlan = $subscription->plan;
+            $isPlanChange = $oldPlan && $oldPlan->id !== $plan->id;
 
-            if ($plan->interval === 'monthly') {
-                $endsAt = $now->copy()->addMonth();
-            } elseif ($plan->interval === 'yearly') {
-                $endsAt = $now->copy()->addYear();
+            // Проверяем, является ли это продлением (invoice metadata содержит is_renewal)
+            $isRenewal = $invoice->metadata['is_renewal'] ?? false;
+            
+            // Проверяем, нужно ли сохранять ends_at при смене тарифа
+            $preserveEndsAt = $invoice->metadata['preserve_ends_at'] ?? false;
+            
+            // Получаем текущий metadata
+            $metadata = $subscription->metadata ?? [];
+            
+            // Если это смена тарифа и нужно сохранить ends_at (старая подписка еще активна)
+            if ($isPlanChange && $preserveEndsAt && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+                // Сохраняем оплаченное время от старой подписки
+                $endsAt = $subscription->ends_at;
+                
+                // Сохраняем информацию о предыдущем тарифе в metadata
+                $metadata['previous_plan_id'] = $oldPlan->id;
+                $metadata['previous_plan_name'] = $oldPlan->name;
+                $metadata['preserved_ends_at'] = $subscription->ends_at->toIso8601String();
+            } elseif ($isRenewal && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+                // Продление: продлеваем от текущего ends_at
+                $baseDate = $subscription->ends_at;
+                if ($plan->interval === 'monthly') {
+                    $endsAt = $baseDate->copy()->addMonth();
+                } elseif ($plan->interval === 'yearly') {
+                    $endsAt = $baseDate->copy()->addYear();
+                }
+                
+                // При продлении очищаем информацию о предыдущем тарифе (если была)
+                unset($metadata['previous_plan_id']);
+                unset($metadata['previous_plan_name']);
+                unset($metadata['preserved_ends_at']);
+            } else {
+                // Новая подписка или истекшая: начинаем новый период от текущего момента
+                if ($plan->interval === 'monthly') {
+                    $endsAt = $now->copy()->addMonth();
+                } elseif ($plan->interval === 'yearly') {
+                    $endsAt = $now->copy()->addYear();
+                }
+                
+                // При новой подписке очищаем информацию о предыдущем тарифе (если была)
+                unset($metadata['previous_plan_id']);
+                unset($metadata['previous_plan_name']);
+                unset($metadata['preserved_ends_at']);
             }
 
             $subscription->update([
+                'plan_id' => $plan->id, // Меняем план
                 'status' => 'active',
-                'starts_at' => $now,
+                'starts_at' => $now, // starts_at всегда обновляем на текущий момент
                 'ends_at' => $endsAt,
                 'payment_status' => 'paid',
                 'invoice_id' => $invoice->id,
                 'cancelled_at' => null, // Снимаем отмену, если была
+                'metadata' => $metadata, // Обновляем metadata с информацией о предыдущем тарифе
             ]);
 
             Log::info('Subscription activated after payment', [

@@ -10,6 +10,8 @@ Artisan::command('inspire', function () {
 
 Schedule::command('subscription:notify-expiring')->daily();
 Schedule::command('subscription:notify-trial-ending')->daily();
+Schedule::command('subscription:process-expired-trials')->daily();
+Schedule::command('subscription:process-expired')->daily();
 Schedule::command('subscription:reset-monthly')->monthlyOn(1, '00:00');
 Schedule::command('business:notify-inactive')->daily();
 Schedule::command('ticket:notify-critical')->daily();

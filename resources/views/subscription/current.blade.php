@@ -68,11 +68,15 @@
                 <div class="flex items-center gap-2">
                     <span class="text-sm text-slate-600 dark:text-slate-400">Статус:</span>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full
-                        {{ $subscription->isCancelled() ? 'text-orange-700 bg-orange-100 dark:bg-orange-500/20 dark:text-orange-300' : ($subscription->status === 'active' ? 'text-green-700 bg-green-100 dark:bg-green-500/20 dark:text-green-300' : '') }}
-                        {{ $subscription->status === 'trial' ? 'text-blue-700 bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300' : '' }}">
+                        {{ $subscription->isCancelled() ? 'text-orange-700 bg-orange-100 dark:bg-orange-500/20 dark:text-orange-300' : ($subscription->status === 'active' && (!$subscription->ends_at || $subscription->ends_at->isFuture()) ? 'text-green-700 bg-green-100 dark:bg-green-500/20 dark:text-green-300' : '') }}
+                        {{ $subscription->status === 'trial' ? 'text-blue-700 bg-blue-100 dark:bg-blue-500/20 dark:text-blue-300' : '' }}
+                        {{ $subscription->status === 'expired' || ($subscription->ends_at && $subscription->ends_at->isPast() && $subscription->status !== 'trial') ? 'text-red-700 bg-red-100 dark:bg-red-500/20 dark:text-red-300' : '' }}">
                         @if($subscription->isCancelled())
                             <i class="fa-solid fa-exclamation-triangle"></i>
                             Будет отменена
+                        @elseif($subscription->status === 'expired' || ($subscription->ends_at && $subscription->ends_at->isPast() && $subscription->status !== 'trial'))
+                            <i class="fa-solid fa-clock"></i>
+                            Истекла
                         @elseif($subscription->status === 'active')
                             <i class="fa-solid fa-check-circle"></i>
                             Активна
@@ -117,8 +121,36 @@
                 </div>
             @endif
 
+            <!-- Предупреждение об истечении -->
+            @if($subscription->ends_at && $subscription->ends_at->isPast() && $subscription->status !== 'trial' && $plan->price && $plan->price > 0)
+                <div class="mb-6 p-4 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20">
+                    <div class="flex items-start gap-3">
+                        <div class="shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                            <i class="fa-solid fa-exclamation-circle text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-red-900 dark:text-red-300 mb-1">Подписка истекла</p>
+                            <p class="text-xs text-red-700 dark:text-red-400">
+                                Ваша подписка истекла {{ $subscription->ends_at->format('d.m.Y') }}. Продлите подписку для восстановления доступа к платным функциям.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Действия -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                @if($hasBusinessPermission('client.subscription.manage') && $plan->price && $plan->price > 0)
+                    <form action="{{ route('subscription.renew') }}" method="POST" class="flex-1 sm:flex-initial">
+                        @csrf
+                        <button type="submit" 
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Продлить подписку</span>
+                        </button>
+                    </form>
+                @endif
+
                 <a href="{{ route('subscription.index') }}" 
                    class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
                     <i class="fa-solid fa-arrow-right"></i>
