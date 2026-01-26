@@ -25,13 +25,13 @@ class PanelController extends Controller
         // Объединяем ВСЕ данные (включая графики) в один кэш
         $dashboardData = Cache::remember($cacheKey, 300, function () use ($user) {
             $data = $this->collectAllDashboardData($user);
-            
+
             // Данные для графиков (если есть доступ к аналитике)
             $chartData = null;
             if ($user->can('panel.analytics.view')) {
                 $chartData = $this->getChartData();
             }
-            
+
             return [
                 'stats' => $data['stats'],
                 'chartData' => $chartData,

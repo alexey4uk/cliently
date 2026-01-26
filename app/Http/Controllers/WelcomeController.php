@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessUserInvitation;
-use App\Traits\HasCurrentBusiness;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Plan;
 use App\Models\SubscriptionMetric;
+use App\Traits\HasCurrentBusiness;
+use Illuminate\Support\Facades\Auth;
 
 class WelcomeController extends Controller
 {
@@ -48,8 +48,8 @@ class WelcomeController extends Controller
         $basicKeys = ['max_locations', 'max_masters', 'max_services', 'max_clients', 'max_appointments_per_month', 'max_business_users'];
         $advancedKeys = ['telegram_bot_enabled', 'analytics_enabled', 'advanced_analytics_enabled'];
 
-        $basicMetricsList = $metrics->filter(fn($m) => in_array($m->key, $basicKeys));
-        $advancedMetricsList = $metrics->filter(fn($m) => in_array($m->key, $advancedKeys));
+        $basicMetricsList = $metrics->filter(fn ($m) => in_array($m->key, $basicKeys));
+        $advancedMetricsList = $metrics->filter(fn ($m) => in_array($m->key, $advancedKeys));
 
         return view('welcome', [
             'plans' => $plans,
