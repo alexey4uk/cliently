@@ -183,10 +183,11 @@ class BepaidWebhookController extends Controller
         [$shopId, $secretKey] = explode(':', $credentials, 2);
 
         // Получаем настройки bePaid из нашей БД
-        $settings = BepaidSettings::getSettings();
+        // Используем where()->first() чтобы получить актуальные данные из базы
+        $settings = BepaidSettings::where('id', 1)->first();
 
-        // Если bePaid не включен в настройках - отклоняем
-        if (! $settings->enabled) {
+        // Если настройки не найдены или bePaid не включен - отклоняем
+        if (! $settings || ! $settings->enabled) {
             return false;
         }
 

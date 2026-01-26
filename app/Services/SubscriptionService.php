@@ -39,16 +39,16 @@ class SubscriptionService
             }
         }
 
-        // Если уже есть подписка, обновляем её
-        $subscription = $user->subscription;
+        // Если уже есть подписка, обновляем её (явная выборка через query, не relation)
+        $subscription = $user->subscription()->first();
 
         // Сохраняем старый план для проверки изменения
         $oldPlan = $subscription?->plan;
-        
+
         // Если это смена тарифа (не новая подписка), сохраняем оплаченное время
         $isPlanChange = $subscription && $oldPlan && $oldPlan->id !== $plan->id;
         $preserveEndsAt = false;
-        
+
         if ($isPlanChange && ! $isTrial) {
             // Если старая подписка еще активна (ends_at в будущем), сохраняем ends_at
             if ($subscription->ends_at && $subscription->ends_at->isFuture()) {
@@ -60,7 +60,7 @@ class SubscriptionService
         // Получаем текущий metadata или создаем новый
         $metadata = $subscription?->metadata ?? [];
         $usedTrials = $metadata['used_trials'] ?? [];
-        
+
         // Если сохраняем ends_at при смене тарифа, сохраняем информацию о предыдущем тарифе
         if ($preserveEndsAt && $oldPlan) {
             $metadata['previous_plan_id'] = $oldPlan->id;
@@ -197,7 +197,7 @@ class SubscriptionService
 
         // Для месячных метрик используем usage с кешированием
         if ($this->isMonthlyMetric($featureKey)) {
-            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
 
             return Cache::remember($cacheKey, 300, function () use ($user, $featureKey) {
                 $usage = SubscriptionUsage::where('user_id', $user->id)
@@ -271,7 +271,7 @@ class SubscriptionService
             $usage->increment('current_usage', $amount);
 
             // Очищаем кеш
-            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
             Cache::forget($cacheKey);
         } else {
             // Очищаем кеш для немесячных метрик
@@ -306,7 +306,7 @@ class SubscriptionService
             }
 
             // Очищаем кеш
-            $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
+            $cacheKey = "usage_{$user->id}_{$featureKey}_" . now()->format('Y-m');
             Cache::forget($cacheKey);
         } else {
             // Очищаем кеш для немесячных метрик
