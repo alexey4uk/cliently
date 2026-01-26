@@ -37,7 +37,10 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
     public function findByTelegramToken(string $token): ?Business
     {
         return Cache::remember("business_telegram_token_{$token}", 600, function () use ($token) {
-            return $this->model->where('telegram_token', $token)->first();
+            return $this->model
+                ->with(['locations', 'services', 'users'])
+                ->where('telegram_token', $token)
+                ->first();
         });
     }
 
@@ -48,7 +51,10 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
     public function findBySlug(string $slug): ?Business
     {
         return Cache::remember("business_slug_{$slug}", 600, function () use ($slug) {
-            return $this->model->where('slug', $slug)->first();
+            return $this->model
+                ->with(['locations', 'services', 'users'])
+                ->where('slug', $slug)
+                ->first();
         });
     }
 

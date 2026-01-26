@@ -716,7 +716,7 @@ class Handler extends WebhookHandler
         // Обработка выбора бизнеса из каталога (может быть без состояния)
         if (str_starts_with($action, 'business_')) {
             $businessId = str_replace('business_', '', $action);
-            $business = Business::find($businessId);
+            $business = Business::with(['locations', 'services', 'users'])->find($businessId);
 
             if (! $business) {
                 $this->replyWithMessage(TelegramMessages::MSG_BUSINESS_NOT_FOUND);
@@ -1123,7 +1123,7 @@ class Handler extends WebhookHandler
                     'telegram_user_id' => $this->callbackQuery->from()->id(),
                 ]);
 
-                $countryBy = \App\Models\Country::where('code', 'BY')->first();
+                $countryBy = \App\Models\Country::getCached()->firstWhere('code', 'BY');
                 if ($countryBy) {
                     $client->phones()->create([
                         'country_id' => $countryBy->id,
@@ -1231,7 +1231,9 @@ class Handler extends WebhookHandler
      */
     protected function getBusinessOwner(Business $business): ?User
     {
-        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        $ownerRole = \Illuminate\Support\Facades\Cache::remember('business_role_slug_owner', 86400, function () {
+            return BusinessRole::where('slug', 'owner')->first();
+        });
 
         if (! $ownerRole) {
             return null;
