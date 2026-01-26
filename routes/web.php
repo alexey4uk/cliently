@@ -9,7 +9,7 @@ use App\Http\Controllers\TelegramManagementController;
 use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [\App\Http\Controllers\WelcomeController::class, 'index']);
+Route::get('/', [\App\Http\Controllers\WelcomeController::class, 'landing']);
 
 // Первоначальная настройка (создание админа при первом запуске)
 Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'show'])->name('setup');
