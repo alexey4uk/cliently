@@ -93,9 +93,15 @@ class ProductionTestSeeder extends Seeder
 
         DB::table('users')->insert($users);
 
+        // Назначаем роль 'user' всем пользователям
+        $allUsers = User::all();
+        foreach ($allUsers as $user) {
+            $user->assignRole('user');
+        }
+
         $this->command->info('   ✓ Создано пользователей: '.count($users));
 
-        return User::all()->keyBy('id')->all();
+        return $allUsers->keyBy('id')->all();
     }
 
     private function createBusinessesWithUsers(array $users): array
