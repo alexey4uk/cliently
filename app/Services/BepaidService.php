@@ -46,7 +46,7 @@ class BepaidService
         // Валидация Shop ID - должен быть числом
         $shopId = trim($currentSettings['shop_id']);
         if (! is_numeric($shopId)) {
-            throw new \RuntimeException('Shop ID должен быть числом. Текущее значение: '.$shopId.'. Проверьте настройки в админ панели.');
+            throw new \RuntimeException('Shop ID должен быть числом. Текущее значение: ' . $shopId . '. Проверьте настройки в админ панели.');
         }
 
         // Убеждаемся, что shop_id - это строка (не число), так как SDK может ожидать строку
@@ -139,10 +139,10 @@ class BepaidService
 
         // URL для возврата после оплаты
         $callbackUrls = config('bepaid.callback_urls');
-        $transaction->setSuccessUrl(url($callbackUrls['success'])."?invoice={$invoice->id}");
-        $transaction->setDeclineUrl(url($callbackUrls['decline'])."?invoice={$invoice->id}");
-        $transaction->setFailUrl(url($callbackUrls['fail'])."?invoice={$invoice->id}");
-        $transaction->setCancelUrl(url($callbackUrls['cancel'])."?invoice={$invoice->id}");
+        $transaction->setSuccessUrl(url($callbackUrls['success']) . "?invoice={$invoice->id}");
+        $transaction->setDeclineUrl(url($callbackUrls['decline']) . "?invoice={$invoice->id}");
+        $transaction->setFailUrl(url($callbackUrls['fail']) . "?invoice={$invoice->id}");
+        $transaction->setCancelUrl(url($callbackUrls['cancel']) . "?invoice={$invoice->id}");
 
         // Информация о клиенте
         $user = $invoice->user;
@@ -211,7 +211,7 @@ class BepaidService
         $response = $query->submit();
 
         if (! $response->isSuccess()) {
-            throw new \RuntimeException('Не удалось проверить статус платежа: '.$response->getMessage());
+            throw new \RuntimeException('Не удалось проверить статус платежа: ' . $response->getMessage());
         }
 
         return [

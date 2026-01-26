@@ -111,7 +111,6 @@ class BepaidWebhookController extends Controller
 
             // Возвращаем успешный ответ
             return response()->json(['status' => 'ok'], 200);
-
         } catch (\RuntimeException $e) {
             // Ошибки валидации и бизнес-логики - возвращаем 400
             Log::warning('bePaid webhook: validation error', [
@@ -182,9 +181,9 @@ class BepaidWebhookController extends Controller
         // Разделяем на shop_id и secret_key
         [$shopId, $secretKey] = explode(':', $credentials, 2);
 
-        // Получаем настройки bePaid из нашей БД
-        // Используем where()->first() чтобы получить актуальные данные из базы
-        $settings = BepaidSettings::where('id', 1)->first();
+        // Получаем настройки bePaid из кеша (кеш сбрасывается при обновлении через Observer)
+        // Это оптимизирует запросы к БД, так как настройки меняются редко
+        $settings = BepaidSettings::getSettings();
 
         // Если настройки не найдены или bePaid не включен - отклоняем
         if (! $settings || ! $settings->enabled) {
@@ -244,18 +243,18 @@ class BepaidWebhookController extends Controller
 
             // Проверяем, является ли это продлением (invoice metadata содержит is_renewal)
             $isRenewal = $invoice->metadata['is_renewal'] ?? false;
-            
+
             // Проверяем, нужно ли сохранять ends_at при смене тарифа
             $preserveEndsAt = $invoice->metadata['preserve_ends_at'] ?? false;
-            
+
             // Получаем текущий metadata
             $metadata = $subscription->metadata ?? [];
-            
+
             // Если это смена тарифа и нужно сохранить ends_at (старая подписка еще активна)
             if ($isPlanChange && $preserveEndsAt && $subscription->ends_at && $subscription->ends_at->isFuture()) {
                 // Сохраняем оплаченное время от старой подписки
                 $endsAt = $subscription->ends_at;
-                
+
                 // Сохраняем информацию о предыдущем тарифе в metadata
                 $metadata['previous_plan_id'] = $oldPlan->id;
                 $metadata['previous_plan_name'] = $oldPlan->name;
@@ -268,7 +267,7 @@ class BepaidWebhookController extends Controller
                 } elseif ($plan->interval === 'yearly') {
                     $endsAt = $baseDate->copy()->addYear();
                 }
-                
+
                 // При продлении очищаем информацию о предыдущем тарифе (если была)
                 unset($metadata['previous_plan_id']);
                 unset($metadata['previous_plan_name']);
@@ -280,7 +279,7 @@ class BepaidWebhookController extends Controller
                 } elseif ($plan->interval === 'yearly') {
                     $endsAt = $now->copy()->addYear();
                 }
-                
+
                 // При новой подписке очищаем информацию о предыдущем тарифе (если была)
                 unset($metadata['previous_plan_id']);
                 unset($metadata['previous_plan_name']);

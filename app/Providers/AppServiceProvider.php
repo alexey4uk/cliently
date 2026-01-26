@@ -44,5 +44,6 @@ class AppServiceProvider extends ServiceProvider
         \App\Models\Service::observe(\App\Observers\ServiceObserver::class);
         \App\Models\Location::observe(\App\Observers\LocationObserver::class);
         \App\Models\Client::observe(\App\Observers\ClientObserver::class);
+        \App\Models\BepaidSettings::observe(\App\Observers\BepaidSettingsObserver::class);
     }
 }
