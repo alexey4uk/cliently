@@ -159,17 +159,15 @@ jobs:
       - name: Send Telegram notification on success
         if: success()
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
           curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
           -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
           -d parse_mode="HTML" \
-          -d text="<b>✅ Dev Deployment Successful!</b>%0A%0A<b>Branch:</b> ${{ github.ref_name }}%0A<b>Commit:</b> ${COMMIT_MSG}%0A<b>Author:</b> ${{ github.actor }}%0A<b>Site:</b> https://dev.cliently.by%0A<b>Time:</b> $(date '+%Y-%m-%d %H:%M:%S')%0A%0A🚀 Dev environment updated!"
+          -d text="<b>✅ Dev Deployment Successful!</b>%0A%0A<b>Branch:</b> ${{ github.ref_name }}%0A<b>Commit:</b> ${{ github.event.head_commit.message }}%0A<b>Author:</b> ${{ github.actor }}%0A<b>Site:</b> https://dev.cliently.by%0A<b>Time:</b> $(date '+%Y-%m-%d %H:%M:%S')%0A%0A🚀 Dev environment updated!"
 
       - name: Send Telegram notification on failure
         if: failure()
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
           curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
           -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
           -d parse_mode="HTML" \
-          -d text="<b>❌ Dev Deployment FAILED!</b>%0A%0A<b>Branch:</b> ${{ github.ref_name }}%0A<b>Commit:</b> ${COMMIT_MSG}%0A<b>Author:</b> ${{ github.actor }}%0A<b>Site:</b> https://dev.cliently.by%0A<b>Time:</b> $(date '+%Y-%m-%d %H:%M:%S')%0A%0A⚠️ Tests failed or deployment error%0A%0A<a href='https://github.com/${{ github.repository }}/actions'>View Logs</a>"
+          -d text="<b>❌ Dev Deployment FAILED!</b>%0A%0A<b>Branch:</b> ${{ github.ref_name }}%0A<b>Commit:</b> ${{ github.event.head_commit.message }}%0A<b>Author:</b> ${{ github.actor }}%0A<b>Site:</b> https://dev.cliently.by%0A<b>Time:</b> $(date '+%Y-%m-%d %H:%M:%S')%0A%0A⚠️ Tests failed or deployment error%0A%0A<a href='https://github.com/${{ github.repository }}/actions'>View Logs</a>"
