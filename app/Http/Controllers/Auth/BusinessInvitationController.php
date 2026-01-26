@@ -105,6 +105,9 @@ class BusinessInvitationController extends Controller
 
         $invitation->business->users()->attach($user->id, $pivotData);
 
+        // Очищаем кэш бизнесов пользователя
+        $this->clearUserBusinessesCache($user->id);
+
         // Помечаем приглашение как принятое
         $invitation->update([
             'accepted_at' => now(),
@@ -164,6 +167,9 @@ class BusinessInvitationController extends Controller
         }
 
         $invitation->business->users()->attach($user->id, $pivotData);
+
+        // Очищаем кэш бизнесов пользователя
+        $this->clearUserBusinessesCache($user->id);
 
         // Помечаем приглашение как принятое
         $invitation->update([

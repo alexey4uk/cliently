@@ -26,7 +26,7 @@ class LocationRepository extends BaseRepository implements LocationRepositoryInt
     {
         $cacheKey = "locations_business_{$businessId}";
 
-        return Cache::remember($cacheKey, 1800, function () use ($businessId) {
+        return Cache::remember($cacheKey, 600, function () use ($businessId) {
             return $this->model->where('business_id', $businessId)
                 ->orderBy('name')
                 ->get();

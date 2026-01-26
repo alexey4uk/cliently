@@ -26,7 +26,7 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
     {
         $cacheKey = "masters_active_location_{$locationId}".($serviceId ? "_service_{$serviceId}" : '');
 
-        return Cache::remember($cacheKey, 1800, function () use ($locationId, $serviceId) {
+        return Cache::remember($cacheKey, 600, function () use ($locationId, $serviceId) {
             $query = $this->model->whereHas('locations', function ($q) use ($locationId) {
                 $q->where('locations.id', $locationId);
             })->where('is_active', true);
@@ -48,7 +48,7 @@ class MasterRepository extends BaseRepository implements MasterRepositoryInterfa
     {
         $cacheKey = "masters_active_business_{$businessId}".($serviceId ? "_service_{$serviceId}" : '');
 
-        return Cache::remember($cacheKey, 1800, function () use ($businessId, $serviceId) {
+        return Cache::remember($cacheKey, 600, function () use ($businessId, $serviceId) {
             $query = $this->model->where('business_id', $businessId)->where('is_active', true);
 
             if ($serviceId) {

@@ -23,8 +23,6 @@ class NotificationService
      */
     public static function send(array $params): ?NotificationRecord
     {
-        Log::info('NotificationService: send() called', ['params' => $params]);
-
         // Валидация обязательных полей
         $required = ['user_id', 'type', 'title', 'message'];
         foreach ($required as $field) {
@@ -43,25 +41,12 @@ class NotificationService
             return null;
         }
 
-        Log::info('NotificationService: User found', ['user_id' => $user->id, 'user_name' => $user->name]);
-
         // Проверка прав доступа (если указано)
         // ВАЖНО: Если required_permission указан, проверяем права. Если null - создаем уведомление без проверки
         if (isset($params['required_permission']) && ! empty($params['required_permission'])) {
             if (! $user->can($params['required_permission'])) {
-                Log::info('NotificationService: User lacks permission', [
-                    'user_id' => $user->id,
-                    'permission' => $params['required_permission'],
-                ]);
-
                 return null;
             }
-            Log::info('NotificationService: User has permission', [
-                'user_id' => $user->id,
-                'permission' => $params['required_permission'],
-            ]);
-        } else {
-            Log::info('NotificationService: No permission required, creating notification', ['user_id' => $user->id]);
         }
 
         // Создаем уведомление
@@ -74,12 +59,6 @@ class NotificationService
                 'data' => $params['data'] ?? null,
                 'required_permission' => $params['required_permission'] ?? null,
                 'is_read' => false,
-            ]);
-
-            Log::info('NotificationService: Notification created successfully', [
-                'notification_id' => $notification->id,
-                'user_id' => $user->id,
-                'type' => $params['type'],
             ]);
 
             return $notification;
@@ -248,11 +227,6 @@ class NotificationService
         $date = now()->subDays($days);
 
         $count = NotificationRecord::where('created_at', '<', $date)->delete();
-
-        Log::info('NotificationService: Old notifications cleaned', [
-            'days' => $days,
-            'deleted_count' => $count,
-        ]);
 
         return $count;
     }

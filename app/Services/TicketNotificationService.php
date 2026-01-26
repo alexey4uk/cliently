@@ -81,11 +81,6 @@ class TicketNotificationService
 
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
         if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created')) {
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket created notification', [
-                'user_id' => $ticket->assignedUser->id,
-                'ticket_id' => $ticket->id,
-            ]);
-
             NotificationService::send([
                 'user_id' => $ticket->assignedUser->id,
                 'type' => 'ticket.created',
@@ -162,36 +157,20 @@ class TicketNotificationService
         $usersToNotify = [];
         $notifiedUserIds = [$commentAuthorId]; // Исключаем автора комментария
 
-        \Illuminate\Support\Facades\Log::info('TicketNotificationService: notifyCommentAdded started', [
-            'ticket_id' => $ticket->id,
-            'comment_id' => $comment->id,
-            'comment_author_id' => $commentAuthorId,
-            'ticket_created_by_type' => $ticket->created_by_type,
-            'ticket_created_by_id' => $ticket->created_by_id,
-            'ticket_assigned_to' => $ticket->assigned_to,
-            'business_id' => $ticket->business_id,
-        ]);
-
         // Получаем создателя тикета
         // Создатель тикета ВСЕГДА должен получать уведомление о комментариях (если комментарий не от него)
         // независимо от прав доступа, так как он создал тикет
         $creator = $ticket->creator();
-        \Illuminate\Support\Facades\Log::info('TicketNotificationService: creator check', [
-            'creator' => $creator ? ['id' => $creator->id, 'name' => $creator->name] : null,
-            'comment_author_id' => $commentAuthorId,
-        ]);
 
         if ($creator && $creator->id !== $commentAuthorId && ! in_array($creator->id, $notifiedUserIds)) {
             $usersToNotify[] = $creator;
             $notifiedUserIds[] = $creator->id;
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Creator added to notify list (always notified)', ['creator_id' => $creator->id]);
         }
 
         // Получаем назначенного пользователя (если комментарий не от него)
         if ($ticket->assignedUser && $ticket->assignedUser->id !== $commentAuthorId && ! in_array($ticket->assignedUser->id, $notifiedUserIds)) {
             $usersToNotify[] = $ticket->assignedUser;
             $notifiedUserIds[] = $ticket->assignedUser->id;
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Assigned user added to notify list', ['assigned_user_id' => $ticket->assignedUser->id]);
         }
 
         // Если тикет не назначен никому, уведомляем всех пользователей бизнеса с правами просмотра тикетов
@@ -201,11 +180,6 @@ class TicketNotificationService
             $business = $ticket->business;
             if ($business && $business->users) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-
-                \Illuminate\Support\Facades\Log::info('TicketNotificationService: Checking business users', [
-                    'business_id' => $business->id,
-                    'users_count' => $business->users->count(),
-                ]);
 
                 foreach ($business->users as $user) {
                     // Пропускаем автора комментария и уже добавленных пользователей
@@ -247,22 +221,10 @@ class TicketNotificationService
                     // Также проверяем административные права (panel.tickets.view) для админов
                     $hasPanelPermission = $user->can('panel.tickets.view');
 
-                    \Illuminate\Support\Facades\Log::info('TicketNotificationService: Checking user permissions', [
-                        'user_id' => $user->id,
-                        'role_id' => $roleId,
-                        'role_slug' => $role->slug ?? null,
-                        'has_client_tickets_view' => $hasPermission,
-                        'has_panel_tickets_view' => $hasPanelPermission,
-                    ]);
-
                     // Уведомляем пользователей с правами просмотра тикетов (бизнес или админ)
                     if ($hasPermission || $hasPanelPermission) {
                         $usersToNotify[] = $user;
                         $notifiedUserIds[] = $user->id;
-                        \Illuminate\Support\Facades\Log::info('TicketNotificationService: Business user with tickets permission added', [
-                            'user_id' => $user->id,
-                            'permission_type' => $hasPermission ? 'client.tickets.view' : 'panel.tickets.view',
-                        ]);
                     }
                 }
             } else {
@@ -273,22 +235,11 @@ class TicketNotificationService
             }
         }
 
-        \Illuminate\Support\Facades\Log::info('TicketNotificationService: Users to notify', [
-            'count' => count($usersToNotify),
-            'user_ids' => array_map(fn ($u) => $u->id, $usersToNotify),
-        ]);
-
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
         foreach ($usersToNotify as $user) {
             if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
                 continue;
             }
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending comment notification', [
-                'user_id' => $user->id,
-                'ticket_id' => $ticket->id,
-                'comment_id' => $comment->id,
-            ]);
-
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.comment',
@@ -369,11 +320,6 @@ class TicketNotificationService
 
         // === СИСТЕМНОЕ УВЕДОМЛЕНИЕ ===
         // Отправляем всегда, даже если тип уведомления отключен - назначение тикета критично
-        \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending ticket assigned notification', [
-            'user_id' => $user->id,
-            'ticket_id' => $ticket->id,
-        ]);
-
         NotificationService::send([
             'user_id' => $user->id,
             'type' => 'ticket.assigned',
@@ -454,12 +400,6 @@ class TicketNotificationService
             if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
                 continue;
             }
-            \Illuminate\Support\Facades\Log::info('TicketNotificationService: Sending status changed notification', [
-                'user_id' => $user->id,
-                'ticket_id' => $ticket->id,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus,
-            ]);
 
             NotificationService::send([
                 'user_id' => $user->id,

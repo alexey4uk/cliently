@@ -195,12 +195,6 @@ class AppointmentSlotService
 
             // Если это null или пусто, пропускаем
             if (empty($rawWorkingHours)) {
-                Log::debug('У мастера нет working_hours', [
-                    'master_id' => $master->id,
-                    'master_name' => $master->first_name.' '.$master->last_name,
-                    'raw_type' => gettype($rawWorkingHours),
-                ]);
-
                 continue;
             }
 
@@ -208,23 +202,11 @@ class AppointmentSlotService
             $workingHours = $this->parseWorkingHours($rawWorkingHours);
 
             if (! $workingHours || ! is_array($workingHours)) {
-                Log::debug('Не удалось распарсить working_hours', [
-                    'master_id' => $master->id,
-                    'raw_type' => gettype($rawWorkingHours),
-                    'raw_value' => is_string($rawWorkingHours) ? substr($rawWorkingHours, 0, 100) : $rawWorkingHours,
-                ]);
-
                 continue;
             }
 
             // Проверяем, не выходной ли день
             if (in_array($dayOfWeek, $workingHours['days_off'] ?? [])) {
-                Log::debug('Выходной день для мастера', [
-                    'master_id' => $master->id,
-                    'day_of_week' => $dayOfWeek,
-                    'days_off' => $workingHours['days_off'] ?? [],
-                ]);
-
                 continue;
             }
 
@@ -243,12 +225,6 @@ class AppointmentSlotService
                     'to' => $to,
                     'master_id' => $master->id,
                 ];
-            } else {
-                Log::debug('У мастера нет времени работы для этого дня', [
-                    'master_id' => $master->id,
-                    'from' => $from,
-                    'to' => $to,
-                ]);
             }
         }
 

@@ -22,29 +22,29 @@ class PanelController extends Controller
         $user = Auth::user();
         $cacheKey = 'panel_dashboard_'.$user->id;
 
-        // Собираем все возможные данные
-        $data = Cache::remember($cacheKey, 300, function () use ($user) {
-            return $this->collectAllDashboardData($user);
+        // Объединяем ВСЕ данные (включая графики) в один кэш
+        $dashboardData = Cache::remember($cacheKey, 300, function () use ($user) {
+            $data = $this->collectAllDashboardData($user);
+            
+            // Данные для графиков (если есть доступ к аналитике)
+            $chartData = null;
+            if ($user->can('panel.analytics.view')) {
+                $chartData = $this->getChartData();
+            }
+            
+            return [
+                'stats' => $data['stats'],
+                'chartData' => $chartData,
+                'recentBusinesses' => $data['recentBusinesses'] ?? null,
+                'recentUsers' => $data['recentUsers'] ?? null,
+                'topBusinesses' => $data['topBusinesses'] ?? null,
+                'recentAppointments' => $data['recentAppointments'] ?? null,
+                'inactiveBusinesses' => $data['inactiveBusinesses'] ?? null,
+                'activeBusinesses' => $data['activeBusinesses'] ?? null,
+            ];
         });
 
-        // Данные для графиков (если есть доступ к аналитике)
-        $chartData = null;
-        if ($user->can('panel.analytics.view')) {
-            $chartData = Cache::remember($cacheKey.'_charts', 300, function () {
-                return $this->getChartData();
-            });
-        }
-
-        return view('panel.dashboard', [
-            'stats' => $data['stats'],
-            'chartData' => $chartData,
-            'recentBusinesses' => $data['recentBusinesses'] ?? null,
-            'recentUsers' => $data['recentUsers'] ?? null,
-            'topBusinesses' => $data['topBusinesses'] ?? null,
-            'recentAppointments' => $data['recentAppointments'] ?? null,
-            'inactiveBusinesses' => $data['inactiveBusinesses'] ?? null,
-            'activeBusinesses' => $data['activeBusinesses'] ?? null,
-        ]);
+        return view('panel.dashboard', $dashboardData);
     }
 
     /**
@@ -532,7 +532,6 @@ class PanelController extends Controller
         $cacheKey = 'panel_dashboard_'.$user->id;
 
         Cache::forget($cacheKey);
-        Cache::forget($cacheKey.'_charts');
 
         return redirect()->back()->with('success', 'Данные обновлены');
     }

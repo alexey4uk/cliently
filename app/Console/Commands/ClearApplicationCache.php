@@ -180,19 +180,19 @@ class ClearApplicationCache extends Command
     {
         // Clear user-specific cache
         Cache::forget("user_businesses_{$userId}");
-        Cache::forget("current_business_{$userId}");
-
-        // Clear current business role cache for all businesses of this user
-        $user = User::find($userId);
-        if ($user) {
-            foreach ($user->businesses as $business) {
-                Cache::forget("current_business_role_{$userId}_{$business->id}");
-                Cache::forget("business_user_pivot_{$userId}_{$business->id}");
-            }
-        }
 
         // Clear dashboard cache
-        Cache::tags(['dashboard', "user_{$userId}"])->flush();
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        if ($supportsTags) {
+            Cache::tags(['dashboard', "user_{$userId}"])->flush();
+        } else {
+            // Fallback: очищаем вручную для всех возможных ролей
+            $roles = \App\Models\BusinessRole::all();
+            foreach ($roles as $role) {
+                Cache::forget("dashboard_data_{$userId}_{$role->id}");
+            }
+            Cache::forget("dashboard_data_{$userId}_no_role");
+        }
 
         // Clear subscription usage cache
         $this->clearSubscriptionCache($userId);
@@ -275,7 +275,7 @@ class ClearApplicationCache extends Command
         // These will expire naturally
 
         $this->info('All application cache cleared!');
-        $this->warn('Note: Some caches (like user_businesses, business_user_pivot) will expire naturally or need specific user/business IDs to clear.');
+        $this->warn('Note: Some caches (like user_businesses) will expire naturally or need specific user/business IDs to clear.');
 
         return 0;
     }

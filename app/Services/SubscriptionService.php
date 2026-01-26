@@ -195,11 +195,11 @@ class SubscriptionService
             return 0;
         }
 
-        // Для месячных метрик используем usage с кешированием
+        // Для месячных метрик используем usage с кешированием (3 минуты)
         if ($this->isMonthlyMetric($featureKey)) {
             $cacheKey = "usage_{$user->id}_{$featureKey}_".now()->format('Y-m');
 
-            return Cache::remember($cacheKey, 300, function () use ($user, $featureKey) {
+            return Cache::remember($cacheKey, 180, function () use ($user, $featureKey) {
                 $usage = SubscriptionUsage::where('user_id', $user->id)
                     ->where('feature_key', $featureKey)
                     ->where('period_start', '<=', now())
@@ -210,10 +210,10 @@ class SubscriptionService
             });
         }
 
-        // Для остальных метрик кешируем на 10 минут
+        // Для остальных метрик кешируем на 3 минуты (критично для лимитов!)
         $cacheKey = "usage_{$user->id}_{$featureKey}";
 
-        return Cache::remember($cacheKey, 600, function () use ($user, $featureKey) {
+        return Cache::remember($cacheKey, 180, function () use ($user, $featureKey) {
             return match ($featureKey) {
                 'max_locations' => $user->businesses()->withCount('locations')->get()->sum('locations_count'),
                 'max_masters' => $user->businesses()->withCount('masters')->get()->sum('masters_count'),

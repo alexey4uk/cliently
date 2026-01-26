@@ -26,7 +26,7 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
     {
         $cacheKey = "services_active_business_{$businessId}";
 
-        return Cache::remember($cacheKey, 1800, function () use ($businessId) {
+        return Cache::remember($cacheKey, 600, function () use ($businessId) {
             return $this->model->where('business_id', $businessId)
                 ->where('is_active', true)
                 ->orderBy('name')

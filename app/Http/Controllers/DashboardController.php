@@ -59,83 +59,32 @@ class DashboardController extends Controller
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
-        // Кэширование данных (5 минут) с использованием тегов для групповой очистки
+        // Кэширование ВСЕХ данных dashboard в одном ключе (5 минут)
         $user = Auth::user();
         $permissionService = app(\App\Services\BusinessRolePermissionService::class);
         $roleId = $role ? $role->id : 'no_role';
-        $cacheTags = ['dashboard', "user_{$user->id}", "role_{$roleId}"];
+        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
 
-        // Проверяем, поддерживает ли драйвер кеша теги (array драйвер не поддерживает)
+        // Проверяем, поддерживает ли драйвер кеша теги
         $supportsTags = method_exists(Cache::getStore(), 'tags');
 
-        // Функция для получения кеша с поддержкой тегов или без
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
-            }
-
-            return Cache::remember($key, 300, $callback);
-        };
-
-        // Получаем данные с фильтрацией по правам
-        $stats = $getCache('dashboard_stats_'.$user->id.'_'.$roleId, function () use ($business, $role) {
-            return $this->getStats($business, $role);
-        });
-
-        $appointments = $getCache('dashboard_appointments_'.$user->id.'_'.$roleId, function () use ($business, $role) {
-            return $this->getAppointments($business, $role);
-        });
-
-        $clients = $getCache('dashboard_clients_'.$user->id.'_'.$roleId, function () use ($business, $role) {
-            return $this->getRecentClients($business, $role, 5);
-        });
-
-        // Финансовые метрики (если есть доступ)
-        $financialStats = null;
-        if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $financialStats = $getCache('dashboard_financial_'.$user->id.'_'.$role->id, function () use ($business, $role) {
-                    return $this->getFinancialStats($business, $role);
-                });
-            }
-        }
-
-        // Топ услуги (если есть доступ)
-        $topServices = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.services.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topServices = $getCache('dashboard_top_services_'.$user->id.'_'.$role->id, function () use ($business) {
-                    return $this->getTopServices($business);
-                });
-            }
-        }
-
-        // Топ мастера (если есть доступ)
-        $topMasters = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.masters.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topMasters = $getCache('dashboard_top_masters_'.$user->id.'_'.$role->id, function () use ($business) {
-                    return $this->getTopMasters($business);
-                });
-            }
-        }
-
-        // Статус подписки (если есть доступ)
-        $subscriptionStatus = null;
-        if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
-            $subscriptionStatus = $getCache('dashboard_subscription_'.$user->id.'_'.$role->id, function () use ($business) {
-                return $this->getSubscriptionStatus($business);
+        // Получаем ВСЕ данные одним кэш-запросом
+        $dashboardData = $supportsTags
+            ? Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
+                return $this->getDashboardData($business, $role, $permissionService);
+            })
+            : Cache::remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
+                return $this->getDashboardData($business, $role, $permissionService);
             });
-        }
+
+        // Извлекаем данные из кэша
+        $stats = $dashboardData['stats'];
+        $appointments = $dashboardData['appointments'];
+        $clients = $dashboardData['clients'];
+        $financialStats = $dashboardData['financialStats'];
+        $topServices = $dashboardData['topServices'];
+        $topMasters = $dashboardData['topMasters'];
+        $subscriptionStatus = $dashboardData['subscriptionStatus'];
 
         return view('dashboard', [
             'business' => $business,
@@ -152,26 +101,79 @@ class DashboardController extends Controller
     public function refresh()
     {
         $user = Auth::user();
-        $business = $this->getCurrentBusiness();
         $role = $this->getCurrentBusinessRole();
         $roleId = $role ? $role->id : 'no_role';
+        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
 
         // Очистка кэша через теги для групповой очистки (если поддерживается)
         $supportsTags = method_exists(Cache::getStore(), 'tags');
         if ($supportsTags) {
             Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->flush();
         } else {
-            // Если теги не поддерживаются, очищаем вручную
-            Cache::forget('dashboard_stats_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_appointments_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_clients_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_financial_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_top_services_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_top_masters_'.$user->id.'_'.$roleId);
-            Cache::forget('dashboard_subscription_'.$user->id.'_'.$roleId);
+            // Если теги не поддерживаются, очищаем один ключ
+            Cache::forget($cacheKey);
         }
 
         return redirect()->back()->with('success', 'Данные обновлены');
+    }
+
+    /**
+     * Получить ВСЕ данные dashboard одним вызовом
+     */
+    private function getDashboardData(\App\Models\Business $business, ?\App\Models\BusinessRole $role, $permissionService): array
+    {
+        $stats = $this->getStats($business, $role);
+        $appointments = $this->getAppointments($business, $role);
+        $clients = $this->getRecentClients($business, $role, 5);
+
+        // Финансовые метрики (если есть доступ)
+        $financialStats = null;
+        if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
+                $financialStats = $this->getFinancialStats($business, $role);
+            }
+        }
+
+        // Топ услуги (если есть доступ)
+        $topServices = null;
+        if (
+            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
+            && $permissionService->hasPermission($role->id, 'client.services.view')
+        ) {
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
+                $topServices = $this->getTopServices($business);
+            }
+        }
+
+        // Топ мастера (если есть доступ)
+        $topMasters = null;
+        if (
+            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
+            && $permissionService->hasPermission($role->id, 'client.masters.view')
+        ) {
+            $accessService = app(\App\Services\SubscriptionAccessService::class);
+            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
+                $topMasters = $this->getTopMasters($business);
+            }
+        }
+
+        // Статус подписки (если есть доступ)
+        $subscriptionStatus = null;
+        if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
+            $subscriptionStatus = $this->getSubscriptionStatus($business);
+        }
+
+        return [
+            'stats' => $stats,
+            'appointments' => $appointments,
+            'clients' => $clients,
+            'financialStats' => $financialStats,
+            'topServices' => $topServices,
+            'topMasters' => $topMasters,
+            'subscriptionStatus' => $subscriptionStatus,
+        ];
     }
 
     /**

@@ -79,6 +79,9 @@ class BusinessSettingsController extends Controller
             ]);
         });
 
+        // Очищаем кэш бизнесов пользователя
+        $this->clearUserBusinessesCache($user->id);
+
         AdminNotificationService::notifyBusinessCreated($business);
 
         return redirect()->route('settings.index')->with('success', 'Бизнес успешно создан!');

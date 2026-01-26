@@ -263,6 +263,9 @@ class BusinessUsersController extends Controller
 
             $business->users()->attach($existingUser->id, $pivotData);
 
+            // Очищаем кэш бизнесов пользователя
+            $this->clearUserBusinessesCache($existingUser->id);
+
             // Отправляем уведомление о добавлении в бизнес
             $existingUser->notify(new BusinessUserCreated($business, $role->name));
 
@@ -336,6 +339,9 @@ class BusinessUsersController extends Controller
         }
 
         $business->users()->attach($user->id, $pivotData);
+
+        // Очищаем кэш бизнесов пользователя
+        $this->clearUserBusinessesCache($user->id);
 
         // Отправляем уведомление с временным паролем
         $user->notify(new BusinessUserCreatedWithPassword($business, $role->name, $temporaryPassword));
@@ -471,6 +477,9 @@ class BusinessUsersController extends Controller
 
         // Удаляем пользователя из бизнеса
         $business->users()->detach($user->id);
+
+        // Очищаем кэш бизнесов пользователя
+        $this->clearUserBusinessesCache($user->id);
 
         return redirect()->route('settings.users.index')
             ->with('success', 'Пользователь удален из бизнеса.');
