@@ -26,23 +26,36 @@ class ClientController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
-        $query = Client::with(['business', 'appointments'])
-            ->withCount(['appointments', 'appointments as upcoming_appointments_count' => function ($query) {
-                $query->whereRaw("CONCAT(date, ' ', time) > ?", [now()->toDateTimeString()]);
-            }]);
+        // ОПТИМИЗИРОВАНО: убрали with(['appointments']) - критично медленно!
+        // Добавили подзапросы для COUNT вместо withCount
+        $query = Client::query()
+            ->with(['business'])
+            ->selectRaw('clients.*, 
+                (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id) as appointments_count,
+                (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id AND CONCAT(date, " ", time) > ?) as upcoming_appointments_count',
+                [now()->toDateTimeString()]
+            );
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
+            // Используем FULLTEXT для имен (быстро!)
+            $searchTerm = $search . '*';
+            $query->where(function ($q) use ($search, $searchTerm) {
+                // FULLTEXT поиск по именам
+                $q->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                    // Обычный поиск по email (FULLTEXT не нужен для email)
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                    ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
-            });
+                    // Поиск по телефону через JOIN (быстрее чем whereHas)
+                    ->orWhereIn('id', function ($subquery) use ($search) {
+                        $subquery->select('phoneable_id')
+                            ->from('phones')
+                            ->where('phoneable_type', Client::class)
+                            ->where('phone', 'like', "%{$search}%");
+                    });
+            })->limit(1000); // Ограничение для поиска
         }
 
         // Фильтр по бизнесу
@@ -62,7 +75,8 @@ class ClientController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $clients = $query->paginate($perPage)->withQueryString();
+        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate (без медленного COUNT)
+        $clients = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
