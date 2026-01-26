@@ -140,17 +140,26 @@ class AppointmentController extends Controller
             return view('appointments.public.disabled', compact('business'));
         }
 
-        $location = $business->locations()->findOrFail($locationId);
-        $service = $business->services()->findOrFail($serviceId);
-        $master = $business->masters()->findOrFail($masterId);
+        // ОПТИМИЗАЦИЯ: Загружаем всё одним запросом с проверками
+        try {
+            $location = $business->locations()->findOrFail($locationId);
+            $service = $business->services()->findOrFail($serviceId);
+            
+            // Загружаем мастера с предзагрузкой связей для проверки
+            $master = $business->masters()
+                ->with(['locations', 'services'])
+                ->findOrFail($masterId);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404);
+        }
 
         // Проверяем, что мастер работает в выбранной локации
-        if (! $master->locations()->where('locations.id', $locationId)->exists()) {
+        if (! $master->locations->contains('id', $locationId)) {
             abort(404, 'Мастер не работает в выбранной локации');
         }
 
         // Проверяем, что мастер предоставляет услугу
-        if (! $master->services()->where('services.id', $serviceId)->exists()) {
+        if (! $master->services->contains('id', $serviceId)) {
             abort(404, 'Мастер не предоставляет эту услугу');
         }
 
@@ -173,72 +182,25 @@ class AppointmentController extends Controller
         // Определяем, является ли это явным выбором пользователя
         $isExplicitDateChoice = request()->has('date');
 
-        // Получаем доступные слоты для выбранной даты
-        $debugInfo = [];
-        $availableSlots = $this->slotService->getAvailableSlots(
-            $serviceId,
-            $date,
-            $masterId,
-            $locationId,
-            $debugInfo
-        );
-
-        // Получаем даты со слотами с сегодня до конца следующего месяца
+        // ОПТИМИЗАЦИЯ: Получаем даты со слотами с сегодня до конца следующего месяца
+        // Используем единый метод, который вернет и слоты для текущей даты, и информацию о других датах
+        // Это избегает дублирующихся запросов к БД
         $endOfNextMonth = Carbon::today()->endOfMonth()->addMonth()->endOfMonth();
-        $datesWithSlots = [];
+        
+        $result = $this->slotService->getAvailableSlotsWithCalendar(
+            $service,       // Передаем объект service вместо ID
+            $master,        // Передаем объект master вместо ID
+            $selectedDate,  // Текущая выбранная дата
+            Carbon::today(),
+            $endOfNextMonth
+        );
+        
+        $availableSlots = $result['slots'];
+        $datesWithSlots = $result['calendar'];
 
-        // Начинаем с сегодня
-        $checkDate = Carbon::today();
-
-        while ($checkDate->lte($endOfNextMonth)) {
-            // Для текущей даты используем уже полученные слоты
-            if ($checkDate->format('Y-m-d') === $date) {
-                $datesWithSlots[$checkDate->format('Y-m-d')] = ! empty($availableSlots);
-            } else {
-                // Для остальных дат проверяем слоты
-                $slots = $this->slotService->getAvailableSlots(
-                    $serviceId,
-                    $checkDate->format('Y-m-d'),
-                    $masterId,
-                    $locationId,
-                    $debugInfo
-                );
-
-                $datesWithSlots[$checkDate->format('Y-m-d')] = ! empty($slots);
-            }
-
-            $checkDate->addDay();
-        }
-
-        // Если для запрошенной даты нет слотов, ищем ближайшую дату со слотами
-        // Но делаем это только если:
-        // 1. Это не явный выбор пользователя (первый визит или date не указан в URL)
-        // 2. ИЛИ это сегодняшняя дата (чтобы не показывать сегодня, если нет слотов)
-        if (empty($availableSlots)) {
-            // Определяем, нужно ли искать другую дату
-            $shouldFindNextDate = ! $isExplicitDateChoice || $selectedDate->isToday();
-
-            if ($shouldFindNextDate) {
-                $nextAvailableDate = $this->findNextAvailableDate(
-                    $serviceId,
-                    $masterId,
-                    $locationId,
-                    $selectedDate
-                );
-
-                // if ($nextAvailableDate) {
-                //     // Перенаправляем на ту же страницу с ближайшей датой
-                //     return redirect()->route('public.appointments.select-time', [
-                //         'slug' => $slug,
-                //         'locationId' => $locationId,
-                //         'serviceId' => $serviceId,
-                //         'masterId' => $masterId,
-                //         'date' => $nextAvailableDate->format('Y-m-d'),
-                //     ]);
-                // }
-            }
-            // Если пользователь явно выбрал дату без слотов - показываем пустой список
-        }
+        // ОПТИМИЗАЦИЯ: Календарь уже содержит всю информацию о датах со слотами
+        // Пользователь может сам выбрать нужную дату в календаре
+        // Больше не нужно искать следующую доступную дату и делать дополнительные запросы
 
         $countries = \App\Models\Country::getCached();
 
