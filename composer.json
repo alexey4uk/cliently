@@ -18,6 +18,7 @@
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.0",
         "fakerphp/faker": "^1.23",
         "laravel-lang/common": "^6.7",
         "laravel/breeze": "^2.3",

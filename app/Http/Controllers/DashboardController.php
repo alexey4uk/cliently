@@ -573,20 +573,10 @@ class DashboardController extends Controller
         }
 
         $subscriptionService = app(\App\Services\SubscriptionService::class);
-        $usage = [];
 
-        // Получаем использование для всех метрик
+        // Получаем использование для всех метрик одним запросом (оптимизация N+1)
         $metrics = ['max_locations', 'max_masters', 'max_services', 'max_clients', 'max_appointments_per_month', 'max_business_users'];
-        foreach ($metrics as $metric) {
-            $currentUsage = $subscriptionService->getCurrentUsage($owner, $metric);
-            $limit = $subscriptionService->getLimit($owner, $metric);
-            $usage[$metric] = [
-                'current' => $currentUsage,
-                'limit' => $limit,
-                'percentage' => $limit > 0 ? round(($currentUsage / $limit) * 100, 1) : 0,
-                'warning' => $limit > 0 && ($currentUsage / $limit) > 0.8,
-            ];
-        }
+        $usage = $subscriptionService->getMultipleUsageAndLimits($owner, $metrics);
 
         return [
             'plan_name' => $subscription->plan->name,

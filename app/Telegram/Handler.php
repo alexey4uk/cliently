@@ -716,7 +716,7 @@ class Handler extends WebhookHandler
         // Обработка выбора бизнеса из каталога (может быть без состояния)
         if (str_starts_with($action, 'business_')) {
             $businessId = str_replace('business_', '', $action);
-            $business = Business::find($businessId);
+            $business = Business::with(['locations', 'services', 'users'])->find($businessId);
 
             if (! $business) {
                 $this->replyWithMessage(TelegramMessages::MSG_BUSINESS_NOT_FOUND);
@@ -986,8 +986,6 @@ class Handler extends WebhookHandler
      */
     protected function showTimeSlots(Business $business, $date, $state)
     {
-        Log::info('showTimeSlots called', ['date' => $date]);
-
         $locationId = $state?->data['location_id'] ?? null;
         $serviceId = $state?->data['service_id'] ?? null;
         $masterId = $state?->data['master_id'] ?? null;
@@ -1006,8 +1004,6 @@ class Handler extends WebhookHandler
             $locationId,
             $debugInfo
         );
-
-        Log::info('Available slots:', ['slots' => $availableSlots, 'count' => count($availableSlots)]);
 
         if (empty($availableSlots)) {
             $this->replyWithMessage(TelegramMessages::MSG_NO_SLOTS, TelegramKeyboards::timesEmpty());
@@ -1088,17 +1084,6 @@ class Handler extends WebhookHandler
 
         $data = $state->data;
 
-        Log::info('Creating appointment with data:', [
-            'business_id' => $business->id,
-            'service_id' => $data['service_id'],
-            'master_id' => $data['master_id'],
-            'location_id' => $data['location_id'],
-            'date' => $data['date'],
-            'time' => $data['time'],
-            'time_type' => gettype($data['time']),
-            'client_data' => $data['client_data'],
-        ]);
-
         try {
             // Получаем пользователя через бизнес
             $user = $business->users()->first();
@@ -1138,7 +1123,7 @@ class Handler extends WebhookHandler
                     'telegram_user_id' => $this->callbackQuery->from()->id(),
                 ]);
 
-                $countryBy = \App\Models\Country::where('code', 'BY')->first();
+                $countryBy = \App\Models\Country::getCached()->firstWhere('code', 'BY');
                 if ($countryBy) {
                     $client->phones()->create([
                         'country_id' => $countryBy->id,
@@ -1246,7 +1231,9 @@ class Handler extends WebhookHandler
      */
     protected function getBusinessOwner(Business $business): ?User
     {
-        $ownerRole = BusinessRole::where('slug', 'owner')->first();
+        $ownerRole = \Illuminate\Support\Facades\Cache::remember('business_role_slug_owner', 86400, function () {
+            return BusinessRole::where('slug', 'owner')->first();
+        });
 
         if (! $ownerRole) {
             return null;

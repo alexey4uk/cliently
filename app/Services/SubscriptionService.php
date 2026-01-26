@@ -240,6 +240,63 @@ class SubscriptionService
     }
 
     /**
+     * Получить usage и limits для нескольких метрик одним запросом (оптимизация N+1)
+     */
+    public function getMultipleUsageAndLimits(User $user, array $featureKeys): array
+    {
+        $subscription = $user->activeSubscription();
+
+        if (! $subscription) {
+            return array_fill_keys($featureKeys, [
+                'current' => 0,
+                'limit' => 0,
+                'percentage' => 0,
+                'warning' => false,
+            ]);
+        }
+
+        // Получаем все usage для месячных метрик одним запросом
+        $monthlyKeys = array_filter($featureKeys, fn ($key) => $this->isMonthlyMetric($key));
+
+        $usageData = [];
+        if (! empty($monthlyKeys)) {
+            $usages = SubscriptionUsage::where('user_id', $user->id)
+                ->whereIn('feature_key', $monthlyKeys)
+                ->where('period_start', '<=', now())
+                ->where('period_end', '>=', now())
+                ->get()
+                ->keyBy('feature_key');
+
+            foreach ($monthlyKeys as $key) {
+                $usageData[$key] = $usages->get($key)?->current_usage ?? 0;
+            }
+        }
+
+        // Для остальных метрик считаем напрямую
+        foreach ($featureKeys as $key) {
+            if (! isset($usageData[$key])) {
+                $usageData[$key] = $this->getCurrentUsage($user, $key);
+            }
+        }
+
+        // Получаем limits для всех метрик (они уже закешированы в subscription)
+        $result = [];
+        foreach ($featureKeys as $key) {
+            $current = $usageData[$key] ?? 0;
+            $limit = $subscription->getFeatureLimit($key);
+
+            $result[$key] = [
+                'current' => $current,
+                'limit' => $limit,
+                'percentage' => $limit > 0 ? round(($current / $limit) * 100, 1) : 0,
+                'warning' => $limit > 0 && ($current / $limit) > 0.8,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * Увеличить использование метрики
      */
     public function incrementUsage(User $user, string $featureKey, int $amount = 1): void
@@ -420,6 +477,40 @@ class SubscriptionService
     /**
      * Проверить, использовал ли пользователь пробный период для конкретного тарифа
      */
+    /**
+     * Проверить использование trial для нескольких планов сразу (оптимизация N+1)
+     */
+    public function hasUsedTrialForPlans(User $user, $plans): array
+    {
+        $subscription = $user->subscription;
+
+        if (! $subscription) {
+            return array_fill_keys($plans->pluck('id')->toArray(), false);
+        }
+
+        $metadata = $subscription->metadata ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
+
+        $result = [];
+        foreach ($plans as $plan) {
+            // Проверяем в metadata
+            if (in_array($plan->id, $usedTrials)) {
+                $result[$plan->id] = true;
+
+                continue;
+            }
+
+            // Дополнительная проверка для текущей подписки
+            if ($subscription->plan_id === $plan->id && $subscription->trial_ends_at !== null && $subscription->trial_ends_at->isPast()) {
+                $result[$plan->id] = true;
+            } else {
+                $result[$plan->id] = false;
+            }
+        }
+
+        return $result;
+    }
+
     public function hasUsedTrialForPlan(User $user, Plan $plan): bool
     {
         $subscription = $user->subscription;

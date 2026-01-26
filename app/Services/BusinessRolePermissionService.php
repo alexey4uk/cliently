@@ -77,6 +77,35 @@ class BusinessRolePermissionService
     }
 
     /**
+     * Get permissions for multiple roles at once (оптимизация N+1)
+     */
+    public function getPermissionsForRoles(array $roleIds): array
+    {
+        if (empty($roleIds)) {
+            return [];
+        }
+
+        // Получаем все permissions одним запросом
+        $permissions = \App\Models\BusinessRolePermission::whereIn('role_id', $roleIds)
+            ->where('granted', true)
+            ->get()
+            ->groupBy('role_id')
+            ->map(function ($group) {
+                return $group->pluck('permission')->toArray();
+            })
+            ->toArray();
+
+        // Заполняем пустые роли
+        foreach ($roleIds as $roleId) {
+            if (! isset($permissions[$roleId])) {
+                $permissions[$roleId] = [];
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
      * Get permissions for a role in a specific business (with overrides).
      * Uses caching to avoid repeated DB queries.
      */
