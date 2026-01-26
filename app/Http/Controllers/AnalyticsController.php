@@ -171,8 +171,18 @@ class AnalyticsController extends Controller
     private function getFinancialData(int $businessId, array $filters): array
     {
         $cacheKey = 'analytics_financial_'.$businessId.'_'.md5(json_encode($filters));
+        $cacheTags = ['analytics', "business_{$businessId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($businessId, $filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($businessId, $filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -230,8 +240,18 @@ class AnalyticsController extends Controller
     private function getGeneralData(int $businessId, array $filters): array
     {
         $cacheKey = 'analytics_general_'.$businessId.'_'.md5(json_encode($filters));
+        $cacheTags = ['analytics', "business_{$businessId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($businessId, $filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($businessId, $filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -305,21 +325,20 @@ class AnalyticsController extends Controller
 
         $appointments = $query->with('service')->get();
 
+        // Группируем по датам сразу для оптимизации
+        $groupedByDate = $appointments->groupBy(function ($appointment) {
+            return $appointment->date->format('Y-m-d');
+        });
+
         $revenueByDay = [];
         $currentDate = $startDate->copy();
 
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
-            $dayRevenue = $appointments
-                ->filter(function ($appointment) use ($dateStr) {
-                    return $appointment->date->format('Y-m-d') === $dateStr;
-                })
-                ->sum(function ($appointment) {
-                    return $appointment->price ?? $appointment->service->price ?? 0;
-                });
+            $dayAppointments = $groupedByDate->get($dateStr, collect());
 
-            $dayAppointments = $appointments->filter(function ($appointment) use ($dateStr) {
-                return $appointment->date->format('Y-m-d') === $dateStr;
+            $dayRevenue = $dayAppointments->sum(function ($appointment) {
+                return $appointment->price ?? $appointment->service->price ?? 0;
             });
 
             $revenueByDay[] = [
@@ -562,10 +581,11 @@ class AnalyticsController extends Controller
 
     /**
      * Получить владельца бизнеса
+     * Uses cached method for owner role.
      */
     private function getBusinessOwner(\App\Models\Business $business): ?\App\Models\User
     {
-        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        $ownerRole = \App\Models\BusinessRole::getOwnerRole();
 
         if (! $ownerRole) {
             return null;
@@ -676,8 +696,18 @@ class AnalyticsController extends Controller
     private function getKPIData(int $businessId): array
     {
         $cacheKey = 'analytics_kpi_'.$businessId;
+        $cacheTags = ['analytics', "business_{$businessId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($businessId) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($businessId) {
             $now = Carbon::now();
             $last30Days = $now->copy()->subDays(30);
             $last90Days = $now->copy()->subDays(90);
@@ -709,19 +739,28 @@ class AnalyticsController extends Controller
             $retentionRate = $totalClients > 0 ? round(($returningClients / $totalClients) * 100, 1) : 0;
 
             // Прогноз выручки на следующий месяц (средняя выручка за последние 3 месяца)
+            // Оптимизировано: загружаем все данные одним запросом
+            $threeMonthsAgo = $now->copy()->subMonths(3)->startOfMonth();
+            $allMonthlyAppointments = \App\Models\Appointment::where('business_id', $businessId)
+                ->where('status', 'completed')
+                ->where('date', '>=', $threeMonthsAgo->format('Y-m-d'))
+                ->where('date', '<', $now->copy()->startOfMonth()->format('Y-m-d'))
+                ->with('service')
+                ->get();
+
+            // Группируем по месяцам
             $monthlyRevenues = [];
+            $groupedByMonth = $allMonthlyAppointments->groupBy(function ($appointment) {
+                return $appointment->date->format('Y-m');
+            });
+
             for ($i = 0; $i < 3; $i++) {
-                $monthStart = $now->copy()->subMonths($i + 1)->startOfMonth();
-                $monthEnd = $now->copy()->subMonths($i + 1)->endOfMonth();
+                $monthKey = $now->copy()->subMonths($i + 1)->format('Y-m');
+                $monthAppointments = $groupedByMonth->get($monthKey, collect());
                 
-                $monthRevenue = \App\Models\Appointment::where('business_id', $businessId)
-                    ->where('status', 'completed')
-                    ->whereBetween('date', [$monthStart->format('Y-m-d'), $monthEnd->format('Y-m-d')])
-                    ->with('service')
-                    ->get()
-                    ->sum(function ($appointment) {
-                        return $appointment->price ?? $appointment->service->price ?? 0;
-                    });
+                $monthRevenue = $monthAppointments->sum(function ($appointment) {
+                    return $appointment->price ?? $appointment->service->price ?? 0;
+                });
                 
                 if ($monthRevenue > 0) {
                     $monthlyRevenues[] = $monthRevenue;
@@ -731,12 +770,11 @@ class AnalyticsController extends Controller
             $averageMonthlyRevenue = count($monthlyRevenues) > 0 ? round(array_sum($monthlyRevenues) / count($monthlyRevenues), 0) : 0;
             $revenueForecast = $averageMonthlyRevenue;
 
-            // Выручка за последние 30 дней
-            $revenueLast30Days = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('status', 'completed')
-                ->where('date', '>=', $last30Days->format('Y-m-d'))
-                ->with('service')
-                ->get()
+            // Выручка за последние 30 дней (используем уже загруженные данные)
+            $revenueLast30Days = $completedAppointments
+                ->filter(function ($appointment) use ($last30Days) {
+                    return $appointment->date->format('Y-m-d') >= $last30Days->format('Y-m-d');
+                })
                 ->sum(function ($appointment) {
                     return $appointment->price ?? $appointment->service->price ?? 0;
                 });
@@ -758,8 +796,18 @@ class AnalyticsController extends Controller
     private function getClientsAnalyticsData(int $businessId, array $filters): array
     {
         $cacheKey = 'analytics_clients_'.$businessId.'_'.md5(json_encode($filters));
+        $cacheTags = ['analytics', "business_{$businessId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($businessId, $filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($businessId, $filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -832,9 +880,32 @@ class AnalyticsController extends Controller
 
     /**
      * Получить привлечение новых клиентов по периодам
+     * Optimized: loads all appointments with single query instead of N queries per day.
      */
     private function getNewClientsByPeriod(int $businessId, Carbon $startDate, Carbon $endDate): array
     {
+        // Загружаем все записи за период одним запросом
+        $allAppointments = \App\Models\Appointment::where('business_id', $businessId)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc')
+            ->get();
+
+        // Определяем дату первой записи для каждого клиента
+        $firstAppointmentByClient = [];
+        foreach ($allAppointments as $appointment) {
+            $clientId = $appointment->client_id;
+            if (!isset($firstAppointmentByClient[$clientId])) {
+                $firstAppointmentByClient[$clientId] = $appointment->date->format('Y-m-d');
+            }
+        }
+
+        // Группируем записи по датам
+        $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
+            return $appointment->date->format('Y-m-d');
+        });
+
+        // Заполняем массив для всех дней
         $newClientsByDay = [];
         $currentDate = $startDate->copy();
 
@@ -842,18 +913,12 @@ class AnalyticsController extends Controller
             $dateStr = $currentDate->format('Y-m-d');
             
             // Клиенты, у которых первая запись в этот день
-            $newClientsOnDay = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('date', $dateStr)
-                ->with('client')
-                ->get()
-                ->filter(function ($appointment) use ($businessId) {
-                    $firstAppointment = \App\Models\Appointment::where('business_id', $businessId)
-                        ->where('client_id', $appointment->client_id)
-                        ->orderBy('date', 'asc')
-                        ->orderBy('time', 'asc')
-                        ->first();
-                    
-                    return $firstAppointment && $firstAppointment->date->format('Y-m-d') === $appointment->date->format('Y-m-d');
+            $dayAppointments = $appointmentsByDate->get($dateStr, collect());
+            $newClientsOnDay = $dayAppointments
+                ->filter(function ($appointment) use ($firstAppointmentByClient, $dateStr) {
+                    $clientId = $appointment->client_id;
+                    return isset($firstAppointmentByClient[$clientId]) 
+                        && $firstAppointmentByClient[$clientId] === $dateStr;
                 })
                 ->pluck('client_id')
                 ->unique()
@@ -877,8 +942,18 @@ class AnalyticsController extends Controller
     private function getTimeAnalytics(int $businessId, array $filters): array
     {
         $cacheKey = 'analytics_time_'.$businessId.'_'.md5(json_encode($filters));
+        $cacheTags = ['analytics', "business_{$businessId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($businessId, $filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($businessId, $filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 

@@ -16,7 +16,7 @@ class ClearApplicationCache extends Command
      * @var string
      */
     protected $signature = 'cache:clear-app 
-                            {--tag= : Clear cache by tag (dashboard, businesses, roles, permissions, countries, all)}
+                            {--tag= : Clear cache by tag (dashboard, businesses, roles, permissions, countries, analytics, panel_analytics, subscription, all)}
                             {--user= : Clear cache for specific user ID}
                             {--business= : Clear cache for specific business ID}';
 
@@ -108,6 +108,43 @@ class ClearApplicationCache extends Command
                 $this->info('Countries cache cleared');
                 break;
 
+            case 'analytics':
+                if ($businessId) {
+                    $this->clearClientAnalyticsCache($businessId);
+                    $this->info("Client analytics cache cleared for business ID: {$businessId}");
+                } else {
+                    $supportsTags = method_exists(Cache::getStore(), 'tags');
+                    if ($supportsTags) {
+                        Cache::tags(['analytics'])->flush();
+                        $this->info('All client analytics cache cleared');
+                    } else {
+                        $this->warn('Please specify --business option to clear client analytics cache (tags not supported)');
+                    }
+                }
+                break;
+
+            case 'panel_analytics':
+                if ($userId) {
+                    $supportsTags = method_exists(Cache::getStore(), 'tags');
+                    if ($supportsTags) {
+                        Cache::tags(['panel_analytics', "user_{$userId}"])->flush();
+                        $this->info("Panel analytics cache cleared for user ID: {$userId}");
+                    } else {
+                        // Очищаем основные ключи вручную
+                        Cache::forget("panel_analytics_overview_{$userId}");
+                        $this->info("Panel analytics cache cleared for user ID: {$userId} (partial)");
+                    }
+                } else {
+                    $supportsTags = method_exists(Cache::getStore(), 'tags');
+                    if ($supportsTags) {
+                        Cache::tags(['panel_analytics'])->flush();
+                        $this->info('All panel analytics cache cleared');
+                    } else {
+                        $this->warn('Please specify --user option to clear panel analytics cache (tags not supported)');
+                    }
+                }
+                break;
+
             case 'subscription':
                 if ($userId) {
                     $this->clearSubscriptionCache($userId);
@@ -122,7 +159,7 @@ class ClearApplicationCache extends Command
 
             default:
                 $this->error("Unknown tag: {$tag}");
-                $this->info('Available tags: dashboard, businesses, roles, permissions, countries, subscription, all');
+                $this->info('Available tags: dashboard, businesses, roles, permissions, countries, analytics, panel_analytics, subscription, all');
                 return 1;
         }
 
@@ -214,7 +251,16 @@ class ClearApplicationCache extends Command
         }
 
         // Clear dashboard cache by tags
-        Cache::tags(['dashboard'])->flush();
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        if ($supportsTags) {
+            Cache::tags(['dashboard'])->flush();
+            Cache::tags(['analytics'])->flush();
+            Cache::tags(['panel_analytics'])->flush();
+        }
+
+        // Очищаем метрики выручки
+        Cache::forget('analytics_revenue_metrics_'.today()->format('Y-m-d'));
+        Cache::forget('analytics_invoice_status_stats');
 
         // Clear pivot caches (approximate - would need to know all user/business combinations)
         // These will expire naturally
@@ -270,6 +316,21 @@ class ClearApplicationCache extends Command
             Cache::forget("usage_{$userId}_{$featureKey}_" . now()->format('Y-m'));
             // Clear general cache
             Cache::forget("usage_{$userId}_{$featureKey}");
+        }
+    }
+
+    /**
+     * Clear client analytics cache for business.
+     */
+    protected function clearClientAnalyticsCache(string $businessId): void
+    {
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        if ($supportsTags) {
+            Cache::tags(['analytics', "business_{$businessId}"])->flush();
+        } else {
+            // Очищаем основные ключи вручную
+            Cache::forget("analytics_kpi_{$businessId}");
+            // Остальные ключи будут очищены при следующем запросе
         }
     }
 }

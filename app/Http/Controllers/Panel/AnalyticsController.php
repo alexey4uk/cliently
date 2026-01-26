@@ -39,7 +39,7 @@ class AnalyticsController extends Controller
 
         $filters = $this->getFilters($request);
         $data = $this->getFinancialData($filters);
-        $plans = Plan::where('is_active', true)->orderBy('sort_order')->get();
+        $plans = Plan::getActiveCached();
 
         return view('panel.analytics.financial', compact('data', 'filters', 'plans'));
     }
@@ -66,7 +66,7 @@ class AnalyticsController extends Controller
 
         $filters = $this->getFilters($request);
         $data = $this->getSubscriptionsData($filters);
-        $plans = Plan::where('is_active', true)->orderBy('sort_order')->get();
+        $plans = Plan::getActiveCached();
 
         return view('panel.analytics.subscriptions', compact('data', 'filters', 'plans'));
     }
@@ -76,9 +76,20 @@ class AnalyticsController extends Controller
      */
     private function getOverviewData(): array
     {
-        $cacheKey = 'panel_analytics_overview_'.Auth::id();
+        $userId = Auth::id();
+        $cacheKey = 'panel_analytics_overview_'.$userId;
+        $cacheTags = ['panel_analytics', "user_{$userId}"];
 
-        return Cache::remember($cacheKey, 300, function () {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () {
             $today = Carbon::today();
             $monthAgo = Carbon::now()->subMonth();
             $twoMonthsAgo = Carbon::now()->subMonths(2);
@@ -196,9 +207,20 @@ class AnalyticsController extends Controller
      */
     private function getFinancialData(array $filters): array
     {
-        $cacheKey = 'panel_analytics_financial_'.Auth::id().'_'.md5(json_encode($filters));
+        $userId = Auth::id();
+        $cacheKey = 'panel_analytics_financial_'.$userId.'_'.md5(json_encode($filters));
+        $cacheTags = ['panel_analytics', "user_{$userId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -214,26 +236,51 @@ class AnalyticsController extends Controller
 
             $invoices = $query->get();
 
-            // Общая выручка
-            $totalRevenue = Invoice::where('status', 'paid')->sum('amount');
+            // Кешируем общие метрики выручки (обновляются редко)
+            $revenueMetrics = Cache::remember('analytics_revenue_metrics_'.today()->format('Y-m-d'), 600, function () {
+                $now = Carbon::now();
+                $today = $now->copy()->startOfDay();
+                $weekAgo = $now->copy()->subWeek();
+                $monthAgo = $now->copy()->subMonth();
+
+                $totalRevenue = Invoice::where('status', 'paid')->sum('amount');
+                
+                $revenueToday = Invoice::where('status', 'paid')
+                    ->whereBetween('paid_at', [$today, $now])
+                    ->sum('amount');
+                
+                $revenueWeek = Invoice::where('status', 'paid')
+                    ->where('paid_at', '>=', $weekAgo)
+                    ->sum('amount');
+                
+                $revenueMonth = Invoice::where('status', 'paid')
+                    ->where('paid_at', '>=', $monthAgo)
+                    ->sum('amount');
+
+                // Средний чек - используем один запрос вместо загрузки всех записей
+                $avgCheckData = Invoice::where('status', 'paid')
+                    ->selectRaw('SUM(amount) as total, COUNT(*) as count')
+                    ->first();
+                
+                $averageCheck = $avgCheckData && $avgCheckData->count > 0
+                    ? round($avgCheckData->total / $avgCheckData->count, 2)
+                    : 0;
+
+                return [
+                    'total' => $totalRevenue,
+                    'today' => $revenueToday,
+                    'week' => $revenueWeek,
+                    'month' => $revenueMonth,
+                    'average' => $averageCheck,
+                ];
+            });
+
+            $totalRevenue = $revenueMetrics['total'];
             $revenuePeriod = $invoices->where('status', 'paid')->sum('amount');
-
-            // Выручка за периоды
-            $revenueToday = Invoice::where('status', 'paid')
-                ->whereDate('paid_at', today())
-                ->sum('amount');
-            $revenueWeek = Invoice::where('status', 'paid')
-                ->where('paid_at', '>=', Carbon::now()->subWeek())
-                ->sum('amount');
-            $revenueMonth = Invoice::where('status', 'paid')
-                ->where('paid_at', '>=', Carbon::now()->subMonth())
-                ->sum('amount');
-
-            // Средний чек
-            $paidInvoices = Invoice::where('status', 'paid')->get();
-            $averageCheck = $paidInvoices->count() > 0
-                ? round($paidInvoices->sum('amount') / $paidInvoices->count(), 2)
-                : 0;
+            $revenueToday = $revenueMetrics['today'];
+            $revenueWeek = $revenueMetrics['week'];
+            $revenueMonth = $revenueMetrics['month'];
+            $averageCheck = $revenueMetrics['average'];
 
             // Выручка по тарифам
             $revenueByPlan = Invoice::where('status', 'paid')
@@ -252,14 +299,25 @@ class AnalyticsController extends Controller
                 ->sortByDesc('revenue')
                 ->values();
 
-            // Статистика по статусам
-            $statusStats = [
-                'paid' => Invoice::where('status', 'paid')->count(),
-                'pending' => Invoice::where('status', 'pending')->count(),
-                'failed' => Invoice::where('status', 'failed')->count(),
-                'cancelled' => Invoice::where('status', 'cancelled')->count(),
-                'refunded' => Invoice::where('status', 'refunded')->count(),
+            // Статистика по статусам (используем уже загруженные данные для периода, общие - кешируем)
+            $statusStatsPeriod = [
+                'paid' => $invoices->where('status', 'paid')->count(),
+                'pending' => $invoices->where('status', 'pending')->count(),
+                'failed' => $invoices->where('status', 'failed')->count(),
+                'cancelled' => $invoices->where('status', 'cancelled')->count(),
+                'refunded' => $invoices->where('status', 'refunded')->count(),
             ];
+
+            // Общая статистика по статусам (кешируем)
+            $statusStats = Cache::remember('analytics_invoice_status_stats', 1800, function () {
+                return [
+                    'paid' => Invoice::where('status', 'paid')->count(),
+                    'pending' => Invoice::where('status', 'pending')->count(),
+                    'failed' => Invoice::where('status', 'failed')->count(),
+                    'cancelled' => Invoice::where('status', 'cancelled')->count(),
+                    'refunded' => Invoice::where('status', 'refunded')->count(),
+                ];
+            });
 
             // Динамика выручки
             $revenueByPeriod = $this->getRevenueByPeriod($startDate, $endDate, $filters);
@@ -291,9 +349,20 @@ class AnalyticsController extends Controller
      */
     private function getGeneralData(array $filters): array
     {
-        $cacheKey = 'panel_analytics_general_'.Auth::id().'_'.md5(json_encode($filters));
+        $userId = Auth::id();
+        $cacheKey = 'panel_analytics_general_'.$userId.'_'.md5(json_encode($filters));
+        $cacheTags = ['panel_analytics', "user_{$userId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -305,12 +374,12 @@ class AnalyticsController extends Controller
 
             $appointments = $query->get();
 
-            // Статистика по статусам
+            // Статистика по статусам (используем уже загруженные данные)
             $statsByStatus = [
-                'pending' => Appointment::where('status', 'pending')->count(),
-                'confirmed' => Appointment::where('status', 'confirmed')->count(),
-                'completed' => Appointment::where('status', 'completed')->count(),
-                'cancelled' => Appointment::where('status', 'cancelled')->count(),
+                'pending' => $appointments->where('status', 'pending')->count(),
+                'confirmed' => $appointments->where('status', 'confirmed')->count(),
+                'completed' => $appointments->where('status', 'completed')->count(),
+                'cancelled' => $appointments->where('status', 'cancelled')->count(),
             ];
 
             $total = $appointments->count();
@@ -402,9 +471,20 @@ class AnalyticsController extends Controller
      */
     private function getSubscriptionsData(array $filters): array
     {
-        $cacheKey = 'panel_analytics_subscriptions_'.Auth::id().'_'.md5(json_encode($filters));
+        $userId = Auth::id();
+        $cacheKey = 'panel_analytics_subscriptions_'.$userId.'_'.md5(json_encode($filters));
+        $cacheTags = ['panel_analytics', "user_{$userId}"];
 
-        return Cache::remember($cacheKey, 300, function () use ($filters) {
+        // Проверяем поддержку тегов
+        $supportsTags = method_exists(Cache::getStore(), 'tags');
+        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
+            if ($supportsTags) {
+                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+            }
+            return Cache::remember($key, 300, $callback);
+        };
+
+        return $getCache($cacheKey, function () use ($filters) {
             $startDate = Carbon::parse($filters['date_from'])->startOfDay();
             $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
@@ -501,9 +581,46 @@ class AnalyticsController extends Controller
 
     /**
      * Get chart data for overview.
+     * Optimized: loads all data with single queries instead of N queries per day.
      */
     private function getChartData(int $days = 30): array
     {
+        $startDate = Carbon::now()->subDays($days)->startOfDay();
+        $endDate = Carbon::now()->endOfDay();
+
+        // Загружаем все данные одним запросом для каждой метрики
+        $businessesByDate = Business::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        $usersByDate = User::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        $appointmentsByDate = Appointment::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        $clientsByDate = Client::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->pluck('count', 'date')
+            ->toArray();
+
+        $revenueByDate = Invoice::where('status', 'paid')
+            ->whereBetween('paid_at', [$startDate, $endDate])
+            ->selectRaw('DATE(paid_at) as date, SUM(amount) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date')
+            ->toArray();
+
+        // Заполняем массивы для всех дней
         $businessesData = [];
         $usersData = [];
         $appointmentsData = [];
@@ -516,13 +633,11 @@ class AnalyticsController extends Controller
             $dateStr = $date->format('Y-m-d');
             $labels[] = $date->format('d.m');
 
-            $businessesData[] = Business::whereDate('created_at', $dateStr)->count();
-            $usersData[] = User::whereDate('created_at', $dateStr)->count();
-            $appointmentsData[] = Appointment::whereDate('created_at', $dateStr)->count();
-            $clientsData[] = Client::whereDate('created_at', $dateStr)->count();
-            $revenueData[] = Invoice::where('status', 'paid')
-                ->whereDate('paid_at', $dateStr)
-                ->sum('amount');
+            $businessesData[] = $businessesByDate[$dateStr] ?? 0;
+            $usersData[] = $usersByDate[$dateStr] ?? 0;
+            $appointmentsData[] = $appointmentsByDate[$dateStr] ?? 0;
+            $clientsData[] = $clientsByDate[$dateStr] ?? 0;
+            $revenueData[] = $revenueByDate[$dateStr] ?? 0;
         }
 
         return [
@@ -537,28 +652,35 @@ class AnalyticsController extends Controller
 
     /**
      * Get revenue by period.
+     * Optimized: loads all data with single query instead of N queries per day.
      */
     private function getRevenueByPeriod(Carbon $startDate, Carbon $endDate, array $filters): array
     {
+        $query = Invoice::where('status', 'paid')
+            ->whereBetween('paid_at', [$startDate, $endDate]);
+
+        if ($filters['plan_id']) {
+            $query->where('plan_id', $filters['plan_id']);
+        }
+
+        // Загружаем все данные одним запросом
+        $revenueByDate = $query
+            ->selectRaw('DATE(paid_at) as date, SUM(amount) as revenue')
+            ->groupBy('date')
+            ->pluck('revenue', 'date')
+            ->toArray();
+
+        // Заполняем массив для всех дней
         $revenueByDay = [];
         $currentDate = $startDate->copy();
 
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
 
-            $query = Invoice::where('status', 'paid')
-                ->whereDate('paid_at', $dateStr);
-
-            if ($filters['plan_id']) {
-                $query->where('plan_id', $filters['plan_id']);
-            }
-
-            $dayRevenue = $query->sum('amount');
-
             $revenueByDay[] = [
                 'date' => $dateStr,
                 'label' => $currentDate->format('d.m'),
-                'revenue' => $dayRevenue,
+                'revenue' => $revenueByDate[$dateStr] ?? 0,
             ];
 
             $currentDate->addDay();
@@ -569,22 +691,34 @@ class AnalyticsController extends Controller
 
     /**
      * Get appointments by period.
+     * Optimized: loads all data with single query instead of N queries per day.
      */
     private function getAppointmentsByPeriod(Carbon $startDate, Carbon $endDate, array $filters): array
     {
+        $query = Appointment::whereBetween('date', [
+            $startDate->format('Y-m-d'),
+            $endDate->format('Y-m-d')
+        ]);
+
+        if ($filters['status']) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Загружаем все данные одним запросом
+        $appointments = $query->get();
+
+        // Группируем по датам
+        $groupedByDate = $appointments->groupBy(function ($appointment) {
+            return $appointment->date->format('Y-m-d');
+        });
+
+        // Заполняем массив для всех дней
         $appointmentsByDay = [];
         $currentDate = $startDate->copy();
 
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
-
-            $query = Appointment::whereDate('date', $dateStr);
-
-            if ($filters['status']) {
-                $query->where('status', $filters['status']);
-            }
-
-            $dayAppointments = $query->get();
+            $dayAppointments = $groupedByDate->get($dateStr, collect());
 
             $appointmentsByDay[] = [
                 'date' => $dateStr,
@@ -602,26 +736,35 @@ class AnalyticsController extends Controller
 
     /**
      * Get subscriptions by period.
+     * Optimized: loads all data with single query instead of N queries per day.
      */
     private function getSubscriptionsByPeriod(Carbon $startDate, Carbon $endDate, array $filters): array
     {
+        $query = Subscription::whereBetween('created_at', [$startDate, $endDate]);
+
+        if ($filters['plan_id']) {
+            $query->where('plan_id', $filters['plan_id']);
+        }
+
+        if ($filters['status']) {
+            $query->where('status', $filters['status']);
+        }
+
+        // Загружаем все данные одним запросом
+        $subscriptions = $query->get();
+
+        // Группируем по датам
+        $groupedByDate = $subscriptions->groupBy(function ($subscription) {
+            return $subscription->created_at->format('Y-m-d');
+        });
+
+        // Заполняем массив для всех дней
         $subscriptionsByDay = [];
         $currentDate = $startDate->copy();
 
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
-
-            $query = Subscription::whereDate('created_at', $dateStr);
-
-            if ($filters['plan_id']) {
-                $query->where('plan_id', $filters['plan_id']);
-            }
-
-            if ($filters['status']) {
-                $query->where('status', $filters['status']);
-            }
-
-            $daySubscriptions = $query->get();
+            $daySubscriptions = $groupedByDate->get($dateStr, collect());
 
             $subscriptionsByDay[] = [
                 'date' => $dateStr,

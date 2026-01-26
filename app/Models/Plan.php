@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Plan extends Model
 {
@@ -69,5 +70,43 @@ class Plan extends Model
     public function hasFeature(string $key): bool
     {
         return $this->features()->where('feature_key', $key)->exists();
+    }
+
+    /**
+     * Get cached list of active plans ordered by sort_order.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getActiveCached()
+    {
+        return Cache::remember('plans_active_list', 3600, function () {
+            return static::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        });
+    }
+
+    /**
+     * Clear plans cache.
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('plans_active_list');
+    }
+
+    /**
+     * Boot method to clear cache on model changes.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($plan) {
+            static::clearCache();
+        });
+
+        static::deleted(function ($plan) {
+            static::clearCache();
+        });
     }
 }
