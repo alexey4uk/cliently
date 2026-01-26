@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -25,7 +26,14 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
+            
+            // Индексы для поиска
+            $table->index('first_name'); // поиск по имени
+            $table->index('last_name'); // поиск по фамилии
         });
+
+        // FULLTEXT индекс для быстрого текстового поиска
+        DB::statement('ALTER TABLE masters ADD FULLTEXT INDEX ft_masters_name (first_name, last_name)');
     }
 
     /**

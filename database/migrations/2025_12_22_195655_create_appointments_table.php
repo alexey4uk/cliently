@@ -39,6 +39,7 @@ return new class extends Migration
             $table->index('status'); // фильтрация по статусу
             $table->index(['business_id', 'created_at']); // активные бизнесы
             $table->index(['date', 'status']); // фильтрация по дате и статусу
+            $table->index(['date', 'time']); // сортировка по дате и времени в списке записей
         });
     }
 

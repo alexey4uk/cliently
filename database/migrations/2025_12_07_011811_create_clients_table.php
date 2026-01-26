@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -23,7 +24,14 @@ return new class extends Migration
             // Индексы для оптимизации дашборда
             $table->index('created_at'); // группировка по дате создания
             $table->index('business_id'); // подсчет клиентов по бизнесу
+            
+            // Индексы для поиска
+            $table->index('first_name'); // поиск по имени
+            $table->index('last_name'); // поиск по фамилии
         });
+
+        // FULLTEXT индекс для быстрого текстового поиска
+        DB::statement('ALTER TABLE clients ADD FULLTEXT INDEX ft_clients_name (first_name, last_name)');
     }
 
     /**

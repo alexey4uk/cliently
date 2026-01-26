@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -22,7 +23,13 @@ return new class extends Migration
             $table->boolean('is_active')->default(false);
 
             $table->timestamps();
+            
+            // Индекс для поиска
+            $table->index('name'); // поиск по названию услуги
         });
+
+        // FULLTEXT индекс для быстрого текстового поиска
+        DB::statement('ALTER TABLE services ADD FULLTEXT INDEX ft_services_name (name)');
     }
 
     /**
