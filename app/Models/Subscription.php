@@ -125,3 +125,4 @@ class Subscription extends Model
     {
         return $this->getEffectivePlan()->getFeatureValue($key);
     }
+}
