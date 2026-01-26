@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('telegram_token', 64)->unique()->nullable();
 
             $table->timestamps();
+
+            // Индекс для оптимизации дашборда (группировка по дате создания)
+            $table->index('created_at');
         });
     }
 
