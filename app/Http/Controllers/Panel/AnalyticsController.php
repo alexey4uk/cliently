@@ -591,32 +591,32 @@ class AnalyticsController extends Controller
         // Загружаем все данные одним запросом для каждой метрики
         $businessesByDate = Business::whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->groupBy('date')
+            ->groupByRaw('DATE(created_at)')
             ->pluck('count', 'date')
             ->toArray();
 
         $usersByDate = User::whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->groupBy('date')
+            ->groupByRaw('DATE(created_at)')
             ->pluck('count', 'date')
             ->toArray();
 
         $appointmentsByDate = Appointment::whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->groupBy('date')
+            ->groupByRaw('DATE(created_at)')
             ->pluck('count', 'date')
             ->toArray();
 
         $clientsByDate = Client::whereBetween('created_at', [$startDate, $endDate])
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->groupBy('date')
+            ->groupByRaw('DATE(created_at)')
             ->pluck('count', 'date')
             ->toArray();
 
         $revenueByDate = Invoice::where('status', 'paid')
             ->whereBetween('paid_at', [$startDate, $endDate])
             ->selectRaw('DATE(paid_at) as date, SUM(amount) as total')
-            ->groupBy('date')
+            ->groupByRaw('DATE(paid_at)')
             ->pluck('total', 'date')
             ->toArray();
 
