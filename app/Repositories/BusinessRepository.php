@@ -21,46 +21,46 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Найти бизнес по ID (с кешированием)
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function findById(int $id): ?Business
     {
-        return Cache::remember("business_{$id}", 1800, function () use ($id) {
+        return Cache::remember("business_{$id}", 600, function () use ($id) {
             return $this->model->find($id);
         });
     }
 
     /**
      * Найти бизнес по токену Telegram
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function findByTelegramToken(string $token): ?Business
     {
-        return Cache::remember("business_telegram_token_{$token}", 1800, function () use ($token) {
+        return Cache::remember("business_telegram_token_{$token}", 600, function () use ($token) {
             return $this->model->where('telegram_token', $token)->first();
         });
     }
 
     /**
      * Найти бизнес по slug
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function findBySlug(string $slug): ?Business
     {
-        return Cache::remember("business_slug_{$slug}", 1800, function () use ($slug) {
+        return Cache::remember("business_slug_{$slug}", 600, function () use ($slug) {
             return $this->model->where('slug', $slug)->first();
         });
     }
 
     /**
      * Получить список бизнесов для каталога с пагинацией
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function getPaginated(int $page = 1, int $perPage = 10): Collection
     {
         $cacheKey = "businesses_paginated_{$page}_{$perPage}";
 
-        return Cache::remember($cacheKey, 1800, function () use ($page, $perPage) {
+        return Cache::remember($cacheKey, 600, function () use ($page, $perPage) {
             $offset = ($page - 1) * $perPage;
 
             return $this->model->select('id', 'name', 'slug')
@@ -73,11 +73,11 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить общее количество бизнесов
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function getTotalCount(): int
     {
-        return Cache::remember('businesses_total_count', 1800, function () {
+        return Cache::remember('businesses_total_count', 600, function () {
             return $this->model->count();
         });
     }
@@ -107,11 +107,11 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
 
     /**
      * Получить список всех бизнесов для фильтров
-     * Uses caching to avoid repeated DB queries.
+     * Кэш на 10 минут для баланса между производительностью и актуальностью.
      */
     public function getAllForFilter(): Collection
     {
-        return Cache::remember('businesses_list_filter', 1800, function () {
+        return Cache::remember('businesses_list_filter', 600, function () {
             return $this->model->orderBy('name')->get();
         });
     }

@@ -18,28 +18,28 @@ trait HasSubscription
 
     /**
      * Получить подписку пользователя (с кешированием)
-     * Кеш на 2 часа, так как подписки редко меняются
+     * Кеш на 5 минут (критично для биллинга!)
      * При изменении подписки кеш автоматически очищается через Observer
      */
     public function getSubscription()
     {
         $cacheKey = "user_subscription_{$this->id}";
 
-        return Cache::remember($cacheKey, 7200, function () {
+        return Cache::remember($cacheKey, 300, function () {
             return $this->subscription()->with('plan')->first();
         });
     }
 
     /**
      * Получить активную подписку (с кешированием)
-     * Кеш на 30 минут, так как подписки редко меняются
+     * Кеш на 5 минут (критично для биллинга!)
      * При изменении подписки кеш автоматически очищается через Observer
      */
     public function activeSubscription()
     {
         $cacheKey = "user_active_subscription_{$this->id}";
 
-        return Cache::remember($cacheKey, 1800, function () {
+        return Cache::remember($cacheKey, 300, function () {
             return $this->subscription()
                 ->whereIn('status', ['active', 'trial'])
                 ->where(function ($query) {
