@@ -144,11 +144,6 @@ class NotificationController extends Controller
             ], 404);
         }
 
-        Log::info('Notification marked as read', [
-            'user_id' => $user->id,
-            'notification_id' => $notificationId,
-        ]);
-
         return response()->json([
             'success' => true,
             'message' => 'Уведомление отмечено как прочитанное',
@@ -171,11 +166,6 @@ class NotificationController extends Controller
         }
 
         $count = NotificationService::markAllAsRead($user->id);
-
-        Log::info('All notifications marked as read', [
-            'user_id' => $user->id,
-            'count' => $count,
-        ]);
 
         return response()->json([
             'success' => true,
@@ -209,11 +199,6 @@ class NotificationController extends Controller
                 'message' => 'Уведомление не найдено или недоступно',
             ], 404);
         }
-
-        Log::info('Notification deleted', [
-            'user_id' => $user->id,
-            'notification_id' => $id,
-        ]);
 
         return response()->json([
             'success' => true,
@@ -261,11 +246,6 @@ class NotificationController extends Controller
         }
 
         $notification->markAsUnread();
-
-        Log::info('Notification marked as unread', [
-            'user_id' => $user->id,
-            'notification_id' => $notificationId,
-        ]);
 
         return response()->json([
             'success' => true,
