@@ -229,11 +229,14 @@ class BepaidWebhookController extends Controller
         // Если подписки нет, создаем её
         if (! $subscription) {
             $subscription = $this->subscriptionService->createSubscription($user, $plan, false, $invoice);
-            Log::info('Subscription created after payment', [
-                'subscription_id' => $subscription->id,
-                'invoice_id' => $invoice->id,
-                'plan_id' => $plan->id,
-            ]);
+            
+            if (config('bepaid.logging.enabled')) {
+                Log::info('Subscription created after payment', [
+                    'subscription_id' => $subscription->id,
+                    'invoice_id' => $invoice->id,
+                    'plan_id' => $plan->id,
+                ]);
+            }
         } else {
             // Обновляем существующую подписку
             $now = now();
@@ -300,11 +303,13 @@ class BepaidWebhookController extends Controller
             // Очищаем кеш подписок пользователя
             $user->clearSubscriptionCache();
 
-            Log::info('Subscription activated after payment', [
-                'subscription_id' => $subscription->id,
-                'invoice_id' => $invoice->id,
-                'plan_id' => $plan->id,
-            ]);
+            if (config('bepaid.logging.enabled')) {
+                Log::info('Subscription activated after payment', [
+                    'subscription_id' => $subscription->id,
+                    'invoice_id' => $invoice->id,
+                    'plan_id' => $plan->id,
+                ]);
+            }
 
             // Уведомляем об успешной оплате
             \App\Services\SubscriptionNotificationService::notifyPaymentSuccess($invoice);

@@ -986,8 +986,6 @@ class Handler extends WebhookHandler
      */
     protected function showTimeSlots(Business $business, $date, $state)
     {
-        Log::info('showTimeSlots called', ['date' => $date]);
-
         $locationId = $state?->data['location_id'] ?? null;
         $serviceId = $state?->data['service_id'] ?? null;
         $masterId = $state?->data['master_id'] ?? null;
@@ -1006,8 +1004,6 @@ class Handler extends WebhookHandler
             $locationId,
             $debugInfo
         );
-
-        Log::info('Available slots:', ['slots' => $availableSlots, 'count' => count($availableSlots)]);
 
         if (empty($availableSlots)) {
             $this->replyWithMessage(TelegramMessages::MSG_NO_SLOTS, TelegramKeyboards::timesEmpty());
@@ -1087,17 +1083,6 @@ class Handler extends WebhookHandler
         }
 
         $data = $state->data;
-
-        Log::info('Creating appointment with data:', [
-            'business_id' => $business->id,
-            'service_id' => $data['service_id'],
-            'master_id' => $data['master_id'],
-            'location_id' => $data['location_id'],
-            'date' => $data['date'],
-            'time' => $data['time'],
-            'time_type' => gettype($data['time']),
-            'client_data' => $data['client_data'],
-        ]);
 
         try {
             // Получаем пользователя через бизнес
