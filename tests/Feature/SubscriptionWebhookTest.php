@@ -22,7 +22,7 @@ class SubscriptionWebhookTest extends TestCase
 
         // Удаляем существующие настройки и создаем заново для чистоты тестов
         \App\Models\BepaidSettings::where('id', 1)->delete();
-        
+
         \App\Models\BepaidSettings::create([
             'id' => 1,
             'test_mode' => true,
@@ -43,10 +43,10 @@ class SubscriptionWebhookTest extends TestCase
                 'test_secret_key' => 'test_secret',
             ]
         );
-        
+
         // Убеждаемся, что модель обновлена из базы данных
         $settings->refresh();
-        
+
         $current = $settings->getCurrentSettings();
 
         return 'Basic ' . base64_encode($current['shop_id'] . ':' . $current['secret_key']);
@@ -87,7 +87,7 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
 
@@ -160,9 +160,10 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
+
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
@@ -233,9 +234,10 @@ class SubscriptionWebhookTest extends TestCase
                 'test_shop_id' => 'test_shop',
                 'test_secret_key' => 'test_secret',
                 'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, NOW())'),
+                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
             ]
         );
+
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
