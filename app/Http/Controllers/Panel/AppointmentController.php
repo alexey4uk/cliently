@@ -36,25 +36,31 @@ class AppointmentController extends Controller
 
         // 2. ОПТИМИЗИРОВАННЫЙ ПОИСК (FULLTEXT)
         if ($search) {
-            $searchTerm = $search . '*';
+            $searchTerm = $search.'*';
 
             // Поиск ID через быстрые FULLTEXT индексы
             $clientIds = DB::table('clients')
-                ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                 ->pluck('id');
 
             $serviceIds = DB::table('services')
-                ->whereRaw("MATCH(name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                 ->pluck('id');
 
             $masterIds = DB::table('masters')
-                ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                 ->pluck('id');
 
             $query->where(function ($q) use ($clientIds, $serviceIds, $masterIds) {
-                if ($clientIds->isNotEmpty()) $q->orWhereIn('client_id', $clientIds);
-                if ($serviceIds->isNotEmpty()) $q->orWhereIn('service_id', $serviceIds);
-                if ($masterIds->isNotEmpty()) $q->orWhereIn('master_id', $masterIds);
+                if ($clientIds->isNotEmpty()) {
+                    $q->orWhereIn('client_id', $clientIds);
+                }
+                if ($serviceIds->isNotEmpty()) {
+                    $q->orWhereIn('service_id', $serviceIds);
+                }
+                if ($masterIds->isNotEmpty()) {
+                    $q->orWhereIn('master_id', $masterIds);
+                }
             });
         }
 
@@ -116,8 +122,6 @@ class AppointmentController extends Controller
             'businesses'
         ));
     }
-
-
 
     /**
      * Show the form for editing the specified appointment.

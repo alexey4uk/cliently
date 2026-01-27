@@ -118,17 +118,17 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $q = $this->model->where('business_id', $businessId);
 
             // ВАЖНО: Заменяем whereDate на обычный where (SARGABLE)
-            if (!empty($filters['date'])) {
+            if (! empty($filters['date'])) {
                 $q->where('date', $filters['date']);
-            } elseif (!isset($filters['view']) || $filters['view'] !== 'calendar') {
+            } elseif (! isset($filters['view']) || $filters['view'] !== 'calendar') {
                 $q->where('date', '>=', now()->format('Y-m-d'));
             }
 
-            if (!empty($filters['status'])) {
+            if (! empty($filters['status'])) {
                 $q->where('status', $filters['status']);
             }
 
-            if (!empty($filters['service_id'])) {
+            if (! empty($filters['service_id'])) {
                 $q->where('service_id', $filters['service_id']);
             }
 
@@ -138,7 +138,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
         $query = $prepareQuery();
 
         // 2. Оптимизация ПОИСКА через UNION
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = "%{$filters['search']}%";
 
             // Поиск по ФИО
@@ -168,7 +168,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
         $direction = $filters['direction'] ?? 'desc';
 
         // Если поиск активен, сортируем по дате/времени (UNION требует общей сортировки)
-        if (!empty($filters['search']) || ($filters['sort'] ?? 'date') === 'date') {
+        if (! empty($filters['search']) || ($filters['sort'] ?? 'date') === 'date') {
             $query->orderBy('date', $direction)->orderBy('time', $direction);
         } else {
             // Остальные виды сортировок...
@@ -178,7 +178,6 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
         return $query->paginate($perPage)->withQueryString();
     }
 
-
     /**
      * Получить записи для календаря
      *
@@ -186,8 +185,8 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
      */
     public function getForCalendar(int $businessId, string $month)
     {
-        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
-        $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
+        $startOfMonth = Carbon::parse($month.'-01')->startOfMonth();
+        $endOfMonth = Carbon::parse($month.'-01')->endOfMonth();
 
         return $this->model->where('business_id', $businessId)
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
@@ -235,7 +234,7 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $query->whereHas('client', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "%{$search}%"));
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"));
             })->orWhereHas('service', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });
@@ -243,8 +242,8 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
 
         // Для календаря - сортировка по дате и времени
         if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
-            $startOfMonth = Carbon::parse($filters['month'] . '-01')->startOfMonth();
-            $endOfMonth = Carbon::parse($filters['month'] . '-01')->endOfMonth();
+            $startOfMonth = Carbon::parse($filters['month'].'-01')->startOfMonth();
+            $endOfMonth = Carbon::parse($filters['month'].'-01')->endOfMonth();
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc');

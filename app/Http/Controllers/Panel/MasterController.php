@@ -9,7 +9,6 @@ use App\Models\Master;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class MasterController extends Controller
 {
@@ -40,10 +39,10 @@ class MasterController extends Controller
 
         // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $searchTerm = $search . '*';
+            $searchTerm = $search.'*';
             $query->where(function ($q) use ($searchTerm, $search) {
                 // FULLTEXT поиск по именам (быстро!)
-                $q->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('specialization', 'like', "%{$search}%")
                     // Поиск по телефону через подзапрос (быстрее whereHas)
@@ -93,7 +92,7 @@ class MasterController extends Controller
     {
         // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все appointments/locations/services!
         $master->load(['business']);
-        
+
         // Только COUNT
         $master->appointments_count = $master->appointments()->count();
         $master->locations_count = $master->locations()->count();
@@ -206,7 +205,7 @@ class MasterController extends Controller
         // ОПТИМИЗАЦИЯ: exists() вместо count()
         if ($master->appointments()->exists()) {
             return redirect()->back()
-                ->with('error', "Невозможно удалить мастера, так как у него есть связанные записи.");
+                ->with('error', 'Невозможно удалить мастера, так как у него есть связанные записи.');
         }
 
         $master->delete();

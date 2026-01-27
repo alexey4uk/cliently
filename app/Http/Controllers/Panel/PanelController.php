@@ -21,7 +21,7 @@ class PanelController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_' . $user->id;
+        $cacheKey = 'panel_dashboard_'.$user->id;
 
         // Объединяем ВСЕ данные (включая графики) в один кэш (1 час)
         $dashboardData = Cache::remember($cacheKey, 3600, function () use ($user) {
@@ -35,7 +35,7 @@ class PanelController extends Controller
 
             return [
                 'stats' => $data['stats'],
-                //'chartData' => $chartData,
+                // 'chartData' => $chartData,
                 'recentBusinesses' => $data['recentBusinesses'] ?? null,
                 'recentUsers' => $data['recentUsers'] ?? null,
                 'topBusinesses' => $data['topBusinesses'] ?? null,
@@ -54,7 +54,7 @@ class PanelController extends Controller
      */
     private function adminDashboard()
     {
-        $cacheKey = 'panel_dashboard_admin_' . Auth::id();
+        $cacheKey = 'panel_dashboard_admin_'.Auth::id();
 
         $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
@@ -141,7 +141,7 @@ class PanelController extends Controller
         });
 
         // Данные для графиков (последние 30 дней)
-        $chartData = Cache::remember($cacheKey . '_charts', 3600, function () {
+        $chartData = Cache::remember($cacheKey.'_charts', 3600, function () {
             $days = 30;
 
             $usersData = [];
@@ -217,7 +217,7 @@ class PanelController extends Controller
      */
     private function supportDashboard()
     {
-        $cacheKey = 'panel_dashboard_support_' . Auth::id();
+        $cacheKey = 'panel_dashboard_support_'.Auth::id();
         $today = Carbon::today();
         $weekAgo = Carbon::now()->subWeek();
         $monthAgo = Carbon::now()->subMonth();
@@ -299,7 +299,7 @@ class PanelController extends Controller
      */
     private function generalDashboard()
     {
-        $cacheKey = 'panel_dashboard_general_' . Auth::id();
+        $cacheKey = 'panel_dashboard_general_'.Auth::id();
 
         $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
@@ -346,10 +346,10 @@ class PanelController extends Controller
         ];
 
         // 1. КЭШИРОВАНИЕ ОБЩИХ СЧЕТЧИКОВ (на 15 млн строк count(*) может идти долго)
-        $totalBusinesses = Cache::remember('stats_total_biz', 300, fn() => Business::count());
-        $totalAppointments = Cache::remember('stats_total_app', 300, fn() => Appointment::count());
-        $totalClients = Cache::remember('stats_total_clients', 300, fn() => Client::count());
-        $totalUsers = Cache::remember('stats_total_users', 300, fn() => User::count());
+        $totalBusinesses = Cache::remember('stats_total_biz', 300, fn () => Business::count());
+        $totalAppointments = Cache::remember('stats_total_app', 300, fn () => Appointment::count());
+        $totalClients = Cache::remember('stats_total_clients', 300, fn () => Client::count());
+        $totalUsers = Cache::remember('stats_total_users', 300, fn () => User::count());
 
         // 2. БИЗНЕСЫ (Активность и Рост)
         $data['stats']['total_businesses'] = $totalBusinesses;
@@ -379,6 +379,7 @@ class PanelController extends Controller
         $data['topBusinesses'] = Business::whereIn('id', $topStats->pluck('business_id'))->get()
             ->map(function ($b) use ($topStats) {
                 $b->appointments_count = $topStats->firstWhere('business_id', $b->id)->total ?? 0;
+
                 return $b;
             })->sortByDesc('appointments_count');
 
@@ -439,7 +440,6 @@ class PanelController extends Controller
 
         return $data;
     }
-
 
     /**
      * Получить данные для графиков (ОПТИМИЗИРОВАНО)
@@ -524,7 +524,7 @@ class PanelController extends Controller
     public function refresh()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_' . $user->id;
+        $cacheKey = 'panel_dashboard_'.$user->id;
 
         Cache::forget($cacheKey);
 

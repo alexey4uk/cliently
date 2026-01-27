@@ -10,10 +10,8 @@ use App\Models\Master;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Database\QueryException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class ProductionTestSeeder extends Seeder
 {
@@ -89,7 +87,7 @@ class ProductionTestSeeder extends Seeder
             // Восстанавливаем настройки MySQL даже при ошибке
             DB::statement('SET foreign_key_checks=1');
             DB::statement('SET unique_checks=1');
-            $this->command->error("❌ Ошибка при выполнении сидера: " . $e->getMessage());
+            $this->command->error('❌ Ошибка при выполнении сидера: '.$e->getMessage());
             throw $e;
         }
     }
@@ -142,14 +140,14 @@ class ProductionTestSeeder extends Seeder
             DB::table('users')->insert($chunk);
         }
 
-
-        $this->command->info('   ✓ Создано пользователей: ' . count($users));
+        $this->command->info('   ✓ Создано пользователей: '.count($users));
 
         // Возвращаем данные из массива вместо повторного чтения из БД
         $result = [];
         foreach ($users as $i => $user) {
-            $result[$i + 1] = (object)array_merge(['id' => $i + 1], $user);
+            $result[$i + 1] = (object) array_merge(['id' => $i + 1], $user);
         }
+
         return $result;
     }
 
@@ -175,7 +173,7 @@ class ProductionTestSeeder extends Seeder
             $businesses[] = [
                 'id' => $businessId,
                 'name' => $businessName,
-                'slug' => 'business-' . $businessId,
+                'slug' => 'business-'.$businessId,
                 'description' => fake('ru_RU')->sentence(10),
                 'online_booking_enabled' => fake()->boolean(80),
                 'created_at' => $businessCreatedAtFormatted,
@@ -221,13 +219,14 @@ class ProductionTestSeeder extends Seeder
             throw $e;
         }
 
-        $this->command->info('   ✓ Создано бизнесов: ' . count($businesses));
+        $this->command->info('   ✓ Создано бизнесов: '.count($businesses));
 
         // Возвращаем данные из массива вместо повторного чтения из БД
         $result = [];
         foreach ($businesses as $business) {
-            $result[$business['id']] = (object)$business;
+            $result[$business['id']] = (object) $business;
         }
+
         return $result;
     }
 
@@ -284,7 +283,7 @@ class ProductionTestSeeder extends Seeder
             throw $e;
         }
 
-        $this->command->info('   ✓ Создано локаций: ' . count($locations));
+        $this->command->info('   ✓ Создано локаций: '.count($locations));
 
         return Location::all()->keyBy('business_id')->all();
     }
@@ -350,15 +349,16 @@ class ProductionTestSeeder extends Seeder
             throw $e;
         }
 
-        $this->command->info('   ✓ Создано услуг: ' . count($services));
+        $this->command->info('   ✓ Создано услуг: '.count($services));
 
         // Возвращаем данные из массива
         $result = [];
         $serviceId = 1;
         foreach ($services as $service) {
             $service['id'] = $serviceId++;
-            $result[$service['business_id']][] = (object)$service;
+            $result[$service['business_id']][] = (object) $service;
         }
+
         return $result;
     }
 
@@ -511,14 +511,15 @@ class ProductionTestSeeder extends Seeder
             throw $e;
         }
 
-        $this->command->info('   ✓ Создано мастеров: ' . count($mastersData));
+        $this->command->info('   ✓ Создано мастеров: '.count($mastersData));
 
         // Возвращаем данные из массива
         $result = [];
         foreach ($mastersData as $index => $master) {
             $master['id'] = $masterIdMap[$index];
-            $result[$master['business_id']][] = (object)$master;
+            $result[$master['business_id']][] = (object) $master;
         }
+
         return $result;
     }
 
@@ -571,15 +572,16 @@ class ProductionTestSeeder extends Seeder
             throw $e;
         }
 
-        $this->command->info('   ✓ Создано клиентов: ' . count($clients));
+        $this->command->info('   ✓ Создано клиентов: '.count($clients));
 
         // Возвращаем данные из массива
         $result = [];
         $clientId = 1;
         foreach ($clients as $client) {
             $client['id'] = $clientId++;
-            $result[$client['business_id']][] = (object)$client;
+            $result[$client['business_id']][] = (object) $client;
         }
+
         return $result;
     }
 
@@ -603,9 +605,9 @@ class ProductionTestSeeder extends Seeder
             $progressBar = $this->command->getOutput()->createProgressBar($totalAppointments);
             $progressBar->start();
         } else {
-            $this->command->info("   ⚙️  Генерация большого объема данных, используем счетчик вместо прогресс-бара");
+            $this->command->info('   ⚙️  Генерация большого объема данных, используем счетчик вместо прогресс-бара');
             $lastReportedCount = 0;
-            $reportStep = max(1, (int)($totalAppointments / 20)); // Отчет каждые 5%
+            $reportStep = max(1, (int) ($totalAppointments / 20)); // Отчет каждые 5%
         }
 
         // Используем уже установленный временной диапазон или рассчитываем новый
@@ -660,7 +662,7 @@ class ProductionTestSeeder extends Seeder
             $clientIds = is_object($businessClients) && method_exists($businessClients, 'toArray')
                 ? array_column($businessClients->toArray(), 'id')
                 : array_column(array_map(function ($obj) {
-                    return (array)$obj;
+                    return (array) $obj;
                 }, $businessClients), 'id');
 
             // Проверяем, является ли $businessServices коллекцией или массивом
@@ -705,7 +707,7 @@ class ProductionTestSeeder extends Seeder
                 // Оптимизированное время
                 $hour = $workingHours[array_rand($workingHours)];
                 $minute = $minutes[array_rand($minutes)];
-                $time = $hour . ':' . sprintf('%02d', $minute);
+                $time = $hour.':'.sprintf('%02d', $minute);
 
                 // Оптимизированный статус
                 $status = $isPast
@@ -718,9 +720,9 @@ class ProductionTestSeeder extends Seeder
                 if ($useBulkInsert) {
                     // Для очень больших объемов (20+ млн) используем более уникальные токены
                     if ($totalAppointments > 20000000) {
-                        $token = 'app-' . $businessId . '-' . $i . '-' . uniqid('', true);
+                        $token = 'app-'.$businessId.'-'.$i.'-'.uniqid('', true);
                     } else {
-                        $token = 'app-' . $businessId . '-' . $i . '-' . rand(1000, 9999);
+                        $token = 'app-'.$businessId.'-'.$i.'-'.rand(1000, 9999);
                     }
                 } else {
                     $token = $this->generateAppointmentToken();
@@ -759,7 +761,7 @@ class ProductionTestSeeder extends Seeder
 
                 // Проверяем время выполнения для очень больших объемов
                 if ($totalAppointments > 20000000 && (time() - $startTime) > 3600) {
-                    $this->command->warn("   ⚠️  Выполнение занимает более 1 часа. Продолжаем...");
+                    $this->command->warn('   ⚠️  Выполнение занимает более 1 часа. Продолжаем...');
                     $startTime = time(); // Сбрасываем таймер
                 }
 
@@ -776,7 +778,7 @@ class ProductionTestSeeder extends Seeder
                         DB::commit();
                     } catch (\Exception $e) {
                         DB::rollBack();
-                        $this->command->warn("   ⚠️  Ошибка при вставке пакета записей: " . $e->getMessage());
+                        $this->command->warn('   ⚠️  Ошибка при вставке пакета записей: '.$e->getMessage());
                     }
 
                     $businessAppointments = [];
@@ -789,7 +791,7 @@ class ProductionTestSeeder extends Seeder
             }
 
             // Вставляем оставшиеся записи для текущего бизнеса
-            if (!empty($businessAppointments)) {
+            if (! empty($businessAppointments)) {
                 // Используем отдельную транзакцию для оставшихся записей
                 DB::beginTransaction();
                 try {
@@ -801,7 +803,7 @@ class ProductionTestSeeder extends Seeder
                     DB::commit();
                 } catch (\Exception $e) {
                     DB::rollBack();
-                    $this->command->warn("   ⚠️  Ошибка при вставке оставшихся записей: " . $e->getMessage());
+                    $this->command->warn('   ⚠️  Ошибка при вставке оставшихся записей: '.$e->getMessage());
                 }
 
                 $businessAppointments = [];
@@ -817,7 +819,7 @@ class ProductionTestSeeder extends Seeder
 
         $this->command->info("   ✓ Создано записей: {$appointmentCount}");
         $this->command->info("   📅 Период данных: {$yearsBack} лет назад - 90 дней вперед");
-        $this->command->info("   🎯 Распределение: бизнесы, услуги, мастера и клиенты распределены по времени");
+        $this->command->info('   🎯 Распределение: бизнесы, услуги, мастера и клиенты распределены по времени');
     }
 
     /**
@@ -850,21 +852,24 @@ class ProductionTestSeeder extends Seeder
             switch ($strategy) {
                 case 'linear':
                     $progress = $currentIndex / $totalCount;
-                    return (int)($start + ($duration * (1 - $progress)));
+
+                    return (int) ($start + ($duration * (1 - $progress)));
 
                 case 'exponential':
                     $progress = $currentIndex / $totalCount;
-                    return (int)($start + ($duration * pow($progress, 0.5)));
+
+                    return (int) ($start + ($duration * pow($progress, 0.5)));
 
                 case 'logarithmic':
                     $progress = max(0.001, $currentIndex / $totalCount);
-                    return (int)($start + ($duration * (log($progress * 10) / log(10))));
+
+                    return (int) ($start + ($duration * (log($progress * 10) / log(10))));
 
                 case 'uniform':
                 default:
                     // Для uniform используем более быстрый алгоритм
                     // Вместо rand() используем более быстрый алгоритм для очень больших объемов
-                    return $start + (int)(($end - $start) * ($currentIndex / $totalCount)) + ($currentIndex % 100);
+                    return $start + (int) (($end - $start) * ($currentIndex / $totalCount)) + ($currentIndex % 100);
             }
         }
 
@@ -904,7 +909,7 @@ class ProductionTestSeeder extends Seeder
         }
 
         // Убедимся, что временная метка находится в допустимом диапазоне
-        return max($start, min($end, (int)$timestamp));
+        return max($start, min($end, (int) $timestamp));
     }
 
     /**
@@ -933,10 +938,9 @@ class ProductionTestSeeder extends Seeder
             return 8; // До 100млн записей - 8 лет (международная сеть)
         } else {
             // Для гигантских объемов (100+ млн) - максимум 10 лет
-            return min(10, max(8, (int)($totalAppointments / 20000000) + 6));
+            return min(10, max(8, (int) ($totalAppointments / 20000000) + 6));
         }
     }
-
 
     /**
      * Генерация уникального токена для записи
@@ -958,8 +962,8 @@ class ProductionTestSeeder extends Seeder
         }
 
         // Используем более быстрый алгоритм генерации токена
-        $base = base_convert(mt_rand(1000000, 9999999), 10, 36) . base_convert($counter, 10, 36);
-        $hash = md5($base . $microtime);
+        $base = base_convert(mt_rand(1000000, 9999999), 10, 36).base_convert($counter, 10, 36);
+        $hash = md5($base.$microtime);
 
         // Форматируем в нужный формат: abc-123-def-456
         $letters1 = substr($hash, 0, 3);
@@ -967,7 +971,7 @@ class ProductionTestSeeder extends Seeder
         $letters2 = substr($hash, 6, 3);
         $digits2 = substr($hash, 9, 3);
 
-        return strtolower($letters1 . '-' . $digits1 . '-' . $letters2 . '-' . $digits2);
+        return strtolower($letters1.'-'.$digits1.'-'.$letters2.'-'.$digits2);
     }
 
     /**
@@ -976,7 +980,7 @@ class ProductionTestSeeder extends Seeder
      */
     private function generateSimpleToken(int $businessId, int $index): string
     {
-        return 'app-' . $businessId . '-' . $index . '-' . rand(1000, 9999);
+        return 'app-'.$businessId.'-'.$index.'-'.rand(1000, 9999);
     }
 
     /**
@@ -995,7 +999,7 @@ class ProductionTestSeeder extends Seeder
             // Используем более быстрый запрос с лимитом 1
             $exists = DB::table('appointments')->where('token', $token)->limit(1)->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 return $token;
             }
 
@@ -1004,7 +1008,8 @@ class ProductionTestSeeder extends Seeder
             // Если после нескольких попыток не удалось сгенерировать уникальный токен,
             // добавляем дополнительную энтропию
             if ($attempts >= $maxAttempts) {
-                $token = $this->generateAppointmentToken() . '-' . $attempts;
+                $token = $this->generateAppointmentToken().'-'.$attempts;
+
                 return $token;
             }
         } while ($attempts < $maxAttempts);
@@ -1063,7 +1068,7 @@ class ProductionTestSeeder extends Seeder
                     DB::table('appointments')->insert($chunk);
                 } catch (\Illuminate\Database\QueryException $e) {
                     // Если и это не помогает, просто пропускаем проблемные записи
-                    $this->command->warn("   ⚠️  Не удалось вставить пакет записей, пропускаем...");
+                    $this->command->warn('   ⚠️  Не удалось вставить пакет записей, пропускаем...');
                 }
             }
         }
@@ -1087,12 +1092,13 @@ class ProductionTestSeeder extends Seeder
                 foreach ($chunks as $chunk) {
                     DB::table('appointments')->insert($chunk);
                 }
+
                 return;
             } catch (\Illuminate\Database\QueryException $e) {
                 if ($e->getCode() === '23000' && strpos($e->getMessage(), 'appointments_token_unique') !== false) {
                     // Конфликт уникальности токена, перегенерируем токены
                     $attempt++;
-                    $this->command->warn("   ⚠️  Обнаружены дубликаты токенов, перегенерация...");
+                    $this->command->warn('   ⚠️  Обнаружены дубликаты токенов, перегенерация...');
 
                     // Быстрая перегенерация токенов
                     $tokens = [];

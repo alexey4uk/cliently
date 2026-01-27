@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ServiceController extends Controller
 {
@@ -37,10 +36,10 @@ class ServiceController extends Controller
 
         // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $searchTerm = $search . '*';
+            $searchTerm = $search.'*';
             $query->where(function ($q) use ($searchTerm, $search) {
                 // FULLTEXT поиск по названию (быстро!)
-                $q->whereRaw("MATCH(name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                $q->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     // Обычный LIKE для description (короткие тексты)
                     ->orWhere('description', 'like', "%{$search}%");
             })->limit(1000); // Ограничение для поиска
@@ -83,7 +82,7 @@ class ServiceController extends Controller
     {
         // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все appointments!
         $service->load(['business']);
-        
+
         // Только COUNT
         $service->appointments_count = $service->appointments()->count();
 

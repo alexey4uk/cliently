@@ -79,7 +79,7 @@ class AnalyticsController extends Controller
     private function getOverviewData(): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_overview_' . $userId;
+        $cacheKey = 'panel_analytics_overview_'.$userId;
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -106,14 +106,14 @@ class AnalyticsController extends Controller
             // Для больших таблиц используем приблизительное значение (обновляется при ANALYZE TABLE)
             try {
                 $clientsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'clients'");
-                $totalClients = ($clientsInfo && isset($clientsInfo->table_rows)) ? (int)$clientsInfo->table_rows : Client::count();
+                $totalClients = ($clientsInfo && isset($clientsInfo->table_rows)) ? (int) $clientsInfo->table_rows : Client::count();
             } catch (\Exception $e) {
                 $totalClients = Client::count();
             }
 
             try {
                 $appointmentsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'appointments'");
-                $totalAppointments = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int)$appointmentsInfo->table_rows : Appointment::count();
+                $totalAppointments = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int) $appointmentsInfo->table_rows : Appointment::count();
             } catch (\Exception $e) {
                 $totalAppointments = Appointment::count();
             }
@@ -235,7 +235,7 @@ class AnalyticsController extends Controller
     private function getFinancialData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_financial_' . $userId . '_' . md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_financial_'.$userId.'_'.md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -265,7 +265,7 @@ class AnalyticsController extends Controller
             $invoices = $query->get();
 
             // Кешируем общие метрики выручки (обновляются редко)
-            $revenueMetrics = Cache::remember('analytics_revenue_metrics_' . today()->format('Y-m-d'), 600, function () {
+            $revenueMetrics = Cache::remember('analytics_revenue_metrics_'.today()->format('Y-m-d'), 600, function () {
                 $now = Carbon::now();
                 $today = $now->copy()->startOfDay();
                 $weekAgo = $now->copy()->subWeek();
@@ -379,7 +379,7 @@ class AnalyticsController extends Controller
     private function getGeneralData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_general_' . $userId . '_' . md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_general_'.$userId.'_'.md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -435,7 +435,7 @@ class AnalyticsController extends Controller
             // ОПТИМИЗИРОВАНО: Используем приблизительное значение для большой таблицы appointments
             try {
                 $appointmentsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'appointments'");
-                $totalAppointmentsApprox = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int)$appointmentsInfo->table_rows : $total;
+                $totalAppointmentsApprox = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int) $appointmentsInfo->table_rows : $total;
             } catch (\Exception $e) {
                 $totalAppointmentsApprox = $total;
             }
@@ -465,7 +465,7 @@ class AnalyticsController extends Controller
                     return [
                         'id' => $item->id,
                         'name' => $item->name,
-                        'count' => (int)$item->appointments_count,
+                        'count' => (int) $item->appointments_count,
                     ];
                 });
 
@@ -501,7 +501,7 @@ class AnalyticsController extends Controller
 
             $statsByMaster = $masterStats->map(function ($item) use ($masters) {
                 $master = $masters[$item->master_id] ?? null;
-                $masterName = $master ? trim($master->first_name . ' ' . ($master->last_name ?? '')) : 'Неизвестный мастер';
+                $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
 
                 return [
                     'master_id' => $item->master_id,
@@ -531,7 +531,7 @@ class AnalyticsController extends Controller
     private function getSubscriptionsData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_subscriptions_' . $userId . '_' . md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_subscriptions_'.$userId.'_'.md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -788,9 +788,9 @@ class AnalyticsController extends Controller
             $appointmentsByDay[] = [
                 'date' => $dateStr,
                 'label' => $currentDate->format('d.m'),
-                'total' => $dayStats ? (int)$dayStats->total : 0,
-                'completed' => $dayStats ? (int)$dayStats->completed : 0,
-                'cancelled' => $dayStats ? (int)$dayStats->cancelled : 0,
+                'total' => $dayStats ? (int) $dayStats->total : 0,
+                'completed' => $dayStats ? (int) $dayStats->completed : 0,
+                'cancelled' => $dayStats ? (int) $dayStats->cancelled : 0,
             ];
 
             $currentDate->addDay();

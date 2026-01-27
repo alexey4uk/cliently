@@ -42,10 +42,10 @@ class ClientController extends Controller
         // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
             // Используем FULLTEXT для имен (быстро!)
-            $searchTerm = $search . '*';
+            $searchTerm = $search.'*';
             $query->where(function ($q) use ($search, $searchTerm) {
                 // FULLTEXT поиск по именам
-                $q->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
+                $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     // Обычный поиск по email (FULLTEXT не нужен для email)
                     ->orWhere('email', 'like', "%{$search}%")
                     // Поиск по телефону через JOIN (быстрее чем whereHas)

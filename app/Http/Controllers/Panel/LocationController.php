@@ -7,7 +7,6 @@ use App\Models\Country;
 use App\Models\Location;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class LocationController extends Controller
 {
@@ -90,7 +89,7 @@ class LocationController extends Controller
     {
         // ОПТИМИЗАЦИЯ: Только business и counts (без загрузки всех мастеров)
         $location->load(['business']);
-        
+
         // Подсчитываем связанные данные
         $location->masters_count = $location->masters()->count();
         $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
