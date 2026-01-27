@@ -23,9 +23,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(false);
 
             $table->timestamps();
-            
-            // Индекс для поиска
-            $table->index('name'); // поиск по названию услуги
         });
 
         // FULLTEXT индекс для быстрого текстового поиска

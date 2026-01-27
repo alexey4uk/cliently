@@ -20,8 +20,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            // Индекс для оптимизации дашборда (группировка по дате создания)
-            $table->index('created_at');
+            $table->index('created_at'); 
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

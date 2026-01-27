@@ -23,9 +23,7 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'is_read', 'created_at']);
-            $table->index('required_permission');
-            $table->index('type');
+            $table->index(['user_id', 'is_read', 'created_at'], 'idx_notifications_lookup');
         });
     }
 

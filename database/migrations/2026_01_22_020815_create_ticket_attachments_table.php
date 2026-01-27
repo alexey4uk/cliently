@@ -22,9 +22,6 @@ return new class extends Migration
             $table->enum('uploaded_by_type', ['user', 'client', 'public'])->default('public');
             $table->unsignedBigInteger('uploaded_by_id')->nullable();
             $table->timestamps();
-
-            $table->index('ticket_id');
-            $table->index('comment_id');
         });
     }
 

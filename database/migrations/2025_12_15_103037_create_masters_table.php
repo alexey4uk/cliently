@@ -26,10 +26,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
-            
-            // Индексы для поиска
-            $table->index('first_name'); // поиск по имени
-            $table->index('last_name'); // поиск по фамилии
         });
 
         // FULLTEXT индекс для быстрого текстового поиска

@@ -24,22 +24,11 @@ return new class extends Migration
             $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
             $table->string('source')->nullable();
             $table->text('notes')->nullable();
-            $table->integer('duration')->nullable(); // Переопределение длительности услуги
-            $table->decimal('price', 10, 2)->nullable(); // Переопределение цены услуги
+            $table->integer('duration')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();
 
-            // Существующие индексы
-            $table->index(['business_id', 'date']);
-            $table->index(['master_id', 'date', 'time']);
-            $table->index('token');
-
-            // Дополнительные индексы для оптимизации дашборда
-            $table->index('created_at'); // группировка по дате создания
-            $table->index('date'); // фильтрация по дате записи
-            $table->index('status'); // фильтрация по статусу
-            $table->index(['business_id', 'created_at']); // активные бизнесы
-            $table->index(['date', 'status']); // фильтрация по дате и статусу
-            $table->index(['date', 'time']); // сортировка по дате и времени в списке записей
+            $table->index(['date', 'time']);
         });
     }
 

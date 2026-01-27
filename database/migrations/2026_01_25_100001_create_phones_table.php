@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('type', 20)->default('primary');
             $table->timestamps();
 
-            $table->index(['phoneable_type', 'phoneable_id']);
-            $table->index('phone');
+            $table->index('phone', 'idx_phones_number_lookup');
+            $table->index(['phoneable_type', 'phoneable_id'], 'idx_phones_poly_owner');
         });
     }
 

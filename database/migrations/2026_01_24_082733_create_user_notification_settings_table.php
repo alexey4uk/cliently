@@ -20,8 +20,6 @@ return new class extends Migration
 
             // Уникальный индекс: один пользователь - одна настройка для каждого типа уведомления
             $table->unique(['user_id', 'notification_type']);
-            $table->index('user_id');
-            $table->index('notification_type');
         });
     }
 

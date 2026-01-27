@@ -20,14 +20,6 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('telegram_user_id')->nullable();
             $table->timestamps();
-
-            // Индексы для оптимизации дашборда
-            $table->index('created_at'); // группировка по дате создания
-            $table->index('business_id'); // подсчет клиентов по бизнесу
-            
-            // Индексы для поиска
-            $table->index('first_name'); // поиск по имени
-            $table->index('last_name'); // поиск по фамилии
         });
 
         // FULLTEXT индекс для быстрого текстового поиска
