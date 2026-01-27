@@ -21,21 +21,21 @@ class PanelController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_'.$user->id;
+        $cacheKey = 'panel_dashboard_' . $user->id;
 
         // Объединяем ВСЕ данные (включая графики) в один кэш (1 час)
         $dashboardData = Cache::remember($cacheKey, 3600, function () use ($user) {
             $data = $this->collectAllDashboardData($user);
 
             // Данные для графиков (если есть доступ к аналитике)
-            $chartData = null;
-            if ($user->can('panel.analytics.view')) {
-                $chartData = $this->getChartData();
-            }
+            // $chartData = null;
+            // if ($user->can('panel.analytics.view')) {
+            //     $chartData = $this->getChartData();
+            // }
 
             return [
                 'stats' => $data['stats'],
-                'chartData' => $chartData,
+                //'chartData' => $chartData,
                 'recentBusinesses' => $data['recentBusinesses'] ?? null,
                 'recentUsers' => $data['recentUsers'] ?? null,
                 'topBusinesses' => $data['topBusinesses'] ?? null,
@@ -54,7 +54,7 @@ class PanelController extends Controller
      */
     private function adminDashboard()
     {
-        $cacheKey = 'panel_dashboard_admin_'.Auth::id();
+        $cacheKey = 'panel_dashboard_admin_' . Auth::id();
 
         $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
@@ -141,7 +141,7 @@ class PanelController extends Controller
         });
 
         // Данные для графиков (последние 30 дней)
-        $chartData = Cache::remember($cacheKey.'_charts', 3600, function () {
+        $chartData = Cache::remember($cacheKey . '_charts', 3600, function () {
             $days = 30;
 
             $usersData = [];
@@ -217,7 +217,7 @@ class PanelController extends Controller
      */
     private function supportDashboard()
     {
-        $cacheKey = 'panel_dashboard_support_'.Auth::id();
+        $cacheKey = 'panel_dashboard_support_' . Auth::id();
         $today = Carbon::today();
         $weekAgo = Carbon::now()->subWeek();
         $monthAgo = Carbon::now()->subMonth();
@@ -299,7 +299,7 @@ class PanelController extends Controller
      */
     private function generalDashboard()
     {
-        $cacheKey = 'panel_dashboard_general_'.Auth::id();
+        $cacheKey = 'panel_dashboard_general_' . Auth::id();
 
         $stats = Cache::remember($cacheKey, 3600, function () {
             $today = Carbon::today();
@@ -329,191 +329,117 @@ class PanelController extends Controller
      */
     private function collectAllDashboardData($user)
     {
-        $today = Carbon::today();
-        $weekAgo = Carbon::now()->subWeek();
-        $monthAgo = Carbon::now()->subMonth();
-        $twoMonthsAgo = Carbon::now()->subMonths(2);
+        $now = Carbon::now();
+        $today = $now->toDateString();
+        $weekAgo = $now->copy()->subWeek();
+        $monthAgo = $now->copy()->subMonth();
+        $twoMonthsAgo = $now->copy()->subMonths(2);
 
         $data = [
             'stats' => [],
-            'recentBusinesses' => null,
-            'recentUsers' => null,
-            'topBusinesses' => null,
-            'recentAppointments' => null,
-            'inactiveBusinesses' => null,
-            'activeBusinesses' => null,
+            'recentBusinesses' => collect(),
+            'recentUsers' => collect(),
+            'topBusinesses' => collect(),
+            'recentAppointments' => collect(),
+            'inactiveBusinesses' => collect(),
+            'activeBusinesses' => collect(),
         ];
 
-        // Базовые метрики (если есть доступ к просмотру бизнесов)
-        if ($user->can('panel.businesses.view')) {
-            $totalBusinesses = Business::count();
-            $data['stats']['total_businesses'] = $totalBusinesses;
+        // 1. КЭШИРОВАНИЕ ОБЩИХ СЧЕТЧИКОВ (на 15 млн строк count(*) может идти долго)
+        $totalBusinesses = Cache::remember('stats_total_biz', 300, fn() => Business::count());
+        $totalAppointments = Cache::remember('stats_total_app', 300, fn() => Appointment::count());
+        $totalClients = Cache::remember('stats_total_clients', 300, fn() => Client::count());
+        $totalUsers = Cache::remember('stats_total_users', 300, fn() => User::count());
 
-            // ОПТИМИЗИРОВАНО: Активные бизнесы (используем JOIN вместо whereHas)
-            $data['stats']['active_businesses_month'] = DB::table('appointments')
-                ->where('appointments.created_at', '>=', $monthAgo)
-                ->distinct('business_id')
-                ->count('business_id');
+        // 2. БИЗНЕСЫ (Активность и Рост)
+        $data['stats']['total_businesses'] = $totalBusinesses;
 
-            $data['stats']['active_businesses_week'] = DB::table('appointments')
-                ->where('appointments.created_at', '>=', $weekAgo)
-                ->distinct('business_id')
-                ->count('business_id');
+        // Получаем ID активных бизнесов (быстро по индексам appointments)
+        $activeBizIdsMonth = DB::table('appointments')->where('created_at', '>=', $monthAgo)->distinct()->pluck('business_id');
+        $activeBizIdsWeek = DB::table('appointments')->where('created_at', '>=', $weekAgo)->distinct()->pluck('business_id');
 
-            // ОПТИМИЗИРОВАНО: Неактивные бизнесы (используем LEFT JOIN)
-            $data['stats']['inactive_businesses'] = DB::table('businesses')
-                ->leftJoin('appointments', function ($join) use ($monthAgo) {
-                    $join->on('businesses.id', '=', 'appointments.business_id')
-                        ->where('appointments.created_at', '>=', $monthAgo);
-                })
-                ->whereNull('appointments.id')
-                ->count('businesses.id');
+        $data['stats']['active_businesses_month'] = $activeBizIdsMonth->count();
+        $data['stats']['active_businesses_week'] = $activeBizIdsWeek->count();
+        $data['stats']['inactive_businesses'] = max(0, $totalBusinesses - $activeBizIdsMonth->count());
 
-            // Рост бизнесов
-            $newBusinessesLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
-            $newBusinessesThisMonth = Business::where('created_at', '>=', $monthAgo)->count();
-            $data['stats']['business_growth_rate'] = $newBusinessesLastMonth > 0
-                ? round((($newBusinessesThisMonth - $newBusinessesLastMonth) / $newBusinessesLastMonth) * 100, 1)
-                : ($newBusinessesThisMonth > 0 ? 100 : 0);
-            $data['stats']['new_businesses_week'] = Business::where('created_at', '>=', $weekAgo)->count();
-            $data['stats']['new_businesses_month'] = $newBusinessesThisMonth;
+        // Рост бизнесов
+        $newBizLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+        $newBizThisMonth = Business::where('created_at', '>=', $monthAgo)->count();
+        $data['stats']['new_businesses_month'] = $newBizThisMonth;
+        $data['stats']['new_businesses_week'] = Business::where('created_at', '>=', $weekAgo)->count();
+        $data['stats']['business_growth_rate'] = $newBizLastMonth > 0
+            ? round((($newBizThisMonth - $newBizLastMonth) / $newBizLastMonth) * 100, 1)
+            : ($newBizThisMonth > 0 ? 100 : 0);
 
-            // Средние метрики
-            $data['stats']['avg_appointments_per_business'] = $totalBusinesses > 0
-                ? round(Appointment::count() / $totalBusinesses, 1)
-                : 0;
-            $data['stats']['avg_clients_per_business'] = $totalBusinesses > 0
-                ? round(Client::count() / $totalBusinesses, 1)
-                : 0;
+        // Топ-бизнесы по записям (через агрегацию, а не подзапрос)
+        $topStats = DB::table('appointments')
+            ->select('business_id', DB::raw('count(*) as total'))
+            ->groupBy('business_id')->orderByDesc('total')->limit(5)->get();
 
-            // Последние бизнесы
-            $data['recentBusinesses'] = Business::withCount(['appointments', 'clients', 'users'])
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
+        $data['topBusinesses'] = Business::whereIn('id', $topStats->pluck('business_id'))->get()
+            ->map(function ($b) use ($topStats) {
+                $b->appointments_count = $topStats->firstWhere('business_id', $b->id)->total ?? 0;
+                return $b;
+            })->sortByDesc('appointments_count');
 
-            // Топ бизнесы
-            $data['topBusinesses'] = Business::withCount(['appointments', 'clients'])
-                ->orderBy('appointments_count', 'desc')
-                ->limit(5)
-                ->get();
+        // 3. ПОЛЬЗОВАТЕЛИ (Регистрации и Активность)
+        $data['stats']['total_users'] = $totalUsers;
+        $data['stats']['active_users_month'] = DB::table('business_user')->whereIn('business_id', $activeBizIdsMonth)->distinct()->count('user_id');
+        $data['stats']['active_users_week'] = DB::table('business_user')->whereIn('business_id', $activeBizIdsWeek)->distinct()->count('user_id');
 
-            // ОПТИМИЗИРОВАНО: Неактивные бизнесы (через подзапрос)
-            $data['inactiveBusinesses'] = Business::select('businesses.*')
-                ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count')
-                ->selectRaw('(SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count')
-                ->whereNotIn('businesses.id', function ($query) use ($monthAgo) {
-                    $query->select('business_id')
-                        ->from('appointments')
-                        ->where('created_at', '>=', $monthAgo)
-                        ->distinct();
-                })
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
+        // Блок новых регистраций пользователей
+        $newUsersLastMonth = User::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+        $newUsersThisMonth = User::where('created_at', '>=', $monthAgo)->count();
+        $data['stats']['new_users_month'] = $newUsersThisMonth;
+        $data['stats']['new_users_week'] = User::where('created_at', '>=', $weekAgo)->count();
+        $data['stats']['user_growth_rate'] = $newUsersLastMonth > 0
+            ? round((($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100, 1)
+            : ($newUsersThisMonth > 0 ? 100 : 0);
 
-            // ОПТИМИЗИРОВАНО: Активные бизнесы (через подзапрос)
-            $data['activeBusinesses'] = Business::select('businesses.*')
-                ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id AND appointments.created_at >= ?) as appointments_count', [$weekAgo])
-                ->orderBy('appointments_count', 'desc')
-                ->limit(5)
-                ->get();
-        }
+        $data['recentUsers'] = User::with('roles')->latest()->limit(5)->get();
 
-        // Пользователи (если есть доступ)
-        if ($user->can('panel.users.view')) {
-            $data['stats']['total_users'] = User::count();
+        // 4. КЛИЕНТЫ
+        $data['stats']['total_clients'] = $totalClients;
+        $data['stats']['new_clients_week'] = Client::where('created_at', '>=', $weekAgo)->count();
+        $newClientsMonth = Client::where('created_at', '>=', $monthAgo)->count();
+        $newClientsLastMonth = Client::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+        $data['stats']['new_clients_month'] = $newClientsMonth;
+        $data['stats']['client_growth_rate'] = $newClientsLastMonth > 0
+            ? round((($newClientsMonth - $newClientsLastMonth) / $newClientsLastMonth) * 100, 1)
+            : ($newClientsMonth > 0 ? 100 : 0);
 
-            // ОПТИМИЗИРОВАНО: Активные пользователи (через pivot таблицу business_user)
-            $data['stats']['active_users_month'] = DB::table('users')
-                ->join('business_user', 'users.id', '=', 'business_user.user_id')
-                ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
-                ->where('appointments.created_at', '>=', $monthAgo)
-                ->distinct('users.id')
-                ->count('users.id');
+        // 5. ЗАПИСИ (Схлопываем всё в один запрос)
+        $appStats = Appointment::selectRaw("
+        COUNT(CASE WHEN date = ? AND status != 'cancelled' THEN 1 END) as today,
+        COUNT(CASE WHEN date >= ? AND status != 'cancelled' THEN 1 END) as week,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+        COUNT(CASE WHEN status = 'cancelled' AND updated_at >= ? THEN 1 END) as cancelled_week
+    ", [$today, $weekAgo->toDateString(), $weekAgo])->first();
 
-            $data['stats']['active_users_week'] = DB::table('users')
-                ->join('business_user', 'users.id', '=', 'business_user.user_id')
-                ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
-                ->where('appointments.created_at', '>=', $weekAgo)
-                ->distinct('users.id')
-                ->count('users.id');
+        $data['stats']['total_appointments'] = $totalAppointments;
+        $data['stats']['appointments_today'] = $appStats->today ?? 0;
+        $data['stats']['appointments_week'] = $appStats->week ?? 0;
+        $data['stats']['appointments_pending'] = $appStats->pending ?? 0;
+        $data['stats']['cancelled_week'] = $appStats->cancelled_week ?? 0;
+        $data['stats']['appointments_month'] = Appointment::where('created_at', '>=', $monthAgo)->count();
 
-            // Рост пользователей
-            $newUsersLastMonth = User::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
-            $newUsersThisMonth = User::where('created_at', '>=', $monthAgo)->count();
-            $data['stats']['user_growth_rate'] = $newUsersLastMonth > 0
-                ? round((($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100, 1)
-                : ($newUsersThisMonth > 0 ? 100 : 0);
-            $data['stats']['new_users_week'] = User::where('created_at', '>=', $weekAgo)->count();
-            $data['stats']['new_users_month'] = $newUsersThisMonth;
+        $data['recentAppointments'] = Appointment::with(['business', 'client', 'service'])->latest()->limit(10)->get();
 
-            // Последние пользователи
-            $data['recentUsers'] = User::with('roles')
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get();
-        }
+        // 6. ДОПОЛНИТЕЛЬНЫЕ СПИСКИ
+        $data['activeBusinesses'] = $data['topBusinesses'];
+        $data['inactiveBusinesses'] = Business::whereNotIn('id', $activeBizIdsMonth)
+            ->withCount(['appointments', 'clients'])
+            ->latest()->limit(5)->get();
 
-        // Клиенты (если есть доступ)
-        if ($user->can('panel.clients.view')) {
-            $data['stats']['total_clients'] = Client::count();
-            $data['stats']['new_clients_week'] = Client::where('created_at', '>=', $weekAgo)->count();
-            $data['stats']['new_clients_month'] = Client::where('created_at', '>=', $monthAgo)->count();
-        }
+        $data['recentBusinesses'] = Business::withCount(['appointments', 'clients', 'users'])->latest()->limit(5)->get();
 
-        // Записи (если есть доступ)
-        if ($user->can('panel.appointments.view')) {
-            $data['stats']['total_appointments'] = Appointment::count();
-            $data['stats']['appointments_today'] = Appointment::where('date', $today->format('Y-m-d'))
-                ->where('status', '!=', 'cancelled')
-                ->count();
-            $data['stats']['appointments_week'] = Appointment::where('date', '>=', $weekAgo->format('Y-m-d'))
-                ->where('status', '!=', 'cancelled')
-                ->count();
-            $data['stats']['appointments_month'] = Appointment::where('created_at', '>=', $monthAgo)->count();
-            $data['stats']['appointments_pending'] = Appointment::where('status', 'pending')->count();
-            $data['stats']['cancelled_week'] = Appointment::where('status', 'cancelled')
-                ->where('updated_at', '>=', $weekAgo)
-                ->count();
-
-            // Последние записи
-            $data['recentAppointments'] = Appointment::with(['business', 'client', 'service'])
-                ->orderBy('created_at', 'desc')
-                ->limit(10)
-                ->get();
-        }
-
-        // Данные для поддержки (активные и неактивные бизнесы)
-        if ($user->can('panel.analytics.view') || $user->can('panel.support.view')) {
-            // ОПТИМИЗИРОВАНО: Активные бизнесы за неделю
-            if (! isset($data['activeBusinesses'])) {
-                $data['activeBusinesses'] = Business::select('businesses.*')
-                    ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id AND appointments.created_at >= ?) as appointments_count', [$weekAgo])
-                    ->orderBy('appointments_count', 'desc')
-                    ->limit(5)
-                    ->get();
-            }
-
-            // ОПТИМИЗИРОВАНО: Неактивные бизнесы
-            if (! isset($data['inactiveBusinesses'])) {
-                $data['inactiveBusinesses'] = Business::select('businesses.*')
-                    ->selectRaw('(SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count')
-                    ->selectRaw('(SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count')
-                    ->whereNotIn('businesses.id', function ($query) use ($monthAgo) {
-                        $query->select('business_id')
-                            ->from('appointments')
-                            ->where('created_at', '>=', $monthAgo)
-                            ->distinct();
-                    })
-                    ->orderBy('created_at', 'desc')
-                    ->limit(5)
-                    ->get();
-            }
-        }
+        // Средние метрики
+        $data['stats']['avg_appointments_per_business'] = $totalBusinesses > 0 ? round($totalAppointments / $totalBusinesses, 1) : 0;
+        $data['stats']['avg_clients_per_business'] = $totalBusinesses > 0 ? round($totalClients / $totalBusinesses, 1) : 0;
 
         return $data;
     }
+
 
     /**
      * Получить данные для графиков (ОПТИМИЗИРОВАНО)
@@ -598,7 +524,7 @@ class PanelController extends Controller
     public function refresh()
     {
         $user = Auth::user();
-        $cacheKey = 'panel_dashboard_'.$user->id;
+        $cacheKey = 'panel_dashboard_' . $user->id;
 
         Cache::forget($cacheKey);
 

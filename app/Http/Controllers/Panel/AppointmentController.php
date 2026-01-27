@@ -22,101 +22,83 @@ class AppointmentController extends Controller
      */
     public function index()
     {
+        // 1. Собираем параметры
         $search = request('search', '');
         $sort = request('sort', 'date');
-        $direction = request('direction', 'desc');
-        $perPage = min((int) request('per_page', 20), 100); // ВАЖНО: максимум 100 записей
+        $direction = strtolower(request('direction')) === 'asc' ? 'asc' : 'desc';
+        $perPage = min((int) request('per_page', 20), 100);
+
         $statusFilter = request('status', '');
         $businessFilter = request('business_id', '');
         $dateFilter = request('date', '');
 
-        // ОПТИМИЗИРОВАНО: Используем JOIN вместо whereHas для поиска
         $query = Appointment::query();
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК: Подзапросы с FULLTEXT индексами
+        // 2. ОПТИМИЗИРОВАННЫЙ ПОИСК (FULLTEXT)
         if ($search) {
-            // Добавляем * для частичного совпадения (как LIKE "%search%")
             $searchTerm = $search . '*';
-            
-            // Находим ID подходящих записей через подзапросы (БЫСТРО!)
+
+            // Поиск ID через быстрые FULLTEXT индексы
             $clientIds = DB::table('clients')
                 ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
                 ->pluck('id');
-            
+
             $serviceIds = DB::table('services')
                 ->whereRaw("MATCH(name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
                 ->pluck('id');
-            
+
             $masterIds = DB::table('masters')
                 ->whereRaw("MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)", [$searchTerm])
                 ->pluck('id');
-            
-            // Фильтруем appointments по найденным ID
+
             $query->where(function ($q) use ($clientIds, $serviceIds, $masterIds) {
-                if ($clientIds->isNotEmpty()) {
-                    $q->orWhereIn('client_id', $clientIds);
-                }
-                if ($serviceIds->isNotEmpty()) {
-                    $q->orWhereIn('service_id', $serviceIds);
-                }
-                if ($masterIds->isNotEmpty()) {
-                    $q->orWhereIn('master_id', $masterIds);
-                }
-            })->limit(1000); // Ограничение результатов поиска
+                if ($clientIds->isNotEmpty()) $q->orWhereIn('client_id', $clientIds);
+                if ($serviceIds->isNotEmpty()) $q->orWhereIn('service_id', $serviceIds);
+                if ($masterIds->isNotEmpty()) $q->orWhereIn('master_id', $masterIds);
+            });
         }
 
-        // Eager loading для отображения (после фильтрации)
-        // ВАЖНО: client.primaryPhone для избежания N+1 при отображении телефонов
-        $query->with(['client.primaryPhone', 'master', 'service', 'location', 'business']);
+        // 3. ЖАДНАЯ ЗАГРУЗКА (УБРАЛИ ЛИШНИЕ СВЯЗИ)
+        $query->with(['client', 'master', 'service', 'location', 'business']);
 
-        // Фильтр по статусу
+        // 4. ФИЛЬТРЫ (SARGABLE - используют индексы напрямую)
         if ($statusFilter) {
             $query->where('status', $statusFilter);
         }
-
-        // Фильтр по бизнесу
         if ($businessFilter) {
             $query->where('business_id', $businessFilter);
         }
-
-        // Фильтр по дате
         if ($dateFilter) {
+            // Используем обычный where вместо whereDate для скорости
             $query->where('date', $dateFilter);
         }
 
-        // Сортировка
-        $needsDistinct = false; // Флаг для distinct (только при JOIN)
+        // 5. ОПТИМИЗИРОВАННАЯ СОРТИРОВКА (БЕЗ CONCAT)
         $allowedSorts = ['date', 'client', 'service', 'master', 'status'];
-        
-        if (in_array($sort, $allowedSorts)) {
-            if ($sort === 'client') {
-                $query->join('clients', 'appointments.client_id', '=', 'clients.id')
-                    ->orderByRaw("CONCAT(COALESCE(clients.first_name, ''), ' ', COALESCE(clients.last_name, '')) {$direction}")
-                    ->select('appointments.*');
-                $needsDistinct = true;
-            } elseif ($sort === 'service') {
-                $query->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->orderBy('services.name', $direction)
-                    ->select('appointments.*');
-                $needsDistinct = true;
-            } elseif ($sort === 'master') {
-                $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
-                    ->orderByRaw("CONCAT(COALESCE(masters.first_name, ''), ' ', COALESCE(masters.last_name, '')) {$direction}")
-                    ->select('appointments.*');
-                $needsDistinct = true;
-            } else {
-                $query->orderByRaw("CONCAT(date, ' ', time) {$direction}");
-            }
+        $sort = in_array($sort, $allowedSorts) ? $sort : 'date';
+
+        if ($sort === 'client') {
+            $query->join('clients', 'appointments.client_id', '=', 'clients.id')
+                ->orderBy('clients.first_name', $direction)
+                ->orderBy('clients.last_name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'service') {
+            $query->join('services', 'appointments.service_id', '=', 'services.id')
+                ->orderBy('services.name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'master') {
+            $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
+                ->orderBy('masters.first_name', $direction)
+                ->orderBy('masters.last_name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'status') {
+            $query->orderBy('status', $direction);
         } else {
-            $query->orderByRaw("CONCAT(date, ' ', time) desc");
+            // ГЛАВНЫЙ ФИКС: Сортировка по индексу idx_app_date_time_sort
+            $query->orderBy('date', $direction)->orderBy('time', $direction);
         }
 
-        // distinct() только когда есть JOIN (избегаем дубликатов)
-        if ($needsDistinct) {
-            $query->distinct();
-        }
-
-        // ОПТИМИЗАЦИЯ: simplePaginate ВСЕГДА (без медленного COUNT)
+        // 6. ПАГИНАЦИЯ (simplePaginate не делает тяжелый COUNT(*))
         $appointments = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
@@ -134,6 +116,8 @@ class AppointmentController extends Controller
             'businesses'
         ));
     }
+
+
 
     /**
      * Show the form for editing the specified appointment.

@@ -7,7 +7,9 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Master;
 use App\Models\Plan;
+use App\Models\Service;
 use App\Models\Subscription;
 use App\Models\User;
 use Carbon\Carbon;
@@ -77,7 +79,7 @@ class AnalyticsController extends Controller
     private function getOverviewData(): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_overview_'.$userId;
+        $cacheKey = 'panel_analytics_overview_' . $userId;
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -100,7 +102,7 @@ class AnalyticsController extends Controller
             // Это в 100+ раз быстрее COUNT(*) на миллионах записей!
             $totalBusinesses = Business::count(); // Мало записей - быстро
             $totalUsers = User::count(); // Мало записей - быстро
-            
+
             // Для больших таблиц используем приблизительное значение (обновляется при ANALYZE TABLE)
             try {
                 $clientsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'clients'");
@@ -108,7 +110,7 @@ class AnalyticsController extends Controller
             } catch (\Exception $e) {
                 $totalClients = Client::count();
             }
-            
+
             try {
                 $appointmentsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'appointments'");
                 $totalAppointments = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int)$appointmentsInfo->table_rows : Appointment::count();
@@ -233,7 +235,7 @@ class AnalyticsController extends Controller
     private function getFinancialData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_financial_'.$userId.'_'.md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_financial_' . $userId . '_' . md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -263,7 +265,7 @@ class AnalyticsController extends Controller
             $invoices = $query->get();
 
             // Кешируем общие метрики выручки (обновляются редко)
-            $revenueMetrics = Cache::remember('analytics_revenue_metrics_'.today()->format('Y-m-d'), 600, function () {
+            $revenueMetrics = Cache::remember('analytics_revenue_metrics_' . today()->format('Y-m-d'), 600, function () {
                 $now = Carbon::now();
                 $today = $now->copy()->startOfDay();
                 $weekAgo = $now->copy()->subWeek();
@@ -372,11 +374,12 @@ class AnalyticsController extends Controller
 
     /**
      * Get general analytics data.
+     * ОПТИМИЗИРОВАНО: Добавлено кеширование и оптимизированные запросы
      */
     private function getGeneralData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_general_'.$userId.'_'.md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_general_' . $userId . '_' . md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
@@ -406,7 +409,7 @@ class AnalyticsController extends Controller
                 ->groupBy('status')
                 ->pluck('count', 'status')
                 ->toArray();
-            
+
             // Для совместимости создаем коллекцию с нужными данными
             $appointments = collect();
 
@@ -428,8 +431,17 @@ class AnalyticsController extends Controller
 
             // Средние метрики
             $totalBusinesses = Business::count();
+
+            // ОПТИМИЗИРОВАНО: Используем приблизительное значение для большой таблицы appointments
+            try {
+                $appointmentsInfo = DB::selectOne("SELECT table_rows FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'appointments'");
+                $totalAppointmentsApprox = ($appointmentsInfo && isset($appointmentsInfo->table_rows)) ? (int)$appointmentsInfo->table_rows : $total;
+            } catch (\Exception $e) {
+                $totalAppointmentsApprox = $total;
+            }
+
             $avgAppointmentsPerBusiness = $totalBusinesses > 0
-                ? round($total / $totalBusinesses, 1)
+                ? round($totalAppointmentsApprox / $totalBusinesses, 1)
                 : 0;
             $avgClientsPerBusiness = $totalBusinesses > 0
                 ? round(Client::count() / $totalBusinesses, 1)
@@ -438,58 +450,65 @@ class AnalyticsController extends Controller
             // Динамика записей
             $appointmentsByPeriod = $this->getAppointmentsByPeriod($startDate, $endDate, $filters);
 
-            // ОПТИМИЗИРОВАНО: Статистика по бизнесам через подзапрос
-            $statsByBusiness = Business::query()
-                ->selectRaw('businesses.*, 
-                    (SELECT COUNT(*) FROM appointments 
-                     WHERE appointments.business_id = businesses.id 
-                     AND appointments.date BETWEEN ? AND ?) as appointments_count',
-                    [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                ->orderByRaw('appointments_count DESC')
+            // ОПТИМИЗИРОВАНО: Статистика по бизнесам через JOIN вместо подзапроса
+            $statsByBusiness = DB::table('businesses')
+                ->leftJoin('appointments', function ($join) use ($startDate, $endDate) {
+                    $join->on('businesses.id', '=', 'appointments.business_id')
+                        ->whereBetween('appointments.date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+                })
+                ->select('businesses.id', 'businesses.name', DB::raw('COUNT(appointments.id) as appointments_count'))
+                ->groupBy('businesses.id', 'businesses.name')
+                ->orderBy('appointments_count', 'DESC')
                 ->limit(10)
                 ->get()
-                ->map(function ($business) {
+                ->map(function ($item) {
                     return [
-                        'id' => $business->id,
-                        'name' => $business->name,
-                        'count' => $business->appointments_count,
+                        'id' => $item->id,
+                        'name' => $item->name,
+                        'count' => (int)$item->appointments_count,
                     ];
                 });
 
-            // Статистика по услугам
-            $statsByService = Appointment::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            // ОПТИМИЗИРОВАНО: Статистика по услугам без eager loading
+            $serviceStats = Appointment::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->select('service_id', DB::raw('COUNT(*) as count'))
                 ->groupBy('service_id')
-                ->with('service')
                 ->orderBy('count', 'desc')
                 ->limit(10)
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'service_id' => $item->service_id,
-                        'service_name' => $item->service ? $item->service->name : 'Неизвестная услуга',
-                        'count' => $item->count,
-                    ];
-                });
+                ->get();
 
-            // Статистика по мастерам
-            $statsByMaster = Appointment::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            $serviceIds = $serviceStats->pluck('service_id');
+            $services = Service::whereIn('id', $serviceIds)->get()->keyBy('id');
+
+            $statsByService = $serviceStats->map(function ($item) use ($services) {
+                return [
+                    'service_id' => $item->service_id,
+                    'service_name' => $services[$item->service_id]->name ?? 'Неизвестная услуга',
+                    'count' => $item->count,
+                ];
+            });
+
+            // ОПТИМИЗИРОВАНО: Статистика по мастерам без eager loading
+            $masterStats = Appointment::whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
                 ->select('master_id', DB::raw('COUNT(*) as count'))
                 ->groupBy('master_id')
-                ->with('master')
                 ->orderBy('count', 'desc')
                 ->limit(10)
-                ->get()
-                ->map(function ($item) {
-                    $master = $item->master;
-                    $masterName = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+                ->get();
 
-                    return [
-                        'master_id' => $item->master_id,
-                        'master_name' => $masterName,
-                        'count' => $item->count,
-                    ];
-                });
+            $masterIds = $masterStats->pluck('master_id');
+            $masters = Master::whereIn('id', $masterIds)->get()->keyBy('id');
+
+            $statsByMaster = $masterStats->map(function ($item) use ($masters) {
+                $master = $masters[$item->master_id] ?? null;
+                $masterName = $master ? trim($master->first_name . ' ' . ($master->last_name ?? '')) : 'Неизвестный мастер';
+
+                return [
+                    'master_id' => $item->master_id,
+                    'master_name' => $masterName,
+                    'count' => $item->count,
+                ];
+            });
 
             return [
                 'total' => $total,
@@ -512,7 +531,7 @@ class AnalyticsController extends Controller
     private function getSubscriptionsData(array $filters): array
     {
         $userId = Auth::id();
-        $cacheKey = 'panel_analytics_subscriptions_'.$userId.'_'.md5(json_encode($filters));
+        $cacheKey = 'panel_analytics_subscriptions_' . $userId . '_' . md5(json_encode($filters));
         $cacheTags = ['panel_analytics', "user_{$userId}"];
 
         // Проверяем поддержку тегов
