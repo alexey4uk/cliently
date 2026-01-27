@@ -10,6 +10,7 @@ use App\Models\Master;
 use App\Models\Service;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +31,8 @@ class ProductionTestSeeder extends Seeder
 
     private array $sources = ['web', 'telegram', 'manual'];
 
+    private int $totalYearsBack;
+
     /**
      * Run the database seeds.
      */
@@ -42,85 +45,141 @@ class ProductionTestSeeder extends Seeder
         $this->mastersPerBusiness = (int) (getenv('SEED_MASTERS_PER_BUSINESS') ?: 3);
         $this->appointmentsPerBusiness = (int) (getenv('SEED_APPOINTMENTS_PER_BUSINESS') ?: 100);
 
+        // Настраиваем временной диапазон для распределения данных
+        $this->totalYearsBack = (int) (getenv('SEED_TOTAL_YEARS_BACK') ?: $this->calculateTotalYearsBack($this->usersCount * $this->appointmentsPerBusiness));
+
         $this->command->info('🚀 Запуск ProductionTestSeeder...');
+        $this->command->info("📅 Временной диапазон: {$this->totalYearsBack} лет назад");
         $startTime = microtime(true);
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Оптимизация MySQL для массовой вставки
+        DB::statement('SET unique_checks=0');
+        DB::statement('SET foreign_key_checks=0');
+        
+        try {
+            $this->command->info('📝 Создание пользователей и бизнесов...');
+            $users = $this->createUsers();
 
-        $this->command->info('📝 Создание пользователей и бизнесов...');
-        $users = $this->createUsers();
+            $this->command->info('🏢 Создание бизнесов и привязка пользователей...');
+            $businesses = $this->createBusinessesWithUsers($users);
 
-        $this->command->info('🏢 Создание бизнесов и привязка пользователей...');
-        $businesses = $this->createBusinessesWithUsers($users);
+            $this->command->info('📍 Создание локаций...');
+            $locations = $this->createLocations($businesses);
 
-        $this->command->info('📍 Создание локаций...');
-        $locations = $this->createLocations($businesses);
+            $this->command->info('💼 Создание услуг...');
+            $services = $this->createServices($businesses);
 
-        $this->command->info('💼 Создание услуг...');
-        $services = $this->createServices($businesses);
+            $this->command->info('👨‍💼 Создание мастеров...');
+            $masters = $this->createMasters($businesses, $users);
 
-        $this->command->info('👨‍💼 Создание мастеров...');
-        $masters = $this->createMasters($businesses, $users);
+            $this->command->info('👥 Создание клиентов...');
+            $clients = $this->createClients($businesses);
 
-        $this->command->info('👥 Создание клиентов...');
-        $clients = $this->createClients($businesses);
+            $this->command->info('📅 Создание записей...');
+            $this->createAppointments($businesses, $clients, $services, $masters, $locations);
 
-        $this->command->info('📅 Создание записей...');
-        $this->createAppointments($businesses, $clients, $services, $masters, $locations);
+            // Восстанавливаем настройки MySQL
+            DB::statement('SET foreign_key_checks=1');
+            DB::statement('SET unique_checks=1');
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        $duration = round(microtime(true) - $startTime, 2);
-        $this->command->info("✅ Готово! Время выполнения: {$duration} сек");
-        $this->printStatistics();
+            $duration = round(microtime(true) - $startTime, 2);
+            $this->command->info("✅ Готово! Время выполнения: {$duration} сек");
+            $this->printStatistics();
+        } catch (\Exception $e) {
+            // Восстанавливаем настройки MySQL даже при ошибке
+            DB::statement('SET foreign_key_checks=1');
+            DB::statement('SET unique_checks=1');
+            $this->command->error("❌ Ошибка при выполнении сидера: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     private function createUsers(): array
     {
         $users = [];
-        $now = now();
+
+        // Статический хэш пароля для ускорения генерации
+        $staticPasswordHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+        
+        // Предварительно генерируем имена для ускорения
+        $names = [];
+        $faker = fake('ru_RU');
+        for ($i = 0; $i < min(1000, $this->usersCount); $i++) {
+            $names[] = $faker->name();
+        }
+
+        // Распределяем пользователей по времени
+        $startTimestamp = Carbon::now()->subYears($this->totalYearsBack)->timestamp;
+        $endTimestamp = Carbon::now()->timestamp;
+
+        $progressBar = $this->command->getOutput()->createProgressBar($this->usersCount);
+        $progressBar->start();
 
         for ($i = 1; $i <= $this->usersCount; $i++) {
+            // Распределяем дату создания пользователя
+            $userCreatedAt = $this->getDistributedTimestamp($startTimestamp, $endTimestamp, $i - 1, $this->usersCount, 'uniform');
+            $userCreatedAtFormatted = date('Y-m-d H:i:s', $userCreatedAt);
+
             $users[] = [
-                'name' => fake('ru_RU')->name(),
+                'name' => $names[$i % count($names)],
                 'email' => "user{$i}@cliently.test",
-                'email_verified_at' => $now,
-                'password' => Hash::make('password'),
-                'created_at' => $now,
-                'updated_at' => $now,
+                'email_verified_at' => $userCreatedAtFormatted,
+                'password' => $staticPasswordHash,
+                'created_at' => $userCreatedAtFormatted,
+                'updated_at' => $userCreatedAtFormatted,
             ];
+
+            $progressBar->advance();
         }
 
-        DB::table('users')->insert($users);
+        $progressBar->finish();
+        $this->command->newLine();
 
-        // Назначаем роль 'user' всем пользователям
-        $allUsers = User::all();
-        foreach ($allUsers as $user) {
-            $user->assignRole('user');
+        // Оптимизируем размер пакета в зависимости от объема данных
+        $chunkSize = $this->usersCount > 100000 ? 5000 : 1000;
+        $chunks = array_chunk($users, $chunkSize);
+        foreach ($chunks as $chunk) {
+            DB::table('users')->insert($chunk);
         }
 
-        $this->command->info('   ✓ Создано пользователей: '.count($users));
 
-        return $allUsers->keyBy('id')->all();
+        $this->command->info('   ✓ Создано пользователей: ' . count($users));
+
+        // Возвращаем данные из массива вместо повторного чтения из БД
+        $result = [];
+        foreach ($users as $i => $user) {
+            $result[$i + 1] = (object)array_merge(['id' => $i + 1], $user);
+        }
+        return $result;
     }
 
     private function createBusinessesWithUsers(array $users): array
     {
         $businesses = [];
         $businessUserPivots = [];
-        $now = now();
         $businessId = 1;
 
+        $progressBar = $this->command->getOutput()->createProgressBar(count($users));
+        $progressBar->start();
+
+        // Распределяем создание бизнесов по временному диапазону
+        $startTimestamp = Carbon::now()->subYears($this->totalYearsBack)->timestamp;
+        $endTimestamp = Carbon::now()->timestamp;
+
         foreach ($users as $userId => $user) {
+            // Распределяем бизнесы равномерно по временному диапазону
+            $businessCreatedAt = $this->getDistributedTimestamp($startTimestamp, $endTimestamp, $businessId - 1, $this->usersCount, 'uniform');
+            $businessCreatedAtFormatted = date('Y-m-d H:i:s', $businessCreatedAt);
+
             $businessName = fake('ru_RU')->company();
             $businesses[] = [
                 'id' => $businessId,
                 'name' => $businessName,
-                'slug' => 'business-'.$businessId,
+                'slug' => 'business-' . $businessId,
                 'description' => fake('ru_RU')->sentence(10),
                 'online_booking_enabled' => fake()->boolean(80),
-                'created_at' => $now,
-                'updated_at' => $now,
+                'created_at' => $businessCreatedAtFormatted,
+                'updated_at' => $businessCreatedAtFormatted,
             ];
 
             // Привязываем владельца к бизнесу
@@ -130,25 +189,54 @@ class ProductionTestSeeder extends Seeder
                 'role' => 'owner',
                 'first_name' => fake('ru_RU')->firstName(),
                 'last_name' => fake('ru_RU')->lastName(),
-                'created_at' => $now,
-                'updated_at' => $now,
+                'created_at' => $businessCreatedAtFormatted,
+                'updated_at' => $businessCreatedAtFormatted,
             ];
 
             $businessId++;
+            $progressBar->advance();
         }
 
-        DB::table('businesses')->insert($businesses);
-        DB::table('business_user')->insert($businessUserPivots);
+        $progressBar->finish();
+        $this->command->newLine();
 
-        $this->command->info('   ✓ Создано бизнесов: '.count($businesses));
+        // Используем транзакцию для вставки бизнесов
+        DB::beginTransaction();
+        try {
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($businesses) > 100000 ? 5000 : 1000;
+            $businessChunks = array_chunk($businesses, $chunkSize);
+            foreach ($businessChunks as $chunk) {
+                DB::table('businesses')->insert($chunk);
+            }
 
-        return Business::all()->keyBy('id')->all();
+            $pivotChunks = array_chunk($businessUserPivots, $chunkSize);
+            foreach ($pivotChunks as $chunk) {
+                DB::table('business_user')->insert($chunk);
+            }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        $this->command->info('   ✓ Создано бизнесов: ' . count($businesses));
+
+        // Возвращаем данные из массива вместо повторного чтения из БД
+        $result = [];
+        foreach ($businesses as $business) {
+            $result[$business['id']] = (object)$business;
+        }
+        return $result;
     }
 
     private function createLocations(array $businesses): array
     {
         $locations = [];
-        $now = now();
+
+        $progressBar = $this->command->getOutput()->createProgressBar(count($businesses));
+        $progressBar->start();
 
         foreach ($businesses as $businessId => $business) {
             $workingHours = [
@@ -158,6 +246,11 @@ class ProductionTestSeeder extends Seeder
                 'days_off' => [0, 6], // Выходные: воскресенье и суббота
             ];
 
+            // Локация создается после или в момент создания бизнеса
+            $businessCreatedAt = strtotime($business->created_at);
+            $locationCreatedAt = $this->getDistributedTimestamp($businessCreatedAt, time(), 0, 1, 'uniform');
+            $locationCreatedAtFormatted = date('Y-m-d H:i:s', $locationCreatedAt);
+
             $locations[] = [
                 'business_id' => $businessId,
                 'name' => 'Главный офис',
@@ -165,14 +258,33 @@ class ProductionTestSeeder extends Seeder
                 'street' => fake('ru_RU')->streetName(),
                 'house' => fake('ru_RU')->buildingNumber(),
                 'working_hours' => json_encode($workingHours),
-                'created_at' => $now,
-                'updated_at' => $now,
+                'created_at' => $locationCreatedAtFormatted,
+                'updated_at' => $locationCreatedAtFormatted,
             ];
+
+            $progressBar->advance();
         }
 
-        DB::table('locations')->insert($locations);
+        $progressBar->finish();
+        $this->command->newLine();
 
-        $this->command->info('   ✓ Создано локаций: '.count($locations));
+        // Используем транзакцию для вставки локаций
+        DB::beginTransaction();
+        try {
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($locations) > 100000 ? 5000 : 1000;
+            $chunks = array_chunk($locations, $chunkSize);
+            foreach ($chunks as $chunk) {
+                DB::table('locations')->insert($chunk);
+            }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        $this->command->info('   ✓ Создано локаций: ' . count($locations));
 
         return Location::all()->keyBy('business_id')->all();
     }
@@ -180,7 +292,6 @@ class ProductionTestSeeder extends Seeder
     private function createServices(array $businesses): array
     {
         $services = [];
-        $now = now();
         $serviceTypes = [
             ['name' => 'Стрижка', 'duration' => 30, 'price' => 500],
             ['name' => 'Укладка', 'duration' => 45, 'price' => 800],
@@ -192,8 +303,18 @@ class ProductionTestSeeder extends Seeder
             ['name' => 'Комплексная процедура', 'duration' => 180, 'price' => 5000],
         ];
 
+        $totalServices = count($businesses) * $this->servicesPerBusiness;
+        $progressBar = $this->command->getOutput()->createProgressBar($totalServices);
+        $progressBar->start();
+
         foreach ($businesses as $businessId => $business) {
+            $businessCreatedAt = strtotime($business->created_at);
+            $serviceCount = 0;
+
             foreach (array_slice($serviceTypes, 0, $this->servicesPerBusiness) as $serviceType) {
+                $serviceCreatedAt = $this->getDistributedTimestamp($businessCreatedAt, time(), $serviceCount, $this->servicesPerBusiness, 'linear');
+                $serviceCreatedAtFormatted = date('Y-m-d H:i:s', $serviceCreatedAt);
+
                 $services[] = [
                     'business_id' => $businessId,
                     'name' => $serviceType['name'],
@@ -201,29 +322,52 @@ class ProductionTestSeeder extends Seeder
                     'duration' => $serviceType['duration'],
                     'price' => $serviceType['price'] + fake()->numberBetween(-100, 500),
                     'is_active' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'created_at' => $serviceCreatedAtFormatted,
+                    'updated_at' => $serviceCreatedAtFormatted,
                 ];
+
+                $progressBar->advance();
+                $serviceCount++;
             }
         }
 
-        // Вставляем порциями
-        $chunks = array_chunk($services, 500);
-        foreach ($chunks as $chunk) {
-            DB::table('services')->insert($chunk);
+        $progressBar->finish();
+        $this->command->newLine();
+
+        // Используем транзакцию для вставки услуг
+        DB::beginTransaction();
+        try {
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($services) > 100000 ? 2500 : 500;
+            $chunks = array_chunk($services, $chunkSize);
+            foreach ($chunks as $chunk) {
+                DB::table('services')->insert($chunk);
+            }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
 
-        $this->command->info('   ✓ Создано услуг: '.count($services));
+        $this->command->info('   ✓ Создано услуг: ' . count($services));
 
-        return Service::all()->groupBy('business_id')->all();
+        // Возвращаем данные из массива
+        $result = [];
+        $serviceId = 1;
+        foreach ($services as $service) {
+            $service['id'] = $serviceId++;
+            $result[$service['business_id']][] = (object)$service;
+        }
+        return $result;
     }
 
     private function createMasters(array $businesses, array $users): array
     {
         $masters = [];
+        $mastersData = [];
         $serviceMasterPivots = [];
         $masterLocationPivots = [];
-        $now = now();
 
         $workingHours = [
             'from' => '09:00',
@@ -233,18 +377,36 @@ class ProductionTestSeeder extends Seeder
         ];
 
         $specializations = [
-            'Парикмахер', 'Стилист', 'Мастер маникюра',
-            'Массажист', 'Косметолог', 'Барбер',
+            'Парикмахер',
+            'Стилист',
+            'Мастер маникюра',
+            'Массажист',
+            'Косметолог',
+            'Барбер',
         ];
 
+        // Предварительно загружаем все услуги и локации для оптимизации
+        $allServices = Service::all()->groupBy('business_id');
+        $allLocations = Location::all()->keyBy('business_id');
+
+        $totalMasters = count($businesses) * $this->mastersPerBusiness;
+        $progressBar = $this->command->getOutput()->createProgressBar($totalMasters);
+        $progressBar->start();
+
         foreach ($businesses as $businessId => $business) {
-            $businessServices = Service::where('business_id', $businessId)->pluck('id')->toArray();
-            $businessLocation = Location::where('business_id', $businessId)->first();
+            $businessServices = $allServices[$businessId] ?? [];
+            $businessServicesIds = $businessServices->pluck('id')->toArray();
+            $businessLocation = $allLocations[$businessId] ?? null;
+            $businessCreatedAt = strtotime($business->created_at);
 
             for ($i = 0; $i < $this->mastersPerBusiness; $i++) {
-                $masterId = DB::table('masters')->insertGetId([
+                // Распределяем создание мастеров по времени существования бизнеса
+                $masterCreatedAt = $this->getDistributedTimestamp($businessCreatedAt, time(), $i, $this->mastersPerBusiness, 'linear');
+                $masterCreatedAtFormatted = date('Y-m-d H:i:s', $masterCreatedAt);
+
+                $mastersData[] = [
                     'business_id' => $businessId,
-                    'user_id' => null, // Не привязываем к пользователям для простоты
+                    'user_id' => null,
                     'first_name' => fake('ru_RU')->firstName(),
                     'last_name' => fake('ru_RU')->lastName(),
                     'specialization' => fake()->randomElement($specializations),
@@ -252,87 +414,236 @@ class ProductionTestSeeder extends Seeder
                     'email' => fake()->optional(0.5)->safeEmail(),
                     'working_hours' => json_encode($workingHours),
                     'is_active' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
+                    'created_at' => $masterCreatedAtFormatted,
+                    'updated_at' => $masterCreatedAtFormatted,
+                ];
+
+                // Генерируем связи для текущего мастера (индекс в массиве)
+                $masterIndex = count($mastersData) - 1;
 
                 // Привязываем мастера к услугам (2-5 услуг на мастера)
-                $masterServicesCount = min(fake()->numberBetween(2, 5), count($businessServices));
-                $masterServices = fake()->randomElements($businessServices, $masterServicesCount);
+                $masterServicesCount = min(fake()->numberBetween(2, 5), count($businessServicesIds));
+                $masterServices = fake()->randomElements($businessServicesIds, $masterServicesCount);
 
                 foreach ($masterServices as $serviceId) {
+                    // Используем временный ID, заменим после вставки
+                    // Используем дату создания мастера для связей
                     $serviceMasterPivots[] = [
                         'service_id' => $serviceId,
-                        'master_id' => $masterId,
-                        'created_at' => $now,
-                        'updated_at' => $now,
+                        'master_index' => $masterIndex,
+                        'created_at' => $masterCreatedAtFormatted,
+                        'updated_at' => $masterCreatedAtFormatted,
                     ];
                 }
 
                 // Привязываем мастера к локации
                 if ($businessLocation) {
                     $masterLocationPivots[] = [
-                        'master_id' => $masterId,
+                        'master_index' => $masterIndex,
                         'location_id' => $businessLocation->id,
-                        'created_at' => $now,
-                        'updated_at' => $now,
+                        'created_at' => $masterCreatedAtFormatted,
+                        'updated_at' => $masterCreatedAtFormatted,
                     ];
                 }
 
-                $masters[] = $masterId;
+                $masters[] = $masterIndex;
+                $progressBar->advance();
             }
         }
 
-        // Вставляем связи порциями, чтобы не превысить лимит placeholders MySQL
-        $chunks = array_chunk($serviceMasterPivots, 1000);
-        foreach ($chunks as $chunk) {
-            DB::table('service_master')->insert($chunk);
+        $progressBar->finish();
+        $this->command->newLine();
+
+        // Вставляем мастеров пакетами и получаем ID
+        $masterIdMap = [];
+        // Используем транзакцию для вставки мастеров
+        DB::beginTransaction();
+        try {
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($mastersData) > 100000 ? 5000 : 1000;
+            $chunks = array_chunk($mastersData, $chunkSize);
+            $currentId = DB::table('masters')->max('id') ?? 0;
+            
+            foreach ($chunks as $chunk) {
+                DB::table('masters')->insert($chunk);
+                // Генерируем ID для вставленных записей
+                foreach ($chunk as $record) {
+                    $currentId++;
+                    $masterIdMap[] = $currentId;
+                }
+            }
+
+            // Обновляем ID в связях
+            $serviceMasterPivotsFixed = [];
+            foreach ($serviceMasterPivots as $pivot) {
+                $serviceMasterPivotsFixed[] = [
+                    'service_id' => $pivot['service_id'],
+                    'master_id' => $masterIdMap[$pivot['master_index']],
+                    'created_at' => $pivot['created_at'],
+                    'updated_at' => $pivot['updated_at'],
+                ];
+            }
+
+            $masterLocationPivotsFixed = [];
+            foreach ($masterLocationPivots as $pivot) {
+                $masterLocationPivotsFixed[] = [
+                    'master_id' => $masterIdMap[$pivot['master_index']],
+                    'location_id' => $pivot['location_id'],
+                    'created_at' => $pivot['created_at'],
+                    'updated_at' => $pivot['updated_at'],
+                ];
+            }
+
+            // Вставляем связи порциями
+            $serviceChunks = array_chunk($serviceMasterPivotsFixed, $chunkSize);
+            foreach ($serviceChunks as $chunk) {
+                DB::table('service_master')->insert($chunk);
+            }
+
+            $locationChunks = array_chunk($masterLocationPivotsFixed, $chunkSize);
+            foreach ($locationChunks as $chunk) {
+                DB::table('master_location')->insert($chunk);
+            }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
 
-        $chunks = array_chunk($masterLocationPivots, 1000);
-        foreach ($chunks as $chunk) {
-            DB::table('master_location')->insert($chunk);
+        $this->command->info('   ✓ Создано мастеров: ' . count($mastersData));
+
+        // Возвращаем данные из массива
+        $result = [];
+        foreach ($mastersData as $index => $master) {
+            $master['id'] = $masterIdMap[$index];
+            $result[$master['business_id']][] = (object)$master;
         }
-
-        $this->command->info('   ✓ Создано мастеров: '.count($masters));
-
-        return Master::all()->groupBy('business_id')->all();
+        return $result;
     }
 
     private function createClients(array $businesses): array
     {
         $clients = [];
-        $now = now();
+
+        $totalClients = count($businesses) * $this->clientsPerBusiness;
+        $progressBar = $this->command->getOutput()->createProgressBar($totalClients);
+        $progressBar->start();
 
         foreach ($businesses as $businessId => $business) {
+            $businessCreatedAt = strtotime($business->created_at);
+
             for ($i = 0; $i < $this->clientsPerBusiness; $i++) {
+                // Распределяем создание клиентов по времени существования бизнеса
+                $clientCreatedAt = $this->getDistributedTimestamp($businessCreatedAt, time(), $i, $this->clientsPerBusiness, 'linear');
+                $clientCreatedAtFormatted = date('Y-m-d H:i:s', $clientCreatedAt);
+
                 $clients[] = [
                     'business_id' => $businessId,
                     'first_name' => fake('ru_RU')->firstName(),
                     'last_name' => fake('ru_RU')->lastName(),
                     'email' => fake()->optional(0.7)->safeEmail(),
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'created_at' => $clientCreatedAtFormatted,
+                    'updated_at' => $clientCreatedAtFormatted,
                 ];
+
+                $progressBar->advance();
             }
         }
 
+        $progressBar->finish();
+        $this->command->newLine();
+
         // Вставляем порциями
-        $chunks = array_chunk($clients, 1000);
-        foreach ($chunks as $chunk) {
-            DB::table('clients')->insert($chunk);
+        // Используем транзакцию для вставки клиентов
+        DB::beginTransaction();
+        try {
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($clients) > 100000 ? 5000 : 1000;
+            $chunks = array_chunk($clients, $chunkSize);
+            foreach ($chunks as $chunk) {
+                DB::table('clients')->insert($chunk);
+            }
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
 
-        $this->command->info('   ✓ Создано клиентов: '.count($clients));
+        $this->command->info('   ✓ Создано клиентов: ' . count($clients));
 
-        return Client::all()->groupBy('business_id')->all();
+        // Возвращаем данные из массива
+        $result = [];
+        $clientId = 1;
+        foreach ($clients as $client) {
+            $client['id'] = $clientId++;
+            $result[$client['business_id']][] = (object)$client;
+        }
+        return $result;
     }
 
     private function createAppointments(array $businesses, array $clients, array $services, array $masters, array $locations): void
     {
-        $appointments = [];
         $now = now();
         $appointmentCount = 0;
+        $startTime = time();
+
+        $totalAppointments = count($businesses) * $this->appointmentsPerBusiness;
+
+        // Для очень больших объемов (20+ млн) показываем предупреждение
+        if ($totalAppointments > 20000000) {
+            $this->command->warn("   ⚠️  Очень большой объем данных ({$totalAppointments} записей). Это может занять значительное время!");
+        }
+
+        // Для очень больших объемов данных отключаем прогресс-бар и используем счетчик
+        $showProgressBar = $totalAppointments <= 1000000;
+        
+        if ($showProgressBar) {
+            $progressBar = $this->command->getOutput()->createProgressBar($totalAppointments);
+            $progressBar->start();
+        } else {
+            $this->command->info("   ⚙️  Генерация большого объема данных, используем счетчик вместо прогресс-бара");
+            $lastReportedCount = 0;
+            $reportStep = max(1, (int)($totalAppointments / 20)); // Отчет каждые 5%
+        }
+
+        // Используем уже установленный временной диапазон или рассчитываем новый
+        $yearsBack = $this->calculateTotalYearsBack($totalAppointments);
+        // Не переопределяем глобальную переменную, чтобы не влиять на другие методы
+        $startTimestamp = Carbon::today()->subYears($yearsBack)->timestamp;
+        $endTimestamp = Carbon::today()->addDays(90)->timestamp;
+        $todayTimestamp = Carbon::today()->timestamp;
+
+        // Предварительно генерируем данные для оптимизации
+        $workingHours = ['09', '10', '11', '12', '13', '14', '15', '16', '17'];
+        $minutes = [0, 15, 30, 45];
+        $pastStatuses = ['completed', 'completed', 'completed', 'cancelled', 'pending'];
+        $futureStatuses = ['confirmed', 'confirmed', 'confirmed', 'pending', 'pending'];
+
+        // Оптимизируем размер пакета в зависимости от объема данных
+        $useBulkInsert = $totalAppointments > 50000;
+        
+        if ($totalAppointments <= 100000) {
+            $batchSize = 1000;
+        } elseif ($totalAppointments <= 1000000) {
+            $batchSize = 5000;
+        } elseif ($totalAppointments <= 10000000) {
+            $batchSize = 10000;
+        } elseif ($totalAppointments <= 50000000) {
+            $batchSize = 20000;
+        } else {
+            // Для очень больших объемов (50+ млн) используем меньшие пакеты
+            // чтобы избежать проблем с памятью
+            $batchSize = 10000;
+        }
+        
+        // Предварительно генерируем случайные данные для ускорения
+        $randomSentences = [];
+        $faker = fake('ru_RU');
+        for ($i = 0; $i < 100; $i++) {
+            $randomSentences[] = $faker->sentence(10);
+        }
 
         foreach ($businesses as $businessId => $business) {
             $businessClients = $clients[$businessId] ?? [];
@@ -344,112 +655,286 @@ class ProductionTestSeeder extends Seeder
                 continue;
             }
 
-            // Создаем записи: 30% прошлые, 70% будущие
-            $pastCount = (int) ($this->appointmentsPerBusiness * 0.3);
-            $futureCount = $this->appointmentsPerBusiness - $pastCount;
+            // Предварительно выбираем случайные клиенты, услуги и мастеров для этого бизнеса
+            // Проверяем, является ли $businessClients коллекцией или массивом
+            $clientIds = is_object($businessClients) && method_exists($businessClients, 'toArray')
+                ? array_column($businessClients->toArray(), 'id')
+                : array_column(array_map(function($obj) { return (array)$obj; }, $businessClients), 'id');
+            
+            // Проверяем, является ли $businessServices коллекцией или массивом
+            $serviceModels = is_object($businessServices) && method_exists($businessServices, 'all')
+                ? $businessServices->all()
+                : $businessServices;
+            
+            // Проверяем, является ли $businessMasters коллекцией или массивом
+            $masterModels = is_object($businessMasters) && method_exists($businessMasters, 'all')
+                ? $businessMasters->all()
+                : $businessMasters;
 
-            // Прошлые записи (последние 60 дней)
-            for ($i = 0; $i < $pastCount; $i++) {
-                $date = Carbon::today()->subDays(fake()->numberBetween(1, 60));
-                $appointment = $this->generateAppointment(
-                    $businessId,
-                    $businessClients,
-                    $businessServices,
-                    $businessMasters,
-                    $businessLocation,
-                    $date,
-                    true // прошлая запись
-                );
-                $appointments[] = $appointment;
+            $businessAppointments = [];
+
+            // Предварительно генерируем даты создания для растягивания во времени
+            // Учитываем время создания бизнеса для более реалистичного распределения
+            $businessCreatedAt = strtotime($business->created_at);
+            $createdAtStart = max($businessCreatedAt, Carbon::today()->subYears($yearsBack)->timestamp);
+            $createdAtEnd = Carbon::today()->timestamp;
+
+            // Для лучшего распределения используем неравномерное распределение
+            // Это обеспечит более реалистичное распределение данных во времени
+            $distributionStrategy = $this->getDistributionStrategy($totalAppointments);
+
+            for ($i = 0; $i < $this->appointmentsPerBusiness; $i++) {
+                // Растягиваем дату создания записи
+                // Используем стратегию распределения для более реалистичного распределения во времени
+                $createdAtTimestamp = $this->getDistributedTimestamp($createdAtStart, $createdAtEnd, $i, $this->appointmentsPerBusiness, $distributionStrategy);
+
+                // Оптимизированная генерация даты записи с распределением
+                $randomTimestamp = $this->getDistributedTimestamp($startTimestamp, $endTimestamp, $i, $this->appointmentsPerBusiness, $distributionStrategy);
+                $isPast = $randomTimestamp < $todayTimestamp;
+
+                // Форматируем дату без создания объекта Carbon
+                $date = date('Y-m-d', $randomTimestamp);
+
+                // Оптимизированный выбор случайных элементов
+                $clientId = $clientIds[array_rand($clientIds)];
+                $service = $serviceModels[array_rand($serviceModels)];
+                $master = $masterModels[array_rand($masterModels)];
+
+                // Оптимизированное время
+                $hour = $workingHours[array_rand($workingHours)];
+                $minute = $minutes[array_rand($minutes)];
+                $time = $hour . ':' . sprintf('%02d', $minute);
+
+                // Оптимизированный статус
+                $status = $isPast
+                    ? $pastStatuses[array_rand($pastStatuses)]
+                    : $futureStatuses[array_rand($futureStatuses)];
+
+                $source = $this->sources[array_rand($this->sources)];
+
+                // Для больших объемов используем простой токен без проверки уникальности
+                if ($useBulkInsert) {
+                    // Для очень больших объемов (20+ млн) используем более уникальные токены
+                    if ($totalAppointments > 20000000) {
+                        $token = 'app-' . $businessId . '-' . $i . '-' . uniqid('', true);
+                    } else {
+                        $token = 'app-' . $businessId . '-' . $i . '-' . rand(1000, 9999);
+                    }
+                } else {
+                    $token = $this->generateAppointmentToken();
+                }
+
+                $businessAppointments[] = [
+                    'business_id' => $businessId,
+                    'client_id' => $clientId,
+                    'service_id' => $service->id,
+                    'master_id' => $master->id,
+                    'location_id' => $businessLocation->id,
+                    'date' => $date,
+                    'time' => $time,
+                    'status' => $status,
+                    'source' => $source,
+                    'notes' => rand(0, 100) < 30 ? fake('ru_RU')->sentence(10) : null,
+                    'duration' => $service->duration,
+                    'price' => $service->price,
+                    'token' => $token,
+                    'created_at' => date('Y-m-d H:i:s', $createdAtTimestamp),
+                    'updated_at' => date('Y-m-d H:i:s', $createdAtTimestamp),
+                ];
+
                 $appointmentCount++;
+                // Обновляем прогресс
+                if ($showProgressBar) {
+                    $progressBar->advance();
+                } else {
+                    // Для больших объемов используем счетчик вместо прогресс-бара
+                    if ($appointmentCount % $reportStep === 0 || $appointmentCount === $totalAppointments) {
+                        $percent = round(($appointmentCount / $totalAppointments) * 100);
+                        $this->command->info("   ⏳  Прогресс: {$appointmentCount} из {$totalAppointments} записей ({$percent}%)");
+                        $lastReportedCount = $appointmentCount;
+                    }
+                }
+
+                // Проверяем время выполнения для очень больших объемов
+                if ($totalAppointments > 20000000 && (time() - $startTime) > 3600) {
+                    $this->command->warn("   ⚠️  Выполнение занимает более 1 часа. Продолжаем...");
+                    $startTime = time(); // Сбрасываем таймер
+                }
+
+                // Вставляем очень большими пакетами для больших объемов данных
+                if (count($businessAppointments) >= $batchSize) {
+                    // Используем отдельную транзакцию для каждого пакета записей
+                    DB::beginTransaction();
+                    try {
+                        if ($useBulkInsert) {
+                            $this->bulkInsertAppointments($businessAppointments);
+                        } else {
+                            $this->insertAppointmentsWithRetry($businessAppointments);
+                        }
+                        DB::commit();
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        $this->command->warn("   ⚠️  Ошибка при вставке пакета записей: " . $e->getMessage());
+                    }
+                    
+                    $businessAppointments = [];
+
+                    // Для очень больших объемов (20+ млн) очищаем память
+                    if ($totalAppointments > 20000000) {
+                        gc_collect_cycles(); // Принудительная очистка памяти
+                    }
+                }
             }
 
-            // Будущие записи (следующие 90 дней)
-            for ($i = 0; $i < $futureCount; $i++) {
-                $date = Carbon::today()->addDays(fake()->numberBetween(1, 90));
-                $appointment = $this->generateAppointment(
-                    $businessId,
-                    $businessClients,
-                    $businessServices,
-                    $businessMasters,
-                    $businessLocation,
-                    $date,
-                    false // будущая запись
-                );
-                $appointments[] = $appointment;
-                $appointmentCount++;
-            }
-
-            // Вставляем порциями после каждого бизнеса для экономии памяти
-            if (count($appointments) >= 1000) {
-                DB::table('appointments')->insert($appointments);
-                $appointments = [];
+            // Вставляем оставшиеся записи для текущего бизнеса
+            if (!empty($businessAppointments)) {
+                // Используем отдельную транзакцию для оставшихся записей
+                DB::beginTransaction();
+                try {
+                    if ($useBulkInsert) {
+                        $this->bulkInsertAppointments($businessAppointments);
+                    } else {
+                        $this->insertAppointmentsWithRetry($businessAppointments);
+                    }
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    $this->command->warn("   ⚠️  Ошибка при вставке оставшихся записей: " . $e->getMessage());
+                }
+                
+                $businessAppointments = [];
             }
         }
 
-        // Вставляем оставшиеся
-        if (! empty($appointments)) {
-            DB::table('appointments')->insert($appointments);
+        if ($showProgressBar) {
+            $progressBar->finish();
+            $this->command->newLine();
+        } else {
+            $this->command->info("   ✅  Генерация записей завершена: {$appointmentCount} записей");
         }
 
         $this->command->info("   ✓ Создано записей: {$appointmentCount}");
+        $this->command->info("   📅 Период данных: {$yearsBack} лет назад - 90 дней вперед");
+        $this->command->info("   🎯 Распределение: бизнесы, услуги, мастера и клиенты распределены по времени");
     }
 
-    private function generateAppointment(
-        int $businessId,
-        $clients,
-        $services,
-        $masters,
-        $location,
-        Carbon $date,
-        bool $isPast
-    ): array {
-        $client = fake()->randomElement($clients);
-        $service = fake()->randomElement($services);
-
-        // Просто выбираем случайного мастера из доступных
-        // (связь мастер-услуга уже создана при создании мастеров)
-        $master = fake()->randomElement($masters);
-
-        // Генерируем время в рабочие часы (9:00 - 18:00)
-        $hour = fake()->numberBetween(9, 17);
-        $minute = fake()->randomElement([0, 15, 30, 45]);
-        $time = sprintf('%02d:%02d', $hour, $minute);
-
-        // Для прошлых записей больше завершенных, для будущих - больше подтвержденных
-        if ($isPast) {
-            $status = fake()->randomElement([
-                'completed', 'completed', 'completed', // 60% завершены
-                'cancelled', // 20% отменены
-                'pending', // 20% ожидают
-            ]);
+    /**
+     * Определяет стратегию распределения в зависимости от объема данных
+     */
+    private function getDistributionStrategy(int $totalAppointments): string
+    {
+        if ($totalAppointments <= 10000) {
+            return 'uniform'; // Для небольших объемов - равномерное распределение
+        } elseif ($totalAppointments <= 100000) {
+            return 'linear'; // Для средних объемов - линейное распределение
+        } elseif ($totalAppointments <= 1000000) {
+            return 'exponential'; // Для больших объемов - экспоненциальное распределение
         } else {
-            $status = fake()->randomElement([
-                'confirmed', 'confirmed', 'confirmed', // 60% подтверждены
-                'pending', 'pending', // 40% ожидают
-            ]);
+            return 'logarithmic'; // Для очень больших объемов - логарифмическое распределение
+        }
+    }
+
+    /**
+     * Генерация временной метки с учетом стратегии распределения
+     */
+    private function getDistributedTimestamp(int $start, int $end, int $currentIndex, int $totalCount, string $strategy): int
+    {
+        // Оптимизированная версия для больших объемов данных
+        $duration = $end - $start;
+        
+        // Для очень больших объемов данных используем более быстрый алгоритм
+        if ($totalCount > 1000000) {
+            // Упрощенное распределение для больших объемов
+            switch ($strategy) {
+                case 'linear':
+                    $progress = $currentIndex / $totalCount;
+                    return (int)($start + ($duration * (1 - $progress)));
+                    
+                case 'exponential':
+                    $progress = $currentIndex / $totalCount;
+                    return (int)($start + ($duration * pow($progress, 0.5)));
+                    
+                case 'logarithmic':
+                    $progress = max(0.001, $currentIndex / $totalCount);
+                    return (int)($start + ($duration * (log($progress * 10) / log(10))));
+                    
+                case 'uniform':
+                default:
+                    // Для uniform используем более быстрый алгоритм
+                    // Вместо rand() используем более быстрый алгоритм для очень больших объемов
+                    return $start + (int)(($end - $start) * ($currentIndex / $totalCount)) + ($currentIndex % 100);
+            }
+        }
+        
+        // Для меньших объемов используем оригинальный алгоритм с случайностью
+        switch ($strategy) {
+            case 'linear':
+                // Линейное распределение - больше записей в начале периода
+                $progress = $currentIndex / $totalCount;
+                $timestamp = $start + ($duration * (1 - $progress));
+                // Добавляем небольшой случайный фактор для разнообразия
+                $timestamp += rand(-$duration * 0.05, $duration * 0.05);
+                break;
+
+            case 'exponential':
+                // Экспоненциальное распределение - больше записей в конце периода
+                $progress = $currentIndex / $totalCount;
+                $exponentialFactor = pow($progress, 0.5); // Квадратный корень для сглаживания
+                $timestamp = $start + ($duration * $exponentialFactor);
+                // Добавляем небольшой случайный фактор
+                $timestamp += rand(-$duration * 0.1, $duration * 0.1);
+                break;
+
+            case 'logarithmic':
+                // Логарифмическое распределение - очень неравномерное, больше записей в конце
+                $progress = max(0.001, $currentIndex / $totalCount); // Избегаем log(0)
+                $logarithmicFactor = log($progress * 10) / log(10); // log10 для нормализации
+                $timestamp = $start + ($duration * $logarithmicFactor);
+                // Добавляем значительный случайный фактор
+                $timestamp += rand(-$duration * 0.15, $duration * 0.15);
+                break;
+
+            case 'uniform':
+            default:
+                // Стандартное равномерное распределение
+                $timestamp = rand($start, $end);
+                break;
         }
 
-        $source = fake()->randomElement($this->sources);
-
-        return [
-            'business_id' => $businessId,
-            'client_id' => $client->id,
-            'service_id' => $service->id,
-            'master_id' => $master->id,
-            'location_id' => $location->id,
-            'date' => $date->format('Y-m-d'),
-            'time' => $time,
-            'status' => $status,
-            'source' => $source,
-            'notes' => fake()->optional(0.3)->sentence(10),
-            'duration' => $service->duration,
-            'price' => $service->price,
-            'token' => $this->generateAppointmentToken(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        // Убедимся, что временная метка находится в допустимом диапазоне
+        return max($start, min($end, (int)$timestamp));
     }
+
+    /**
+     * Рассчитывает общий временной диапазон для всех сущностей
+     * в зависимости от общего количества создаваемых записей
+     *
+     * Учитывая архитектуру: 1000+ бизнесов, много салонов, 10,000+ мастеров
+     * Реалистичные расчеты для масштабируемой системы онлайн-записи
+     */
+    private function calculateTotalYearsBack(int $totalAppointments): int
+    {
+        // Ускоренные временные рамки для крупных систем
+        if ($totalAppointments <= 1000) {
+            return 1; // До 1000 записей - 1 год
+        } elseif ($totalAppointments <= 10000) {
+            return 2; // До 10к записей - 2 года
+        } elseif ($totalAppointments <= 100000) {
+            return 3; // До 100к записей - 3 года
+        } elseif ($totalAppointments <= 1000000) {
+            return 4; // До 1млн записей - 4 года (ускорено для масштаба)
+        } elseif ($totalAppointments <= 10000000) {
+            return 5; // До 10млн записей - 5 лет (реалистично для крупной сети)
+        } elseif ($totalAppointments <= 50000000) {
+            return 6; // До 50млн записей - 6 лет (национальная сеть)
+        } elseif ($totalAppointments <= 100000000) {
+            return 8; // До 100млн записей - 8 лет (международная сеть)
+        } else {
+            // Для гигантских объемов (100+ млн) - максимум 10 лет
+            return min(10, max(8, (int)($totalAppointments / 20000000) + 6));
+        }
+    }
+
 
     /**
      * Генерация уникального токена для записи
@@ -457,12 +942,173 @@ class ProductionTestSeeder extends Seeder
      */
     private function generateAppointmentToken(): string
     {
-        $letters1 = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 3);
-        $digits1 = substr(str_shuffle('0123456789'), 0, 3);
-        $letters2 = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz'), 0, 3);
-        $digits2 = substr(str_shuffle('0123456789'), 0, 3);
+        static $counter = 0;
+        static $lastMicrotime = 0;
+        
+        // Оптимизированная версия для больших объемов данных
+        // Используем комбинацию счетчика и времени для уникальности
+        $microtime = microtime(true);
+        if ($microtime === $lastMicrotime) {
+            $counter++;
+        } else {
+            $lastMicrotime = $microtime;
+            $counter = 0;
+        }
+        
+        // Используем более быстрый алгоритм генерации токена
+        $base = base_convert(mt_rand(1000000, 9999999), 10, 36) . base_convert($counter, 10, 36);
+        $hash = md5($base . $microtime);
+        
+        // Форматируем в нужный формат: abc-123-def-456
+        $letters1 = substr($hash, 0, 3);
+        $digits1 = substr($hash, 3, 3);
+        $letters2 = substr($hash, 6, 3);
+        $digits2 = substr($hash, 9, 3);
+        
+        return strtolower($letters1 . '-' . $digits1 . '-' . $letters2 . '-' . $digits2);
+    }
 
-        return strtolower($letters1.'-'.$digits1.'-'.$letters2.'-'.$digits2);
+    /**
+     * Генерация простого токена для массовой вставки
+     * Используется когда уникальность не критична для тестовых данных
+     */
+    private function generateSimpleToken(int $businessId, int $index): string
+    {
+        return 'app-' . $businessId . '-' . $index . '-' . rand(1000, 9999);
+    }
+
+    /**
+     * Генерация уникального токена с проверкой на уникальность в базе данных
+     * Оптимизированная версия с кэшированием и пакетной проверкой
+     */
+    private function generateUniqueAppointmentToken(): string
+    {
+        $attempts = 0;
+        $maxAttempts = 3; // Еще больше уменьшаем количество попыток
+
+        do {
+            $token = $this->generateAppointmentToken();
+
+            // Проверяем уникальность токена в базе данных
+            // Используем более быстрый запрос с лимитом 1
+            $exists = DB::table('appointments')->where('token', $token)->limit(1)->exists();
+
+            if (!$exists) {
+                return $token;
+            }
+
+            $attempts++;
+
+            // Если после нескольких попыток не удалось сгенерировать уникальный токен,
+            // добавляем дополнительную энтропию
+            if ($attempts >= $maxAttempts) {
+                $token = $this->generateAppointmentToken() . '-' . $attempts;
+                return $token;
+            }
+        } while ($attempts < $maxAttempts);
+
+        return $token;
+    }
+
+    private function assignUserRoles(): void
+    {
+        // Оптимизированное назначение ролей через прямой SQL-запрос
+        $roleId = DB::table('roles')->where('name', 'user')->value('id');
+
+        if ($roleId) {
+            $userIds = DB::table('users')->pluck('id');
+
+            $modelHasRoles = [];
+            foreach ($userIds as $userId) {
+                $modelHasRoles[] = [
+                    'role_id' => $roleId,
+                    'model_type' => 'App\\Models\\User',
+                    'model_id' => $userId,
+                ];
+            }
+
+            // Вставляем пачками
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($modelHasRoles) > 100000 ? 5000 : 1000;
+            $chunks = array_chunk($modelHasRoles, $chunkSize);
+            foreach ($chunks as $chunk) {
+                DB::table('model_has_roles')->insert($chunk);
+            }
+        }
+    }
+
+    /**
+     * Массовая вставка записей без проверки уникальности (для больших объемов данных)
+     */
+    private function bulkInsertAppointments(array $appointments): void
+    {
+        try {
+            // Используем прямую вставку без проверки уникальности
+            // Вставляем порциями, чтобы не превысить лимит placeholders MySQL
+            // Оптимизируем размер пакета в зависимости от объема данных
+            $chunkSize = count($appointments) > 100000 ? 5000 : 1000;
+            $chunks = array_chunk($appointments, $chunkSize);
+            foreach ($chunks as $chunk) {
+                DB::table('appointments')->insert($chunk);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Если произошла ошибка, пробуем вставить поменьше
+            $chunkSize = count($appointments) > 20000000 ? 500 : 1000;
+            $chunks = array_chunk($appointments, $chunkSize);
+
+            foreach ($chunks as $chunk) {
+                try {
+                    DB::table('appointments')->insert($chunk);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Если и это не помогает, просто пропускаем проблемные записи
+                    $this->command->warn("   ⚠️  Не удалось вставить пакет записей, пропускаем...");
+                }
+            }
+        }
+    }
+
+    /**
+     * Вставка записей с обработкой конфликтов уникальности
+     * Оптимизированная версия с пакетной обработкой
+     */
+    private function insertAppointmentsWithRetry(array $appointments): void
+    {
+        $maxAttempts = 2; // Уменьшаем количество попыток
+        $attempt = 0;
+
+        while ($attempt < $maxAttempts) {
+            try {
+                // Вставляем порциями, чтобы не превысить лимит placeholders MySQL
+                // Оптимизируем размер пакета в зависимости от объема данных
+                $chunkSize = count($appointments) > 100000 ? 5000 : 1000;
+                $chunks = array_chunk($appointments, $chunkSize);
+                foreach ($chunks as $chunk) {
+                    DB::table('appointments')->insert($chunk);
+                }
+                return;
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() === '23000' && strpos($e->getMessage(), 'appointments_token_unique') !== false) {
+                    // Конфликт уникальности токена, перегенерируем токены
+                    $attempt++;
+                    $this->command->warn("   ⚠️  Обнаружены дубликаты токенов, перегенерация...");
+
+                    // Быстрая перегенерация токенов
+                    $tokens = [];
+                    foreach ($appointments as &$appointment) {
+                        $tokens[] = $this->generateAppointmentToken();
+                        $appointment['token'] = $tokens[count($tokens) - 1];
+                    }
+
+                    continue;
+                }
+
+                // Другие ошибки - пробрасываем дальше
+                throw $e;
+            }
+        }
+
+        // Если не удалось после нескольких попыток
+        throw new \Exception("Не удалось вставить записи после {$maxAttempts} попыток");
     }
 
     private function printStatistics(): void

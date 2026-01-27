@@ -63,12 +63,12 @@ class GenerateProductionTestData extends Command
             ['Сущность', 'Количество'],
             [
                 ['Пользователи', number_format($users)],
-                ['Бизнесы', number_format($users).' (по 1 на пользователя)'],
-                ['Локации', number_format($users).' (по 1 на бизнес)'],
-                ['Услуги', '~'.number_format($users * $services)." (по {$services} на бизнес)"],
-                ['Мастера', '~'.number_format($users * $masters)." (по {$masters} на бизнес)"],
-                ['Клиенты', '~'.number_format($users * $clients)." (по {$clients} на бизнес)"],
-                ['Записи', '~'.number_format($users * $appointments)." (по {$appointments} на бизнес)"],
+                ['Бизнесы', number_format($users) . ' (по 1 на пользователя)'],
+                ['Локации', number_format($users) . ' (по 1 на бизнес)'],
+                ['Услуги', '~' . number_format($users * $services) . " (по {$services} на бизнес)"],
+                ['Мастера', '~' . number_format($users * $masters) . " (по {$masters} на бизнес)"],
+                ['Клиенты', '~' . number_format($users * $clients) . " (по {$clients} на бизнес)"],
+                ['Записи', '~' . number_format($users * $appointments) . " (по {$appointments} на бизнес)"],
             ]
         );
 
