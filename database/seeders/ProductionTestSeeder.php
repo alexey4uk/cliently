@@ -55,7 +55,7 @@ class ProductionTestSeeder extends Seeder
         // Оптимизация MySQL для массовой вставки
         DB::statement('SET unique_checks=0');
         DB::statement('SET foreign_key_checks=0');
-        
+
         try {
             $this->command->info('📝 Создание пользователей и бизнесов...');
             $users = $this->createUsers();
@@ -100,7 +100,7 @@ class ProductionTestSeeder extends Seeder
 
         // Статический хэш пароля для ускорения генерации
         $staticPasswordHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
-        
+
         // Предварительно генерируем имена для ускорения
         $names = [];
         $faker = fake('ru_RU');
@@ -214,7 +214,7 @@ class ProductionTestSeeder extends Seeder
             foreach ($pivotChunks as $chunk) {
                 DB::table('business_user')->insert($chunk);
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -277,7 +277,7 @@ class ProductionTestSeeder extends Seeder
             foreach ($chunks as $chunk) {
                 DB::table('locations')->insert($chunk);
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -343,7 +343,7 @@ class ProductionTestSeeder extends Seeder
             foreach ($chunks as $chunk) {
                 DB::table('services')->insert($chunk);
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -463,7 +463,7 @@ class ProductionTestSeeder extends Seeder
             $chunkSize = count($mastersData) > 100000 ? 5000 : 1000;
             $chunks = array_chunk($mastersData, $chunkSize);
             $currentId = DB::table('masters')->max('id') ?? 0;
-            
+
             foreach ($chunks as $chunk) {
                 DB::table('masters')->insert($chunk);
                 // Генерируем ID для вставленных записей
@@ -504,7 +504,7 @@ class ProductionTestSeeder extends Seeder
             foreach ($locationChunks as $chunk) {
                 DB::table('master_location')->insert($chunk);
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -564,7 +564,7 @@ class ProductionTestSeeder extends Seeder
             foreach ($chunks as $chunk) {
                 DB::table('clients')->insert($chunk);
             }
-            
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -598,7 +598,7 @@ class ProductionTestSeeder extends Seeder
 
         // Для очень больших объемов данных отключаем прогресс-бар и используем счетчик
         $showProgressBar = $totalAppointments <= 1000000;
-        
+
         if ($showProgressBar) {
             $progressBar = $this->command->getOutput()->createProgressBar($totalAppointments);
             $progressBar->start();
@@ -623,7 +623,7 @@ class ProductionTestSeeder extends Seeder
 
         // Оптимизируем размер пакета в зависимости от объема данных
         $useBulkInsert = $totalAppointments > 50000;
-        
+
         if ($totalAppointments <= 100000) {
             $batchSize = 1000;
         } elseif ($totalAppointments <= 1000000) {
@@ -637,7 +637,7 @@ class ProductionTestSeeder extends Seeder
             // чтобы избежать проблем с памятью
             $batchSize = 10000;
         }
-        
+
         // Предварительно генерируем случайные данные для ускорения
         $randomSentences = [];
         $faker = fake('ru_RU');
@@ -659,13 +659,15 @@ class ProductionTestSeeder extends Seeder
             // Проверяем, является ли $businessClients коллекцией или массивом
             $clientIds = is_object($businessClients) && method_exists($businessClients, 'toArray')
                 ? array_column($businessClients->toArray(), 'id')
-                : array_column(array_map(function($obj) { return (array)$obj; }, $businessClients), 'id');
-            
+                : array_column(array_map(function ($obj) {
+                    return (array)$obj;
+                }, $businessClients), 'id');
+
             // Проверяем, является ли $businessServices коллекцией или массивом
             $serviceModels = is_object($businessServices) && method_exists($businessServices, 'all')
                 ? $businessServices->all()
                 : $businessServices;
-            
+
             // Проверяем, является ли $businessMasters коллекцией или массивом
             $masterModels = is_object($businessMasters) && method_exists($businessMasters, 'all')
                 ? $businessMasters->all()
@@ -776,7 +778,7 @@ class ProductionTestSeeder extends Seeder
                         DB::rollBack();
                         $this->command->warn("   ⚠️  Ошибка при вставке пакета записей: " . $e->getMessage());
                     }
-                    
+
                     $businessAppointments = [];
 
                     // Для очень больших объемов (20+ млн) очищаем память
@@ -801,7 +803,7 @@ class ProductionTestSeeder extends Seeder
                     DB::rollBack();
                     $this->command->warn("   ⚠️  Ошибка при вставке оставшихся записей: " . $e->getMessage());
                 }
-                
+
                 $businessAppointments = [];
             }
         }
@@ -841,7 +843,7 @@ class ProductionTestSeeder extends Seeder
     {
         // Оптимизированная версия для больших объемов данных
         $duration = $end - $start;
-        
+
         // Для очень больших объемов данных используем более быстрый алгоритм
         if ($totalCount > 1000000) {
             // Упрощенное распределение для больших объемов
@@ -849,15 +851,15 @@ class ProductionTestSeeder extends Seeder
                 case 'linear':
                     $progress = $currentIndex / $totalCount;
                     return (int)($start + ($duration * (1 - $progress)));
-                    
+
                 case 'exponential':
                     $progress = $currentIndex / $totalCount;
                     return (int)($start + ($duration * pow($progress, 0.5)));
-                    
+
                 case 'logarithmic':
                     $progress = max(0.001, $currentIndex / $totalCount);
                     return (int)($start + ($duration * (log($progress * 10) / log(10))));
-                    
+
                 case 'uniform':
                 default:
                     // Для uniform используем более быстрый алгоритм
@@ -865,7 +867,7 @@ class ProductionTestSeeder extends Seeder
                     return $start + (int)(($end - $start) * ($currentIndex / $totalCount)) + ($currentIndex % 100);
             }
         }
-        
+
         // Для меньших объемов используем оригинальный алгоритм с случайностью
         switch ($strategy) {
             case 'linear':
@@ -944,7 +946,7 @@ class ProductionTestSeeder extends Seeder
     {
         static $counter = 0;
         static $lastMicrotime = 0;
-        
+
         // Оптимизированная версия для больших объемов данных
         // Используем комбинацию счетчика и времени для уникальности
         $microtime = microtime(true);
@@ -954,17 +956,17 @@ class ProductionTestSeeder extends Seeder
             $lastMicrotime = $microtime;
             $counter = 0;
         }
-        
+
         // Используем более быстрый алгоритм генерации токена
         $base = base_convert(mt_rand(1000000, 9999999), 10, 36) . base_convert($counter, 10, 36);
         $hash = md5($base . $microtime);
-        
+
         // Форматируем в нужный формат: abc-123-def-456
         $letters1 = substr($hash, 0, 3);
         $digits1 = substr($hash, 3, 3);
         $letters2 = substr($hash, 6, 3);
         $digits2 = substr($hash, 9, 3);
-        
+
         return strtolower($letters1 . '-' . $digits1 . '-' . $letters2 . '-' . $digits2);
     }
 
