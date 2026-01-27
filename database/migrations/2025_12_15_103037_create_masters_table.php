@@ -26,6 +26,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
 
             $table->timestamps();
+            $table->index(['business_id', 'is_active'], 'masters_business_active');
         });
 
         // FULLTEXT индекс для быстрого текстового поиска

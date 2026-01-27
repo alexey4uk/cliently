@@ -28,14 +28,12 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();
 
-            // Индексы для ускорения запросов (особенно для дашборда)
-            $table->index('business_id');
-            $table->index('client_id');
-            $table->index('service_id');
-            $table->index('master_id');
-            $table->index('location_id');
-
+            $table->index('status');
             $table->index(['date', 'time']);
+            $table->index('created_at', 'appointments_created_at_index');
+            $table->index(['master_id', 'date'], 'appointments_master_date');
+            $table->index(['business_id', 'status', 'date'], 'appointments_business_status_date');
+            $table->index(['created_at', 'business_id'], 'appointments_created_at_business_id_index');
         });
     }
 
