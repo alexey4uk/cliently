@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('telegram_user_id')->nullable();
             $table->timestamps();
+
+            // Индекс для ускорения агрегации статистики по бизнесу
+            $table->index('business_id');
         });
 
         // FULLTEXT индекс для быстрого текстового поиска

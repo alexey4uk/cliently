@@ -28,6 +28,13 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();
 
+            // Индексы для ускорения запросов (особенно для дашборда)
+            $table->index('business_id');
+            $table->index('client_id');
+            $table->index('service_id');
+            $table->index('master_id');
+            $table->index('location_id');
+
             $table->index(['date', 'time']);
         });
     }
