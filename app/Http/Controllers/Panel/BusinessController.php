@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BusinessController extends Controller
 {
@@ -16,19 +17,34 @@ class BusinessController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100);
 
-        $query = Business::with(['users' => function ($q) {
-            $q->wherePivot('role', 'owner');
-        }])->withCount(['clients', 'services', 'masters', 'locations', 'appointments']);
+        // ОПТИМИЗИРОВАНО: Подзапросы вместо withCount
+        $query = Business::query()
+            ->with(['users' => function ($q) {
+                $q->wherePivot('role', 'owner');
+            }])
+            ->selectRaw('businesses.*, 
+                (SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count,
+                (SELECT COUNT(*) FROM services WHERE services.business_id = businesses.id) as services_count,
+                (SELECT COUNT(*) FROM masters WHERE masters.business_id = businesses.id) as masters_count,
+                (SELECT COUNT(*) FROM locations WHERE locations.business_id = businesses.id) as locations_count,
+                (SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count'
+            );
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+                    ->orWhere('description', 'like', "%{$search}%")
+                    // Поиск по телефону через подзапрос (быстрее whereHas)
+                    ->orWhereIn('id', function ($subquery) use ($search) {
+                        $subquery->select('phoneable_id')
+                            ->from('phones')
+                            ->where('phoneable_type', Business::class)
+                            ->where('phone', 'like', "%{$search}%");
+                    });
+            })->limit(1000); // Ограничение для поиска
         }
 
         // Сортировка
@@ -39,7 +55,8 @@ class BusinessController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $businesses = $query->paginate($perPage)->withQueryString();
+        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate
+        $businesses = $query->simplePaginate($perPage)->withQueryString();
 
         return view('panel.businesses.index', compact(
             'businesses',
@@ -55,18 +72,30 @@ class BusinessController extends Controller
      */
     public function show(Business $business)
     {
+        // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все связанные записи!
+        // Загружаем только owners и counts
         $business->load([
             'users' => function ($q) {
                 $q->wherePivot('role', 'owner');
             },
-            'clients',
-            'services',
-            'masters',
-            'locations',
-            'appointments',
         ]);
 
-        $business->loadCount(['clients', 'services', 'masters', 'locations', 'appointments']);
+        // Используем selectRaw для одного запроса вместо 5
+        $counts = DB::selectOne('
+            SELECT 
+                (SELECT COUNT(*) FROM clients WHERE clients.business_id = ?) as clients_count,
+                (SELECT COUNT(*) FROM services WHERE services.business_id = ?) as services_count,
+                (SELECT COUNT(*) FROM masters WHERE masters.business_id = ?) as masters_count,
+                (SELECT COUNT(*) FROM locations WHERE locations.business_id = ?) as locations_count,
+                (SELECT COUNT(*) FROM appointments WHERE appointments.business_id = ?) as appointments_count
+        ', [$business->id, $business->id, $business->id, $business->id, $business->id]);
+
+        // Добавляем counts как атрибуты
+        $business->clients_count = $counts->clients_count;
+        $business->services_count = $counts->services_count;
+        $business->masters_count = $counts->masters_count;
+        $business->locations_count = $counts->locations_count;
+        $business->appointments_count = $counts->appointments_count;
 
         return view('panel.businesses.show', compact('business'));
     }
@@ -100,12 +129,12 @@ class BusinessController extends Controller
      */
     public function destroy(Business $business)
     {
-        // Проверяем, есть ли связанные данные
-        if ($business->clients()->count() > 0 ||
-            $business->appointments()->count() > 0 ||
-            $business->services()->count() > 0 ||
-            $business->masters()->count() > 0 ||
-            $business->locations()->count() > 0) {
+        // ОПТИМИЗАЦИЯ: exists() вместо count() (быстрее!)
+        if ($business->clients()->exists() ||
+            $business->appointments()->exists() ||
+            $business->services()->exists() ||
+            $business->masters()->exists() ||
+            $business->locations()->exists()) {
             return redirect()->route('panel.businesses.show', $business)
                 ->with('error', 'Невозможно удалить бизнес, так как у него есть связанные данные (клиенты, записи, услуги, мастера или локации)');
         }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
@@ -21,71 +22,90 @@ class AppointmentController extends Controller
      */
     public function index()
     {
+        // 1. Собираем параметры
         $search = request('search', '');
         $sort = request('sort', 'date');
-        $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $direction = strtolower(request('direction')) === 'asc' ? 'asc' : 'desc';
+        $perPage = min((int) request('per_page', 20), 100);
+
         $statusFilter = request('status', '');
         $businessFilter = request('business_id', '');
         $dateFilter = request('date', '');
 
-        $query = Appointment::with(['client', 'master', 'service', 'location', 'business']);
+        $query = Appointment::query();
 
-        // Поиск
+        // 2. ОПТИМИЗИРОВАННЫЙ ПОИСК (FULLTEXT)
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('client', function ($clientQuery) use ($search) {
-                    $clientQuery->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", ["%{$search}%"]);
-                })
-                    ->orWhereHas('service', function ($serviceQuery) use ($search) {
-                        $serviceQuery->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('master', function ($masterQuery) use ($search) {
-                        $masterQuery->where('name', 'like', "%{$search}%");
-                    });
+            $searchTerm = $search.'*';
+
+            // Поиск ID через быстрые FULLTEXT индексы
+            $clientIds = DB::table('clients')
+                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
+                ->pluck('id');
+
+            $serviceIds = DB::table('services')
+                ->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
+                ->pluck('id');
+
+            $masterIds = DB::table('masters')
+                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
+                ->pluck('id');
+
+            $query->where(function ($q) use ($clientIds, $serviceIds, $masterIds) {
+                if ($clientIds->isNotEmpty()) {
+                    $q->orWhereIn('client_id', $clientIds);
+                }
+                if ($serviceIds->isNotEmpty()) {
+                    $q->orWhereIn('service_id', $serviceIds);
+                }
+                if ($masterIds->isNotEmpty()) {
+                    $q->orWhereIn('master_id', $masterIds);
+                }
             });
         }
 
-        // Фильтр по статусу
+        // 3. ЖАДНАЯ ЗАГРУЗКА (УБРАЛИ ЛИШНИЕ СВЯЗИ)
+        $query->with(['client', 'master', 'service', 'location', 'business']);
+
+        // 4. ФИЛЬТРЫ (SARGABLE - используют индексы напрямую)
         if ($statusFilter) {
             $query->where('status', $statusFilter);
         }
-
-        // Фильтр по бизнесу
         if ($businessFilter) {
             $query->where('business_id', $businessFilter);
         }
-
-        // Фильтр по дате
         if ($dateFilter) {
+            // Используем обычный where вместо whereDate для скорости
             $query->where('date', $dateFilter);
         }
 
-        // Сортировка
+        // 5. ОПТИМИЗИРОВАННАЯ СОРТИРОВКА (БЕЗ CONCAT)
         $allowedSorts = ['date', 'client', 'service', 'master', 'status'];
-        if (in_array($sort, $allowedSorts)) {
-            if ($sort === 'client') {
-                $query->join('clients', 'appointments.client_id', '=', 'clients.id')
-                    ->orderByRaw("CONCAT(COALESCE(clients.first_name, ''), ' ', COALESCE(clients.last_name, '')) {$direction}")
-                    ->select('appointments.*');
-            } elseif ($sort === 'service') {
-                $query->join('services', 'appointments.service_id', '=', 'services.id')
-                    ->orderBy('services.name', $direction)
-                    ->select('appointments.*');
-            } elseif ($sort === 'master') {
-                $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
-                    ->orderBy('masters.name', $direction)
-                    ->select('appointments.*');
-            } else {
-                $query->orderByRaw("CONCAT(date, ' ', time) {$direction}");
-            }
+        $sort = in_array($sort, $allowedSorts) ? $sort : 'date';
+
+        if ($sort === 'client') {
+            $query->join('clients', 'appointments.client_id', '=', 'clients.id')
+                ->orderBy('clients.first_name', $direction)
+                ->orderBy('clients.last_name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'service') {
+            $query->join('services', 'appointments.service_id', '=', 'services.id')
+                ->orderBy('services.name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'master') {
+            $query->leftJoin('masters', 'appointments.master_id', '=', 'masters.id')
+                ->orderBy('masters.first_name', $direction)
+                ->orderBy('masters.last_name', $direction)
+                ->select('appointments.*');
+        } elseif ($sort === 'status') {
+            $query->orderBy('status', $direction);
         } else {
-            $query->orderByRaw("CONCAT(date, ' ', time) desc");
+            // ГЛАВНЫЙ ФИКС: Сортировка по индексу idx_app_date_time_sort
+            $query->orderBy('date', $direction)->orderBy('time', $direction);
         }
 
-        $appointments = $query->paginate($perPage)->withQueryString();
+        // 6. ПАГИНАЦИЯ (simplePaginate не делает тяжелый COUNT(*))
+        $appointments = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();

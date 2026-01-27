@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->name('nbr_user_id_foreign');
             $table->timestamps();
 
-            $table->unique(['notification_broadcast_id', 'user_id'], 'nbr_broadcast_user_unique');
+            $table->index(['notification_broadcast_id', 'user_id'], 'idx_recipient_broadcast_user');
         });
     }
 

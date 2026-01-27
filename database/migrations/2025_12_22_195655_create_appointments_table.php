@@ -24,13 +24,16 @@ return new class extends Migration
             $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
             $table->string('source')->nullable();
             $table->text('notes')->nullable();
-            $table->integer('duration')->nullable(); // Переопределение длительности услуги
-            $table->decimal('price', 10, 2)->nullable(); // Переопределение цены услуги
+            $table->integer('duration')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();
 
-            $table->index(['business_id', 'date']);
-            $table->index(['master_id', 'date', 'time']);
-            $table->index('token');
+            $table->index('status');
+            $table->index(['date', 'time']);
+            $table->index('created_at', 'appointments_created_at_index');
+            $table->index(['master_id', 'date'], 'appointments_master_date');
+            $table->index(['business_id', 'status', 'date'], 'appointments_business_status_date');
+            $table->index(['created_at', 'business_id'], 'appointments_created_at_business_id_index');
         });
     }
 

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -20,9 +21,14 @@ return new class extends Migration
             $table->integer('preparation_time')->nullable()->comment('Время подготовки между записями в минутах');
             $table->decimal('price', 10, 2)->default(0);
             $table->boolean('is_active')->default(false);
-
             $table->timestamps();
+
+            $table->index(['business_id', 'is_active'], 'services_business_active');
+
         });
+
+        // FULLTEXT индекс для быстрого текстового поиска
+        DB::statement('ALTER TABLE services ADD FULLTEXT INDEX ft_services_name (name)');
     }
 
     /**

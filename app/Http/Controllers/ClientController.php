@@ -46,10 +46,11 @@ class ClientController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                    ->orWhere('email', 'like', "%{$search}%");
+                // Используем мощь FULLTEXT индекса (летает на миллионах)
+                $q->whereFullText(['first_name', 'last_name'], $search)
+                    // Для телефона и email оставляем LIKE (или тоже делаем FULLTEXT)
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "{$search}%"))
+                    ->orWhere('email', 'like', "{$search}%");
             });
         }
 

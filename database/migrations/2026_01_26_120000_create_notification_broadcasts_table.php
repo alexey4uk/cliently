@@ -21,9 +21,6 @@ return new class extends Migration
             $table->timestamp('sent_at');
             $table->unsignedInteger('recipients_count')->default(0);
             $table->timestamps();
-
-            $table->index('sent_at');
-            $table->index('target');
         });
     }
 

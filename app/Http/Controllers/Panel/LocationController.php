@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Country;
 use App\Models\Location;
+use App\Repositories\BusinessRepositoryInterface;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
+    protected BusinessRepositoryInterface $businessRepository;
+
+    public function __construct(BusinessRepositoryInterface $businessRepository)
+    {
+        $this->businessRepository = $businessRepository;
+    }
+
     /**
      * Display a listing of locations.
      */
@@ -17,21 +25,31 @@ class LocationController extends Controller
         $search = request('search', '');
         $sort = request('sort', 'created_at');
         $direction = request('direction', 'desc');
-        $perPage = request('per_page', 20);
+        $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
-        $query = Location::with('business')
-            ->withCount(['masters']);
+        // ОПТИМИЗИРОВАНО: Подзапрос через pivot таблицу
+        $query = Location::query()
+            ->with('business')
+            ->selectRaw('locations.*, 
+                (SELECT COUNT(*) FROM master_location WHERE master_location.location_id = locations.id) as masters_count'
+            );
 
-        // Поиск
+        // ОПТИМИЗИРОВАННЫЙ ПОИСК
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('city', 'like', "%{$search}%")
                     ->orWhere('street', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+                    ->orWhere('description', 'like', "%{$search}%")
+                    // Поиск по телефону через подзапрос (быстрее whereHas)
+                    ->orWhereIn('id', function ($subquery) use ($search) {
+                        $subquery->select('phoneable_id')
+                            ->from('phones')
+                            ->where('phoneable_type', Location::class)
+                            ->where('phone', 'like', "%{$search}%");
+                    });
+            })->limit(1000); // Ограничение для поиска
         }
 
         // Фильтр по бизнесу
@@ -47,7 +65,8 @@ class LocationController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $locations = $query->paginate($perPage)->withQueryString();
+        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate
+        $locations = $query->simplePaginate($perPage)->withQueryString();
 
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
@@ -68,10 +87,11 @@ class LocationController extends Controller
      */
     public function show(Location $location)
     {
-        $location->load(['business', 'masters']);
-        $location->loadCount(['masters']);
+        // ОПТИМИЗАЦИЯ: Только business и counts (без загрузки всех мастеров)
+        $location->load(['business']);
 
-        // Подсчитываем записи для этой локации
+        // Подсчитываем связанные данные
+        $location->masters_count = $location->masters()->count();
         $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
 
         return view('panel.locations.show', compact('location', 'appointmentsCount'));
@@ -142,10 +162,10 @@ class LocationController extends Controller
      */
     public function destroy(Location $location)
     {
-        // Проверяем, есть ли связанные данные
-        $appointmentsCount = \App\Models\Appointment::where('location_id', $location->id)->count();
+        // ОПТИМИЗАЦИЯ: exists() вместо count()
+        $hasAppointments = \App\Models\Appointment::where('location_id', $location->id)->exists();
 
-        if ($appointmentsCount > 0 || $location->masters()->count() > 0) {
+        if ($hasAppointments || $location->masters()->exists()) {
             return redirect()->route('panel.locations.show', $location)
                 ->with('error', 'Невозможно удалить локацию, так как у неё есть связанные данные (записи или мастера)');
         }

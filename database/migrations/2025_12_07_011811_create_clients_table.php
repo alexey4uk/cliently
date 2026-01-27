@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,7 +20,13 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('telegram_user_id')->nullable();
             $table->timestamps();
+
+            // Индекс для ускорения агрегации статистики по бизнесу
+            $table->index('business_id');
         });
+
+        // FULLTEXT индекс для быстрого текстового поиска
+        DB::statement('ALTER TABLE clients ADD FULLTEXT INDEX ft_clients_name (first_name, last_name)');
     }
 
     /**

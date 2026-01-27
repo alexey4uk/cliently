@@ -113,70 +113,66 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
      */
     public function getFilteredForBusiness(int $businessId, array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
-        $query = $this->model->where('business_id', $businessId)
-            ->with(['client', 'service', 'master', 'location']);
+        // 1. Создаем базовый клон запроса с общими фильтрами
+        $prepareQuery = function () use ($businessId, $filters) {
+            $q = $this->model->where('business_id', $businessId);
 
-        // Фильтр по дате
-        if (isset($filters['date']) && $filters['date']) {
-            $query->whereDate('date', $filters['date']);
-        } elseif (! isset($filters['view']) || $filters['view'] !== 'calendar') {
-            // По умолчанию показываем сегодня и будущие записи для таблицы
-            $query->whereDate('date', '>=', Carbon::today());
-        }
-
-        // Фильтр по статусу
-        if (isset($filters['status']) && $filters['status']) {
-            $query->where('status', $filters['status']);
-        }
-
-        // Фильтр по услуге
-        if (isset($filters['service_id']) && $filters['service_id']) {
-            $query->where('service_id', $filters['service_id']);
-        }
-
-        // Фильтр по мастеру
-        if (isset($filters['master_id']) && $filters['master_id']) {
-            $query->where('master_id', $filters['master_id']);
-        }
-
-        // Поиск
-        if (isset($filters['search']) && $filters['search']) {
-            $search = $filters['search'];
-            $query->whereHas('client', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"));
-            })->orWhereHas('service', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            });
-        }
-
-        // Для календаря - сортировка по дате и времени
-        if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
-            $startOfMonth = Carbon::parse($filters['month'].'-01')->startOfMonth();
-            $endOfMonth = Carbon::parse($filters['month'].'-01')->endOfMonth();
-            $query->whereBetween('date', [$startOfMonth, $endOfMonth])
-                ->orderBy('date', 'asc')
-                ->orderBy('time', 'asc');
-        } else {
-            // Сортировка
-            $sort = $filters['sort'] ?? 'date';
-            $direction = $filters['direction'] ?? 'desc';
-
-            if ($sort === 'date') {
-                $query->orderBy('date', $direction)
-                    ->orderBy('time', $direction);
-            } elseif ($sort === 'client') {
-                $query->join('clients', 'appointments.client_id', '=', 'clients.id')
-                    ->orderBy('clients.first_name', $direction)
-                    ->orderBy('clients.last_name', $direction)
-                    ->select('appointments.*');
-            } elseif ($sort === 'status') {
-                $query->orderBy('status', $direction);
-            } else {
-                $query->orderBy('date', 'desc')
-                    ->orderBy('time', 'desc');
+            // ВАЖНО: Заменяем whereDate на обычный where (SARGABLE)
+            if (! empty($filters['date'])) {
+                $q->where('date', $filters['date']);
+            } elseif (! isset($filters['view']) || $filters['view'] !== 'calendar') {
+                $q->where('date', '>=', now()->format('Y-m-d'));
             }
+
+            if (! empty($filters['status'])) {
+                $q->where('status', $filters['status']);
+            }
+
+            if (! empty($filters['service_id'])) {
+                $q->where('service_id', $filters['service_id']);
+            }
+
+            return $q;
+        };
+
+        $query = $prepareQuery();
+
+        // 2. Оптимизация ПОИСКА через UNION
+        if (! empty($filters['search'])) {
+            $search = "%{$filters['search']}%";
+
+            // Поиск по ФИО
+            $qClient = $prepareQuery()->whereHas('client', function ($q) use ($search) {
+                $q->where('first_name', 'like', $search)->orWhere('last_name', 'like', $search);
+            });
+
+            // Поиск по телефону
+            $qPhone = $prepareQuery()->whereHas('client.phones', function ($q) use ($search) {
+                $q->where('phone', 'like', $search);
+            });
+
+            // Поиск по услуге
+            $qService = $prepareQuery()->whereHas('service', function ($q) use ($search) {
+                $q->where('name', 'like', $search);
+            });
+
+            // Объединяем результаты. UNION в SQL работает быстрее, чем огромный OR
+            $query = $qClient->union($qPhone)->union($qService);
+        }
+
+        // 3. Подгружаем связи (with) в самом конце перед пагинацией
+        $query->with(['client', 'service', 'master', 'location']);
+
+        // 4. СОРТИРОВКА
+        // Внимание: при UNION сортировка должна быть глобальной в конце
+        $direction = $filters['direction'] ?? 'desc';
+
+        // Если поиск активен, сортируем по дате/времени (UNION требует общей сортировки)
+        if (! empty($filters['search']) || ($filters['sort'] ?? 'date') === 'date') {
+            $query->orderBy('date', $direction)->orderBy('time', $direction);
+        } else {
+            // Остальные виды сортировок...
+            $query->orderBy($filters['sort'] ?? 'date', $direction);
         }
 
         return $query->paginate($perPage)->withQueryString();

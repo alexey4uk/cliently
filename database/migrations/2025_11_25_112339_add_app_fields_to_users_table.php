@@ -23,7 +23,6 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('email')->nullable()->change();
             $table->string('password')->nullable()->change();
-            $table->index(['oauth_provider', 'oauth_id'], 'oauth_provider_id_index');
         });
     }
 

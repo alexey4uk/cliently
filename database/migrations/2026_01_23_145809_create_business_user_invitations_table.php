@@ -23,7 +23,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['business_id', 'email', 'token']);
-            $table->index(['token', 'expires_at', 'accepted_at']);
         });
     }
 

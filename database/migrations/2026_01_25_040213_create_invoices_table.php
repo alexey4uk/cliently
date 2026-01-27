@@ -27,9 +27,8 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'status']);
-            $table->index(['subscription_id']);
-            $table->index(['status', 'created_at']);
+            $table->index(['status', 'paid_at'], 'idx_invoices_status_paid');
+            $table->index(['user_id', 'status', 'created_at'], 'idx_invoices_user_status_created');
         });
     }
 
