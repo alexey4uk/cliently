@@ -5,21 +5,11 @@
     $providers = $oauthService->getEnabledProviders();
 @endphp
 
-<!-- Разделитель "или" -->
-<div class="relative my-6">
-    <div class="absolute inset-0 flex items-center">
-        <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
-    </div>
-    <div class="relative flex justify-center text-sm">
-        <span class="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">или</span>
-    </div>
-</div>
-
 @if (count($providers) > 0)
-    <div class="space-y-3">
+    <div class="grid grid-cols-1 gap-3">
         @foreach ($providers as $providerKey => $provider)
             <a href="{{ route('oauth.redirect', 'google') }}"
-                class="w-full inline-flex items-center justify-center gap-3 rounded-md px-4 py-2.5 text-base md:text-sm font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 bg-white border border-slate-300 dark:bg-slate-900 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+                class="w-full inline-flex items-center justify-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-md dark:hover:shadow-slate-800/50 transform hover:scale-[1.01] active:scale-[0.99]">
                 @if ($providerKey === 'google')
                     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -70,6 +60,4 @@
             </a>
         @endforeach
     </div>
-
-
 @endif
