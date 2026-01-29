@@ -38,7 +38,6 @@
                            required 
                            value="{{ old('name') }}"
                            class="w-full px-4 py-2.5 border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                           placeholder="Например: Стрижка женская"
                            autofocus>
                     @error('name')
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -53,8 +52,7 @@
                               name="description" 
                               rows="3" 
                               maxlength="1000"
-                              class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none transition-colors"
-                              placeholder="Описание услуги для клиентов...">{{ old('description') }}</textarea>
+                              class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none transition-colors">{{ old('description') }}</textarea>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         Максимум 1000 символов
                     </p>
@@ -81,8 +79,7 @@
                            min="0" 
                            step="0.01"
                            value="{{ old('price') }}"
-                           class="w-full px-4 py-2.5 border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                           placeholder="1500">
+                           class="w-full px-4 py-2.5 border {{ $errors->has('price') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                     @error('price')
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
