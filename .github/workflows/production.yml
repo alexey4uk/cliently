@@ -220,10 +220,7 @@ jobs:
             echo "⚙️  Running Laravel optimizations..."
             
             # Clear all caches first
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-            php artisan cache:clear
+            php artisan optimize:clear
             
             # Run migrations (WITHOUT fresh - keeps data!)
             echo ""
@@ -242,9 +239,7 @@ jobs:
             # Cache optimizations for production
             echo ""
             echo "⚡ Caching configuration..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+            php artisan optimize
             
             # Optimize composer autoloader
             composer dump-autoload --optimize
