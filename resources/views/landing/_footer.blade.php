@@ -50,6 +50,12 @@
                         <a href="mailto:hello@cliently.by"
                             class="hover:text-white transition-colors break-all">info@cliently.by</a>
                     </li>
+                    <li class="flex items-start gap-2">
+                        <x-icon name="envelope" variant="outline" size="sm"
+                            class="text-gray-400 shrink-0 mt-0.5" />
+                        <a href="mailto:support@cliently.by"
+                            class="hover:text-white transition-colors break-all">support@cliently.by</a>
+                    </li>
                 </ul>
             </div>
         </div>
