@@ -5,9 +5,6 @@
 @section('content')
             <!-- Форма регистрации -->
             <div class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-fade-in-up">
-                <!-- OAuth кнопки -->
-                <x-oauth-buttons text="Зарегистрироваться через" />
-
                 <form method="POST" action="{{ route('register') }}" class="space-y-5" id="registerForm">
                     @csrf
 
@@ -90,13 +87,13 @@
                     <div>
                         <label class="flex items-start gap-2 text-base md:text-sm">
                         <input
-                                type="checkbox" 
+                                type="checkbox"
                             name="terms"
                             required
                                 class="mt-0.5 w-4 h-4 text-[#6366F1] border-slate-300 rounded focus:ring-[#6366F1] focus:ring-2 dark:border-slate-700 dark:bg-slate-800"
                             />
                             <span class="text-slate-600 dark:text-slate-400">
-                                Я согласен с 
+                                Я согласен с
                                 <a href="#" class="text-[#6366F1] hover:text-[#4F46E5] dark:text-[#818CF8] dark:hover:text-[#6366F1] transition-colors font-medium underline">
                                     пользовательским соглашением
                             </a>
@@ -109,7 +106,7 @@
 
                     <!-- Кнопка регистрации -->
                     <div class="pt-2">
-                        <button 
+                        <button
                             type="submit"
                             class="w-full inline-flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#6366F1] to-[#818CF8] px-4 py-2.5 text-base md:text-sm font-medium text-white shadow-sm shadow-[#6366F1]/40 hover:from-[#4F46E5] hover:to-[#6366F1] active:from-[#4338CA] active:to-[#4F46E5] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
@@ -119,7 +116,10 @@
                     </div>
                 </form>
 
-                    <!-- Разделитель -->
+                <!-- OAuth кнопки -->
+                <x-oauth-buttons text="Зарегистрироваться через" />
+
+                <!-- Разделитель -->
                 <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
                     <p class="text-center text-base md:text-sm text-slate-600 dark:text-slate-400">
                                 Уже есть аккаунт?
