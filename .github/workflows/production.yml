@@ -10,6 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Tests
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,6 +30,11 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, dom, curl, libxml, sqlite, pdo_sqlite, bcmath, intl, gd, exif, iconv
           coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -32,8 +47,13 @@ jobs:
       - name: Copy .env for testing
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-      - name: Install Dependencies
+      - name: Install PHP Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Install NPM Dependencies & Build
+        run: |
+          npm install
+          npm run build
 
       - name: Generate key
         run: php artisan key:generate
@@ -41,15 +61,14 @@ jobs:
       - name: Directory Permissions
         run: chmod -R 777 storage bootstrap/cache
 
-      - name: Create Database
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: database/database.sqlite
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: testing
+          DB_USERNAME: root
+          DB_PASSWORD: root
         run: composer test
 
       - name: Code Style Check
@@ -86,9 +105,9 @@ jobs:
       - name: Deploy to Production VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VPS_PROD_HOST }}
-          username: ${{ secrets.VPS_PROD_USERNAME }}
-          key: ${{ secrets.VPS_PROD_SSH_KEY }}
+          host: ${{ secrets.VPS_HOST_PRODUCTION }}
+          username: ${{ secrets.VPS_USERNAME_PRODUCTION }}
+          key: ${{ secrets.VPS_SSH_KEY_PRODUCTION }}
           port: 22
           script: |
             set -e  # Exit on any error
@@ -125,18 +144,15 @@ jobs:
             echo ""
             echo "💾 Creating database backup..."
             
-            if [ -f "$DEPLOY_PATH/database/database.sqlite" ]; then
-              cp "$DEPLOY_PATH/database/database.sqlite" "$BACKUP_PATH/database_${TIMESTAMP}.sqlite"
-              echo "✅ SQLite backup created: database_${TIMESTAMP}.sqlite"
+            # If using MySQL, backup with mysqldump
+            if command -v mysqldump &> /dev/null; then
+              mysqldump -u ${{ secrets.DB_USERNAME_PRODUCTION }} -p'${{ secrets.DB_PASSWORD_PRODUCTION }}' ${{ secrets.DB_DATABASE_PRODUCTION }} > "$BACKUP_PATH/database_${TIMESTAMP}.sql"
+              echo "✅ MySQL backup created: database_${TIMESTAMP}.sql"
             fi
-            
-            # If using MySQL/PostgreSQL, backup with mysqldump/pg_dump
-            # Example for MySQL:
-            # mysqldump -u username -p'password' database_name > "$BACKUP_PATH/database_${TIMESTAMP}.sql"
-            
+
             # Keep only last 7 backups
             cd "$BACKUP_PATH"
-            ls -t database_*.sqlite 2>/dev/null | tail -n +8 | xargs -r rm
+            ls -t database_*.sql 2>/dev/null | tail -n +8 | xargs -r rm
             echo "🗑️  Old backups cleaned (keeping last 7)"
             
             cd "$DEPLOY_PATH"
@@ -188,7 +204,7 @@ jobs:
             
             echo ""
             echo "📦 Installing NPM dependencies..."
-            npm ci --production
+            npm install
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: NPM install failed"
@@ -201,6 +217,9 @@ jobs:
             echo ""
             echo "🏗️  Building assets..."
             npm run build
+
+            echo "🧹 Cleaning up dev dependencies..."
+            npm prune --production
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: Asset build failed"
@@ -214,20 +233,18 @@ jobs:
             echo "⚙️  Running Laravel optimizations..."
             
             # Clear all caches first
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-            php artisan cache:clear
+            php artisan optimize:clear
             
-            # Run migrations (WITHOUT fresh - keeps data!)
+            # Run migrations (WITHOUT fresh)
             echo ""
             echo "🗄️  Running database migrations..."
             php artisan migrate --force
+            php artisan db:seed --force
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: Migrations failed!"
-              echo "🔄 Database backup available at: $BACKUP_PATH/database_${TIMESTAMP}.sqlite"
-              echo "To restore: cp $BACKUP_PATH/database_${TIMESTAMP}.sqlite $DEPLOY_PATH/database/database.sqlite"
+              echo "🔄 Database backup available at: $BACKUP_PATH/database_${TIMESTAMP}.sql"
+              echo "To restore: mysql -u ${{ secrets.DB_USERNAME_PRODUCTION }} -p'${{ secrets.DB_PASSWORD_PRODUCTION }}' ${{ secrets.DB_DATABASE_PRODUCTION }} < $BACKUP_PATH/database_${TIMESTAMP}.sql"
               exit 1
             fi
             
@@ -236,9 +253,9 @@ jobs:
             # Cache optimizations for production
             echo ""
             echo "⚡ Caching configuration..."
-            php artisan config:cache
-            php artisan route:cache
+            php artisan optimize
             php artisan view:cache
+            php artisan event:cache
             
             # Optimize composer autoloader
             composer dump-autoload --optimize

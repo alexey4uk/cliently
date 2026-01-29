@@ -6,27 +6,10 @@ on:
   pull_request:
     branches: [ develop ]
 
-jobs:
-  # Общие шаги для сборки и тестирования
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      node_modules_cache_key: ${{ steps.node_modules_cache_key.outputs.key }}
-      vendor_cache_key: ${{ steps.vendor_cache_key.outputs.key }}
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - id: node_modules_cache_key
-        run: echo "key=${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
-      
-      - id: vendor_cache_key
-        run: echo "key=${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}" >> $GITHUB_OUTPUT
-
+jobs: 
   tests:
     runs-on: ubuntu-latest
-    needs: setup
+    name: Run Tests
     
     services:
       mysql:
@@ -52,53 +35,41 @@ jobs:
       - name: Check PHP syntax
         run: find app config database routes tests -name "*.php" -exec php -l {} \;
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ needs.setup.outputs.vendor_cache_key }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.dev', '.env');"
-        continue-on-error: true
-
-      - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-
-      - name: Check security vulnerabilities
-        run: composer audit
-        continue-on-error: true
-
-      - name: Generate key
-        run: php artisan key:generate
-        continue-on-error: true
-
-      - name: Directory Permissions
-        run: chmod -R 777 storage bootstrap/cache
-        continue-on-error: true
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-        
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
         with:
-          name: test-build-assets
-          path: public/build
-          retention-days: 1
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
-      - name: Execute tests (Unit and Feature tests) via PHPUnit
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install PHP Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Check security vulnerabilities
+        run: composer audit
+
+      - name: Install NPM Dependencies & Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Directory Permissions
+        run: chmod -R 775 storage bootstrap/cache
+
+      - name: Execute tests (Unit and Feature tests)
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
@@ -106,50 +77,30 @@ jobs:
           DB_DATABASE: testing
           DB_USERNAME: root
           DB_PASSWORD: root
-        run: composer test
+        run: php artisan test
 
-      - name: Code Style Check
-        run: |
-          ./vendor/bin/pint --test
-        continue-on-error: true
-
-  build:
-    runs-on: ubuntu-latest
-    needs: setup
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install NPM Dependencies
-        run: npm ci
-
-      - name: Build assets
-        run: npm run build
-        
       - name: Upload build artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: production-build-assets
+          name: test-build-assets
           path: public/build
           retention-days: 1
 
+      - name: Code Style Check (Pint)
+        run: ./vendor/bin/pint --test
+        continue-on-error: true
+
   deploy:
     runs-on: ubuntu-latest
-    needs: [tests, build]
+    needs: [tests]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-    
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: production-build-assets
+          name: test-build-assets
           path: public/build
           
       - name: Deploy to VPS
@@ -160,67 +111,51 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           script: |
+            set -e # Чтобы скрипт падал при первой же ошибке
             DEPLOY_PATH="/var/www/cliently/data/www/dev.cliently.by"
             REPO_URL="git@github.com:alexey4uk/cliently.git"
             
+            # Логика клонирования/пулла (уже отличная)
             if [ ! -d "$DEPLOY_PATH/.git" ]; then
-              echo "Repository not found. Cloning..."
-              mkdir -p "$DEPLOY_PATH"
-              cd "$(dirname "$DEPLOY_PATH")"
-              git clone -b develop "$REPO_URL" "$(basename "$DEPLOY_PATH")"
+              git clone -b develop "$REPO_URL" "$DEPLOY_PATH"
               cd "$DEPLOY_PATH"
-              git checkout develop
             else
-              echo "Repository exists. Pulling latest changes..."
               cd "$DEPLOY_PATH"
               git fetch origin
               git checkout develop
               git reset --hard origin/develop
-              git pull origin develop
             fi
             
-            echo "Current branch: $(git branch --show-current)"
-            
-            # Setup .env file
-            if [ ! -f "$DEPLOY_PATH/.env" ]; then
-              echo ".env file not found. Copying from .env.dev..."
-              cp "$DEPLOY_PATH/.env.dev" "$DEPLOY_PATH/.env"
-            else
-              echo ".env file exists. Skipping copy."
-            fi
-            
-            # Set permissions for .env file
-            chmod 644 "$DEPLOY_PATH/.env"
-            
-            # Install dependencies first (before artisan commands)
+            # Composer
             composer install --no-dev --optimize-autoloader
             
-            # Generate application key if not set (after composer install)
-            if ! grep -q "APP_KEY=base64:" "$DEPLOY_PATH/.env" 2>/dev/null; then
-              echo "APP_KEY not found. Generating..."
+            # .env и Key
+            if [ ! -f ".env" ]; then
+              cp .env.dev .env
+            fi
+            chmod 644 .env
+            
+            if ! grep -q "APP_KEY=base64:" ".env"; then
               php artisan key:generate --force
-              php artisan config:clear
-            else
-              echo "APP_KEY already exists. Skipping generation."
             fi
             
-            npm ci
+            # NPM и Build (мы это скачали артефактом, но на сервере тоже запускаем для верности)
+            npm install # Лучше просто install, раз это дев-сервер
             npm run build
-            php artisan config:clear
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
+
+            # Оптимизация
+            php artisan optimize:clear
             php artisan migrate --force
             php artisan db:seed --force
+            php artisan optimize
             
-            # Проверка статуса сервера после деплоя
+            # Финальная проверка
             HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://dev.cliently.by)
             if [ "$HTTP_STATUS" -ne 200 ]; then
-              echo "Сервер вернул статус $HTTP_STATUS после деплоя!"
+              echo "❌ Ошибка: Статус $HTTP_STATUS"
               exit 1
-            else
-              echo "Сервер успешно запущен и отвечает с кодом 200 OK"
             fi
+            echo "✅ Успех: 200 OK"
 
       - name: Send Telegram notification on success
         if: success()
