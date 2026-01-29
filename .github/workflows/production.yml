@@ -31,6 +31,11 @@ jobs:
           extensions: mbstring, dom, curl, libxml, sqlite, pdo_sqlite, bcmath, intl, gd, exif, iconv
           coverage: none
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
@@ -42,8 +47,13 @@ jobs:
       - name: Copy .env for testing
         run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-      - name: Install Dependencies
+      - name: Install PHP Dependencies
         run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Install NPM Dependencies & Build
+        run: |
+          npm install
+          npm run build
 
       - name: Generate key
         run: php artisan key:generate
@@ -194,7 +204,7 @@ jobs:
             
             echo ""
             echo "📦 Installing NPM dependencies..."
-            npm ci --production
+            npm install
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: NPM install failed"
@@ -207,6 +217,9 @@ jobs:
             echo ""
             echo "🏗️  Building assets..."
             npm run build
+
+            echo "🧹 Cleaning up dev dependencies..."
+            npm prune --production
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: Asset build failed"
