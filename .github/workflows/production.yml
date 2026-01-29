@@ -222,10 +222,11 @@ jobs:
             # Clear all caches first
             php artisan optimize:clear
             
-            # Run migrations (WITHOUT fresh - keeps data!)
+            # Run migrations (WITHOUT fresh)
             echo ""
             echo "🗄️  Running database migrations..."
             php artisan migrate --force
+            php artisan db:seed --force
             
             if [ $? -ne 0 ]; then
               echo "❌ ERROR: Migrations failed!"
@@ -240,6 +241,8 @@ jobs:
             echo ""
             echo "⚡ Caching configuration..."
             php artisan optimize
+            php artisan view:cache
+            php artisan event:cache
             
             # Optimize composer autoloader
             composer dump-autoload --optimize
