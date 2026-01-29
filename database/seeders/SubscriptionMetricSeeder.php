@@ -21,39 +21,39 @@ class SubscriptionMetricSeeder extends Seeder
         $integerMetrics = [
             [
                 'key' => 'max_locations',
-                'label' => 'Максимальное количество локаций',
+                'label' => 'Локаций',
                 'description' => 'Лимит на количество локаций',
-                'icon' => 'fa-location-dot',
+                'icon' => 'fa-solid fa-location-dot',
             ],
             [
                 'key' => 'max_masters',
-                'label' => 'Максимальное количество мастеров',
+                'label' => 'Мастеров',
                 'description' => 'Лимит на количество мастеров',
-                'icon' => 'fa-user-tie',
+                'icon' => 'fa-solid fa-user-tie',
             ],
             [
                 'key' => 'max_services',
-                'label' => 'Максимальное количество услуг',
+                'label' => 'услуг',
                 'description' => 'Лимит на количество услуг',
-                'icon' => 'fa-scissors',
+                'icon' => 'fa-solid fa-scissors',
             ],
             [
                 'key' => 'max_clients',
-                'label' => 'Максимальное количество клиентов',
+                'label' => 'клиентов',
                 'description' => 'Лимит на количество клиентов в базе',
-                'icon' => 'fa-users',
+                'icon' => 'fa-solid fa-users',
             ],
             [
                 'key' => 'max_appointments_per_month',
                 'label' => 'Записей в месяц',
-                'description' => 'Максимальное количество записей в месяц',
-                'icon' => 'fa-calendar-check',
+                'description' => 'записей в месяц',
+                'icon' => 'fa-solid fa-calendar-check',
             ],
             [
                 'key' => 'max_business_users',
-                'label' => 'Максимальное количество пользователей бизнеса',
+                'label' => 'пользователей бизнеса',
                 'description' => 'Лимит на количество пользователей в команде (кроме владельца)',
-                'icon' => 'fa-users',
+                'icon' => 'fa-solid fa-users',
             ],
         ];
 
@@ -77,19 +77,19 @@ class SubscriptionMetricSeeder extends Seeder
                 'key' => 'telegram_bot_enabled',
                 'label' => 'Telegram бот',
                 'description' => 'Включить интеграцию с Telegram ботом',
-                'icon' => 'fa-brands fa-telegram',
+                'icon' => 'fa-solid fa-brands fa-telegram',
             ],
             [
                 'key' => 'analytics_enabled',
                 'label' => 'Аналитика',
                 'description' => 'Включить расширенную аналитику и отчеты',
-                'icon' => 'fa-chart-line',
+                'icon' => 'fa-solid fa-chart-line',
             ],
             [
                 'key' => 'advanced_analytics_enabled',
                 'label' => 'Расширенная аналитика',
                 'description' => 'Доступ к расширенным отчетам, прогнозам и аналитике',
-                'icon' => 'fa-chart-bar',
+                'icon' => 'fa-solid fa-chart-bar',
             ],
         ];
 
