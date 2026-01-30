@@ -5,6 +5,16 @@
     $providers = $oauthService->getEnabledProviders();
 @endphp
 
+<!-- Улучшенный разделитель -->
+<div class="relative my-6">
+    <div class="absolute inset-0 flex items-center">
+        <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+    </div>
+    <div class="relative flex justify-center text-sm">
+        <span class="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium">ИЛИ</span>
+    </div>
+</div>
+
 @if (count($providers) > 0)
     <div class="grid grid-cols-1 gap-3">
         @foreach ($providers as $providerKey => $provider)
