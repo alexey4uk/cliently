@@ -148,6 +148,9 @@ jobs:
             php artisan migrate --force
             php artisan db:seed --force
             php artisan optimize
+
+            # Restart queue workers
+            php artisan queue:restart
             
             # Финальная проверка
             HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://dev.cliently.by)
