@@ -7,8 +7,7 @@
     <div class="max-w-sm w-full mx-auto">
         <!-- Заголовок страницы -->
         <div class="text-center mb-6">
-            <h1 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-2">Добро пожаловать обратно</h1>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Пожалуйста, войдите в свой аккаунт</p>
+            <h1 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-2">Добро пожаловать</h1>
         </div>
 
         <!-- Карточка формы с улучшенным дизайном -->
@@ -102,16 +101,6 @@
                     </button>
                 </div>
             </form>
-
-            <!-- Улучшенный разделитель -->
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium">ИЛИ ПРОДОЛЖИТЬ С</span>
-                </div>
-            </div>
 
             <!-- OAuth кнопки с улучшенным дизайном -->
             <x-oauth-buttons text="Войти через" />

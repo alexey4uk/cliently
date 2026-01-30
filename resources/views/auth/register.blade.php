@@ -84,6 +84,7 @@
                             name="password"
                             required
                             autocomplete="new-password"
+                            placeholder="●●●●●●●●"
                             class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                         @error('password')
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -100,7 +101,7 @@
                 <div class="space-y-2">
                     <label for="password_confirmation" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="lock-closed" size="sm" class="text-indigo-500 dark:text-indigo-400" />
-                        <span>Подтверждение</span>
+                        <span>Подтверждение пароля</span>
                         
                     </label>
                     <div class="relative">
@@ -110,6 +111,7 @@
                             name="password_confirmation"
                             required
                             autocomplete="new-password"
+                            placeholder="●●●●●●●●"
                             class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                     </div>
                 </div>
@@ -151,16 +153,6 @@
                     </button>
                 </div>
             </form>
-
-            <!-- Улучшенный разделитель -->
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-medium">ИЛИ ПРОДОЛЖИТЬ С</span>
-                </div>
-            </div>
 
             <!-- OAuth кнопки с улучшенным дизайном -->
             <x-oauth-buttons text="Зарегистрироваться через" />

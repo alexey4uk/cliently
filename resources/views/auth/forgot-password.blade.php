@@ -30,8 +30,7 @@
                 <div class="space-y-2">
                     <label for="email" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="envelope" size="sm" class="text-indigo-500 dark:text-indigo-400" />
-                        <span>Email адрес</span>
-                        <span class="text-rose-500 dark:text-rose-400 ml-1">*</span>
+                        <span>Email</span>
                     </label>
                     <div class="relative">
                         <input
@@ -42,9 +41,7 @@
                             required
                             autocomplete="email"
                             autofocus
-                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                            placeholder="example@email.com"
-                        />
+                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                         @error('email')
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <x-icon name="exclamation-circle" size="sm" class="text-rose-500" />
@@ -63,7 +60,6 @@
                         class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-500/30 hover:from-indigo-600 hover:to-indigo-700 active:from-indigo-700 active:to-indigo-800 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transform hover:scale-[1.01] active:scale-[0.99]"
                     >
                         <span>Отправить ссылку</span>
-                        <x-icon name="paper-airplane" size="sm" />
                     </button>
                 </div>
             </form>
