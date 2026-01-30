@@ -41,8 +41,7 @@
                             <div class="relative">
                                 <input type="text" id="first_name" name="first_name" required
                                     value="{{ old('first_name') }}"
-                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('first_name') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                                    placeholder="Введите имя клиента" autofocus>
+                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('first_name') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400" autofocus>
                                 @if ($errors->has('first_name'))
                                     <div class="absolute inset-y-0 right-3 flex items-center">
                                         <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
@@ -63,8 +62,7 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}"
-                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('last_name') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                                    placeholder="Введите фамилию">
+                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('last_name') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400">
                                 @if ($errors->has('last_name'))
                                     <div class="absolute inset-y-0 right-3 flex items-center">
                                         <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>
@@ -127,8 +125,7 @@
                             </label>
                             <div class="relative">
                                 <input type="email" id="email" name="email" value="{{ old('email') }}"
-                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('email') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                                    placeholder="client@example.com">
+                                    class="w-full px-4 py-2.5 text-sm rounded-lg {{ $errors->has('email') ? 'border border-rose-500' : 'border border-slate-200 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400">
                                 @if ($errors->has('email'))
                                     <div class="absolute inset-y-0 right-3 flex items-center">
                                         <i class="fa-solid fa-circle-exclamation text-rose-500 text-sm"></i>

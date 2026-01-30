@@ -58,4 +58,20 @@ class WelcomeController extends Controller
             'advancedMetricsList' => $advancedMetricsList,
         ]);
     }
+
+    /**
+     * Display the privacy policy page.
+     */
+    public function privacyPolicy()
+    {
+        return view('privacy-policy');
+    }
+
+    /**
+     * Display the public offer page.
+     */
+    public function publicOffer()
+    {
+        return view('public-offer');
+    }
 }

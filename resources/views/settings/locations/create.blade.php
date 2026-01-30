@@ -21,16 +21,6 @@
               toggle24Hours() {
                   this.is24Hours = !this.is24Hours;
               },
-              previewAddress: '',
-              updatePreview() {
-                  const parts = [];
-                  if (document.getElementById('city')?.value) parts.push(document.getElementById('city').value);
-                  if (document.getElementById('street')?.value) parts.push('ул. ' + document.getElementById('street').value);
-                  if (document.getElementById('house')?.value) parts.push('д. ' + document.getElementById('house').value);
-                  if (document.getElementById('building')?.value) parts.push('корп. ' + document.getElementById('building').value);
-                  if (document.getElementById('apartment')?.value) parts.push('кв. ' + document.getElementById('apartment').value);
-                  this.previewAddress = parts.join(', ') || 'Адрес будет отображаться здесь';
-              }
           }"
           @input="updatePreview()">
         @csrf
@@ -42,7 +32,7 @@
                 <!-- Название -->
                 <div class="md:col-span-2">
                     <label for="name" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Название локации <span class="text-rose-500">*</span>
+                        Название <span class="text-rose-500">*</span>
                     </label>
                     <input type="text" 
                            id="name" 
@@ -56,18 +46,15 @@
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+        </div>
 
+        <!-- Адрес -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Адрес</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Адрес -->
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Адрес <span class="text-rose-500">*</span>
-                    </label>
-                    
-                    <!-- Предпросмотр адреса -->
-                    <div class="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Предпросмотр:</p>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white" x-text="previewAddress || 'Адрес будет отображаться здесь'"></p>
-                    </div>
 
                     <div class="space-y-4">
                         <!-- Первая строка: Город, Улица, Дом -->
@@ -82,8 +69,7 @@
                                        required 
                                        value="{{ old('city') }}"
                                        @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('city') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                       placeholder="Минск">
+                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('city') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('city')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
@@ -98,8 +84,7 @@
                                        required 
                                        value="{{ old('street') }}"
                                        @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('street') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                       placeholder="пр. Независимости">
+                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('street') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('street')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
@@ -114,8 +99,7 @@
                                        required 
                                        value="{{ old('house') }}"
                                        @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('house') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                       placeholder="1">
+                                       class="w-full px-4 py-2.5 text-sm border {{ $errors->has('house') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('house')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
@@ -133,8 +117,7 @@
                                        name="building" 
                                        value="{{ old('building') }}"
                                        @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                       placeholder="1">
+                                       class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                             </div>
                             <div>
                                 <label for="apartment" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
@@ -145,8 +128,7 @@
                                        name="apartment" 
                                        value="{{ old('apartment') }}"
                                        @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                       placeholder="101">
+                                       class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                             </div>
                         </div>
                     </div>

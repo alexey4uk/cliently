@@ -33,7 +33,7 @@
                         <input type="text" id="name" name="name" required
                             value="{{ old('name') }}"
                             class="w-full px-4 py-2.5 border {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                            placeholder="Название организации"
+                            placeholder="ИП Иванов"
                             autofocus>
                         @error('name')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -81,8 +81,7 @@
                         </label>
                         <input type="text" id="first_name" name="first_name" required
                             value="{{ old('first_name') }}"
-                            class="w-full px-4 py-2.5 border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                            placeholder="Имя">
+                            class="w-full px-4 py-2.5 border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                         @error('first_name')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
@@ -93,8 +92,7 @@
                         </label>
                         <input type="text" id="last_name" name="last_name"
                             value="{{ old('last_name') }}"
-                            class="w-full px-4 py-2.5 border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                            placeholder="Фамилия">
+                            class="w-full px-4 py-2.5 border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                         @error('last_name')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror

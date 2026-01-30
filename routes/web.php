@@ -10,6 +10,8 @@ use App\Http\Controllers\TelegramSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\WelcomeController::class, 'landing']);
+Route::get('/privacy-policy', [\App\Http\Controllers\WelcomeController::class, 'privacyPolicy'])->name('privacy.policy');
+Route::get('/public-offer', [\App\Http\Controllers\WelcomeController::class, 'publicOffer'])->name('public.offer');
 
 // Первоначальная настройка (создание админа при первом запуске)
 Route::get('/setup', [\App\Http\Controllers\SetupController::class, 'show'])->name('setup');

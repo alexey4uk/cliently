@@ -25,16 +25,6 @@
               toggle24Hours() {
                   this.is24Hours = !this.is24Hours;
               },
-              previewAddress: '',
-              updatePreview() {
-                  const parts = [];
-                  if (document.getElementById('city')?.value) parts.push(document.getElementById('city').value);
-                  if (document.getElementById('street')?.value) parts.push('ул. ' + document.getElementById('street').value);
-                  if (document.getElementById('house')?.value) parts.push('д. ' + document.getElementById('house').value);
-                  if (document.getElementById('building')?.value) parts.push('корп. ' + document.getElementById('building').value);
-                  if (document.getElementById('apartment')?.value) parts.push('кв. ' + document.getElementById('apartment').value);
-                  this.previewAddress = parts.join(', ') || '{{ $location->full_address }}';
-              }
           }"
           @input="updatePreview()"
           x-init="updatePreview()">
@@ -62,18 +52,14 @@
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
                 </div>
+            </div>
+        </div>
 
-                <!-- Адрес -->
+        <!-- Адрес -->
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Адрес</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Адрес <span class="text-rose-500">*</span>
-                    </label>
-                    
-                    <!-- Предпросмотр адреса -->
-                    <div class="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Предпросмотр:</p>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white" x-text="previewAddress || '{{ $location->full_address }}'"></p>
-                    </div>
 
                     <div class="space-y-4">
                         <!-- Первая строка: Город, Улица, Дом -->

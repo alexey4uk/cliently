@@ -9,12 +9,13 @@
                 <p class="text-sm text-gray-400 mb-4">
                     Простая CRM для самозанятых и мастеров. Организуйте клиентов и записи без сложностей.
                 </p>
-                <div class="flex gap-4">
-                    {{-- TODO: заменить на реальные ссылки --}}
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Telegram">Telegram</a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">Instagram</a>
+                {{-- <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors"
+                        aria-label="Telegram">Telegram</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors"
+                        aria-label="Instagram">Instagram</a>
                     <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="VK">VK</a>
-                </div>
+                </div> --}}
             </div>
 
             <div>
@@ -39,23 +40,31 @@
             <div>
                 <h3 class="text-white font-semibold mb-4">Контакты</h3>
                 <ul class="space-y-2 text-sm">
-                    <li class="flex items-start gap-2">
+                    {{-- <li class="flex items-start gap-2">
                         <x-icon name="phone" variant="outline" size="sm" class="text-gray-400 flex-shrink-0 mt-0.5" />
                         <span>+375291234567</span>
+                    </li> --}}
+                    <li class="flex items-start gap-2">
+                        <x-icon name="envelope" variant="outline" size="sm"
+                            class="text-gray-400 shrink-0 mt-0.5" />
+                        <a href="mailto:hello@cliently.by"
+                            class="hover:text-white transition-colors break-all">info@cliently.by</a>
                     </li>
                     <li class="flex items-start gap-2">
-                        <x-icon name="envelope" variant="outline" size="sm" class="text-gray-400 flex-shrink-0 mt-0.5" />
-                        <a href="mailto:hello@cliently.by" class="hover:text-white transition-colors break-all">hello@cliently.by</a>
+                        <x-icon name="envelope" variant="outline" size="sm"
+                            class="text-gray-400 shrink-0 mt-0.5" />
+                        <a href="mailto:support@cliently.by"
+                            class="hover:text-white transition-colors break-all">support@cliently.by</a>
                     </li>
                 </ul>
             </div>
         </div>
 
         <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-sm text-gray-400 text-center md:text-left">© {{ date('Y') }} Cliently.by. Все права защищены.</p>
+            <p class="text-sm text-gray-400 text-center md:text-left">© {{ date('Y') }} CLIENTLY.BY</p>
             <div class="flex gap-6 text-sm">
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">Оферта</a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">Конфиденциальность</a>
+                <a href="{{ route('public.offer') }}" target="_blank" class="text-gray-400 hover:text-white transition-colors">Оферта</a>
+                <a href="{{ route('privacy.policy') }}" target="_blank" class="text-gray-400 hover:text-white transition-colors">Конфиденциальность</a>
             </div>
         </div>
     </div>
