@@ -31,6 +31,7 @@ class SendBroadcastJob implements ShouldQueue
         public NotificationBroadcast $broadcast
     ) {
         $this->onConnection('broadcasts');
+        $this->onQueue('broadcasts');
     }
 
     /**
