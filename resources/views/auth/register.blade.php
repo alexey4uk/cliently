@@ -21,7 +21,7 @@
                     <label for="name" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="user" size="sm" class="text-indigo-500 dark:text-indigo-400" />
                         <span>Имя</span>
-                        <span class="text-rose-500 dark:text-rose-400 ml-1">*</span>
+                        
                     </label>
                     <div class="relative">
                         <input
@@ -31,9 +31,7 @@
                             value="{{ old('name') }}"
                             required
                             autocomplete="name"
-                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                            placeholder="Иван Иванов"
-                        />
+                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                         @error('name')
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <x-icon name="exclamation-circle" size="sm" class="text-rose-500" />
@@ -49,8 +47,8 @@
                 <div class="space-y-2">
                     <label for="email" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="envelope" size="sm" class="text-indigo-500 dark:text-indigo-400" />
-                        <span>Email адрес</span>
-                        <span class="text-rose-500 dark:text-rose-400 ml-1">*</span>
+                        <span>Email</span>
+                        
                     </label>
                     <div class="relative">
                         <input
@@ -60,9 +58,7 @@
                             value="{{ old('email') }}"
                             required
                             autocomplete="email"
-                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                            placeholder="example@email.com"
-                        />
+                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('email') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                         @error('email')
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <x-icon name="exclamation-circle" size="sm" class="text-rose-500" />
@@ -79,7 +75,7 @@
                     <label for="password" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="lock-closed" size="sm" class="text-indigo-500 dark:text-indigo-400" />
                         <span>Пароль</span>
-                        <span class="text-rose-500 dark:text-rose-400 ml-1">*</span>
+                        
                     </label>
                     <div class="relative">
                         <input
@@ -88,9 +84,7 @@
                             name="password"
                             required
                             autocomplete="new-password"
-                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                            placeholder="•••••••• (минимум 8 символов)"
-                        />
+                            class="w-full px-3 py-2 text-sm rounded-lg border-2 {{ $errors->has('password') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                         @error('password')
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <x-icon name="exclamation-circle" size="sm" class="text-rose-500" />
@@ -106,8 +100,8 @@
                 <div class="space-y-2">
                     <label for="password_confirmation" class="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <x-icon name="lock-closed" size="sm" class="text-indigo-500 dark:text-indigo-400" />
-                        <span>Подтверждение пароля</span>
-                        <span class="text-rose-500 dark:text-rose-400 ml-1">*</span>
+                        <span>Подтверждение</span>
+                        
                     </label>
                     <div class="relative">
                         <input
@@ -116,9 +110,7 @@
                             name="password_confirmation"
                             required
                             autocomplete="new-password"
-                            class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
-                            placeholder="••••••••"
-                        />
+                            class="w-full px-3 py-2 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"/>
                     </div>
                 </div>
 
@@ -137,7 +129,7 @@
                         <div class="ml-3 text-sm">
                             <label for="terms" class="text-slate-600 dark:text-slate-400">
                                 Я согласен с
-                                <a href="#" class="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium underline underline-offset-2">
+                                <a href="{{ route('public.offer') }}" target="_blank" class="text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors font-medium underline underline-offset-2">
                                     соглашением
                                 </a>
                             </label>

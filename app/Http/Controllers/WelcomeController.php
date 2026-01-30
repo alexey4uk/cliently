@@ -66,4 +66,12 @@ class WelcomeController extends Controller
     {
         return view('privacy-policy');
     }
+
+    /**
+     * Display the public offer page.
+     */
+    public function publicOffer()
+    {
+        return view('public-offer');
+    }
 }
