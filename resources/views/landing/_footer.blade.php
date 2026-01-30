@@ -64,7 +64,7 @@
             <p class="text-sm text-gray-400 text-center md:text-left">© {{ date('Y') }} CLIENTLY.BY</p>
             <div class="flex gap-6 text-sm">
                 <a href="#" class="text-gray-400 hover:text-white transition-colors">Оферта</a>
-                <a href="#" class="text-gray-400 hover:text-white transition-colors">Конфиденциальность</a>
+                <a href="{{ route('privacy.policy') }}" target="_blank" class="text-gray-400 hover:text-white transition-colors">Конфиденциальность</a>
             </div>
         </div>
     </div>
