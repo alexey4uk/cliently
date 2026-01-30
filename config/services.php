@@ -35,4 +35,73 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | OAuth Providers
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for OAuth authentication providers.
+    |
+    */
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'yandex' => [
+        'client_id' => env('YANDEX_CLIENT_ID'),
+        'client_secret' => env('YANDEX_CLIENT_SECRET'),
+        'redirect' => env('YANDEX_REDIRECT_URI'),
+    ],
+
+    'vk' => [
+        'client_id' => env('VK_CLIENT_ID'),
+        'client_secret' => env('VK_CLIENT_SECRET'),
+        'redirect' => env('VK_REDIRECT_URI'),
+    ],
+
+    'mailru' => [
+        'client_id' => env('MAILRU_CLIENT_ID'),
+        'client_secret' => env('MAILRU_CLIENT_SECRET'),
+        'redirect' => env('MAILRU_REDIRECT_URI'),
+    ],
+
+    'telegram' => [
+        'client_id' => env('TELEGRAM_CLIENT_ID'),
+        'client_secret' => env('TELEGRAM_CLIENT_SECRET'),
+        'redirect' => env('TELEGRAM_REDIRECT_URI'),
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT_URI'),
+    ],
+
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'redirect' => env('APPLE_REDIRECT_URI'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | bePaid Payment Gateway
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for bePaid payment gateway.
+    | Main configuration is in config/bepaid.php
+    |
+    */
+
+    'bepaid' => [
+        'test_mode' => env('BEPAID_TEST_MODE', true),
+        'test_shop_id' => env('BEPAID_TEST_SHOP_ID'),
+        'test_secret_key' => env('BEPAID_TEST_SECRET_KEY'),
+        'production_shop_id' => env('BEPAID_PRODUCTION_SHOP_ID'),
+        'production_secret_key' => env('BEPAID_PRODUCTION_SECRET_KEY'),
+    ],
+
 ];

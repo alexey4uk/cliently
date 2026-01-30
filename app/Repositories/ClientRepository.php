@@ -1,0 +1,115 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\Client;
+
+/**
+ * Репозиторий для работы с клиентами
+ */
+class ClientRepository extends BaseRepository implements ClientRepositoryInterface
+{
+    /**
+     * Получить модель для репозитория
+     */
+    public function getModel(): Client
+    {
+        return new Client;
+    }
+
+    /**
+     * Найти или создать клиента по телефону и бизнесу.
+     * Телефон хранится в phones (phoneable); при создании передаются country_id и phone в $attributes.
+     */
+    public function firstOrCreateByPhone(int $businessId, string $phone, array $attributes = []): Client
+    {
+        $client = $this->findByPhone($businessId, $phone);
+
+        if ($client) {
+            return $client;
+        }
+
+        $payload = array_merge($attributes, ['business_id' => $businessId]);
+        unset($payload['phone'], $payload['phone_country_id']);
+
+        $client = $this->model->create($payload);
+
+        $countryId = (int) ($attributes['phone_country_id'] ?? \App\Models\Country::where('code', 'BY')->value('id'));
+        $client->phones()->create([
+            'country_id' => $countryId,
+            'phone' => $phone,
+            'type' => 'primary',
+        ]);
+
+        return $client;
+    }
+
+    /**
+     * Найти клиента по телефону (E.164) и бизнесу
+     */
+    public function findByPhone(int $businessId, string $phone): ?Client
+    {
+        return $this->model->where('business_id', $businessId)
+            ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
+            ->first();
+    }
+
+    /**
+     * Получить клиентов бизнеса
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getByBusiness(int $businessId)
+    {
+        return $this->model->where('business_id', $businessId)->get();
+    }
+
+    /**
+     * Получить недавних клиентов для дашборда (с кешированием)
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getRecentForDashboard(int $businessId, int $limit = 5)
+    {
+        $cacheKey = "clients_recent_dashboard_{$businessId}_{$limit}";
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($businessId, $limit) {
+            return $this->model->where('business_id', $businessId)
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get();
+        });
+    }
+
+    /**
+     * Получить количество новых клиентов за период
+     */
+    public function getNewClientsCount(int $businessId, string $since): int
+    {
+        return $this->model->where('business_id', $businessId)
+            ->where('created_at', '>=', $since)
+            ->count();
+    }
+
+    /**
+     * Найти клиента по ID и проверить принадлежность бизнесу
+     *
+     * @return \App\Models\Client|null
+     */
+    public function findByIdAndBusiness(int $clientId, int $businessId)
+    {
+        return $this->model->where('id', $clientId)
+            ->where('business_id', $businessId)
+            ->first();
+    }
+
+    /**
+     * Проверить, принадлежит ли клиент бизнесу
+     */
+    public function belongsToBusiness(int $clientId, int $businessId): bool
+    {
+        return $this->model->where('id', $clientId)
+            ->where('business_id', $businessId)
+            ->exists();
+    }
+}

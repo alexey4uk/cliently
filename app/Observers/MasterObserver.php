@@ -1,0 +1,81 @@
+<?php
+
+namespace App\Observers;
+
+use App\Models\Master;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class MasterObserver
+{
+    /**
+     * Handle the Master "saved" event.
+     */
+    public function saved(Master $master): void
+    {
+        $this->clearMasterCache($master);
+    }
+
+    /**
+     * Handle the Master "deleting" event.
+     * Выполняется перед удалением мастера.
+     */
+    public function deleting(Master $master): void
+    {
+        // Очищаем master_id в business_user для всех пользователей, связанных с этим мастером
+        DB::table('business_user')
+            ->where('master_id', $master->id)
+            ->update(['master_id' => null]);
+
+        // Очищаем master_id в business_user_invitations для всех приглашений, связанных с этим мастером
+        DB::table('business_user_invitations')
+            ->where('master_id', $master->id)
+            ->update(['master_id' => null]);
+    }
+
+    /**
+     * Handle the Master "deleted" event.
+     * Выполняется после удаления мастера.
+     */
+    public function deleted(Master $master): void
+    {
+        $this->clearMasterCache($master);
+    }
+
+    /**
+     * Clear master cache for business and locations.
+     */
+    protected function clearMasterCache(Master $master): void
+    {
+        if (! $master->business_id) {
+            return;
+        }
+
+        // Очищаем кеш для бизнеса (со всеми возможными service_id)
+        Cache::forget("masters_active_business_{$master->business_id}");
+
+        // Загружаем связи, если они еще не загружены
+        if (! $master->relationLoaded('services')) {
+            $master->load('services');
+        }
+
+        // Очищаем кеш для бизнеса с каждым service_id мастера
+        foreach ($master->services as $service) {
+            Cache::forget("masters_active_business_{$master->business_id}_service_{$service->id}");
+        }
+
+        // Загружаем связи локаций, если они еще не загружены
+        if (! $master->relationLoaded('locations')) {
+            $master->load('locations');
+        }
+
+        // Очищаем кеш для всех локаций мастера
+        foreach ($master->locations as $location) {
+            Cache::forget("masters_active_location_{$location->id}");
+            // Очищаем кеш для локации с каждым service_id мастера
+            foreach ($master->services as $service) {
+                Cache::forget("masters_active_location_{$location->id}_service_{$service->id}");
+            }
+        }
+    }
+}

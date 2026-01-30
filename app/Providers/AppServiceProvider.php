@@ -11,7 +11,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register repositories
+        $this->app->bind(\App\Repositories\BusinessRepositoryInterface::class, \App\Repositories\BusinessRepository::class);
+        $this->app->bind(\App\Repositories\ClientRepositoryInterface::class, \App\Repositories\ClientRepository::class);
+        $this->app->bind(\App\Repositories\ServiceRepositoryInterface::class, \App\Repositories\ServiceRepository::class);
+        $this->app->bind(\App\Repositories\LocationRepositoryInterface::class, \App\Repositories\LocationRepository::class);
+        $this->app->bind(\App\Repositories\MasterRepositoryInterface::class, \App\Repositories\MasterRepository::class);
+        $this->app->bind(\App\Repositories\AppointmentRepositoryInterface::class, \App\Repositories\AppointmentRepository::class);
+        $this->app->bind(\App\Repositories\TelegramUserStateRepositoryInterface::class, \App\Repositories\TelegramUserStateRepository::class);
     }
 
     /**
@@ -19,6 +26,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register middleware aliases
+        $this->app['router']->aliasMiddleware('check.role', \App\Http\Middleware\CheckRole::class);
+        $this->app['router']->aliasMiddleware('check.permission', \App\Http\Middleware\CheckPermission::class);
+        $this->app['router']->aliasMiddleware('only.panel', \App\Http\Middleware\OnlyPanelAccess::class);
+        $this->app['router']->aliasMiddleware('only.client', \App\Http\Middleware\OnlyClientAccess::class);
+
+        // Register model observers
+        \App\Models\Master::observe(\App\Observers\MasterObserver::class);
+        \App\Models\BusinessRolePermission::observe(\App\Observers\BusinessRolePermissionObserver::class);
+        \App\Models\Appointment::observe(\App\Observers\AppointmentObserver::class);
+        \App\Models\Invoice::observe(\App\Observers\InvoiceObserver::class);
+        \App\Models\Subscription::observe(\App\Observers\SubscriptionObserver::class);
+        \App\Models\PlanFeature::observe(\App\Observers\PlanFeatureObserver::class);
+        \App\Models\Business::observe(\App\Observers\BusinessObserver::class);
+        \App\Models\SubscriptionMetric::observe(\App\Observers\SubscriptionMetricObserver::class);
+        \App\Models\Service::observe(\App\Observers\ServiceObserver::class);
+        \App\Models\Location::observe(\App\Observers\LocationObserver::class);
+        \App\Models\Client::observe(\App\Observers\ClientObserver::class);
+        \App\Models\BepaidSettings::observe(\App\Observers\BepaidSettingsObserver::class);
     }
 }
