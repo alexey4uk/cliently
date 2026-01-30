@@ -3,12 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Business;
-use App\Models\Plan;
 use App\Models\User;
-use App\Services\SubscriptionService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
