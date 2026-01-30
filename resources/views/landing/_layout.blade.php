@@ -15,6 +15,7 @@
 
     @vite(['resources/css/app.css', 'resources/css/landing.css', 'resources/js/welcome.js'])
     <x-theme-init />
+    <x-yandex-metrics />
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased">
     @include('landing._header')

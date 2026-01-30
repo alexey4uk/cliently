@@ -30,7 +30,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'name',
         'avatar',
-        'dashboard_settings',
         'telegram_chat_id',
         'telegram_token',
         'oauth_provider',
@@ -55,7 +54,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'dashboard_settings' => 'array',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             //            'phone' => E164PhoneNumberCast::class.":BY",
@@ -115,43 +113,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected static function booted()
     {
         static::creating(function ($user) {
-            if (is_null($user->dashboard_settings)) {
-                $user->dashboard_settings = [
-                    'dashboard' => [
-                        'widgets' => [
-                            'stats_header' => true,
-                            'stat_today' => true,
-                            'stat_week' => true,
-                            'stat_new_clients' => true,
-                            'stat_total_clients' => true,
-                            'stat_pending' => true,
-                            'stat_completed' => true,
-                            'stat_cancelled' => true,
-                            'stat_avg_per_day' => true,
-                            'quick_actions' => true,
-                            'appointments_chart' => true,
-                            'clients_chart' => true,
-                            'next_appointment' => true,
-                            'today_appointments' => true,
-                            'pending_appointments' => true,
-                            'recent_clients' => true,
-                            'weekly_chart' => false,
-                        ],
-                        'widget_order' => [
-                            'stats_header',
-                            'quick_actions',
-                            'appointments_chart',
-                            'clients_chart',
-                            'next_appointment',
-                            'today_appointments',
-                            'pending_appointments',
-                            'recent_clients',
-                            'weekly_chart',
-                        ],
-                    ],
-                ];
-            }
-
             // Генерируем токен для Telegram, если не задан
             if (is_null($user->telegram_token)) {
                 $user->telegram_token = Str::random(32);
