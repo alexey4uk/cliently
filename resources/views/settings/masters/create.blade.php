@@ -70,7 +70,6 @@
                                required 
                                value="{{ old('first_name') }}"
                                class="w-full px-4 py-2.5 border {{ $errors->has('first_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                               placeholder="Введите имя"
                                autofocus>
                         @error('first_name')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
@@ -85,8 +84,7 @@
                                id="last_name" 
                                name="last_name" 
                                value="{{ old('last_name') }}"
-                               class="w-full px-4 py-2.5 border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                               placeholder="Введите фамилию">
+                               class="w-full px-4 py-2.5 border {{ $errors->has('last_name') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                         @error('last_name')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
@@ -103,7 +101,7 @@
                            required 
                            value="{{ old('specialization') }}"
                            class="w-full px-4 py-2.5 border {{ $errors->has('specialization') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                           placeholder="Например: Парикмахер, Массажист">
+                           placeholder="Парикмахер, Массажист">
                     @error('specialization')
                         <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                     @enderror
@@ -116,8 +114,7 @@
                     <textarea id="description" 
                               name="description" 
                               rows="3"
-                              class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none transition-colors"
-                              placeholder="Расскажите о мастере...">{{ old('description') }}</textarea>
+                              class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none transition-colors">{{ old('description') }}</textarea>
                 </div>
             </div>
         </div>
@@ -147,8 +144,7 @@
                             <span id="masterCreatePhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
                             <input type="tel" id="phone_national" inputmode="numeric" maxlength="15" required
                                 value="{{ old('phone_national') }}"
-                                class="w-full pl-14 pr-4 py-2.5 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors"
-                                placeholder="291234567">
+                                class="w-full pl-14 pr-4 py-2.5 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                             <input type="hidden" name="phone" id="masterCreatePhone" value="{{ old('phone') }}">
                         </div>
                     </div>
@@ -362,12 +358,12 @@
         if (hidden) hidden.value = full;
         if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
     }
-    if (sel) sel.addEventListener('change', function() { updatePhone(); if (national) national.placeholder = (this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789'; });
+    //if (sel) sel.addEventListener('change', function() { updatePhone(); if (national) national.placeholder = (this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789'; });
     if (national) national.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 15); updatePhone(); });
     if (sel && sel.options.length) {
         const opt = sel.options[sel.selectedIndex];
         if (prefix) prefix.textContent = opt ? opt.dataset.code || '' : '';
-        if (national) national.placeholder = (opt && opt.dataset.code === '+375') ? '291234567' : '9123456789';
+        // if (national) national.placeholder = (opt && opt.dataset.code === '+375') ? '291234567' : '9123456789';
         const op = block && block.dataset.oldPhone ? block.dataset.oldPhone : '', oc = block && block.dataset.oldCountry ? String(block.dataset.oldCountry) : '';
         if (op && oc && sel.value === oc && opt) { const codeDigits = (opt.dataset.code || '').replace(/\D/g, ''), phoneDigits = op.replace(/\D/g, ''); if (phoneDigits.startsWith(codeDigits)) national.value = phoneDigits.slice(codeDigits.length); }
         updatePhone();

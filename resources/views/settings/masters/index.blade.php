@@ -119,7 +119,7 @@
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                         @foreach ($masters as $master)
                             @php
-                                $workingHours = $master->working_hours ?? [];
+                                $workingHours = is_string($master->working_hours) ? json_decode($master->working_hours, true) : ($master->working_hours ?? []);
                                 $is24Hours = $workingHours['24_hours'] ?? false;
                                 $timeFrom = $workingHours['from'] ?? '—';
                                 $timeTo = $workingHours['to'] ?? '—';
@@ -228,7 +228,7 @@
         <div class="md:hidden grid grid-cols-1 gap-4">
             @foreach ($masters as $master)
                 @php
-                    $workingHours = $master->working_hours ?? [];
+                    $workingHours = json_decode($master->working_hours, true);
                     $is24Hours = $workingHours['24_hours'] ?? false;
                     $timeFrom = $workingHours['from'] ?? '—';
                     $timeTo = $workingHours['to'] ?? '—';
