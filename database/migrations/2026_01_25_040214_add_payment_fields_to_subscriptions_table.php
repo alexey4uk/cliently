@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,7 +12,6 @@ return new class extends Migration
     {
         Schema::table('subscriptions', function (Blueprint $table) {
             $table->foreignId('invoice_id')->nullable()->after('user_id')->constrained()->nullOnDelete();
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'cancelled'])->nullable()->after('status');
         });
     }
 
@@ -22,9 +20,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('subscriptions', function (Blueprint $table) {
-            $table->dropForeign(['invoice_id']);
-            $table->dropColumn(['invoice_id', 'payment_status']);
+        Schema::table("subscriptions", function (Blueprint $table) {
+            $table->dropForeign(["invoice_id"]);
+            $table->dropColumn(["invoice_id", "payment_status"]);
         });
     }
 };

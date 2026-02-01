@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('user_notification_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('notification_type', 100); // appointment.created, ticket.comment, etc.
-            $table->json('channels')->nullable(); // {"email": true, "telegram": true, "sms": false}
+            $table->string('notification_type', 100);
+            $table->boolean('enabled')->default(true);
+            $table->json('channels')->nullable();
             $table->timestamps();
 
-            // Уникальный индекс: один пользователь - одна настройка для каждого типа уведомления
             $table->unique(['user_id', 'notification_type']);
         });
     }

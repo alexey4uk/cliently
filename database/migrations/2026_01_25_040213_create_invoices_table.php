@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
+            $table->foreignId('plan_id')->constrained()->restrictOnDelete();
             $table->foreignId('subscription_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('plan_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 10, 2);
             $table->string('currency', 3)->default('BYN');
             $table->enum('status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending');

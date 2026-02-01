@@ -15,12 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('message');
-            $table->string('target', 20); // owners | all
-            $table->json('channels'); // ['system', 'email', 'telegram']
+            $table->enum('status', ['draft', 'pending', 'sent', 'failed'])->default('draft');
+            $table->string('target', 50);
+            $table->json('channels');
             $table->foreignId('sent_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('sent_at');
+            $table->timestamp('sent_at')->nullable();
             $table->unsignedInteger('recipients_count')->default(0);
             $table->timestamps();
+
+            $table->index(['status', 'sent_at']);
         });
     }
 

@@ -13,15 +13,17 @@ return new class extends Migration
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
-            $table->foreignId('plan_id')->constrained()->cascadeOnDelete();
-            $table->enum('status', ['active', 'trial', 'cancelled', 'expired'])->default('active');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('plan_id')->constrained()->restrictOnDelete();
+            $table->enum('status', ['trial', 'active', 'past_due', 'cancelled', 'expired'])->default('trial');
             $table->dateTime('starts_at');
             $table->dateTime('ends_at')->nullable();
             $table->dateTime('trial_ends_at')->nullable();
             $table->dateTime('cancelled_at')->nullable();
             $table->json('metadata')->nullable();
             $table->timestamps();
+
+            $table->index(['status', 'ends_at']);
         });
     }
 

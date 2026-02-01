@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('notification_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('type', 50); // ticket.created, subscription.warning, etc.
+            $table->string('type', 50);
             $table->string('title', 255);
             $table->text('message');
-            $table->json('data')->nullable(); // Additional data like ticket_id, url, etc.
-            $table->string('required_permission', 100)->nullable(); // Permission needed to view
+            $table->json('data')->nullable();
+            $table->string('required_permission', 100)->nullable();
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();

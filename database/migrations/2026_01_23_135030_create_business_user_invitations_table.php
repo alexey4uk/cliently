@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('business_user_invitations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->constrained('businesses')->cascadeOnDelete();
+            $table->foreignId('role_id')->constrained('business_roles')->cascadeOnDelete();
+            $table->foreignId('master_id')->nullable()->constrained('masters')->nullOnDelete();
             $table->string('email');
-            $table->string('role', 100);
             $table->string('token', 64)->unique();
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('expires_at');
             $table->timestamps();
 
-            $table->unique(['business_id', 'email', 'token']);
+            $table->index(['email', 'business_id']);
         });
     }
 

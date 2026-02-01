@@ -13,13 +13,29 @@ return new class extends Migration
     {
         Schema::create('businesses', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('owner_id')->constrained('users')->cascadeOnDelete();
+
             $table->string('name');
             $table->string('slug')->unique();
+            $table->string('logo')->nullable();
+
             $table->text('description')->nullable();
+
+            $table->string('timezone')->default('Europe/Minsk');
+            $table->string('currency', 3)->default('BYN');
+
             $table->string('telegram_chat_id')->nullable();
             $table->string('telegram_token', 64)->unique()->nullable();
 
+            // Переключатели функционала
+            $table->boolean('online_booking_enabled')->default(true);
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
+
+            $table->index('is_active');
+            $table->index('owner_id');
         });
     }
 
