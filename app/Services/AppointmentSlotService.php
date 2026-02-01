@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Appointment;
 use App\Models\Master;
 use App\Models\Service;
+use App\Services\MasterScheduleService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -31,43 +32,51 @@ class AppointmentSlotService
      * @param  int|null  $excludeAppointmentId  ID записи для исключения из расчета (при редактировании)
      * @return array Массив доступных слотов в формате ['HH:MM', ...]
      */
-    public function getAvailableSlots(int $serviceId, string $date, ?int $masterId = null, ?int $locationId = null, &$debugInfo = null, ?int $excludeAppointmentId = null): array
-    {
+    public function getAvailableSlots(
+        int $serviceId,
+        string $date,
+        ?int $masterId = null,
+        ?int $locationId = null,
+        &$debugInfo = null,
+        ?int $excludeAppointmentId = null,
+    ): array {
         $service = Service::findOrFail($serviceId);
         $selectedDate = Carbon::parse($date);
         $duration = $service->duration; // Длительность услуги в минутах
 
         // Нормализуем masterId
-        if ($masterId === 0 || $masterId === '0' || $masterId === '') {
+        if ($masterId === 0 || $masterId === "0" || $masterId === "") {
             $masterId = null;
         }
 
         $debug = [
-            'service_id' => $serviceId,
-            'service_duration' => $duration,
-            'date' => $date,
-            'day_of_week' => $selectedDate->dayOfWeek,
-            'master_id' => $masterId,
-            'location_id' => $locationId,
+            "service_id" => $serviceId,
+            "service_duration" => $duration,
+            "date" => $date,
+            "day_of_week" => $selectedDate->dayOfWeek,
+            "master_id" => $masterId,
+            "location_id" => $locationId,
         ];
 
         // Получаем мастеров для услуги
         $masters = $this->getMastersForService($serviceId, $masterId);
-        $debug['masters_found'] = $masters->count();
-        $debug['masters'] = $masters->map(function ($master) {
-            return [
-                'id' => $master->id,
-                'name' => $master->first_name.' '.$master->last_name,
-                'has_working_hours' => ! empty($master->working_hours),
-                'working_hours' => $master->working_hours,
-            ];
-        })->toArray();
+        $debug["masters_found"] = $masters->count();
+        $debug["masters"] = $masters
+            ->map(function ($master) {
+                return [
+                    "id" => $master->id,
+                    "name" => $master->first_name . " " . $master->last_name,
+                    "has_working_hours" => !empty($master->working_hours),
+                    "working_hours" => $master->working_hours,
+                ];
+            })
+            ->toArray();
 
         if ($masters->isEmpty()) {
             if ($masterId) {
-                Log::warning('Мастер не найден или не предоставляет услугу', [
-                    'master_id' => $masterId,
-                    'service_id' => $serviceId,
+                Log::warning("Мастер не найден или не предоставляет услугу", [
+                    "master_id" => $masterId,
+                    "service_id" => $serviceId,
                 ]);
             }
             if ($debugInfo !== null) {
@@ -78,9 +87,12 @@ class AppointmentSlotService
         }
 
         // Получаем все доступные временные окна от всех мастеров
-        $availableTimeWindows = $this->getAvailableTimeWindows($masters, $selectedDate);
-        $debug['time_windows'] = $availableTimeWindows;
-        $debug['time_windows_count'] = count($availableTimeWindows);
+        $availableTimeWindows = $this->getAvailableTimeWindows(
+            $masters,
+            $selectedDate,
+        );
+        $debug["time_windows"] = $availableTimeWindows;
+        $debug["time_windows_count"] = count($availableTimeWindows);
 
         if (empty($availableTimeWindows)) {
             if ($debugInfo !== null) {
@@ -92,13 +104,17 @@ class AppointmentSlotService
 
         // Генерируем слоты с интервалом равным длительности услуги
         // Время подготовки не учитывается в генерации слотов, но будет показано пользователю как уведомление
-        $allSlots = $this->generateSlots($availableTimeWindows, $duration, $selectedDate);
-        $debug['slot_interval'] = $duration;
-        $debug['preparation_time'] = $service->preparation_time;
-        $debug['is_today'] = $selectedDate->isToday();
-        $debug['current_time'] = Carbon::now()->format('H:i');
-        $debug['all_slots_count'] = count($allSlots);
-        $debug['all_slots_sample'] = array_slice($allSlots, 0, 10); // Первые 10 слотов для примера
+        $allSlots = $this->generateSlots(
+            $availableTimeWindows,
+            $duration,
+            $selectedDate,
+        );
+        $debug["slot_interval"] = $duration;
+        $debug["preparation_time"] = $service->preparation_time;
+        $debug["is_today"] = $selectedDate->isToday();
+        $debug["current_time"] = Carbon::now()->format("H:i");
+        $debug["all_slots_count"] = count($allSlots);
+        $debug["all_slots_sample"] = array_slice($allSlots, 0, 10); // Первые 10 слотов для примера
 
         if (empty($allSlots)) {
             if ($debugInfo !== null) {
@@ -109,9 +125,17 @@ class AppointmentSlotService
         }
 
         // Фильтруем слоты по длительности услуги
-        $slotsFittingDuration = $this->filterSlotsByDuration($allSlots, $duration, $availableTimeWindows);
-        $debug['slots_after_duration_filter'] = count($slotsFittingDuration);
-        $debug['slots_after_duration_sample'] = array_slice($slotsFittingDuration, 0, 10);
+        $slotsFittingDuration = $this->filterSlotsByDuration(
+            $allSlots,
+            $duration,
+            $availableTimeWindows,
+        );
+        $debug["slots_after_duration_filter"] = count($slotsFittingDuration);
+        $debug["slots_after_duration_sample"] = array_slice(
+            $slotsFittingDuration,
+            0,
+            10,
+        );
 
         if (empty($slotsFittingDuration)) {
             if ($debugInfo !== null) {
@@ -123,10 +147,19 @@ class AppointmentSlotService
 
         // Исключаем занятые слоты
         // Время подготовки уже учтено при генерации слотов, поэтому проверяем только прямое пересечение
-        $availableSlots = $this->excludeBookedSlots($slotsFittingDuration, $serviceId, $selectedDate, $duration, $masterId, null, $excludeAppointmentId);
-        $debug['final_slots_count'] = count($availableSlots);
-        $debug['slots_lost_to_bookings'] = count($slotsFittingDuration) - count($availableSlots);
-        $debug['excluded_appointment_id'] = $excludeAppointmentId;
+        $availableSlots = $this->excludeBookedSlots(
+            $slotsFittingDuration,
+            $serviceId,
+            $selectedDate,
+            $duration,
+            $masterId,
+            null,
+            $excludeAppointmentId,
+        );
+        $debug["final_slots_count"] = count($availableSlots);
+        $debug["slots_lost_to_bookings"] =
+            count($slotsFittingDuration) - count($availableSlots);
+        $debug["excluded_appointment_id"] = $excludeAppointmentId;
 
         // Сортируем и возвращаем
         sort($availableSlots);
@@ -141,23 +174,25 @@ class AppointmentSlotService
     /**
      * Получить мастеров для услуги
      */
-    protected function getMastersForService(int $serviceId, ?int $masterId = null): Collection
-    {
+    protected function getMastersForService(
+        int $serviceId,
+        ?int $masterId = null,
+    ): Collection {
         // Нормализуем masterId (обрабатываем 0 и пустые значения как null)
-        if ($masterId === 0 || $masterId === '0' || $masterId === '') {
+        if ($masterId === 0 || $masterId === "0" || $masterId === "") {
             $masterId = null;
         }
 
         if ($masterId) {
             // Если мастер указан, проверяем, что он предоставляет эту услугу
-            $master = Master::where('id', $masterId)
-                ->where('is_active', true)
-                ->whereHas('services', function ($query) use ($serviceId) {
-                    $query->where('services.id', $serviceId);
+            $master = Master::where("id", $masterId)
+                ->where("is_active", true)
+                ->whereHas("services", function ($query) use ($serviceId) {
+                    $query->where("services.id", $serviceId);
                 })
                 ->first();
 
-            if (! $master) {
+            if (!$master) {
                 // Если мастер не найден или не предоставляет услугу, возвращаем пустую коллекцию
                 return collect();
             }
@@ -166,9 +201,9 @@ class AppointmentSlotService
         }
 
         // Получаем всех мастеров, которые предоставляют эту услугу
-        $masters = Master::where('is_active', true)
-            ->whereHas('services', function ($query) use ($serviceId) {
-                $query->where('services.id', $serviceId);
+        $masters = Master::where("is_active", true)
+            ->whereHas("services", function ($query) use ($serviceId) {
+                $query->where("services.id", $serviceId);
             })
             ->get();
 
@@ -182,48 +217,29 @@ class AppointmentSlotService
      * @param  Carbon  $date  Дата
      * @return array Массив временных окон [['from' => '09:00', 'to' => '18:00', 'master_id' => 1], ...]
      */
-    protected function getAvailableTimeWindows(Collection $masters, Carbon $date): array
-    {
+    protected function getAvailableTimeWindows(
+        Collection $masters,
+        Carbon $date,
+    ): array {
         $timeWindows = [];
-        $dayOfWeek = $date->dayOfWeek; // 0 (воскресенье) до 6 (суббота)
+        $scheduleService = app(MasterScheduleService::class);
 
         foreach ($masters as $master) {
-            // Получаем working_hours - может быть строкой JSON или массивом (из-за cast)
-            $rawWorkingHours = $master->working_hours;
+            // Используем новый сервис для получения времени работы
+            $workingTime = $scheduleService->getWorkingTimeForDate(
+                $master,
+                $date,
+            );
 
-            // Если это null или пусто, пропускаем
-            if (empty($rawWorkingHours)) {
-                continue;
+            if (!$workingTime) {
+                continue; // Мастер не работает в этот день
             }
 
-            // Парсим working_hours
-            $workingHours = $this->parseWorkingHours($rawWorkingHours);
-
-            if (! $workingHours || ! is_array($workingHours)) {
-                continue;
-            }
-
-            // Проверяем, не выходной ли день
-            if (in_array($dayOfWeek, $workingHours['days_off'] ?? [])) {
-                continue;
-            }
-
-            // Получаем время работы
-            if (isset($workingHours['24_hours']) && $workingHours['24_hours']) {
-                $from = '00:00';
-                $to = '23:59';
-            } else {
-                $from = $workingHours['from'] ?? null;
-                $to = $workingHours['to'] ?? null;
-            }
-
-            if ($from && $to) {
-                $timeWindows[] = [
-                    'from' => $from,
-                    'to' => $to,
-                    'master_id' => $master->id,
-                ];
-            }
+            $timeWindows[] = [
+                "from" => $workingTime["from"],
+                "to" => $workingTime["to"],
+                "master_id" => $master->id,
+            ];
         }
 
         return $timeWindows;
@@ -250,7 +266,7 @@ class AppointmentSlotService
             $workingHours = trim($workingHours);
 
             // Если пустая строка после trim
-            if ($workingHours === '') {
+            if ($workingHours === "") {
                 return null;
             }
 
@@ -258,9 +274,9 @@ class AppointmentSlotService
 
             // Проверяем ошибки JSON
             if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::warning('Ошибка декодирования JSON working_hours', [
-                    'json_error' => json_last_error_msg(),
-                    'raw_value' => substr($workingHours, 0, 200),
+                Log::warning("Ошибка декодирования JSON working_hours", [
+                    "json_error" => json_last_error_msg(),
+                    "raw_value" => substr($workingHours, 0, 200),
                 ]);
 
                 return null;
@@ -281,15 +297,18 @@ class AppointmentSlotService
      * @param  Carbon|null  $selectedDate  Дата для проверки прошедших слотов (если сегодня)
      * @return array Массив слотов ['09:00', '10:00', ...]
      */
-    protected function generateSlots(array $timeWindows, int $interval, ?Carbon $selectedDate = null): array
-    {
+    protected function generateSlots(
+        array $timeWindows,
+        int $interval,
+        ?Carbon $selectedDate = null,
+    ): array {
         $slots = [];
         $now = Carbon::now();
         $isToday = $selectedDate && $selectedDate->isToday();
 
         foreach ($timeWindows as $window) {
-            $from = Carbon::parse($window['from']);
-            $to = Carbon::parse($window['to']);
+            $from = Carbon::parse($window["from"]);
+            $to = Carbon::parse($window["to"]);
 
             $current = $from->copy();
 
@@ -303,17 +322,19 @@ class AppointmentSlotService
                 if ($slotEndTime->lte($to)) {
                     // Если это сегодня, проверяем, что слот не в прошлом
                     if ($isToday) {
-                        $slotDateTime = $selectedDate->copy()->setTime(
-                            (int) $current->format('H'),
-                            (int) $current->format('i'),
-                            0
-                        );
+                        $slotDateTime = $selectedDate
+                            ->copy()
+                            ->setTime(
+                                (int) $current->format("H"),
+                                (int) $current->format("i"),
+                                0,
+                            );
                         // Проверяем, что слот в будущем (минимум через 15 минут от текущего времени)
                         if ($slotDateTime->gt($now->copy()->addMinutes(15))) {
-                            $slots[] = $current->format('H:i');
+                            $slots[] = $current->format("H:i");
                         }
                     } else {
-                        $slots[] = $current->format('H:i');
+                        $slots[] = $current->format("H:i");
                     }
                 }
 
@@ -332,8 +353,11 @@ class AppointmentSlotService
      * Фильтрация слотов по длительности услуги
      * Слот должен помещаться в рабочее время (слот + длительность <= конец рабочего дня)
      */
-    protected function filterSlotsByDuration(array $slots, int $duration, array $timeWindows): array
-    {
+    protected function filterSlotsByDuration(
+        array $slots,
+        int $duration,
+        array $timeWindows,
+    ): array {
         $filteredSlots = [];
 
         foreach ($slots as $slot) {
@@ -342,8 +366,8 @@ class AppointmentSlotService
 
             // Проверяем, помещается ли слот в любое из временных окон
             foreach ($timeWindows as $window) {
-                $windowFrom = Carbon::parse($window['from']);
-                $windowTo = Carbon::parse($window['to']);
+                $windowFrom = Carbon::parse($window["from"]);
+                $windowTo = Carbon::parse($window["to"]);
 
                 if ($slotTime->gte($windowFrom) && $endTime->lte($windowTo)) {
                     $filteredSlots[] = $slot;
@@ -358,28 +382,34 @@ class AppointmentSlotService
     /**
      * Исключить занятые слоты
      */
-    protected function excludeBookedSlots(array $slots, int $serviceId, Carbon $date, int $duration, ?int $masterId = null, ?int $preparationTime = null, ?int $excludeAppointmentId = null): array
-    {
+    protected function excludeBookedSlots(
+        array $slots,
+        int $serviceId,
+        Carbon $date,
+        int $duration,
+        ?int $masterId = null,
+        ?int $preparationTime = null,
+        ?int $excludeAppointmentId = null,
+    ): array {
         // Получаем существующие записи на эту дату
-        $query = Appointment::where('date', $date->format('Y-m-d'))
-            ->where('status', '!=', 'cancelled')
-            ->where('service_id', $serviceId);
+        $query = Appointment::where("date", $date->format("Y-m-d"))
+            ->where("status", "!=", "cancelled")
+            ->where("service_id", $serviceId);
 
         // Исключаем текущую запись при редактировании
         if ($excludeAppointmentId) {
-            $query->where('id', '!=', $excludeAppointmentId);
+            $query->where("id", "!=", $excludeAppointmentId);
         }
 
         // Если мастер указан, проверяем только его записи
         if ($masterId) {
             $query->where(function ($q) use ($masterId) {
-                $q->where('master_id', $masterId)
-                    ->orWhereNull('master_id'); // Также учитываем записи без мастера
+                $q->where("master_id", $masterId)->orWhereNull("master_id"); // Также учитываем записи без мастера
             });
         }
 
         // КРИТИЧНО: предзагружаем service для избежания N+1 при обращении к final_duration accessor
-        $existingAppointments = $query->with('service')->get();
+        $existingAppointments = $query->with("service")->get();
 
         $availableSlots = [];
 
@@ -392,13 +422,16 @@ class AppointmentSlotService
             foreach ($existingAppointments as $appointment) {
                 // Если мастер не указан при поиске слотов, но у записи есть мастер,
                 // то эта запись не блокирует слот (так как слот может быть для другого мастера)
-                if (! $masterId && $appointment->master_id) {
+                if (!$masterId && $appointment->master_id) {
                     continue;
                 }
 
                 $appointmentTime = Carbon::parse($appointment->time);
-                $appointmentDuration = $appointment->final_duration ?? $duration; // Используем длительность услуги если final_duration не задан
-                $appointmentEndTime = $appointmentTime->copy()->addMinutes($appointmentDuration);
+                $appointmentDuration =
+                    $appointment->final_duration ?? $duration; // Используем длительность услуги если final_duration не задан
+                $appointmentEndTime = $appointmentTime
+                    ->copy()
+                    ->addMinutes($appointmentDuration);
 
                 // Проверяем пересечение временных интервалов
                 //
@@ -408,7 +441,9 @@ class AppointmentSlotService
                 // Слот блокируется если он пересекается с записью:
                 // slotTime < appointmentEndTime AND slotEndTime > appointmentTime
 
-                $hasOverlap = $slotTime->lt($appointmentEndTime) && $slotEndTime->gt($appointmentTime);
+                $hasOverlap =
+                    $slotTime->lt($appointmentEndTime) &&
+                    $slotEndTime->gt($appointmentTime);
 
                 if ($hasOverlap) {
                     // Есть пересечение - слот занят
@@ -437,11 +472,11 @@ class AppointmentSlotService
      * @return array ['slots' => array, 'calendar' => array]
      */
     public function getAvailableSlotsWithCalendar(
-        Service $service,
-        Master $master,
+        \App\Models\Service $service,
+        \App\Models\Master $master,
         Carbon $selectedDate,
         Carbon $calendarStart,
-        Carbon $calendarEnd
+        Carbon $calendarEnd,
     ): array {
         $duration = $service->duration;
         $masterId = $master->id;
@@ -450,22 +485,23 @@ class AppointmentSlotService
         $masters = collect([$master]);
 
         // Получаем ВСЕ записи для всего периода календаря ОДНИМ запросом
-        $allAppointments = Appointment::whereBetween('date', [
-            $calendarStart->format('Y-m-d'),
-            $calendarEnd->format('Y-m-d'),
+        $allAppointments = Appointment::whereBetween("date", [
+            $calendarStart->format("Y-m-d"),
+            $calendarEnd->format("Y-m-d"),
         ])
-            ->where('status', '!=', 'cancelled')
-            ->where('service_id', $service->id)
+            ->where("status", "!=", "cancelled")
+            ->where("service_id", $service->id)
             ->where(function ($q) use ($masterId) {
-                $q->where('master_id', $masterId)
-                    ->orWhereNull('master_id');
+                $q->where("master_id", $masterId)->orWhereNull("master_id");
             })
-            ->with('service') // Предзагружаем service для избежания N+1 в accessor
+            ->with("service") // Предзагружаем service для избежания N+1 в accessor
             ->get();
 
         // Группируем записи по датам для быстрого доступа
-        $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
-            return $appointment->date->format('Y-m-d');
+        $appointmentsByDate = $allAppointments->groupBy(function (
+            $appointment,
+        ) {
+            return $appointment->date->format("Y-m-d");
         });
 
         // Проверяем каждую дату в периоде
@@ -474,7 +510,7 @@ class AppointmentSlotService
         $checkDate = $calendarStart->copy();
 
         while ($checkDate->lte($calendarEnd)) {
-            $dateString = $checkDate->format('Y-m-d');
+            $dateString = $checkDate->format("Y-m-d");
 
             // Получаем временные окна для этой даты
             $timeWindows = $this->getAvailableTimeWindows($masters, $checkDate);
@@ -497,7 +533,11 @@ class AppointmentSlotService
             }
 
             // Фильтруем по длительности
-            $slotsFittingDuration = $this->filterSlotsByDuration($slots, $duration, $timeWindows);
+            $slotsFittingDuration = $this->filterSlotsByDuration(
+                $slots,
+                $duration,
+                $timeWindows,
+            );
 
             if (empty($slotsFittingDuration)) {
                 $calendar[$dateString] = false;
@@ -507,19 +547,22 @@ class AppointmentSlotService
             }
 
             // Исключаем занятые слоты (используя уже загруженные appointments)
-            $dateAppointments = $appointmentsByDate->get($dateString, collect());
+            $dateAppointments = $appointmentsByDate->get(
+                $dateString,
+                collect(),
+            );
             $availableSlots = $this->excludeBookedSlotsFromCollection(
                 $slotsFittingDuration,
                 $dateAppointments,
                 $duration,
-                $masterId
+                $masterId,
             );
 
-            $hasSlots = ! empty($availableSlots);
+            $hasSlots = !empty($availableSlots);
             $calendar[$dateString] = $hasSlots;
 
             // Если это выбранная дата - сохраняем её слоты
-            if ($dateString === $selectedDate->format('Y-m-d')) {
+            if ($dateString === $selectedDate->format("Y-m-d")) {
                 $selectedDateSlots = $availableSlots;
                 sort($selectedDateSlots);
             }
@@ -528,8 +571,8 @@ class AppointmentSlotService
         }
 
         return [
-            'slots' => $selectedDateSlots,
-            'calendar' => $calendar,
+            "slots" => $selectedDateSlots,
+            "calendar" => $calendar,
         ];
     }
 
@@ -553,7 +596,7 @@ class AppointmentSlotService
         ?int $masterId = null,
         ?int $locationId = null,
         ?string $currentDate = null,
-        array $currentDateSlots = []
+        array $currentDateSlots = [],
     ): array {
         $service = Service::findOrFail($serviceId);
         $duration = $service->duration;
@@ -566,26 +609,27 @@ class AppointmentSlotService
         }
 
         // Получаем ВСЕ записи для этого периода ОДНИМ запросом
-        $query = Appointment::whereBetween('date', [
-            $startDate->format('Y-m-d'),
-            $endDate->format('Y-m-d'),
+        $query = Appointment::whereBetween("date", [
+            $startDate->format("Y-m-d"),
+            $endDate->format("Y-m-d"),
         ])
-            ->where('status', '!=', 'cancelled')
-            ->where('service_id', $serviceId);
+            ->where("status", "!=", "cancelled")
+            ->where("service_id", $serviceId);
 
         if ($masterId) {
             $query->where(function ($q) use ($masterId) {
-                $q->where('master_id', $masterId)
-                    ->orWhereNull('master_id');
+                $q->where("master_id", $masterId)->orWhereNull("master_id");
             });
         }
 
         // КРИТИЧНО: предзагружаем service для избежания N+1 в accessor final_duration
-        $allAppointments = $query->with('service')->get();
+        $allAppointments = $query->with("service")->get();
 
         // Группируем записи по датам для быстрого доступа
-        $appointmentsByDate = $allAppointments->groupBy(function ($appointment) {
-            return $appointment->date->format('Y-m-d');
+        $appointmentsByDate = $allAppointments->groupBy(function (
+            $appointment,
+        ) {
+            return $appointment->date->format("Y-m-d");
         });
 
         // Проверяем каждую дату в периоде
@@ -593,11 +637,11 @@ class AppointmentSlotService
         $checkDate = $startDate->copy();
 
         while ($checkDate->lte($endDate)) {
-            $dateString = $checkDate->format('Y-m-d');
+            $dateString = $checkDate->format("Y-m-d");
 
             // Для текущей даты используем уже вычисленные слоты
             if ($currentDate && $dateString === $currentDate) {
-                $datesWithSlots[$dateString] = ! empty($currentDateSlots);
+                $datesWithSlots[$dateString] = !empty($currentDateSlots);
                 $checkDate->addDay();
 
                 continue;
@@ -624,7 +668,11 @@ class AppointmentSlotService
             }
 
             // Фильтруем по длительности
-            $slotsFittingDuration = $this->filterSlotsByDuration($slots, $duration, $timeWindows);
+            $slotsFittingDuration = $this->filterSlotsByDuration(
+                $slots,
+                $duration,
+                $timeWindows,
+            );
 
             if (empty($slotsFittingDuration)) {
                 $datesWithSlots[$dateString] = false;
@@ -634,15 +682,18 @@ class AppointmentSlotService
             }
 
             // Исключаем занятые слоты (используя уже загруженные appointments)
-            $dateAppointments = $appointmentsByDate->get($dateString, collect());
+            $dateAppointments = $appointmentsByDate->get(
+                $dateString,
+                collect(),
+            );
             $availableSlots = $this->excludeBookedSlotsFromCollection(
                 $slotsFittingDuration,
                 $dateAppointments,
                 $duration,
-                $masterId
+                $masterId,
             );
 
-            $datesWithSlots[$dateString] = ! empty($availableSlots);
+            $datesWithSlots[$dateString] = !empty($availableSlots);
             $checkDate->addDay();
         }
 
@@ -663,7 +714,7 @@ class AppointmentSlotService
         array $slots,
         Collection $appointments,
         int $duration,
-        ?int $masterId = null
+        ?int $masterId = null,
     ): array {
         $availableSlots = [];
 
@@ -676,17 +727,22 @@ class AppointmentSlotService
             foreach ($appointments as $appointment) {
                 // Если мастер не указан при поиске слотов, но у записи есть мастер,
                 // то эта запись не блокирует слот (так как слот может быть для другого мастера)
-                if (! $masterId && $appointment->master_id) {
+                if (!$masterId && $appointment->master_id) {
                     continue;
                 }
 
                 $appointmentTime = Carbon::parse($appointment->time);
                 // Используем accessor final_duration, который теперь не вызовет N+1 благодаря with('service')
-                $appointmentDuration = $appointment->final_duration ?? $duration;
-                $appointmentEndTime = $appointmentTime->copy()->addMinutes($appointmentDuration);
+                $appointmentDuration =
+                    $appointment->final_duration ?? $duration;
+                $appointmentEndTime = $appointmentTime
+                    ->copy()
+                    ->addMinutes($appointmentDuration);
 
                 // Проверяем пересечение временных интервалов
-                $hasOverlap = $slotTime->lt($appointmentEndTime) && $slotEndTime->gt($appointmentTime);
+                $hasOverlap =
+                    $slotTime->lt($appointmentEndTime) &&
+                    $slotEndTime->gt($appointmentTime);
 
                 if ($hasOverlap) {
                     $isAvailable = false;
