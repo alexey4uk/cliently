@@ -18,6 +18,7 @@ class Business extends Model
         'name',
         'description',
         'slug',
+        'owner_id',
         'telegram_chat_id',
         'telegram_token',
         'online_booking_enabled',

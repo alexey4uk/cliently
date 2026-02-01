@@ -62,22 +62,22 @@ class BusinessSettingsController extends Controller
             ],
         );
 
-        $businessData = collect($validated)
-            ->only(["name", "slug", "description"])
-            ->all();
         $phoneCountryId = (int) $validated["phone_country_id"];
         $phoneE164 = $validated["phone"];
 
-        $business = null;
-        DB::transaction(function () use (
-            $businessData,
+        $business = DB::transaction(function () use (
             $ownerData,
             $phoneCountryId,
             $phoneE164,
             $user,
-            &$business,
+            &$business, $validated,
         ) {
-            $business = Business::create($businessData);
+            $business = Business::create([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'owner_id' => $user->id,
+                'description' => $validated['description']
+            ]);
 
             $business->phones()->create([
                 "country_id" => $phoneCountryId,
@@ -87,7 +87,6 @@ class BusinessSettingsController extends Controller
 
             $ownerRole = BusinessRole::where("slug", "owner")->first();
             $business->users()->attach($user, [
-                "role" => "owner",
                 "role_id" => $ownerRole?->id,
                 "first_name" => $ownerData["first_name"],
                 "last_name" => $ownerData["last_name"],
