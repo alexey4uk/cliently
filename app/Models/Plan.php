@@ -50,18 +50,25 @@ class Plan extends Model
      */
     public function getFeatureValue(string $key): mixed
     {
-        $feature = $this->features()->where('feature_key', $key)->first();
+        // Ищем фичу через связь, фильтруя по колонке 'key' в таблице метрик
+        $feature = $this->features()
+            ->whereHas('metric', function ($query) use ($key) {
+                $query->where('key', $key);
+            })
+            ->first();
 
         if (!$feature) {
             return null;
         }
 
-        return match ($feature->feature_type) {
-            'boolean' => $feature->feature_value === 'true',
-            'integer' => (int) $feature->feature_value,
-            default => $feature->feature_value,
+        // Тип теперь берем из связанной метрики, а значение из колонки 'value'
+        return match ($feature->metric->type) {
+            'boolean' => filter_var($feature->value, FILTER_VALIDATE_BOOLEAN),
+            'integer' => (int) $feature->value,
+            default => $feature->value,
         };
     }
+
 
     /**
      * Проверить наличие метрики

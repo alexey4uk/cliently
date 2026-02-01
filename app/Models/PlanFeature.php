@@ -23,4 +23,9 @@ class PlanFeature extends Model
     {
         return $this->belongsTo(Plan::class);
     }
+
+    public function metric(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionMetric::class, 'metric_id');
+    }
 }
