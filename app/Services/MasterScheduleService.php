@@ -1,0 +1,192 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Master;
+use App\Models\MasterBreak;
+use App\Models\MasterDayOverride;
+use App\Models\MasterSchedule;
+use Carbon\Carbon;
+
+class MasterScheduleService
+{
+    /**
+     * Сохранить расписание для мастера
+     */
+    public function saveScheduleForMaster(array $data, Master $master): void
+    {
+        // Регулярное расписание по дням
+        if (isset($data["schedules"])) {
+            $this->saveSchedules($data["schedules"], $master);
+        }
+
+        // Переопределения на даты
+        if (isset($data["overrides"])) {
+            $this->saveOverrides($data["overrides"], $master);
+        }
+    }
+
+    /**
+     * Получить расписание для мастера
+     */
+    public function getScheduleForMaster(Master $master): array
+    {
+        $schedules = $master
+            ->schedules()
+            ->with("breaks")
+            ->get()
+            ->keyBy("day_of_week");
+        $overrides = $master->dayOverrides()->get()->keyBy("date");
+
+        return [
+            "schedules" => $schedules->toArray(),
+            "overrides" => $overrides->toArray(),
+        ];
+    }
+
+    /**
+     * Проверить, работает ли мастер в указанное время
+     */
+    public function isWorkingAt(
+        Master $master,
+        Carbon $date,
+        string $time,
+    ): bool {
+        $workingTime = $this->getWorkingTimeForDate($master, $date);
+
+        if (!$workingTime) {
+            return false;
+        }
+
+        $timeCarbon = Carbon::parse($time);
+        $from = Carbon::parse($workingTime["from"]);
+        $to = Carbon::parse($workingTime["to"]);
+
+        // Проверить перерывы
+        if ($this->isInBreak($master, $date, $timeCarbon)) {
+            return false;
+        }
+
+        return $timeCarbon->gte($from) && $timeCarbon->lte($to);
+    }
+
+    /**
+     * Получить время работы на дату
+     */
+    public function getWorkingTimeForDate(Master $master, Carbon $date): ?array
+    {
+        // Сначала проверить переопределения
+        $override = $master
+            ->dayOverrides()
+            ->where("date", $date->format("Y-m-d"))
+            ->first();
+        if ($override) {
+            if (!$override->is_working) {
+                return null;
+            }
+            return [
+                "from" => $override->start_time,
+                "to" => $override->end_time,
+            ];
+        }
+
+        // Иначе регулярное расписание
+        $dayOfWeek = $date->dayOfWeek; // 0 - воскресенье, 1 - понедельник, ...
+        $schedule = $master
+            ->schedules()
+            ->where("day_of_week", $dayOfWeek)
+            ->first();
+
+        if (!$schedule || !$schedule->is_working) {
+            return null;
+        }
+
+        return [
+            "from" => $schedule->start_time,
+            "to" => $schedule->end_time,
+        ];
+    }
+
+    /**
+     * Проверить, находится ли время в перерыве
+     */
+    private function isInBreak(Master $master, Carbon $date, Carbon $time): bool
+    {
+        $dayOfWeek = $date->dayOfWeek;
+        $schedule = $master
+            ->schedules()
+            ->where("day_of_week", $dayOfWeek)
+            ->first();
+
+        if (!$schedule) {
+            return false;
+        }
+
+        $breaks = $schedule->breaks;
+        foreach ($breaks as $break) {
+            $breakFrom = Carbon::parse($break->start_time);
+            $breakTo = Carbon::parse($break->end_time);
+            if ($time->gte($breakFrom) && $time->lte($breakTo)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Сохранить регулярное расписание
+     */
+    private function saveSchedules(array $schedules, Master $master): void
+    {
+        // Все дни недели
+        $allDays = [0, 1, 2, 3, 4, 5, 6];
+        $submittedDays = array_keys($schedules);
+
+        // Удаляем все существующие расписания мастера
+        $master->schedules()->delete();
+
+        // Создаем записи только для рабочих дней
+        foreach ($schedules as $day => $data) {
+            $isWorking = isset($data["is_working"]) && $data["is_working"] == 1;
+
+            if ($isWorking) {
+                $master->schedules()->create([
+                    "day_of_week" => $day,
+                    "start_time" => $data["start_time"] ?? null,
+                    "end_time" => $data["end_time"] ?? null,
+                    "is_working" => true,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Сохранить перерывы
+     */
+    private function saveBreaks(array $breaks, MasterSchedule $schedule): void
+    {
+        $schedule->breaks()->delete(); // Очистить старые
+
+        foreach ($breaks as $breakData) {
+            $schedule->breaks()->create($breakData);
+        }
+    }
+
+    /**
+     * Сохранить переопределения
+     */
+    private function saveOverrides(array $overrides, Master $master): void
+    {
+        foreach ($overrides as $date => $data) {
+            $master->dayOverrides()->updateOrCreate(
+                ["date" => $date],
+                [
+                    "is_working" => $data["is_working"] ?? true,
+                    "start_time" => $data["start_time"] ?? null,
+                    "end_time" => $data["end_time"] ?? null,
+                ],
+            );
+        }
+    }
+}
