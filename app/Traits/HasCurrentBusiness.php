@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use App\Models\Business;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -26,10 +25,8 @@ trait HasCurrentBusiness
         $businessId = Session::get('current_business_id');
 
         if ($businessId) {
-            // Кешируем бизнес на 3 минуты
-            $business = Cache::remember("business_{$businessId}", 180, function () use ($businessId) {
-                return Business::find($businessId);
-            });
+            // Получаем бизнес напрямую
+            $business = Business::find($businessId);
 
             // Verify user has access to this business
             if ($business) {
@@ -79,7 +76,7 @@ trait HasCurrentBusiness
 
         // First try to get role by role_id
         if ($pivotData->role_id) {
-            $role = \App\Models\BusinessRole::getCached($pivotData->role_id);
+            $role = \App\Models\BusinessRole::find($pivotData->role_id);
             if ($role) {
                 return $role;
             }
@@ -87,7 +84,7 @@ trait HasCurrentBusiness
 
         // Fallback: try to get role by slug (for backward compatibility)
         if ($pivotData->role) {
-            $role = \App\Models\BusinessRole::getCachedBySlug($pivotData->role);
+            $role = \App\Models\BusinessRole::where('slug', $pivotData->role)->first();
             if ($role) {
                 // Update role_id for future use
                 DB::table('business_user')
@@ -103,14 +100,11 @@ trait HasCurrentBusiness
     }
 
     /**
-     * Get user businesses with caching.
-     * Кэшируем на короткий период (3 минуты) для критичных данных.
+     * Get user businesses without caching.
      */
     protected function getUserBusinesses($user)
     {
-        return Cache::remember("user_businesses_{$user->id}", 180, function () use ($user) {
-            return $user->businesses;
-        });
+        return $user->businesses;
     }
 
     /**
@@ -129,20 +123,5 @@ trait HasCurrentBusiness
         if ($userBusinesses->contains($business->id)) {
             Session::put('current_business_id', $business->id);
         }
-    }
-
-    /**
-     * Clear user businesses cache.
-     * Call this method when user's business relations change.
-     */
-    protected function clearUserBusinessesCache($userId = null): void
-    {
-        $userId = $userId ?? Auth::id();
-
-        if (! $userId) {
-            return;
-        }
-
-        Cache::forget("user_businesses_{$userId}");
     }
 }

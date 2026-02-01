@@ -21,10 +21,10 @@ class LocationFactory extends Factory
     public function definition(): array
     {
         $workingHours = [
-            'from' => '09:00',
-            'to' => '18:00',
-            '24_hours' => false,
-            'days_off' => [],
+            "from" => "09:00",
+            "to" => "18:00",
+            "24_hours" => false,
+            "days_off" => [],
         ];
 
         return [

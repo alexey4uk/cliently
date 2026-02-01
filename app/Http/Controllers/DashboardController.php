@@ -7,7 +7,6 @@ use App\Repositories\ClientRepositoryInterface;
 use App\Traits\HasOwnDataFiltering;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -59,23 +58,7 @@ class DashboardController extends Controller
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
-        // Кэширование ВСЕХ данных dashboard в одном ключе (5 минут)
-        $user = Auth::user();
-        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        $roleId = $role ? $role->id : 'no_role';
-        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
-
-        // Проверяем, поддерживает ли драйвер кеша теги
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-
-        // Получаем ВСЕ данные одним кэш-запросом
-        $dashboardData = $supportsTags
-            ? Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
-                return $this->getDashboardData($business, $role, $permissionService);
-            })
-            : Cache::remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
-                return $this->getDashboardData($business, $role, $permissionService);
-            });
+        $dashboardData = $this->getDashboardData($business, $role, $permissionService);
 
         // Извлекаем данные из кэша
         $stats = $dashboardData['stats'];
@@ -100,20 +83,6 @@ class DashboardController extends Controller
 
     public function refresh()
     {
-        $user = Auth::user();
-        $role = $this->getCurrentBusinessRole();
-        $roleId = $role ? $role->id : 'no_role';
-        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
-
-        // Очистка кэша через теги для групповой очистки (если поддерживается)
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        if ($supportsTags) {
-            Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->flush();
-        } else {
-            // Если теги не поддерживаются, очищаем один ключ
-            Cache::forget($cacheKey);
-        }
-
         return redirect()->back()->with('success', 'Данные обновлены');
     }
 

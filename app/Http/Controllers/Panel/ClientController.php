@@ -39,23 +39,17 @@ class ClientController extends Controller
                 [now()->toDateTimeString()]
             );
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            // Используем FULLTEXT для имен (быстро!)
             $searchTerm = $search.'*';
             $query->where(function ($q) use ($search, $searchTerm) {
-                // FULLTEXT поиск по именам
                 $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                    // Обычный поиск по email (FULLTEXT не нужен для email)
-                    ->orWhere('email', 'like', "%{$search}%")
-                    // Поиск по телефону через JOIN (быстрее чем whereHas)
                     ->orWhereIn('id', function ($subquery) use ($search) {
                         $subquery->select('phoneable_id')
                             ->from('phones')
                             ->where('phoneable_type', Client::class)
                             ->where('phone', 'like', "%{$search}%");
                     });
-            })->limit(1000); // Ограничение для поиска
+            })->limit(1000);
         }
 
         // Фильтр по бизнесу

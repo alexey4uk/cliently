@@ -19,7 +19,7 @@ class PlanSeeder extends Seeder
             [
                 'name' => 'Бесплатный',
                 'description' => 'Для начинающих и малого бизнеса. Все основные функции для эффективной работы.',
-                'price' => null,
+                'price' => 0,
                 'interval' => 'monthly',
                 'trial_days' => 0,
                 'is_active' => true,
@@ -101,16 +101,21 @@ class PlanSeeder extends Seeder
     protected function createPlanFeatures(Plan $plan, array $features): void
     {
         foreach ($features as $feature) {
-            PlanFeature::updateOrCreate(
-                [
-                    'plan_id' => $plan->id,
-                    'feature_key' => $feature['key'],
-                ],
-                [
-                    'feature_value' => $feature['value'],
-                    'feature_type' => $feature['type'],
-                ]
-            );
+            // 1. Находим метрику по ключу (slug)
+            $metric = \App\Models\SubscriptionMetric::where('key', $feature['key'])->first();
+
+            if ($metric) {
+                // 2. Сохраняем в новую структуру
+                PlanFeature::updateOrCreate(
+                    [
+                        'plan_id' => $plan->id,
+                        'metric_id' => $metric->id, // Вместо feature_key
+                    ],
+                    [
+                        'value' => $feature['value'], // Колонка теперь называется просто value
+                    ]
+                );
+            }
         }
     }
 }

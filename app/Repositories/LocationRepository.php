@@ -4,8 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
-
 /**
  * Репозиторий для работы с локациями
  */
@@ -20,17 +18,13 @@ class LocationRepository extends BaseRepository implements LocationRepositoryInt
     }
 
     /**
-     * Получить локации для бизнеса (с кешированием)
+     * Получить локации для бизнеса
      */
     public function getByBusiness(int $businessId): Collection
     {
-        $cacheKey = "locations_business_{$businessId}";
-
-        return Cache::remember($cacheKey, 600, function () use ($businessId) {
-            return $this->model->where('business_id', $businessId)
-                ->orderBy('name')
-                ->get();
-        });
+        return $this->model->where('business_id', $businessId)
+            ->orderBy('name')
+            ->get();
     }
 
     /**

@@ -119,20 +119,5 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
         $seedPermissions($ownerRole, $ownerPermissions);
         $seedPermissions($adminRole, $adminPermissions);
         $seedPermissions($masterRole, $masterPermissions);
-
-        // Backfill role_id for existing records using role slug
-        DB::table('business_user')
-            ->whereNull('role_id')
-            ->whereNotNull('role')
-            ->update(['role_id' => DB::raw('(
-                select id from business_roles where slug = business_user.role limit 1
-            )')]);
-
-        DB::table('business_user_invitations')
-            ->whereNull('role_id')
-            ->whereNotNull('role')
-            ->update(['role_id' => DB::raw('(
-                select id from business_roles where slug = business_user_invitations.role limit 1
-            )')]);
     }
 }

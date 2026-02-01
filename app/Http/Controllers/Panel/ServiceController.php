@@ -34,11 +34,9 @@ class ServiceController extends Controller
                 (SELECT COUNT(*) FROM appointments WHERE appointments.service_id = services.id) as appointments_count'
             );
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
             $searchTerm = $search.'*';
             $query->where(function ($q) use ($searchTerm, $search) {
-                // FULLTEXT поиск по названию (быстро!)
                 $q->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     // Обычный LIKE для description (короткие тексты)
                     ->orWhere('description', 'like', "%{$search}%");

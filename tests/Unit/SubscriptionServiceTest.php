@@ -33,7 +33,7 @@ class SubscriptionServiceTest extends TestCase
         $this->assertNotNull($subscription);
         $this->assertEquals($user->id, $subscription->user_id);
         $this->assertEquals($plan->id, $subscription->plan_id);
-        $this->assertEquals('active', $subscription->status);
+        $this->assertEquals("active", $subscription->status);
         $this->assertNotNull($subscription->ends_at);
     }
 
@@ -44,7 +44,7 @@ class SubscriptionServiceTest extends TestCase
 
         $subscription = $this->service->createSubscription($user, $plan, true);
 
-        $this->assertEquals('trial', $subscription->status);
+        $this->assertEquals("trial", $subscription->status);
         $this->assertNotNull($subscription->trial_ends_at);
         $this->assertNull($subscription->ends_at);
     }
@@ -56,11 +56,15 @@ class SubscriptionServiceTest extends TestCase
         $newPlan = Plan::factory()->create();
 
         $oldSubscription = Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $oldPlan->id,
+            "user_id" => $user->id,
+            "plan_id" => $oldPlan->id,
         ]);
 
-        $subscription = $this->service->createSubscription($user, $newPlan, false);
+        $subscription = $this->service->createSubscription(
+            $user,
+            $newPlan,
+            false,
+        );
 
         $this->assertEquals($oldSubscription->id, $subscription->id);
         $this->assertEquals($newPlan->id, $subscription->plan_id);
@@ -75,16 +79,26 @@ class SubscriptionServiceTest extends TestCase
         $futureEndsAt = now()->addMonth();
 
         $oldSubscription = Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $oldPlan->id,
-            'ends_at' => $futureEndsAt,
+            "user_id" => $user->id,
+            "plan_id" => $oldPlan->id,
+            "ends_at" => $futureEndsAt,
         ]);
 
-        $subscription = $this->service->createSubscription($user, $newPlan, false);
+        $subscription = $this->service->createSubscription(
+            $user,
+            $newPlan,
+            false,
+        );
 
-        $this->assertEquals($futureEndsAt->format('Y-m-d H:i:s'), $subscription->ends_at->format('Y-m-d H:i:s'));
-        $this->assertArrayHasKey('previous_plan_id', $subscription->metadata);
-        $this->assertEquals($oldPlan->id, $subscription->metadata['previous_plan_id']);
+        $this->assertEquals(
+            $futureEndsAt->format("Y-m-d H:i:s"),
+            $subscription->ends_at->format("Y-m-d H:i:s"),
+        );
+        $this->assertArrayHasKey("previous_plan_id", $subscription->metadata);
+        $this->assertEquals(
+            $oldPlan->id,
+            $subscription->metadata["previous_plan_id"],
+        );
     }
 
     public function test_create_subscription_adds_plan_to_used_trials_when_trial_activated()
@@ -94,8 +108,11 @@ class SubscriptionServiceTest extends TestCase
 
         $subscription = $this->service->createSubscription($user, $plan, true);
 
-        $this->assertArrayHasKey('used_trials', $subscription->metadata);
-        $this->assertContains($plan->id, $subscription->metadata['used_trials']);
+        $this->assertArrayHasKey("used_trials", $subscription->metadata);
+        $this->assertContains(
+            $plan->id,
+            $subscription->metadata["used_trials"],
+        );
     }
 
     public function test_create_subscription_does_not_create_trial_if_already_used()
@@ -104,13 +121,21 @@ class SubscriptionServiceTest extends TestCase
         $plan = Plan::factory()->withTrial(7)->create();
 
         // Первый раз - создаем триал
-        $firstSubscription = $this->service->createSubscription($user, $plan, true);
-        $this->assertEquals('trial', $firstSubscription->status);
+        $firstSubscription = $this->service->createSubscription(
+            $user,
+            $plan,
+            true,
+        );
+        $this->assertEquals("trial", $firstSubscription->status);
 
         // Второй раз - триал уже использован (refresh чтобы relation не был stale)
         $user->refresh();
-        $secondSubscription = $this->service->createSubscription($user, $plan, true);
-        $this->assertEquals('active', $secondSubscription->status);
+        $secondSubscription = $this->service->createSubscription(
+            $user,
+            $plan,
+            true,
+        );
+        $this->assertEquals("active", $secondSubscription->status);
     }
 
     public function test_has_used_trial_for_plan_returns_false_when_no_subscription()
@@ -128,9 +153,11 @@ class SubscriptionServiceTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()->withUsedTrials([$plan->id])->create([
-            'user_id' => $user->id,
-        ]);
+        Subscription::factory()
+            ->withUsedTrials([$plan->id])
+            ->create([
+                "user_id" => $user->id,
+            ]);
 
         $result = $this->service->hasUsedTrialForPlan($user, $plan);
 
@@ -141,7 +168,7 @@ class SubscriptionServiceTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $result = $this->service->checkLimit($user, 'max_locations');
+        $result = $this->service->checkLimit($user, "max_locations");
 
         $this->assertFalse($result);
     }
@@ -151,17 +178,19 @@ class SubscriptionServiceTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        PlanFeature::factory()->unlimited()->create([
-            'plan_id' => $plan->id,
-            'feature_key' => 'max_locations',
-        ]);
+        PlanFeature::factory()
+            ->unlimited()
+            ->create([
+                "plan_id" => $plan->id,
+                "feature_key" => "max_locations",
+            ]);
 
         Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
         ]);
 
-        $result = $this->service->checkLimit($user, 'max_locations');
+        $result = $this->service->checkLimit($user, "max_locations");
 
         $this->assertTrue($result);
     }
@@ -171,27 +200,29 @@ class SubscriptionServiceTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        PlanFeature::factory()->integer(10)->create([
-            'plan_id' => $plan->id,
-            'feature_key' => 'max_locations',
-        ]);
+        PlanFeature::factory()
+            ->integer(10)
+            ->create([
+                "plan_id" => $plan->id,
+                "feature_key" => "max_locations",
+            ]);
 
         $subscription = Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
         ]);
 
         // Создаем usage с текущим использованием 5
         SubscriptionUsage::factory()->create([
-            'subscription_id' => $subscription->id,
-            'user_id' => $user->id,
-            'feature_key' => 'max_locations',
-            'current_usage' => 5,
-            'period_start' => now()->startOfMonth(),
-            'period_end' => now()->endOfMonth(),
+            "subscription_id" => $subscription->id,
+            "user_id" => $user->id,
+            "feature_key" => "max_locations",
+            "current_usage" => 5,
+            "period_start" => now()->startOfMonth(),
+            "period_end" => now()->endOfMonth(),
         ]);
 
-        $result = $this->service->checkLimit($user, 'max_locations');
+        $result = $this->service->checkLimit($user, "max_locations");
 
         $this->assertTrue($result);
     }
@@ -202,26 +233,28 @@ class SubscriptionServiceTest extends TestCase
         $plan = Plan::factory()->create();
 
         // max_locations_per_month — месячная метрика, usage берётся из SubscriptionUsage
-        PlanFeature::factory()->integer(10)->create([
-            'plan_id' => $plan->id,
-            'feature_key' => 'max_locations_per_month',
-        ]);
+        PlanFeature::factory()
+            ->integer(10)
+            ->create([
+                "plan_id" => $plan->id,
+                "feature_key" => "max_locations_per_month",
+            ]);
 
         $subscription = Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
         ]);
 
         SubscriptionUsage::factory()->create([
-            'subscription_id' => $subscription->id,
-            'user_id' => $user->id,
-            'feature_key' => 'max_locations_per_month',
-            'current_usage' => 15,
-            'period_start' => now()->startOfMonth(),
-            'period_end' => now()->endOfMonth(),
+            "subscription_id" => $subscription->id,
+            "user_id" => $user->id,
+            "feature_key" => "max_locations_per_month",
+            "current_usage" => 15,
+            "period_start" => now()->startOfMonth(),
+            "period_end" => now()->endOfMonth()->addDay(),
         ]);
 
-        $result = $this->service->checkLimit($user, 'max_locations_per_month');
+        $result = $this->service->checkLimit($user, "max_locations_per_month");
 
         $this->assertFalse($result);
     }
@@ -232,10 +265,10 @@ class SubscriptionServiceTest extends TestCase
         $plan = Plan::factory()->create();
 
         Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => now()->addMonth(),
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
+            "status" => "active",
+            "ends_at" => now()->addMonth(),
         ]);
 
         $result = $this->service->cancelSubscription($user);
@@ -251,8 +284,8 @@ class SubscriptionServiceTest extends TestCase
         $plan = Plan::factory()->free()->create();
 
         Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
         ]);
 
         $result = $this->service->cancelSubscription($user);
@@ -265,10 +298,12 @@ class SubscriptionServiceTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()->cancelled()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ]);
+        Subscription::factory()
+            ->cancelled()
+            ->create([
+                "user_id" => $user->id,
+                "plan_id" => $plan->id,
+            ]);
 
         $result = $this->service->cancelSubscription($user);
 

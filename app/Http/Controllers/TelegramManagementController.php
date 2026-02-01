@@ -15,14 +15,10 @@ class TelegramManagementController extends Controller
     {
         $bots = \DefStudio\Telegraph\Models\TelegraphBot::all();
 
-        // Проверка webhook статуса для каждого бота - это API запросы к Telegram
-        // Оптимизация: кэшируем статус на 5 минут чтобы избежать множественных API запросов
+        // Проверка webhook статуса для каждого бота
         $webhookStatuses = [];
         foreach ($bots as $bot) {
-            $cacheKey = "telegram_webhook_status_{$bot->id}";
-            $webhookStatuses[$bot->id] = \Cache::remember($cacheKey, 300, function () use ($bot) {
-                return $this->checkWebhookStatus($bot);
-            });
+            $webhookStatuses[$bot->id] = $this->checkWebhookStatus($bot);
         }
 
         return view('settings.telegram.management', [

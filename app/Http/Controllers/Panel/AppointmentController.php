@@ -34,11 +34,9 @@ class AppointmentController extends Controller
 
         $query = Appointment::query();
 
-        // 2. ОПТИМИЗИРОВАННЫЙ ПОИСК (FULLTEXT)
         if ($search) {
             $searchTerm = $search.'*';
 
-            // Поиск ID через быстрые FULLTEXT индексы
             $clientIds = DB::table('clients')
                 ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                 ->pluck('id');

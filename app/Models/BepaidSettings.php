@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class BepaidSettings extends Model
 {
@@ -31,32 +30,16 @@ class BepaidSettings extends Model
 
     /**
      * Получить или создать единственную запись настроек (singleton)
-     *
-     * Использует кеш Laravel для оптимизации запросов к БД.
-     * Кеш автоматически сбрасывается при обновлении настроек через Observer.
-     *
-     * ВАЖНО: Если настройки обновляются напрямую через DB::table() (например, в тестах),
-     * используйте clearCache() для сброса кеша.
      */
     public static function getSettings(): self
     {
-        return Cache::remember('bepaid_settings', 3600, function () {
-            return self::firstOrCreate(
-                ['id' => 1],
-                [
-                    'test_mode' => true,
-                    'enabled' => false,
-                ]
-            );
-        });
-    }
-
-    /**
-     * Очистить кеш настроек
-     */
-    public static function clearCache(): void
-    {
-        Cache::forget('bepaid_settings');
+        return self::firstOrCreate(
+            ['id' => 1],
+            [
+                'test_mode' => true,
+                'enabled' => false,
+            ]
+        );
     }
 
     /**

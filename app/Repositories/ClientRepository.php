@@ -65,20 +65,16 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
     }
 
     /**
-     * Получить недавних клиентов для дашборда (с кешированием)
+     * Получить недавних клиентов для дашборда
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getRecentForDashboard(int $businessId, int $limit = 5)
     {
-        $cacheKey = "clients_recent_dashboard_{$businessId}_{$limit}";
-
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($businessId, $limit) {
-            return $this->model->where('business_id', $businessId)
-                ->orderBy('created_at', 'desc')
-                ->limit($limit)
-                ->get();
-        });
+        return $this->model->where('business_id', $businessId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**

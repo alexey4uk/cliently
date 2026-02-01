@@ -33,9 +33,11 @@ class BusinessFactory extends Factory
      */
     public function withTelegram(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'telegram_chat_id' => fake()->randomNumber(9, true),
-        ]);
+        return $this->state(
+            fn(array $attributes) => [
+                "telegram_chat_id" => fake()->randomNumber(9, true),
+            ],
+        );
     }
 
     /**
@@ -43,7 +45,7 @@ class BusinessFactory extends Factory
      */
     public function withSlug(string $slug): static
     {
-        return $this->state(['slug' => $slug]);
+        return $this->state(["slug" => $slug]);
     }
 
     /**
@@ -51,6 +53,6 @@ class BusinessFactory extends Factory
      */
     public function withToken(string $token): static
     {
-        return $this->state(['telegram_token' => $token]);
+        return $this->state(["telegram_token" => $token]);
     }
 }

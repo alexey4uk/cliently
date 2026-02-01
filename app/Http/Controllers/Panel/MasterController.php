@@ -37,22 +37,19 @@ class MasterController extends Controller
                 (SELECT COUNT(*) FROM appointments WHERE appointments.master_id = masters.id) as appointments_count'
             );
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
             $searchTerm = $search.'*';
             $query->where(function ($q) use ($searchTerm, $search) {
-                // FULLTEXT поиск по именам (быстро!)
                 $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('specialization', 'like', "%{$search}%")
-                    // Поиск по телефону через подзапрос (быстрее whereHas)
                     ->orWhereIn('id', function ($subquery) use ($search) {
                         $subquery->select('phoneable_id')
                             ->from('phones')
                             ->where('phoneable_type', Master::class)
                             ->where('phone', 'like', "%{$search}%");
                     });
-            })->limit(1000); // Ограничение для поиска
+            })->limit(1000);
         }
 
         // Фильтр по бизнесу
