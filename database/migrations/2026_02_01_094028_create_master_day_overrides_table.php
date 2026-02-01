@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_weekly_schedules', function (Blueprint $table) {
+        Schema::create('master_day_overrides', function (Blueprint $table) {
             $table->id();
             $table->foreignId('master_id')->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('day_of_week'); // 0 (вс) - 6 (сб)
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->time('break_start')->nullable();
-            $table->time('break_end')->nullable();
+            $table->date('date')->index();
+            $table->boolean('is_working')->default(true);
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
             $table->timestamps();
 
-            $table->unique(['master_id', 'day_of_week'], 'idx_master_weekly_unique');
+            $table->unique(['master_id', 'date']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_weekly_schedules');
+        Schema::dropIfExists('master_day_overrides');
     }
 };

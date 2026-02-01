@@ -23,7 +23,6 @@ class Master extends Model
         'photo',
         'specialization',
         'email',
-        'working_hours',
         'is_active',
         'last_name',
         'first_name',
@@ -38,7 +37,7 @@ class Master extends Model
      */
     public function getNameAttribute(): string
     {
-        return trim($this->first_name.' '.$this->last_name);
+        return trim($this->first_name . ' ' . $this->last_name);
     }
 
     public function locations(): BelongsToMany
@@ -175,5 +174,15 @@ class Master extends Model
         $to = Carbon::parse($workingTime['to']);
 
         return $timeCarbon->gte($from) && $timeCarbon->lte($to);
+    }
+
+    public function schedules()
+    {
+        return $this->hasMany(MasterSchedule::class);
+    }
+
+    public function dayOverrides()
+    {
+        return $this->hasMany(MasterDayOverride::class);
     }
 }

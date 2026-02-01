@@ -76,7 +76,6 @@ class MasterSettingsController extends Controller
 
         $business->load(['locations', 'services']);
 
-        // Проверка лимита мастеров
         $user = Auth::user();
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateMaster($user)) {
@@ -97,7 +96,7 @@ class MasterSettingsController extends Controller
             'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
             'email' => $validated['email'] ?? null,
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
+            //'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
         ]);
 
         $master->phones()->create([
