@@ -37,11 +37,11 @@
         }
         return $permissionService->hasPermission($currentBusinessRoleId, $permission);
     };
-    
+
     // Проверяем, есть ли хотя бы одно действие для пользователей
-    $hasAnyUserAction = $hasBusinessPermission('client.business.users.update') || 
+    $hasAnyUserAction = $hasBusinessPermission('client.business.users.update') ||
                         $hasBusinessPermission('client.business.users.delete');
-    
+
     $roleLabels = [
         'owner' => 'Владелец',
         'admin' => 'Администратор',
@@ -161,8 +161,8 @@
                                     <div class="flex items-center gap-3">
                                         <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                                             @if($user->getAvatarUrl())
-                                                <img src="{{ $user->getAvatarUrl() }}" 
-                                                     alt="{{ $user->name }}" 
+                                                <img src="{{ $user->getAvatarUrl() }}"
+                                                     alt="{{ $user->name }}"
                                                      class="w-full h-full rounded-full object-cover"
                                                      referrerpolicy="no-referrer">
                                             @else
@@ -199,15 +199,15 @@
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             @if($hasBusinessPermission('client.business.users.update'))
-                                                <a href="{{ route('settings.users.edit', $user) }}" 
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                                <a href="{{ route('settings.users.edit', $user) }}"
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                     title="Редактировать">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                     </svg>
                                                 </a>
                                             @endif
-                                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivot('role', 'owner')->count() > 1))
+                                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivotIn('role_id', [\App\Models\BusinessRole::where('slug', 'owner')->value('id')])->count() > 1))
                                                 <form method="POST" action="{{ route('settings.users.destroy', $user) }}"
                                                     id="delete-form-{{ $user->id }}" class="inline">
                                                     @csrf
@@ -215,7 +215,7 @@
                                                 </form>
                                                 <button type="button"
                                                     @click="openDeleteModal({{ $user->id }}, '{{ addslashes($user->name) }}')"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                     title="Удалить">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -263,8 +263,8 @@
                                 <td class="px-6 py-4 text-right">
                                     <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="inline">
                                         @csrf
-                                        <button type="submit" 
-                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                        <button type="submit"
+                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Отправить повторно">
                                             <i class="fa-solid fa-paper-plane text-sm"></i>
                                         </button>
@@ -290,8 +290,8 @@
                         <div class="flex items-center gap-3 mb-4">
                             <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                                 @if($user->getAvatarUrl())
-                                    <img src="{{ $user->getAvatarUrl() }}" 
-                                         alt="{{ $user->name }}" 
+                                    <img src="{{ $user->getAvatarUrl() }}"
+                                         alt="{{ $user->name }}"
                                          class="w-full h-full rounded-full object-cover"
                                          referrerpolicy="no-referrer">
                                 @else
@@ -322,7 +322,7 @@
                                     <span>Редактировать</span>
                                 </a>
                             @endif
-                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivot('role', 'owner')->count() > 1))
+                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivotIn('role_id', [\App\Models\BusinessRole::where('slug', 'owner')->value('id')])->count() > 1))
                                 <form method="POST" action="{{ route('settings.users.destroy', $user) }}"
                                     id="delete-form-{{ $user->id }}" class="flex-1">
                                     @csrf
@@ -363,7 +363,7 @@
                         </div>
                         <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="w-full">
                             @csrf
-                            <button type="submit" 
+                            <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
                                 <span>Отправить повторно</span>
@@ -425,7 +425,7 @@
     @endif
 
     <!-- Модальное окно подтверждения удаления -->
-    <div x-show="showDeleteModal" 
+    <div x-show="showDeleteModal"
          @click.away="closeDeleteModal()"
          @keydown.escape.window="closeDeleteModal()"
          x-transition:enter="transition ease-out duration-200"

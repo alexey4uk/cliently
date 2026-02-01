@@ -98,23 +98,16 @@ class BusinessInvitationController extends Controller
 
         // Добавляем пользователя в бизнес
         $pivotData = [
-            "role" => $invitation->role,
             "role_id" => $invitation->role_id,
         ];
 
-        // Если роль "мастер" и указан master_id в приглашении, добавляем его
-        if ($invitation->role === "master" && $invitation->master_id) {
-            $pivotData["master_id"] = $invitation->master_id;
-        } elseif ($invitation->role === "master" && !$invitation->master_id) {
-            // Если роль "мастер" но master_id не указан, создаем нового мастера
-            $master = $this->createMasterForUser(
+        // Если роль "мастер" и master_id не указан, создаем нового мастера
+        if ($invitation->role === "master" && !$invitation->master_id) {
+            $this->createMasterForUser(
                 $invitation->business,
                 $user,
                 $invitation,
             );
-            if ($master) {
-                $pivotData["master_id"] = $master->id;
-            }
         }
 
         $invitation->business->users()->attach($user->id, $pivotData);
@@ -179,26 +172,21 @@ class BusinessInvitationController extends Controller
 
         // Добавляем пользователя в бизнес
         $pivotData = [
-            "role" => $invitation->role,
-            "role_id" => $invitation->role_id,
+            "role_id_id" => $invitation->role_id,
         ];
 
-        // Если роль "мастер" и указан master_id в приглашении, добавляем его
-        if ($invitation->role === "master" && $invitation->master_id) {
-            $pivotData["master_id"] = $invitation->master_id;
-        } elseif ($invitation->role === "master" && !$invitation->master_id) {
-            // Если роль "мастер" но master_id не указан, создаем нового мастера
-            $master = $this->createMasterForUser(
+        // Если роль "мастер" и master_id не master_id не указан,, создаем нового мастера
+
+ераст маого новемсозда        ifif ($invitation->role($invitation->role ====== "master""master" && !&& !$invitation->masterinv_id) {
+            $this->createMasterForForcreateMaster->            $this {
+)_idmaster->itationUser(
                 $invitation->business,
                 $user,
                 $invitation,
             );
-            if ($master) {
-                $pivotData["master_id"] = $master->id;
-            }
         }
 
-        $invitation->business->users()->attach($user->id, $pivotData);
+}business->users()->attach($user->id, $pivotData);
 
         // Помечаем приглашение как принятое
         $invitation->update([

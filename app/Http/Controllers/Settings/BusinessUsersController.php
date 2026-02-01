@@ -44,7 +44,7 @@ class BusinessUsersController extends Controller
 
         $users = $business
             ->users()
-            ->withPivot("role", "role_id", "first_name", "last_name")
+            ->withPivot("role_id", "first_name", "last_name")
             ->orderBy("business_user.created_at", "desc")
             ->get();
 
@@ -334,29 +334,10 @@ class BusinessUsersController extends Controller
             $role = BusinessRole::findOrFail($request->role_id);
 
             $pivotData = [
-                "role" => $role->slug,
                 "role_id" => $role->id,
                 "first_name" => $request->first_name,
                 "last_name" => $request->last_name,
             ];
-
-            // Если роль "мастер" и указан master_id, добавляем его
-            if ($role->slug === "master" && $request->filled("master_id")) {
-                $pivotData["master_id"] = $request->master_id;
-            } elseif (
-                $role->slug === "master" &&
-                !$request->filled("master_id")
-            ) {
-                // Если роль "мастер" но master_id не указан, создаем нового мастера
-                $master = $this->createMasterForUser(
-                    $business,
-                    $existingUser,
-                    $request,
-                );
-                if ($master) {
-                    $pivotData["master_id"] = $master->id;
-                }
-            }
 
             $business->users()->attach($existingUser->id, $pivotData);
 
@@ -440,21 +421,14 @@ class BusinessUsersController extends Controller
         $role = BusinessRole::findOrFail($request->role_id);
 
         $pivotData = [
-            "role" => $role->slug,
             "role_id" => $role->id,
             "first_name" => $request->first_name,
             "last_name" => $request->last_name,
         ];
 
-        // Если роль "мастер" и указан master_id, добавляем его
-        if ($role->slug === "master" && $request->filled("master_id")) {
-            $pivotData["master_id"] = $request->master_id;
-        } elseif ($role->slug === "master" && !$request->filled("master_id")) {
-            // Если роль "мастер" но master_id не указан, создаем нового мастера
-            $master = $this->createMasterForUser($business, $user, $request);
-            if ($master) {
-                $pivotData["master_id"] = $master->id;
-            }
+        // Если роль "мастер" но master_id не указан, создаем нового мастера
+        if ($role->slug === "master" && !$request->filled("master_id")) {
+            $this->createMasterForUser($business, $user, $request);
         }
 
         $business->users()->attach($user->id, $pivotData);
@@ -623,9 +597,13 @@ class BusinessUsersController extends Controller
 
         // Нельзя удалить последнего owner из бизнеса
         if ($role?->slug === "owner") {
+            $ownerRoleId = \App\Models\BusinessRole::where(
+                "slug",
+                "owner",
+            )->value("id");
             $ownersCount = $business
                 ->users()
-                ->wherePivot("role", "owner")
+                ->wherePivotIn("role_id", [$ownerRoleId])
                 ->count();
 
             if ($ownersCount <= 1) {

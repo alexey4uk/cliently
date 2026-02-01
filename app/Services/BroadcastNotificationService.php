@@ -33,10 +33,7 @@ class BroadcastNotificationService
                 return User::whereRaw('1 = 0');
             }
             $subquery = DB::table('business_user')
-                ->where(function ($q) use ($ownerRole) {
-                    $q->where('role_id', $ownerRole->id)
-                        ->orWhere('role', 'owner');
-                })
+                ->where('role_id', $ownerRole->id)
                 ->distinct()
                 ->select('user_id');
 

@@ -108,7 +108,7 @@ class AppointmentsController extends Controller
         }
 
         if ($view === 'calendar') {
-            $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+            $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth, $filters);
 
             // Применяем фильтр "только свои данные" для календаря
             if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
@@ -193,7 +193,7 @@ class AppointmentsController extends Controller
         ];
 
         // Всегда используем календарную логику
-        $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+        $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth, $filters);
 
         // Применяем фильтр "только свои данные" для календаря
         if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
@@ -540,7 +540,7 @@ class AppointmentsController extends Controller
         $appointment->update(['status' => 'completed']);
 
         // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChanged($appointment);
+        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment);
 
         // Отправить системное уведомление
         AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);

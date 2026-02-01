@@ -59,7 +59,13 @@ class AdminNotificationService
         }
 
         // Получаем владельца бизнеса
-        $owner = $business->users()->wherePivot("role", "owner")->first();
+        $ownerRoleId = \App\Models\BusinessRole::where("slug", "owner")->value(
+            "id",
+        );
+        $owner = $business
+            ->users()
+            ->wherePivotIn("role_id", [$ownerRoleId])
+            ->first();
 
         foreach ($admins as $admin) {
             if (
@@ -375,7 +381,11 @@ class AdminNotificationService
 
         // 1. Уведомляем владельца бизнеса (owner)
         if ($business) {
-            $owner = $business->users()->wherePivot("role", "owner")->first();
+            $ownerRoleId = BusinessRole::where("slug", "owner")->value("id");
+            $owner = $business
+                ->users()
+                ->wherePivotIn("role_id", [$ownerRoleId])
+                ->first();
 
             if (
                 $owner &&

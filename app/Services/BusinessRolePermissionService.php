@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BusinessRolePermission;
 use Illuminate\Support\Facades\DB;
 
 class BusinessRolePermissionService
@@ -81,7 +82,7 @@ class BusinessRolePermissionService
         }
 
         // Получаем все permissions одним запросом
-        $permissions = \App\Models\BusinessRolePermission::whereIn('role_id', $roleIds)
+        $permissions = BusinessRolePermission::whereIn('role_id', $roleIds)
             ->where('granted', true)
             ->get()
             ->groupBy('role_id')
@@ -105,7 +106,7 @@ class BusinessRolePermissionService
      */
     public function getPermissionsForRole(int $roleId): array
     {
-        return BusinessRolePermission::where('role_id', $roleId)
+        return \App\Models\BusinessRolePermission::where('role_id', $roleId)
             ->where('granted', true)
             ->pluck('permission')
             ->toArray();
@@ -119,7 +120,7 @@ class BusinessRolePermissionService
      */
     public function getDeniedPermissions(int $roleId): array
     {
-        return BusinessRolePermission::where('role_id', $roleId)
+        return \App\Models\BusinessRolePermission::where('role_id', $roleId)
             ->where('granted', false)
             ->pluck('permission')
             ->toArray();
