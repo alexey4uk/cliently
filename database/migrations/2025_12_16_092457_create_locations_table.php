@@ -20,10 +20,12 @@ return new class extends Migration {
             $table->decimal("lng", 11, 8)->nullable();
 
             $table->string("city", 100)->index();
-            $table->string("address");
-
             $table->string('street', 255)->nullable();
             $table->string('house', 20)->nullable();
+            $table->string('building', 20)->nullable();
+            $table->string('apartment', 20)->nullable();
+            $table->string('address')->nullable();
+
 
             $table->text("description")->nullable();
             $table->json("working_hours")->nullable();
