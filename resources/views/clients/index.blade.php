@@ -562,10 +562,9 @@
                         $upcomingAppointments = $client->upcoming_appointments_count ?? 0;
                         $hasActivity = $totalAppointments > 0;
                     @endphp
-                    <div
-                        class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                    <x-mobile-card>
                         <!-- Заголовок карточки -->
-                        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                        <x-mobile-card-header>
                             <div class="flex items-center gap-3">
                                 <a href="{{ route('clients.show', $client) }}"
                                     class="flex items-center gap-3 min-w-0 flex-1">
@@ -586,10 +585,10 @@
                                     </div>
                                 </a>
                             </div>
-                        </div>
+                        </x-mobile-card-header>
 
                         <!-- Содержимое карточки -->
-                        <div class="px-4 py-3 space-y-3">
+                        <x-mobile-card-body class="space-y-3">
                             <div>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Телефон</p>
                                 <button
@@ -606,10 +605,10 @@
                                     </p>
                                 </div>
                             @endif
-                        </div>
+                        </x-mobile-card-body>
 
                         <!-- Действия -->
-                        <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+                        <x-mobile-card-footer>
                             <div class="flex items-center gap-2">
                                 <button
                                     @click="openPhoneModal('{{ $client->phone }}', '{{ $client->phone }}', '{{ addslashes($client->full_name) }}')"
@@ -628,8 +627,8 @@
                                     </a>
                                 @endif
                             </div>
-                        </div>
-                    </div>
+                        </x-mobile-card-footer>
+                    </x-mobile-card>
                 @endforeach
             </div>
 

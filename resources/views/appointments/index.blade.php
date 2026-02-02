@@ -551,11 +551,11 @@
         </div>
 
         <!-- Карточки для мобильных -->
-        <div class="md:hidden space-y-3">
+        <div class="md:hidden grid grid-cols-1 gap-4">
             @foreach ($appointments as $appointment)
-                <article class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                <article class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     {{-- Шапка: дата, время, статус --}}
-                    <header class="px-4 py-3 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700/50">
+                    <header class="px-4 py-3 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 min-w-0">
                             <span class="shrink-0 text-sm font-semibold text-slate-900 dark:text-white">
                                 {{ $appointment->date->format('d.m.Y') }}, {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
@@ -611,7 +611,7 @@
                     </div>
 
                     {{-- Действия: Просмотр + выпадающее меню --}}
-                    <footer class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+                    <footer class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-xl">
                         <div class="flex items-center gap-2">
                             @if($canViewAppointments)
                             <a href="{{ route('appointments.show', $appointment) }}"

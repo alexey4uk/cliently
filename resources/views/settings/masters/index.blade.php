@@ -225,9 +225,8 @@
                     $timeTo = $workingHours['to'] ?? '—';
                 @endphp
 
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <!-- Заголовок карточки -->
-                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                <x-mobile-card>
+                    <x-mobile-card-header class="!p-4">
                         <div class="flex items-center gap-3 mb-3">
                             <img src="https://ui-avatars.com/api/?name={{ urlencode($master->name) }}&background=10b981&color=fff&size=64" 
                                  class="w-12 h-12 rounded-full" 
@@ -241,10 +240,9 @@
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </x-mobile-card-header>
 
-                    <!-- Содержимое карточки -->
-                    <div class="p-6 space-y-4">
+                    <x-mobile-card-body class="space-y-4">
                         <!-- Контакты -->
                         <div class="flex items-start gap-3">
                             <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
@@ -312,10 +310,9 @@
                                 <span class="text-xs text-slate-400 dark:text-slate-500 italic">Не назначены</span>
                             @endif
                         </div>
-                    </div>
+                    </x-mobile-card-body>
 
-                    <!-- Действия -->
-                    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                    <x-mobile-card-footer class="bg-slate-50 dark:bg-slate-800/30">
                         <div class="flex items-center justify-end gap-3">
                             @if($canUpdateMasters)
                                 <a href="{{ route('settings.masters.edit', $master) }}"
@@ -340,8 +337,8 @@
                                 </button>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </x-mobile-card-footer>
+                </x-mobile-card>
             @endforeach
         </div>
     @else

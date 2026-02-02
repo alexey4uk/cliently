@@ -202,11 +202,10 @@
         <!-- Карточки для мобильных -->
         <div class="md:hidden grid grid-cols-1 gap-4">
             @foreach($services as $service)
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <!-- Заголовок карточки -->
-                    <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+                <x-mobile-card>
+                    <x-mobile-card-header>
                         <div class="flex items-center gap-3 mb-3">
-                            <div class="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                            <div class="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-scissors text-purple-600 dark:text-purple-400"></i>
                             </div>
                             <div class="flex-1 min-w-0">
@@ -237,11 +236,10 @@
                                 <span>{{ $service->duration }} мин</span>
                             </div>
                         </div>
-                    </div>
+                    </x-mobile-card-header>
 
-                    <!-- Содержимое карточки -->
                     @if($service->description)
-                        <div class="px-6 py-4">
+                        <x-mobile-card-body>
                             <div class="flex items-start gap-3">
                                 <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
                                     <i class="fa-solid fa-info-circle text-slate-600 dark:text-slate-400 text-xs"></i>
@@ -253,11 +251,10 @@
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </x-mobile-card-body>
                     @endif
 
-                    <!-- Действия -->
-                    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                    <x-mobile-card-footer class="bg-slate-50 dark:bg-slate-800/30">
                         <div class="flex items-center justify-end gap-3">
                             @if($canUpdateServices)
                                 <a href="{{ route('services.edit', $service) }}"
@@ -282,8 +279,8 @@
                                 </button>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </x-mobile-card-footer>
+                </x-mobile-card>
             @endforeach
         </div>
     @else

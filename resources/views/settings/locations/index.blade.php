@@ -225,10 +225,9 @@
                                 @endif
                             </div>
                         @endif
-                    </div>
+                    </x-mobile-card-header>
 
-                    <!-- Содержимое карточки -->
-                    <div class="p-6 space-y-4">
+                    <x-mobile-card-body class="space-y-4">
                         <!-- Адрес -->
                         <div class="flex items-start gap-3">
                             <div class="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
@@ -271,10 +270,9 @@
                                 </div>
                             </div>
                         @endif
-                    </div>
+                    </x-mobile-card-body>
 
-                    <!-- Действия -->
-                    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
+                    <x-mobile-card-footer class="bg-slate-50 dark:bg-slate-800/30">
                         <div class="flex items-center justify-end gap-3">
                             @if($canUpdateLocations)
                                 <a href="{{ route('settings.locations.edit', $location) }}"
@@ -299,8 +297,8 @@
                                 </button>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </x-mobile-card-footer>
+                </x-mobile-card>
             @endforeach
         </div>
     @else

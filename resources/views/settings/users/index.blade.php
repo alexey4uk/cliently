@@ -272,8 +272,8 @@
                     $roleModel = $rolesById[$pivot->pivot->role_id] ?? null;
                     $role = $roleModel?->slug ?? null;
                 @endphp
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-6">
+                <x-mobile-card>
+                    <x-mobile-card-body>
                         <div class="flex items-center gap-3 mb-4">
                             <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                                 @if($user->getAvatarUrl())
@@ -323,13 +323,13 @@
                                 </button>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </x-mobile-card-body>
+                </x-mobile-card>
             @endforeach
 
             @foreach($invitations as $invitation)
-                <div class="bg-amber-50/50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800 shadow-sm overflow-hidden">
-                    <div class="p-6">
+                <x-mobile-card class="bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
+                    <x-mobile-card-body>
                         <div class="flex items-center gap-3 mb-4">
                             <div class="h-12 w-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                 <i class="fa-solid fa-envelope text-slate-400 dark:text-slate-500"></i>
@@ -356,8 +356,8 @@
                                 <span>Отправить повторно</span>
                             </button>
                         </form>
-                    </div>
-                </div>
+                    </x-mobile-card-body>
+                </x-mobile-card>
             @endforeach
         </div>
     @else
