@@ -1,8 +1,9 @@
 {{-- Клиентское меню: Главная, быстрый доступ, Управление, Аналитика, Поддержка, Подписка --}}
-
+@php $isMobile = isset($mobile) && $mobile; @endphp
+@if($isMobile)<div class="mobile-menu-nav space-y-6">@endif
                     <!-- Главная -->
                     <div class="space-y-1">
-                        <a href="{{ route('dashboard') }}"
+                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('dashboard') }}"
                             class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('dashboard')
                                 ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -33,7 +34,7 @@
                     <!-- Быстрый доступ: записи, календарь, клиенты без группы -->
                     <div class="space-y-1">
                             @if($hasBusinessPermission('client.appointments.view'))
-                                <a href="{{ route('appointments.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -56,7 +57,7 @@
                                     </div>
                                 </a>
 
-                                <a href="{{ route('appointments.calendar') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.calendar') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.calendar')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -81,7 +82,7 @@
                             @endif
 
                             @if($hasBusinessPermission('client.clients.view'))
-                                <a href="{{ route('clients.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('clients.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('clients.*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -106,6 +107,32 @@
                             @endif
                     </div>
                     @endif
+
+                    <!-- Уведомления (доступны всем авторизованным) -->
+                    <div class="space-y-1">
+                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('notifications.index') }}"
+                            class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('notifications.*')
+                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                            :class="collapsed ? 'justify-center mx-2' : 'px-3'"
+                            :title="collapsed ? 'Уведомления' : ''"
+                            x-data="{ tooltip: false }"
+                            @mouseenter="if (collapsed) tooltip = true"
+                            @mouseleave="tooltip = false">
+                            <div class="flex items-center justify-center flex-shrink-0"
+                                :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
+                                <i class="fa-solid fa-bell transition-transform duration-200 {{ Request::routeIs('notifications.*') ? 'scale-110' : 'group-hover:scale-110' }}"
+                                    :class="collapsed ? 'text-lg' : 'text-base'"></i>
+                            </div>
+                            <span x-show="!collapsed" x-cloak
+                                class="sidebar-text whitespace-nowrap font-medium">Уведомления</span>
+                            <div x-show="tooltip && collapsed"
+                                 x-transition
+                                 class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                Уведомления
+                            </div>
+                        </a>
+                    </div>
 
                     @php
                         $hasTelegramAccess = false;
@@ -155,7 +182,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            <a href="{{ route('settings.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.index')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -177,7 +204,7 @@
                                         Бизнес
                                     </div>
                                 </a>
-                                <a href="{{ route('settings.online-booking') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.online-booking') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.online-booking*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -200,7 +227,7 @@
                                     </div>
                                 </a>
                             @if($hasBusinessPermission('client.services.view'))
-                                <a href="{{ route('services.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('services.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('services.*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -224,7 +251,7 @@
                                 </a>
                             @endif
                             @if($hasBusinessPermission('client.masters.view'))
-                                <a href="{{ route('settings.masters') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.masters') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.masters*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -248,7 +275,7 @@
                                 </a>
                             @endif
                             @if($hasBusinessPermission('client.locations.view'))
-                                <a href="{{ route('settings.locations') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.locations') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.locations*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -279,7 +306,7 @@
                                 }
                             @endphp
                             @if($hasUsersPermission)
-                                <a href="{{ route('settings.users.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.users.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.users*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -310,7 +337,7 @@
                                 }
                             @endphp
                             @if($hasRolesPermission)
-                                <a href="{{ route('settings.roles.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.roles.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.roles*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -334,7 +361,7 @@
                                 </a>
                             @endif
                             @if($hasBusinessPermission('client.telegram.manage') && $hasTelegramAccess)
-                                <a href="{{ route('settings.telegram') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('settings.telegram') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('settings.telegram*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -386,7 +413,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            <a href="{{ route('analytics.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('analytics.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.index')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -404,7 +431,7 @@
                                 <div x-show="tooltip && collapsed" x-transition
                                      class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Обзор</div>
                             </a>
-                            <a href="{{ route('analytics.financial') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('analytics.financial') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.financial')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -422,7 +449,7 @@
                                 <div x-show="tooltip && collapsed" x-transition
                                      class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Финансы</div>
                             </a>
-                            <a href="{{ route('analytics.general') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('analytics.general') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.general')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -440,7 +467,7 @@
                                 <div x-show="tooltip && collapsed" x-transition
                                      class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Общая</div>
                             </a>
-                            <a href="{{ route('analytics.clients') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('analytics.clients') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('analytics.clients')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -485,7 +512,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @if($hasBusinessPermission('client.tickets.create'))
-                                <a href="{{ route('tickets.create') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('tickets.create') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.create')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -509,7 +536,7 @@
                                 </a>
                             @endif
                             @if($hasBusinessPermission('client.tickets.view'))
-                                <a href="{{ route('tickets.index') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('tickets.index') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('tickets.index') || Request::routeIs('tickets.show') || Request::routeIs('tickets.edit')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -555,7 +582,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            <a href="{{ route('subscription.current') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('subscription.current') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.current')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -577,7 +604,7 @@
                                     Текущая подписка
                                 </div>
                             </a>
-                            <a href="{{ route('subscription.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('subscription.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('subscription.index') || Request::routeIs('subscription.show')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -602,3 +629,4 @@
                         </nav>
                     </div>
                     @endif
+@if($isMobile)</div>@endif

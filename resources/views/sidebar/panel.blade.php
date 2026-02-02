@@ -1,8 +1,9 @@
 {{-- Меню админ-панели: Главная, быстрый доступ, Каталог, Аналитика, Поддержка, Доступы, Коммуникации, Платформа, Интеграции --}}
-
+@php $isMobile = isset($mobile) && $mobile; @endphp
+@if($isMobile)<div class="mobile-menu-nav space-y-6">@endif
                     <!-- Главная -->
                     <div class="space-y-1">
-                        <a href="{{ route('panel.index') }}"
+                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.index') }}"
                             class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.index')
                                 ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -37,7 +38,7 @@
                     <!-- Быстрый доступ: записи, клиенты, бизнесы без группы -->
                     <div class="space-y-1">
                             @can('panel.appointments.view')
-                                <a href="{{ route('panel.appointments') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.appointments') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.appointments*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -62,7 +63,7 @@
                             @endcan
 
                             @can('panel.clients.view')
-                                <a href="{{ route('panel.clients') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.clients') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.clients*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -87,7 +88,7 @@
                             @endcan
 
                             @can('panel.businesses.view')
-                                <a href="{{ route('panel.businesses') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.businesses') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.businesses*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -140,7 +141,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @can('panel.services.view')
-                                <a href="{{ route('panel.services') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.services') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.services*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -165,7 +166,7 @@
                             @endcan
 
                             @can('panel.locations.view')
-                                <a href="{{ route('panel.locations') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.locations') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.locations*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -190,7 +191,7 @@
                             @endcan
 
                             @can('panel.masters.view')
-                                <a href="{{ route('panel.masters') }}"
+                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.masters') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.masters*')
                                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                         : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -236,7 +237,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            <a href="{{ route('panel.analytics') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.analytics') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.analytics') && !Request::routeIs('panel.analytics.*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -255,7 +256,7 @@
                                      class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Обзор</div>
                             </a>
                             @can('panel.analytics.financial')
-                            <a href="{{ route('panel.analytics.financial') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.analytics.financial') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.analytics.financial')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -275,7 +276,7 @@
                             </a>
                             @endcan
                             @can('panel.analytics.general')
-                            <a href="{{ route('panel.analytics.general') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.analytics.general') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.analytics.general')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -295,7 +296,7 @@
                             </a>
                             @endcan
                             @can('panel.analytics.subscriptions')
-                            <a href="{{ route('panel.analytics.subscriptions') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.analytics.subscriptions') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.analytics.subscriptions')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -346,7 +347,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @can('panel.access')
-                            <a href="{{ route('panel.tickets') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.tickets') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ (Request::routeIs('panel.tickets') || Request::routeIs('panel.tickets.*'))
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -370,7 +371,7 @@
                             </a>
                             @endcan
                             @can('panel.tickets.categories.manage')
-                            <a href="{{ route('panel.ticket-categories.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.ticket-categories.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.ticket-categories.*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -402,7 +403,7 @@
                             $user->can('panel.users.view') ||
                             $user->can('panel.roles.view') ||
                             $user->can('panel.permissions.view') ||
-                            $user->can('panel.business-roles.view')
+                            $user->can('panel.business.roles.manage')
                         );
                     @endphp
                     @if($hasAdminAccess)
@@ -425,7 +426,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @can('panel.users.view')
-                            <a href="{{ route('panel.users') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.users') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.users*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -445,7 +446,7 @@
                             </a>
                             @endcan
                             @can('panel.roles.view')
-                            <a href="{{ route('panel.roles') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.roles') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.roles*') && !Request::routeIs('panel.permissions*') && !Request::routeIs('panel.business-roles*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -465,7 +466,7 @@
                             </a>
                             @endcan
                             @can('panel.permissions.view')
-                            <a href="{{ route('panel.permissions') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.permissions') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.permissions*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -484,13 +485,13 @@
                                      class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Права</div>
                             </a>
                             @endcan
-                            @can('panel.business-roles.view')
-                            <a href="{{ route('panel.business-roles.index') }}"
+                            @can('panel.business.roles.manage')
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.business-roles.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.business-roles*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
                                 :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                :title="collapsed ? 'Роли орг.' : ''"
+                                :title="collapsed ? 'Роли организаций' : ''"
                                 x-data="{ tooltip: false }"
                                 @mouseenter="if (collapsed) tooltip = true"
                                 @mouseleave="tooltip = false">
@@ -499,9 +500,9 @@
                                     <i class="fa-solid fa-building-user transition-transform duration-200 {{ Request::routeIs('panel.business-roles*') ? 'scale-110' : 'group-hover:scale-110' }}"
                                        :class="collapsed ? 'text-lg' : 'text-base'"></i>
                                 </div>
-                                <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap font-medium">Роли орг.</span>
+                                <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap font-medium">Роли организаций</span>
                                 <div x-show="tooltip && collapsed" x-transition
-                                     class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Роли орг.</div>
+                                     class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Роли организаций</div>
                             </a>
                             @endcan
                         </nav>
@@ -535,7 +536,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @can('panel.broadcasts.send')
-                            <a href="{{ route('panel.broadcasts.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.broadcasts.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.broadcasts*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -555,7 +556,7 @@
                             </a>
                             @endcan
                             @can('panel.notifications.view')
-                            <a href="{{ route('panel.notifications.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.notifications.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.notifications*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -604,7 +605,7 @@
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
                             @can('panel.plans.view')
-                            <a href="{{ route('panel.plans.index') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.plans.index') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.plans*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -624,7 +625,7 @@
                             </a>
                             @endcan
                             @can('panel.payments.view')
-                            <a href="{{ route('panel.invoices') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.invoices') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.invoices*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -666,7 +667,7 @@
                              x-transition:leave-start="opacity-100 translate-y-0"
                              x-transition:leave-end="opacity-0 -translate-y-1"
                              class="space-y-1 overflow-hidden">
-                            <a href="{{ route('panel.telegram.management') }}"
+                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('panel.telegram.management') }}"
                                 class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('panel.telegram.management*')
                                     ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
                                     : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
@@ -687,3 +688,4 @@
                         </nav>
                     </div>
                     @endcan
+@if($isMobile)</div>@endif
