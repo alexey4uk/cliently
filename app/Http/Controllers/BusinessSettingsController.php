@@ -8,6 +8,7 @@ use App\Models\BusinessRole;
 use App\Models\Country;
 use App\Services\AdminNotificationService;
 use App\Services\SubscriptionService;
+use Endroid\QrCode\Builder\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -238,6 +239,56 @@ class BusinessSettingsController extends Controller
         return redirect()
             ->route("settings.online-booking")
             ->with("success", "Настройки онлайн-записи обновлены");
+    }
+
+    /**
+     * Генерация QR-кода для онлайн-записи (веб или Telegram)
+     */
+    public function onlineBookingQr(Request $request)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if (!$business) {
+            abort(404);
+        }
+
+        $type = $request->query("type", "web");
+        $size = (int) $request->query("size", 200);
+        $size = $size >= 100 && $size <= 500 ? $size : 200;
+        $download = $request->boolean("download");
+
+        $url = null;
+
+        if ($type === "web") {
+            if (empty($business->slug)) {
+                abort(404);
+            }
+            $url = route("public.appointments.show", ["slug" => $business->slug]);
+        } elseif ($type === "telegram") {
+            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+            if (!$bot || empty($business->slug)) {
+                abort(404);
+            }
+            $url = "https://t.me/" . $bot->name . "?start=" . $business->slug;
+        } else {
+            abort(400);
+        }
+
+        $builder = new Builder(data: $url, size: $size, margin: 10);
+        $result = $builder->build();
+
+        $headers = [
+            "Content-Type" => $result->getMimeType(),
+            "Cache-Control" => "private, max-age=3600",
+        ];
+        if ($download) {
+            $filename = $type === "web"
+                ? "qr-zapisi-{$business->slug}.png"
+                : "qr-telegram-{$business->slug}.png";
+            $headers["Content-Disposition"] = "attachment; filename=\"" . $filename . "\"";
+        }
+
+        return response($result->getString(), 200, $headers);
     }
 
     /**

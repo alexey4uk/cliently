@@ -524,6 +524,10 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
                 BusinessSettingsController::class,
                 "updateOnlineBooking",
             ])->name("online-booking.update");
+            Route::get("/settings/online-booking/qr", [
+                BusinessSettingsController::class,
+                "onlineBookingQr",
+            ])->name("online-booking.qr");
 
             // Telegram
             Route::middleware([
