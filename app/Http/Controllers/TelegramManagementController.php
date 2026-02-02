@@ -15,14 +15,10 @@ class TelegramManagementController extends Controller
     {
         $bots = \DefStudio\Telegraph\Models\TelegraphBot::all();
 
-        // Проверка webhook статуса для каждого бота - это API запросы к Telegram
-        // Оптимизация: кэшируем статус на 5 минут чтобы избежать множественных API запросов
+        // Проверка webhook статуса для каждого бота
         $webhookStatuses = [];
         foreach ($bots as $bot) {
-            $cacheKey = "telegram_webhook_status_{$bot->id}";
-            $webhookStatuses[$bot->id] = \Cache::remember($cacheKey, 300, function () use ($bot) {
-                return $this->checkWebhookStatus($bot);
-            });
+            $webhookStatuses[$bot->id] = $this->checkWebhookStatus($bot);
         }
 
         return view('settings.telegram.management', [
@@ -152,14 +148,6 @@ class TelegramManagementController extends Controller
         }
 
         try {
-            // Получаем отладочную информацию о webhook перед установкой
-            $debugInfo = $bot->getWebhookDebugInfo()->send();
-
-            Log::info('Webhook debug info before setup', [
-                'bot_id' => $bot->id,
-                'debug_info' => $debugInfo->json(),
-            ]);
-
             // Используем параметры из документации: dropPendingUpdates = true
             $reply = $bot->registerWebhook(dropPendingUpdates: true)->send();
 
@@ -202,12 +190,6 @@ class TelegramManagementController extends Controller
         }
 
         try {
-            // Логируем информацию перед удалением
-            Log::info('Attempting to delete webhook', [
-                'bot_id' => $bot->id,
-                'bot_token' => substr($bot->token, 0, 10).'***',
-            ]);
-
             // Используем именованный параметр для лучшей читаемости
             $reply = $bot->unregisterWebhook(dropPendingUpdates: true)->send();
 
@@ -254,13 +236,6 @@ class TelegramManagementController extends Controller
 
             // Также получаем информацию о webhook
             $webhookDebugInfo = $bot->getWebhookDebugInfo()->send();
-
-            Log::info('Bot and webhook info retrieved', [
-                'bot_id' => $bot->id,
-                'username' => $botInfo['username'] ?? 'unknown',
-                'webhook_info' => $webhookDebugInfo->json(),
-            ]);
-
             $webhookUrl = $webhookDebugInfo->json()['result']['url'] ?? 'не установлен';
             $webhookStatus = ! empty($webhookUrl) ? 'установлен' : 'не установлен';
 

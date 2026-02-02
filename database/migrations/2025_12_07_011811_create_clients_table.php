@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,18 +14,23 @@ return new class extends Migration
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+
             $table->string('first_name');
             $table->string('last_name')->nullable();
+
+            $table->string('phone', 20)->nullable()->index();
             $table->string('email')->nullable();
+
+            $table->date('birthday')->nullable();
+            $table->text('comment')->nullable();
+
             $table->string('telegram_user_id')->nullable();
             $table->timestamps();
 
-            // Индекс для ускорения агрегации статистики по бизнесу
-            $table->index('business_id');
+            $table->index(['business_id', 'last_name', 'first_name'], 'idx_clients_search');
         });
-
-        // FULLTEXT индекс для быстрого текстового поиска
-        DB::statement('ALTER TABLE clients ADD FULLTEXT INDEX ft_clients_name (first_name, last_name)');
     }
 
     /**

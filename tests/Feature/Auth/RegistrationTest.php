@@ -32,7 +32,7 @@ class RegistrationTest extends TestCase
             [
                 'name' => 'Бесплатный',
                 'description' => 'Для начинающих и малого бизнеса',
-                'price' => null,
+                'price' => 0,
                 'interval' => 'monthly',
                 'trial_days' => 0,
                 'is_active' => true,

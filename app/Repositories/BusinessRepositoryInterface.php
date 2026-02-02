@@ -44,4 +44,9 @@ interface BusinessRepositoryInterface extends RepositoryInterface
      * Обновить чат ID Telegram для бизнеса
      */
     public function updateTelegramChatId(Business $business, int $chatId): bool;
+
+    /**
+     * Получить список всех бизнесов для фильтров (id, name)
+     */
+    public function getAllForFilter(): Collection;
 }

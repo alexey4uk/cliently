@@ -49,12 +49,6 @@ class MasterRequest extends FormRequest
             'phone_country_id' => ['required', 'exists:countries,id'],
             'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
             'email' => ['nullable', 'email', 'max:255'],
-            'working_hours' => ['required', 'array'],
-            'working_hours.from' => ['required_without:working_hours.24_hours', 'date_format:H:i'],
-            'working_hours.to' => ['required_without:working_hours.24_hours', 'date_format:H:i'],
-            'working_hours.24_hours' => ['nullable', 'boolean'],
-            'working_hours.days_off' => ['nullable', 'array'],
-            'working_hours.days_off.*' => ['string', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday'],
             'location_ids' => ['nullable', 'array'],
             'location_ids.*' => ['exists:locations,id'],
             'service_ids' => ['nullable', 'array'],
@@ -78,12 +72,6 @@ class MasterRequest extends FormRequest
             'phone.required' => 'Поле "Телефон" обязательно для заполнения.',
             'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
             'email.email' => 'Неверный формат email адреса.',
-            'working_hours.required' => 'Необходимо указать время работы.',
-            'working_hours.from.required_without' => 'Укажите время начала работы или выберите круглосуточный режим.',
-            'working_hours.to.required_without' => 'Укажите время окончания работы или выберите круглосуточный режим.',
-            'working_hours.from.date_format' => 'Неверный формат времени начала работы.',
-            'working_hours.to.date_format' => 'Неверный формат времени окончания работы.',
-            'working_hours.days_off.in' => 'Выбран неверный день недели.',
         ];
     }
 }

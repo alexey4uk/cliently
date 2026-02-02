@@ -38,7 +38,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
     {
         $statusLabels = [
             'new' => 'Новый',
-            'in_progress' => 'В работе',
+            'open' => 'В работе',
             'resolved' => 'Решен',
             'closed' => 'Закрыт',
         ];

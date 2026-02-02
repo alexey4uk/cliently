@@ -40,7 +40,7 @@ class PlanFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Бесплатный',
             'slug' => 'free',
-            'price' => null,
+            'price' => 0,
             'trial_days' => 0,
             'is_default' => true,
             'sort_order' => 0,
@@ -52,9 +52,11 @@ class PlanFactory extends Factory
      */
     public function withTrial(int $days = 7): static
     {
-        return $this->state(fn (array $attributes) => [
-            'trial_days' => $days,
-        ]);
+        return $this->state(
+            fn (array $attributes) => [
+                'trial_days' => $days,
+            ],
+        );
     }
 
     /**
@@ -62,9 +64,11 @@ class PlanFactory extends Factory
      */
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_active' => false,
-        ]);
+        return $this->state(
+            fn (array $attributes) => [
+                'is_active' => false,
+            ],
+        );
     }
 
     /**
@@ -72,9 +76,11 @@ class PlanFactory extends Factory
      */
     public function monthly(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'interval' => 'monthly',
-        ]);
+        return $this->state(
+            fn (array $attributes) => [
+                'interval' => 'monthly',
+            ],
+        );
     }
 
     /**
@@ -82,8 +88,10 @@ class PlanFactory extends Factory
      */
     public function yearly(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'interval' => 'yearly',
-        ]);
+        return $this->state(
+            fn (array $attributes) => [
+                'interval' => 'yearly',
+            ],
+        );
     }
 }

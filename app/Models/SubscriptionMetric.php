@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 
 class SubscriptionMetric extends Model
 {
@@ -43,24 +42,14 @@ class SubscriptionMetric extends Model
     }
 
     /**
-     * Get cached list of active metrics ordered by sort_order.
+     * Get list of active metrics ordered by sort_order.
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getActiveCached()
     {
-        return Cache::remember('subscription_metrics_active', 3600, function () {
-            return static::where('is_active', true)
-                ->ordered()
-                ->get();
-        });
-    }
-
-    /**
-     * Clear subscription metrics cache.
-     */
-    public static function clearCache(): void
-    {
-        Cache::forget('subscription_metrics_active');
+        return static::where('is_active', true)
+            ->ordered()
+            ->get();
     }
 }

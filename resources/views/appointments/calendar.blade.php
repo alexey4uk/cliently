@@ -25,7 +25,7 @@
 @endphp
 
 <div class="max-w-[1800px] mx-auto">
-    <div class="flex flex-col gap-3 sm:gap-4 sm:h-[calc(100vh-180px)]" x-data="{
+    <div class="flex flex-col gap-3 sm:gap-4" x-data="{
     showPhoneModal: false,
     phone: '',
     phoneDisplay: '',
@@ -162,23 +162,24 @@
     </div>
 
     <!-- Календарное представление -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden flex flex-col sm:flex-1 sm:min-h-0">
-        <!-- Навигация по месяцам -->
-        <div class="border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-2.5 sm:py-3 bg-white dark:bg-slate-900">
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden flex flex-col sm:flex-1 sm:min-h-0 flex-1">
+        <!-- Навигация по месяцам (на мобиле — липкая) -->
+        <div class="sticky sm:static top-0 z-10 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-3 sm:py-3 bg-white dark:bg-slate-900 shrink-0">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-3">
                 <!-- Навигация по месяцам (слева) -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center justify-between sm:justify-start gap-2">
                     <!-- Кнопка назад -->
                     <a href="{{ route('appointments.calendar', array_merge([
                         'month' => $selectedDate->copy()->subMonth()->format('Y-m')
                     ], request()->only(['search', 'status', 'service_id', 'master_id', 'date']))) }}"
-                        class="h-7 w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 shrink-0">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                        class="h-10 w-10 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all duration-200 shrink-0 touch-manipulation"
+                        aria-label="Предыдущий месяц">
+                        <i class="fa-solid fa-chevron-left text-sm sm:text-xs"></i>
                     </a>
 
                     <!-- Текущий месяц и год (только на мобильных) -->
                     <div class="flex-1 sm:hidden text-center">
-                        <h2 class="text-sm font-bold text-slate-900 dark:text-white">
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white">
                             {{ $monthNames[$selectedDate->month] }} {{ $selectedDate->year }}
                         </h2>
                     </div>
@@ -194,29 +195,30 @@
                     <a href="{{ route('appointments.calendar', array_merge([
                         'month' => $selectedDate->copy()->addMonth()->format('Y-m')
                     ], request()->only(['search', 'status', 'service_id', 'master_id', 'date']))) }}"
-                        class="h-7 w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 shrink-0">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                        class="h-10 w-10 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all duration-200 shrink-0 touch-manipulation"
+                        aria-label="Следующий месяц">
+                        <i class="fa-solid fa-chevron-right text-sm sm:text-xs"></i>
                     </a>
                 </div>
 
                 <!-- Кнопки управления (справа) -->
-                <div class="grid grid-cols-4 sm:flex sm:items-center gap-1 sm:gap-1.5">
+                <div class="grid grid-cols-4 sm:flex sm:items-center gap-2 sm:gap-1.5">
                     <!-- Кнопка фильтров -->
                     <button @click="toggleFilters()"
-                            class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all duration-200">
-                        <i class="fa-solid fa-filter text-[10px]"></i>
+                            class="relative inline-flex items-center justify-center gap-1 min-h-[44px] sm:min-h-0 px-2 sm:px-2 py-2.5 sm:py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 rounded-lg transition-all duration-200 touch-manipulation">
+                        <i class="fa-solid fa-filter text-xs"></i>
                         <span class="hidden lg:inline">Фильтры</span>
                         @if ($hasActiveFilters)
-                            <span class="px-1 py-0.5 text-[9px] sm:text-[10px] font-bold bg-indigo-500 text-white rounded-full">{{ 
+                            <span class="absolute top-1 right-1 sm:relative sm:top-0 sm:right-0 sm:ml-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-indigo-500 text-white rounded-full">{{ 
                                 ($date ? 1 : 0) + ($status ? 1 : 0) + (request('service_id') ? 1 : 0) + (request('master_id') ? 1 : 0)
                             }}</span>
                         @endif
                     </button>
                     <!-- Кнопка экспорта -->
                     <a href="{{ route('appointments.export', request()->query()) }}"
-                        class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all duration-200"
+                        class="inline-flex items-center justify-center gap-1 min-h-[44px] sm:min-h-0 px-2 sm:px-2 py-2.5 sm:py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 rounded-lg transition-all duration-200 touch-manipulation relative"
                         title="Экспорт">
-                        <i class="fa-solid fa-download text-[10px]"></i>
+                        <i class="fa-solid fa-download text-xs"></i>
                         <span class="hidden lg:inline">Экспорт</span>
                     </a>
                     <!-- Кнопка создания -->
@@ -229,22 +231,22 @@
                     @endphp
                     @if($canCreateAppointment)
                         <a href="{{ route('appointments.create') }}"
-                            class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all duration-200">
-                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            class="inline-flex items-center justify-center gap-1 min-h-[44px] sm:min-h-0 px-2 sm:px-2 py-2.5 sm:py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 rounded-lg transition-all duration-200 touch-manipulation">
+                            <i class="fa-solid fa-plus text-xs"></i>
                             <span class="hidden lg:inline">Создать</span>
                         </a>
                     @else
                         <button disabled
-                            class="inline-flex items-center justify-center gap-1 px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-semibold text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                            class="inline-flex items-center justify-center gap-1 min-h-[44px] sm:min-h-0 px-2 sm:px-2 py-2.5 sm:py-1.5 text-xs font-semibold text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
                             title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">
-                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <i class="fa-solid fa-plus text-xs"></i>
                             <span class="hidden lg:inline">Создать</span>
                         </button>
                     @endif
                     <!-- Кнопка "Сегодня" -->
                     <button onclick="window.location.href='{{ route('appointments.calendar', array_merge(['month' => \Carbon\Carbon::now()->format('Y-m')], request()->only(['search', 'status', 'service_id', 'master_id', 'date']))) }}'"
-                        class="px-1.5 sm:px-2 py-1.5 text-[10px] sm:text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-all">
-                        <i class="fa-solid fa-calendar-day text-[10px]"></i>
+                        class="min-h-[44px] sm:min-h-0 px-2 sm:px-2 py-2.5 sm:py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 rounded-lg transition-all touch-manipulation">
+                        <i class="fa-solid fa-calendar-day text-xs"></i>
                         <span class="hidden lg:inline ml-1">Сегодня</span>
                     </button>
                 </div>
@@ -256,8 +258,8 @@
             <!-- Дни недели -->
             <div class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 shrink-0">
                 @foreach ($daysOfWeek as $index => $day)
-                    <div class="p-1 sm:p-2 md:p-3 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0">
-                        <span class="text-[8px] sm:text-[10px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide {{ $index >= 5 ? 'text-indigo-600 dark:text-indigo-400' : '' }}">
+                    <div class="p-1.5 sm:p-2 md:p-3 text-center border-r border-slate-200 dark:border-slate-800 last:border-r-0">
+                        <span class="text-[10px] sm:text-[10px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide {{ $index >= 5 ? 'text-indigo-600 dark:text-indigo-400' : '' }}">
                             {{ $day }}
                         </span>
                     </div>
@@ -265,7 +267,7 @@
             </div>
 
             <!-- Календарная сетка -->
-            <div class="grid grid-cols-7 sm:flex-1 sm:min-h-0 gap-0 [grid-auto-rows:40px] sm:[grid-auto-rows:minmax(0,1fr)]">
+            <div class="grid grid-cols-7 sm:flex-1 sm:min-h-0 gap-0 [grid-auto-rows:48px] sm:[grid-auto-rows:minmax(0,1fr)]">
                 @for ($date = $startOfCalendar->copy(); $date->lte($endOfCalendar); $date->addDay())
                     @php
                         $dateKey = $date->format('Y-m-d');
@@ -295,7 +297,7 @@
                             })->toArray()
                         ];
                     @endphp
-                    <div class="relative h-[40px] sm:h-full min-h-[40px] sm:min-h-0 cursor-pointer transition-colors border-b border-r border-slate-200 dark:border-slate-800 last:border-r-0
+                    <div class="relative min-h-[48px] sm:min-h-0 h-[48px] sm:h-full cursor-pointer transition-colors border-b border-r border-slate-200 dark:border-slate-800 last:border-r-0 active:bg-slate-100 dark:active:bg-slate-700/50 touch-manipulation
                         {{ $isCurrentMonth ? ($isPast ? 'bg-slate-50/50 dark:bg-slate-800/20' : 'bg-white dark:bg-slate-800/50') : 'bg-slate-50 dark:bg-slate-900/30' }}
                         {{ $isToday ? 'bg-blue-50/50 dark:bg-blue-900/10 [box-shadow:inset_0_0_0_1px_rgba(147,197,253,0.5)] dark:[box-shadow:inset_0_0_0_1px_rgba(59,130,246,0.5)]' : '' }}"
                         hover:bg-slate-50 dark:hover:bg-slate-800/70"
@@ -306,15 +308,17 @@
                         @endif>
                         <div class="h-full w-full flex flex-col p-0.5 sm:p-1.5 sm:p-2 md:p-2.5 min-h-0">
                             <!-- Заголовок дня -->
-                            <div class="flex items-center justify-between mb-0.5 sm:mb-1.5 shrink-0">
-                                <span class="text-[9px] sm:text-xs md:text-sm lg:text-base font-medium flex items-center justify-center w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-colors
+                            <div class="flex items-center justify-between gap-0.5 sm:mb-1.5 shrink-0">
+                                <span class="text-[11px] sm:text-xs md:text-sm lg:text-base font-medium flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 transition-colors
                                     {{ $isCurrentMonth ? ($isToday ? 'text-blue-600 dark:text-blue-400 font-semibold' : ($isWeekend ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-900 dark:text-white')) : 'text-slate-400 dark:text-slate-500' }}">
                                     {{ $date->day }}
                                 </span>
                                 @if ($dayAppointments->count() > 0)
-                                    <!-- Мобильная версия: только точка -->
-                                    <span class="sm:hidden absolute top-0.5 right-0.5 w-0.5 h-0.5 rounded-full bg-slate-400 dark:bg-slate-500"
-                                        title="{{ $dayAppointments->count() }} {{ $dayAppointments->count() === 1 ? 'запись' : ($dayAppointments->count() < 5 ? 'записи' : 'записей') }}"></span>
+                                    <!-- Мобильная версия: видимый счётчик записей -->
+                                    <span class="sm:hidden flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 shrink-0"
+                                        title="{{ $dayAppointments->count() }} {{ $dayAppointments->count() === 1 ? 'запись' : ($dayAppointments->count() < 5 ? 'записи' : 'записей') }}">
+                                        {{ $dayAppointments->count() }}
+                                    </span>
                                     <!-- Планшетная и десктопная версия: минимальный счетчик -->
                                     <span class="hidden sm:inline text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0"
                                         title="{{ $dayAppointments->count() }} {{ $dayAppointments->count() === 1 ? 'запись' : ($dayAppointments->count() < 5 ? 'записи' : 'записей') }}">
@@ -412,7 +416,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно записей дня -->
+    <!-- Модальное окно записей дня (на мобиле — почти на весь экран) -->
     <div x-show="showDayModal" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
@@ -420,17 +424,18 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4"
+         class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
          @click.self="closeDayModal()"
          style="display: none;">
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
-            <div class="flex items-center justify-between p-3 sm:p-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
+        <div class="bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] sm:max-h-[90vh] overflow-hidden flex flex-col w-full sm:max-w-2xl">
+            <div class="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <div>
-                    <h3 class="text-base sm:text-xl font-bold text-slate-900 dark:text-white">Записи на день</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1" x-text="formatDate(selectedDate)"></p>
+                    <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Записи на день</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1" x-text="formatDate(selectedDate)"></p>
                 </div>
-                <button @click="closeDayModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                    <i class="fa-solid fa-xmark text-base sm:text-lg"></i>
+                <button @click="closeDayModal()" class="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors touch-manipulation -mr-2"
+                    aria-label="Закрыть">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
             <div class="flex-1 overflow-y-auto p-3 sm:p-6">

@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Subscription;
 use App\Services\SubscriptionNotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 class NotifyTrialEnding extends Command
 {
@@ -15,7 +14,9 @@ class NotifyTrialEnding extends Command
 
     public function handle(): int
     {
-        $this->info('Поиск подписок с пробным периодом, заканчивающимся через 1-2 дня...');
+        $this->info(
+            'Поиск подписок с пробным периодом, заканчивающимся через 1-2 дня...',
+        );
 
         $subscriptions = Subscription::where('status', 'trial')
             ->whereNotNull('trial_ends_at')
@@ -26,18 +27,7 @@ class NotifyTrialEnding extends Command
 
         $count = 0;
         foreach ($subscriptions as $subscription) {
-            // Throttling: кэш на 24 часа, чтобы не дублировать
-            $cacheKey = "trial_ending_notified_{$subscription->id}";
-            if (Cache::has($cacheKey)) {
-                continue;
-            }
-
             SubscriptionNotificationService::notifyTrialEnding($subscription);
-
-            // Устанавливаем кэш на 24 часа
-            Cache::put($cacheKey, true, now()->addHours(24));
-
-            $count++;
         }
 
         $this->info("Обработано подписок: {$count}");

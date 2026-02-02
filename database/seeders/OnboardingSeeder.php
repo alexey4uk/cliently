@@ -20,20 +20,26 @@ class OnboardingSeeder extends Seeder
         $user = User::where('email', 'a@a.ru')->first();
 
         if (! $user) {
-            $this->command->error('Пользователь с email a@a.ru не найден. Сначала запустите UserSeeder.');
+            $this->command->error(
+                'Пользователь с email a@a.ru не найден. Сначала запустите UserSeeder.',
+            );
 
             return;
         }
 
         if ($user->businesses()->exists()) {
-            $this->command->info('У пользователя уже есть бизнес. Пропускаем создание.');
+            $this->command->info(
+                'У пользователя уже есть бизнес. Пропускаем создание.',
+            );
 
             return;
         }
 
         $countryBy = Country::where('code', 'BY')->first();
         if (! $countryBy) {
-            $this->command->error('Страна BY не найдена. Сначала запустите CountrySeeder.');
+            $this->command->error(
+                'Страна BY не найдена. Сначала запустите CountrySeeder.',
+            );
 
             return;
         }
@@ -52,19 +58,45 @@ class OnboardingSeeder extends Seeder
 
         $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
         if (! $ownerRole) {
-            $this->command->error('Роль owner не найдена. Сначала запустите DefaultBusinessRolePermissionsSeeder.');
+            $this->command->error(
+                'Роль owner не найдена. Сначала запустите DefaultBusinessRolePermissionsSeeder.',
+            );
 
             return;
         }
-        $business->users()->attach($user, ['role_id' => $ownerRole->id, 'role' => 'owner']);
+        $business->users()->attach($user, ['role_id' => $ownerRole->id]);
 
         $workingHours = [
-            'monday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'tuesday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'wednesday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'thursday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'friday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'saturday' => ['from' => '10:00', 'to' => '20:00', 'day_off' => false],
+            'monday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'tuesday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'wednesday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'thursday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'friday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'saturday' => [
+                'from' => '10:00',
+                'to' => '20:00',
+                'day_off' => false,
+            ],
             'sunday' => ['from' => null, 'to' => null, 'day_off' => true],
         ];
 
@@ -76,7 +108,10 @@ class OnboardingSeeder extends Seeder
             'house' => '50',
             'apartment' => '201',
             'description' => 'Наш главный салон расположен в центре города. Удобная парковка и доступность общественным транспортом.',
-            'working_hours' => json_encode($workingHours, JSON_UNESCAPED_UNICODE),
+            'working_hours' => json_encode(
+                $workingHours,
+                JSON_UNESCAPED_UNICODE,
+            ),
         ]);
 
         $location->phones()->create([
@@ -90,7 +125,7 @@ class OnboardingSeeder extends Seeder
             'name' => 'Стрижка и укладка',
             'description' => 'Профессиональная стрижка волос с укладкой. Консультация стилиста по выбору прически.',
             'duration' => 60,
-            'price' => 45.00,
+            'price' => 45.0,
             'is_active' => true,
         ]);
 

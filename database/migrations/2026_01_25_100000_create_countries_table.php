@@ -14,13 +14,15 @@ return new class extends Migration
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->string('code', 2)->unique();
-            $table->string('code_3', 3)->nullable();
+            $table->string('code_3', 3)->nullable()->unique();
             $table->string('name');
             $table->string('name_en')->nullable();
-            $table->string('calling_code', 10);
+            $table->string('calling_code', 10)->index();
             $table->string('currency', 10)->nullable();
             $table->string('currency_symbol', 10)->nullable();
+            $table->boolean('is_active')->default(true)->index();
             $table->string('ioc', 3)->nullable();
+
             $table->timestamps();
         });
     }

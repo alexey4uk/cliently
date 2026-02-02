@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('telegram_user_states', function (Blueprint $table) {
             $table->id();
-            $table->string('telegram_user_id');
+            $table->bigInteger('telegram_user_id');
             $table->string('step')->default('start');
             $table->json('data')->nullable();
             $table->unsignedBigInteger('last_message_id')->nullable();
-            $table->foreignId('business_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('business_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['telegram_user_id', 'business_id']);
+            $table->unique(['telegram_user_id', 'business_id'], 'tg_user_business_state');
         });
     }
 

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Cache;
 
 class Plan extends Model
 {
@@ -47,87 +46,48 @@ class Plan extends Model
     }
 
     /**
-     * Получить значение метрики тарифа (с кешированием)
+     * Получить значение метрики тарифа
      */
     public function getFeatureValue(string $key): mixed
     {
-        $cacheKey = "plan_{$this->id}_feature_{$key}";
+        // Ищем фичу через связь, фильтруя по колонке 'key' в таблице метрик
+        $feature = $this->features()
+            ->whereHas('metric', function ($query) use ($key) {
+                $query->where('key', $key);
+            })
+            ->first();
 
-        return Cache::remember($cacheKey, 3600, function () use ($key) {
-            $feature = $this->features()->where('feature_key', $key)->first();
+        if (! $feature) {
+            return null;
+        }
 
-            if (! $feature) {
-                return null;
-            }
-
-            return match ($feature->feature_type) {
-                'boolean' => $feature->feature_value === 'true',
-                'integer' => (int) $feature->feature_value,
-                default => $feature->feature_value,
-            };
-        });
+        // Тип теперь берем из связанной метрики, а значение из колонки 'value'
+        return match ($feature->metric->type) {
+            'boolean' => filter_var($feature->value, FILTER_VALIDATE_BOOLEAN),
+            'integer' => (int) $feature->value,
+            default => $feature->value,
+        };
     }
 
     /**
-     * Проверить наличие метрики (с кешированием)
+     * Проверить наличие метрики
      */
     public function hasFeature(string $key): bool
     {
-        $cacheKey = "plan_{$this->id}_has_feature_{$key}";
-
-        return Cache::remember($cacheKey, 3600, function () use ($key) {
-            return $this->features()->where('feature_key', $key)->exists();
-        });
+        return $this->features()
+            ->whereHas('metric', fn ($q) => $q->where('key', $key))
+            ->exists();
     }
 
     /**
-     * Очистить кеш features для плана
-     */
-    public function clearFeaturesCache(): void
-    {
-        // Очищаем все features для этого плана
-        $features = $this->features;
-        foreach ($features as $feature) {
-            Cache::forget("plan_{$this->id}_feature_{$feature->feature_key}");
-            Cache::forget("plan_{$this->id}_has_feature_{$feature->feature_key}");
-        }
-    }
-
-    /**
-     * Get cached list of active plans ordered by sort_order.
+     * Get list of active plans ordered by sort_order.
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getActiveCached()
     {
-        return Cache::remember('plans_active_list', 3600, function () {
-            return static::where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
-        });
-    }
-
-    /**
-     * Clear plans cache.
-     */
-    public static function clearCache(): void
-    {
-        Cache::forget('plans_active_list');
-    }
-
-    /**
-     * Boot method to clear cache on model changes.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saved(function ($plan) {
-            static::clearCache();
-        });
-
-        static::deleted(function ($plan) {
-            static::clearCache();
-        });
+        return static::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
     }
 }

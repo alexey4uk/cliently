@@ -1,120 +1,43 @@
 <?php
 
+$testMode = (bool) env('BEPAID_TEST_MODE', true);
+
 return [
+    'enabled' => (bool) env('BEPAID_ENABLED', false),
+    'test_mode' => $testMode,
 
-    /*
-    |--------------------------------------------------------------------------
-    | bePaid Payment Gateway Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configuration for bePaid payment gateway integration.
-    | Settings can be overridden from database (BepaidSettings model).
-    |
-    */
+    'shop_id' => env('BEPAID_SHOP_ID'),
+    'secret_key' => env('BEPAID_SECRET_KEY'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Test Mode
-    |--------------------------------------------------------------------------
-    |
-    | When enabled, the system will use test credentials and endpoints.
-    | Set to false for production.
-    |
-    */
-
-    'test_mode' => env('BEPAID_TEST_MODE', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Test Environment Settings
-    |--------------------------------------------------------------------------
-    */
-
-    'test' => [
-        'shop_id' => env('BEPAID_TEST_SHOP_ID'),
-        'secret_key' => env('BEPAID_TEST_SECRET_KEY'),
-        'gateway_base' => env('BEPAID_TEST_GATEWAY_BASE', 'https://demo-gateway.begateway.com'),
-        'checkout_base' => env('BEPAID_TEST_CHECKOUT_BASE', 'https://checkout.begateway.com'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Production Environment Settings
-    |--------------------------------------------------------------------------
-    */
-
-    'production' => [
-        'shop_id' => env('BEPAID_PRODUCTION_SHOP_ID'),
-        'secret_key' => env('BEPAID_PRODUCTION_SECRET_KEY'),
-        'gateway_base' => env('BEPAID_PRODUCTION_GATEWAY_BASE', 'https://gateway.begateway.com'),
-        'checkout_base' => env('BEPAID_PRODUCTION_CHECKOUT_BASE', 'https://checkout.begateway.com'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Default Currency
-    |--------------------------------------------------------------------------
-    */
+    'gateway_base' => env('BEPAID_GATEWAY_BASE', $testMode
+        ? 'https://gateway.sandbox.bepaid.by'
+        : 'https://gateway.bepaid.by'),
+    'checkout_base' => env('BEPAID_CHECKOUT_BASE', $testMode
+        ? 'https://checkout.sandbox.bepaid.by'
+        : 'https://checkout.bepaid.by'),
 
     'currency' => env('BEPAID_CURRENCY', 'BYN'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Webhook Settings
-    |--------------------------------------------------------------------------
-    */
-
-    'webhook' => [
-        'url' => env('BEPAID_WEBHOOK_URL', '/webhooks/bepaid'),
-        'verify_signature' => env('BEPAID_VERIFY_WEBHOOK_SIGNATURE', true),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Methods
-    |--------------------------------------------------------------------------
-    |
-    | Available payment methods:
-    - redirect: Redirect to bePaid checkout page
-    - widget: Embedded payment widget
-    |
-    */
-
-    'payment_methods' => [
-        'redirect' => true,
-        'widget' => true,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Default Payment Method
-    |--------------------------------------------------------------------------
-    */
-
     'default_payment_method' => env('BEPAID_DEFAULT_PAYMENT_METHOD', 'redirect'),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Callback URLs
-    |--------------------------------------------------------------------------
-    */
+    // Язык интерфейса чекаута bePaid (ru, en и др. — по документации bePaid)
+    'checkout_language' => env('BEPAID_CHECKOUT_LANGUAGE', 'ru'),
+
+    'webhook' => [
+        // Относительный путь (дополняется APP_URL) или полный URL
+        'url' => env('BEPAID_WEBHOOK_URL', '/webhooks/bepaid'),
+        // Резерв: проверка подписи тела (пока не реализована, bePaid использует Basic Auth)
+        'verify_signature' => (bool) env('BEPAID_VERIFY_WEBHOOK_SIGNATURE', true),
+    ],
 
     'callback_urls' => [
-        'success' => env('BEPAID_SUCCESS_URL', '/subscription/payment/success'),
-        'decline' => env('BEPAID_DECLINE_URL', '/subscription/payment/decline'),
-        'fail' => env('BEPAID_FAIL_URL', '/subscription/payment/fail'),
-        'cancel' => env('BEPAID_CANCEL_URL', '/subscription/payment/cancel'),
+        'success' => rtrim(env('APP_URL'), '/').env('BEPAID_SUCCESS_URL', '/subscription/payment/success'),
+        'decline' => rtrim(env('APP_URL'), '/').env('BEPAID_DECLINE_URL', '/subscription/payment/decline'),
+        'fail' => rtrim(env('APP_URL'), '/').env('BEPAID_FAIL_URL', '/subscription/payment/fail'),
+        'cancel' => rtrim(env('APP_URL'), '/').env('BEPAID_CANCEL_URL', '/subscription/payment/cancel'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Logging
-    |--------------------------------------------------------------------------
-    */
 
     'logging' => [
-        'enabled' => env('BEPAID_LOGGING_ENABLED', true),
-        'level' => env('BEPAID_LOGGING_LEVEL', 'info'),
+        'enabled' => (bool) env('BEPAID_LOGGING', false),
     ],
-
 ];

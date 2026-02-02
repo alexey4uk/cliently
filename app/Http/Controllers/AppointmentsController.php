@@ -108,7 +108,7 @@ class AppointmentsController extends Controller
         }
 
         if ($view === 'calendar') {
-            $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+            $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth, $filters);
 
             // Применяем фильтр "только свои данные" для календаря
             if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
@@ -131,6 +131,18 @@ class AppointmentsController extends Controller
             $appointmentsByDate = collect();
         }
 
+        $services = $this->serviceRepository->getActiveByBusiness($business->id);
+        $masters = $this->masterRepository->getActiveByBusiness($business->id);
+
+        // Права через BusinessRolePermissionService (единый источник)
+        $canViewAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.view');
+        $canExportAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.export');
+        $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
+        $canDeleteAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.delete');
+        $canCreateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.create');
+        $hasAnyAppointmentAction = $canViewAppointments || $canUpdateAppointments || $canDeleteAppointments;
+        $canCreateAppointment = $canCreateAppointments && app(SubscriptionService::class)->canCreateAppointment(Auth::user());
+
         return view('appointments.index', [
             'business' => $business,
             'appointments' => $appointments,
@@ -146,6 +158,15 @@ class AppointmentsController extends Controller
             'sort' => $sort,
             'direction' => $direction,
             'perPage' => $perPage,
+            'services' => $services,
+            'masters' => $masters,
+            'canViewAppointments' => $canViewAppointments,
+            'canExportAppointments' => $canExportAppointments,
+            'canUpdateAppointments' => $canUpdateAppointments,
+            'canDeleteAppointments' => $canDeleteAppointments,
+            'canCreateAppointments' => $canCreateAppointments,
+            'canCreateAppointment' => $canCreateAppointment,
+            'hasAnyAppointmentAction' => $hasAnyAppointmentAction,
         ]);
     }
 
@@ -193,7 +214,7 @@ class AppointmentsController extends Controller
         ];
 
         // Всегда используем календарную логику
-        $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth);
+        $allAppointments = $this->appointmentRepository->getForCalendar($business->id, $currentMonth, $filters);
 
         // Применяем фильтр "только свои данные" для календаря
         if ($role && $permissionService->hasOwnDataPermission($role->id, 'client.appointments.view')) {
@@ -288,7 +309,7 @@ class AppointmentsController extends Controller
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();
@@ -339,9 +360,13 @@ class AppointmentsController extends Controller
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
+
         return view('appointments.show', [
             'business' => $business,
             'appointment' => $appointment,
+            'canUpdateAppointments' => $canUpdateAppointments,
         ]);
     }
 
@@ -540,7 +565,7 @@ class AppointmentsController extends Controller
         $appointment->update(['status' => 'completed']);
 
         // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChanged($appointment);
+        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment);
 
         // Отправить системное уведомление
         AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);

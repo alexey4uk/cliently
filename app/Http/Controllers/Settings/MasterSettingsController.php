@@ -7,8 +7,10 @@ use App\Http\Requests\MasterRequest;
 use App\Models\Country;
 use App\Models\Master;
 use App\Repositories\MasterRepositoryInterface;
+use App\Services\BusinessRolePermissionService;
+use App\Services\MasterScheduleService;
 use App\Services\SubscriptionService;
-use App\Services\WorkingHoursService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MasterSettingsController extends Controller
@@ -23,20 +25,50 @@ class MasterSettingsController extends Controller
     /**
      * Список мастеров
      */
-    public function index()
+    public function index(Request $request)
     {
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
-        $business->load('masters.locations', 'masters.services');
+        $query = $business->masters()->with(['locations', 'services']);
+
+        $search = $request->get('search', '');
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('specialization', 'like', "%{$search}%");
+            });
+        }
+
+        $masters = $query->orderBy('first_name')->orderBy('last_name')->get();
+
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canCreateMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.create');
+        $canUpdateMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.update');
+        $canDeleteMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.delete');
+        $hasAnyMasterAction = $canUpdateMasters || $canDeleteMasters;
+        $canCreateMaster = $canCreateMasters && app(SubscriptionService::class)->canCreateMaster(Auth::user());
 
         return view('settings.masters.index', [
             'business' => $business,
-            'masters' => $business->masters,
+            'masters' => $masters,
+            'search' => $search,
+            'canCreateMasters' => $canCreateMasters,
+            'canUpdateMasters' => $canUpdateMasters,
+            'canDeleteMasters' => $canDeleteMasters,
+            'canCreateMaster' => $canCreateMaster,
+            'hasAnyMasterAction' => $hasAnyMasterAction,
         ]);
     }
 
@@ -48,8 +80,12 @@ class MasterSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $business->load(['locations', 'services']);
@@ -70,19 +106,26 @@ class MasterSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $business->load(['locations', 'services']);
 
-        // Проверка лимита мастеров
         $user = Auth::user();
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateMaster($user)) {
-            return redirect()->back()
+            return redirect()
+                ->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит мастеров для вашего тарифа. Обновите тариф для добавления большего количества мастеров.');
+                ->with(
+                    'error',
+                    \App\Services\SubscriptionService::planLimitErrorMessage(),
+                );
         }
 
         $validated = $request->validated();
@@ -97,8 +140,16 @@ class MasterSettingsController extends Controller
             'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
             'email' => $validated['email'] ?? null,
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
         ]);
+
+        // Сохранить расписание
+        if (! empty($validated['working_hours'])) {
+            $scheduleService = app(MasterScheduleService::class);
+            $scheduleService->saveScheduleForMaster(
+                $validated['working_hours'],
+                $master,
+            );
+        }
 
         $master->phones()->create([
             'country_id' => $phoneCountryId,
@@ -114,7 +165,9 @@ class MasterSettingsController extends Controller
             $master->services()->attach($validated['service_ids']);
         }
 
-        return redirect()->route('settings.masters')->with('success', 'Мастер добавлен');
+        return redirect()
+            ->route('settings.masters.schedule.edit', $master)
+            ->with('success', 'Мастер создан. Теперь настройте расписание.');
     }
 
     /**
@@ -122,10 +175,19 @@ class MasterSettingsController extends Controller
      */
     public function edit(Master $master)
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
+        $user = Auth::user()->load([
+            'businesses.locations',
+            'businesses.services',
+        ]);
         $business = $user->businesses->first();
 
-        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (
+            ! $business ||
+            ! $this->masterRepository->belongsToBusiness(
+                $master->id,
+                $business->id,
+            )
+        ) {
             return redirect()->route('settings.masters');
         }
 
@@ -145,10 +207,19 @@ class MasterSettingsController extends Controller
      */
     public function update(MasterRequest $request, Master $master)
     {
-        $user = Auth::user()->load(['businesses.locations', 'businesses.services']);
+        $user = Auth::user()->load([
+            'businesses.locations',
+            'businesses.services',
+        ]);
         $business = $user->businesses->first();
 
-        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (
+            ! $business ||
+            ! $this->masterRepository->belongsToBusiness(
+                $master->id,
+                $business->id,
+            )
+        ) {
             return redirect()->route('settings.masters');
         }
 
@@ -162,13 +233,24 @@ class MasterSettingsController extends Controller
             'description' => $validated['description'] ?? null,
             'specialization' => $validated['specialization'],
             'email' => $validated['email'] ?? null,
-            'working_hours' => WorkingHoursService::toJson($validated['working_hours']),
             'is_active' => $validated['is_active'] ?? $master->is_active,
         ]);
 
+        // Обновить расписание
+        if (! empty($validated['working_hours'])) {
+            $scheduleService = app(MasterScheduleService::class);
+            $scheduleService->saveScheduleForMaster(
+                $validated['working_hours'],
+                $master,
+            );
+        }
+
         $primary = $master->primaryPhone;
         if ($primary) {
-            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+            $primary->update([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+            ]);
         } else {
             $master->phones()->create([
                 'country_id' => $phoneCountryId,
@@ -185,7 +267,9 @@ class MasterSettingsController extends Controller
             $master->services()->sync($validated['service_ids']);
         }
 
-        return redirect()->route('settings.masters')->with('success', 'Мастер обновлен');
+        return redirect()
+            ->route('settings.masters')
+            ->with('success', 'Мастер обновлен');
     }
 
     /**
@@ -196,15 +280,25 @@ class MasterSettingsController extends Controller
         $user = Auth::user()->load('businesses');
         $business = $user->businesses->first();
 
-        if (! $business || ! $this->masterRepository->belongsToBusiness($master->id, $business->id)) {
+        if (
+            ! $business ||
+            ! $this->masterRepository->belongsToBusiness(
+                $master->id,
+                $business->id,
+            )
+        ) {
             return redirect()->route('settings.masters');
         }
 
         // Проверяем, есть ли связанные записи
         $appointmentsCount = $master->appointments()->count();
         if ($appointmentsCount > 0) {
-            return redirect()->back()
-                ->with('error', "Невозможно удалить мастера, так как у него есть {$appointmentsCount} связанных записей. Записи останутся без мастера.");
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    "Невозможно удалить мастера, так как у него есть {$appointmentsCount} связанных записей. Записи останутся без мастера.",
+                );
         }
 
         $master->delete();
@@ -212,6 +306,8 @@ class MasterSettingsController extends Controller
         // Уменьшать usage не нужно, т.к. для мастеров считаем напрямую из БД
         // Observer автоматически очистит master_id в business_user и business_user_invitations
 
-        return redirect()->route('settings.masters')->with('success', 'Мастер успешно удален');
+        return redirect()
+            ->route('settings.masters')
+            ->with('success', 'Мастер успешно удален');
     }
 }

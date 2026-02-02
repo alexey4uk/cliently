@@ -34,13 +34,9 @@ class ServiceController extends Controller
                 (SELECT COUNT(*) FROM appointments WHERE appointments.service_id = services.id) as appointments_count'
             );
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
-            $searchTerm = $search.'*';
-            $query->where(function ($q) use ($searchTerm, $search) {
-                // FULLTEXT поиск по названию (быстро!)
-                $q->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                    // Обычный LIKE для description (короткие тексты)
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             })->limit(1000); // Ограничение для поиска
         }
@@ -112,6 +108,9 @@ class ServiceController extends Controller
             'business_id' => 'required|exists:businesses,id',
             'is_active' => 'boolean',
         ]);
+
+        // Чекбокс не отправляется при снятой галочке — явно задаём значение
+        $validated['is_active'] = $request->boolean('is_active');
 
         $service->update($validated);
 

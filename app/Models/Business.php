@@ -18,6 +18,7 @@ class Business extends Model
         'name',
         'description',
         'slug',
+        'owner_id',
         'telegram_chat_id',
         'telegram_token',
         'online_booking_enabled',
@@ -46,7 +47,7 @@ class Business extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'business_user')
-            ->withPivot('role', 'role_id', 'first_name', 'last_name', 'master_id')
+            ->withPivot('role_id', 'first_name', 'last_name')
             ->withTimestamps();
     }
 

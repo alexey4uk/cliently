@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Business;
 use App\Services\AdminNotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 class NotifyBusinessInactive extends Command
 {
@@ -23,12 +22,11 @@ class NotifyBusinessInactive extends Command
 
         $count = 0;
         foreach ($businesses as $business) {
-            $key = 'admin_business_inactive_notify_'.$business->id;
-            if (! Cache::add($key, 1, now()->addDays(30))) {
-                continue;
-            }
             $daysInactive = (int) $business->updated_at->diffInDays(now());
-            AdminNotificationService::notifyBusinessInactive($business, $daysInactive);
+            AdminNotificationService::notifyBusinessInactive(
+                $business,
+                $daysInactive,
+            );
             $count++;
         }
 

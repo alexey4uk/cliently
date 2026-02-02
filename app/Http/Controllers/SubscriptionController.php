@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\SubscriptionMetric;
-use App\Services\BepaidService;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,14 @@ class SubscriptionController extends Controller
             ? $subscriptionService->hasUsedTrialForPlans($user, $plansWithTrial)
             : [];
 
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
         return view('subscription.index', [
             'plans' => $plans,
             'user' => $user,
@@ -45,6 +54,7 @@ class SubscriptionController extends Controller
             'currentSubscription' => $currentSubscription,
             'metrics' => $metrics,
             'trialUsage' => $trialUsage,
+            'hasActivePaidSubscription' => $hasActivePaidSubscription,
         ]);
     }
 
@@ -70,12 +80,21 @@ class SubscriptionController extends Controller
         // Получаем активные метрики с сортировкой
         $metrics = SubscriptionMetric::getActiveCached();
 
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
         return view('subscription.show', [
             'plan' => $plan,
             'user' => $user,
             'currentPlan' => $currentPlan,
             'currentSubscription' => $currentSubscription,
             'metrics' => $metrics,
+            'hasActivePaidSubscription' => $hasActivePaidSubscription,
         ]);
     }
 
@@ -92,7 +111,7 @@ class SubscriptionController extends Controller
         }
 
         $subscriptionService = app(SubscriptionService::class);
-        $bepaidService = app(BepaidService::class);
+        $paymentGateway = app(PaymentGatewayInterface::class);
 
         // Проверяем, может ли пользователь использовать пробный период
         $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
@@ -122,6 +141,19 @@ class SubscriptionController extends Controller
         // Если тариф бесплатный или выбран пробный период - активируем сразу
         $isTrial = $canUseTrial && ! $hasUsedTrial && $useTrial;
         $isFree = $plan->price === null || $plan->price == 0;
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
+        // Нельзя перейти на бесплатный тариф при активной платной подписке (не отменённой) — сначала отмена
+        if ($isFree && $hasActivePaidSubscription) {
+            return redirect()->back()
+                ->with('error', 'Чтобы перейти на бесплатный тариф, отмените текущую платную подписку на странице «Текущая подписка». Она останется активной до конца оплаченного периода, после чего будет подключён бесплатный тариф.');
+        }
 
         if ($isFree || $isTrial) {
             // Создаем или обновляем подписку без оплаты
@@ -148,9 +180,7 @@ class SubscriptionController extends Controller
 
         // Для платных тарифов создаем Invoice и перенаправляем на оплату
         try {
-            // Проверяем, включен ли bePaid
-            $bepaidSettings = \App\Models\BepaidSettings::getSettings();
-            if (! $bepaidSettings->enabled) {
+            if (! config('bepaid.enabled')) {
                 return redirect()->back()
                     ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
             }
@@ -185,7 +215,7 @@ class SubscriptionController extends Controller
             ]);
 
             // Создаем платежный токен
-            $paymentData = $bepaidService->createPaymentToken($invoice, $invoice->payment_method);
+            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
 
             // Перенаправляем на страницу оплаты или сразу на bePaid
             if ($invoice->payment_method === 'redirect') {
@@ -220,44 +250,45 @@ class SubscriptionController extends Controller
         }
 
         $subscriptionService = app(SubscriptionService::class);
-        $plan = $subscription->plan;
+        // Показываем активный тариф (пока действует оплаченный период — предыдущий план)
+        $plan = $subscription->getEffectivePlan();
+        $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
 
-        // Получаем использование лимитов (суммарно по всем бизнесам пользователя)
-        $usage = [
-            'locations' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_locations'),
-                'limit' => $subscriptionService->getLimit($user, 'max_locations'),
-            ],
-            'masters' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_masters'),
-                'limit' => $subscriptionService->getLimit($user, 'max_masters'),
-            ],
-            'services' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_services'),
-                'limit' => $subscriptionService->getLimit($user, 'max_services'),
-            ],
-            'clients' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_clients'),
-                'limit' => $subscriptionService->getLimit($user, 'max_clients'),
-            ],
-            'appointments_per_month' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_appointments_per_month'),
-                'limit' => $subscriptionService->getLimit($user, 'max_appointments_per_month'),
-            ],
-            'business_users' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_business_users'),
-                'limit' => $subscriptionService->getLimit($user, 'max_business_users'),
-            ],
-        ];
+        // Метрики и лимиты активного тарифа
+        $metricsInPlan = $plan->features
+            ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
+            ->sortBy(fn ($f) => $f->metric->sort_order)
+            ->values()
+            ->map(function ($feature) use ($user, $subscriptionService) {
+                $key = $feature->metric->key;
+
+                return [
+                    'metric' => $feature->metric,
+                    'limit' => $subscriptionService->getLimit($user, $key),
+                    'current' => $subscriptionService->getCurrentUsage($user, $key),
+                ];
+            })
+            ->all();
 
         // Загружаем инвойсы для подписки
         $subscription->load('invoices');
+
+        $role = $this->getCurrentBusinessRole();
+        $canManageSubscription = $role && app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.subscription.manage');
+
+        // Если показываем предыдущий план (оплаченный период), после даты будет подключён текущий план
+        $nextPlanName = null;
+        if ($plan->id !== $subscription->plan->id && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+            $nextPlanName = $subscription->plan->name;
+        }
 
         return view('subscription.current', [
             'user' => $user,
             'subscription' => $subscription,
             'plan' => $plan,
-            'usage' => $usage,
+            'metricsInPlan' => $metricsInPlan,
+            'canManageSubscription' => $canManageSubscription,
+            'nextPlanName' => $nextPlanName,
         ]);
     }
 
@@ -286,11 +317,9 @@ class SubscriptionController extends Controller
                 ->with('error', 'Бесплатный тариф нельзя продлить.');
         }
 
-        $bepaidService = app(BepaidService::class);
+        $paymentGateway = app(PaymentGatewayInterface::class);
 
-        // Проверяем, включен ли bePaid
-        $bepaidSettings = \App\Models\BepaidSettings::getSettings();
-        if (! $bepaidSettings->enabled) {
+        if (! config('bepaid.enabled')) {
             return redirect()->back()
                 ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
         }
@@ -314,7 +343,7 @@ class SubscriptionController extends Controller
             ]);
 
             // Создаем платежный токен
-            $paymentData = $bepaidService->createPaymentToken($invoice, $invoice->payment_method);
+            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
 
             // Перенаправляем на страницу оплаты или сразу на bePaid
             if ($invoice->payment_method === 'redirect') {
@@ -426,6 +455,11 @@ class SubscriptionController extends Controller
                 ->with('error', 'Инвойс не найден.');
         }
 
+        if ($invoice->user_id !== auth()->id()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Доступ запрещён.');
+        }
+
         // Проверяем статус инвойса
         if ($invoice->isPaid()) {
             // Проверяем, не пытаемся ли мы повторно активировать подписку
@@ -445,8 +479,8 @@ class SubscriptionController extends Controller
         // Если еще не оплачен, проверяем статус через API
         if ($invoice->bepaid_transaction_id) {
             try {
-                $bepaidService = app(BepaidService::class);
-                $status = $bepaidService->checkPaymentStatus($invoice->bepaid_transaction_id);
+                $paymentGateway = app(PaymentGatewayInterface::class);
+                $status = $paymentGateway->checkPaymentStatus($invoice->bepaid_transaction_id);
 
                 if ($status['paid']) {
                     $invoice->update([
@@ -521,7 +555,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'failed']);
             }
         }
@@ -539,7 +573,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'failed']);
             }
         }
@@ -557,7 +591,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'cancelled']);
             }
         }

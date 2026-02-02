@@ -16,13 +16,18 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->decimal('price', 10, 2)->nullable();
-            $table->enum('interval', ['monthly', 'yearly'])->default('monthly');
+            $table->decimal('price', 10, 2)->default(0);
+            $table->string('currency', 3)->default('BYN');
+            $table->enum('interval', ['monthly', 'yearly', 'lifetime'])->default('monthly');
             $table->integer('trial_days')->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('is_default')->default(false);
+            $table->boolean('is_popular')->default(false);
+
             $table->integer('sort_order')->default(0);
             $table->timestamps();
+
+            $table->index(['is_active', 'sort_order']);
         });
     }
 

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('ticket_comments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('author_name')->nullable();
-            $table->string('author_email')->nullable();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->text('content');
             $table->boolean('is_internal')->default(false);
             $table->timestamps();
+
+            $table->index(['ticket_id', 'created_at']);
         });
     }
 

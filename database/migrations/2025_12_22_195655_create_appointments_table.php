@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('token', 64)->unique()->nullable();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('client_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('service_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('client_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('service_id')->constrained()->restrictOnDelete();
             $table->foreignId('master_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
             $table->date('date');
@@ -28,12 +28,9 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();
 
-            $table->index('status');
-            $table->index(['date', 'time']);
-            $table->index('created_at', 'appointments_created_at_index');
-            $table->index(['master_id', 'date'], 'appointments_master_date');
-            $table->index(['business_id', 'status', 'date'], 'appointments_business_status_date');
-            $table->index(['created_at', 'business_id'], 'appointments_created_at_business_id_index');
+            $table->index(['master_id', 'date', 'time'], 'idx_appointments_master_schedule');
+            $table->index(['business_id', 'status', 'date'], 'idx_appointments_business_flow');
+            $table->index(['business_id', 'created_at'], 'idx_appointments_business_created');
         });
     }
 

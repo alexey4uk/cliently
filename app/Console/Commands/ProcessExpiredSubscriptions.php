@@ -85,8 +85,10 @@ class ProcessExpiredSubscriptions extends Command
 
                 $count++;
 
-                // Логируем действие
-                Log::info('Expired subscription processed', [
+                // Логируем действие (id и статус, без персональных данных)
+                Log::info('Subscription expired, user switched to free plan', [
+                    'channel' => 'subscription',
+                    'event' => 'subscription_expired',
                     'subscription_id' => $subscription->id,
                     'user_id' => $user->id,
                     'old_plan_id' => $oldPlan->id,
@@ -97,6 +99,8 @@ class ProcessExpiredSubscriptions extends Command
             } catch (\Exception $e) {
                 $this->error("Ошибка при обработке подписки ID: {$subscription->id}: {$e->getMessage()}");
                 Log::error('Failed to process expired subscription', [
+                    'channel' => 'subscription',
+                    'event' => 'subscription_expired_error',
                     'subscription_id' => $subscription->id,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),

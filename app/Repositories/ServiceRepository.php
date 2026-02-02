@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Репозиторий для работы с услугами
@@ -20,18 +19,14 @@ class ServiceRepository extends BaseRepository implements ServiceRepositoryInter
     }
 
     /**
-     * Получить активные услуги для бизнеса (с кешированием)
+     * Получить активные услуги для бизнеса
      */
     public function getActiveByBusiness(int $businessId): Collection
     {
-        $cacheKey = "services_active_business_{$businessId}";
-
-        return Cache::remember($cacheKey, 600, function () use ($businessId) {
-            return $this->model->where('business_id', $businessId)
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get();
-        });
+        return $this->model->where('business_id', $businessId)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
     }
 
     /**

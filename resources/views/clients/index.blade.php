@@ -10,40 +10,6 @@
 
 @section('content')
 
-@php
-    // Получаем бизнес и роль для проверки прав доступа
-    $user = Auth::user();
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role ?? null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-    
-    // Проверяем, есть ли хотя бы одно действие для клиентов
-    $hasAnyClientAction = $hasBusinessPermission('client.clients.view') || 
-                          $hasBusinessPermission('client.clients.update') || 
-                          $hasBusinessPermission('client.clients.delete');
-@endphp
-
     @php
         $totalClients = $business->clients()->count();
         $activeClients = $business->clients()->whereHas('appointments')->count();
@@ -92,36 +58,6 @@
 }" class="max-w-[1400px] mx-auto">
     <div class="space-y-4 md:space-y-6">
 
-        <!-- Заголовок -->
-        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">
-                        Клиенты
-                    </h1>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Всего: {{ $totalClients }} • Активных: {{ $activeClients }}
-                    </p>
-                </div>
-                <div class="flex items-center gap-3">
-                    @if($hasBusinessPermission('client.clients.export'))
-                        <a href="{{ route('clients.export', request()->query()) }}"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <i class="fa-solid fa-file-csv text-sm"></i>
-                            <span>Экспорт</span>
-                        </a>
-                    @endif
-                    @if($hasBusinessPermission('client.clients.create'))
-                        <a href="{{ route('clients.create') }}"
-                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fa-solid fa-user-plus text-sm"></i>
-                            <span>Добавить</span>
-                        </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-
         <!-- Поиск и фильтры -->
         <div class="space-y-4">
             <!-- Активные фильтры -->
@@ -157,12 +93,38 @@
                 </div>
             @endif
 
-            <!-- Мобильная версия: поиск и кнопка фильтров -->
-            <div class="md:hidden space-y-4">
-                <!-- Всегда видимый поиск -->
-                <form method="GET" action="{{ route('clients.index') }}" class="flex gap-3">
+            <!-- Мобильная версия: действия + поиск и фильтры -->
+            <div class="md:hidden space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h1 class="text-lg font-semibold text-slate-900 dark:text-white truncate">Клиенты</h1>
+                    <div class="flex items-center gap-2 shrink-0">
+                        @if($canExportClients)
+                        <a href="{{ route('clients.export', request()->query()) }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                            aria-label="Экспорт">
+                            <i class="fa-solid fa-file-csv text-sm"></i>
+                            <span>Экспорт</span>
+                        </a>
+                        @endif
+                        @if($canCreateClients && $canCreateClient)
+                        <a href="{{ route('clients.create') }}"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>Добавить</span>
+                        </a>
+                        @elseif($canCreateClients && !$canCreateClient)
+                        <button type="button" disabled
+                            class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                            title="Достигнут лимит клиентов для вашего тарифа.">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>Добавить</span>
+                        </button>
+                        @endif
+                    </div>
+                </div>
+                <form method="GET" action="{{ route('clients.index') }}" class="flex gap-2">
                     <input type="hidden" name="view" value="table">
-                    <div class="flex-1 relative">
+                    <div class="flex-1 min-w-0 relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
                         </div>
@@ -297,41 +259,54 @@
                 </div>
             </div>
 
-            <!-- Десктопная версия фильтров -->
+            <!-- Десктопная версия: поиск + фильтры + действия в одной строке -->
             <div class="hidden md:flex flex-col gap-4">
-                <!-- Всегда видимый поиск -->
-                <form method="GET" action="{{ route('clients.index') }}" class="flex items-end gap-4">
-                    <input type="hidden" name="view" value="table">
-                    <!-- Поиск -->
-                    <div class="flex-1 max-w-lg">
-                        <label for="search-input"
-                            class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-                            Поиск клиентов
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+                <div class="flex flex-wrap items-end gap-4">
+                    <form method="GET" action="{{ route('clients.index') }}" class="flex items-end gap-4 flex-1 min-w-0">
+                        <input type="hidden" name="view" value="table">
+                        <div class="flex-1 max-w-md min-w-0">
+                            <label for="search-input" class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Поиск клиентов</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                                <input id="search-input" type="text" name="search" value="{{ $search }}"
+                                    placeholder="Имя, телефон, email..."
+                                    class="pl-11 pr-4 py-3 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm text-slate-900 dark:text-white placeholder-slate-400">
                             </div>
-                            <input id="search-input" type="text" name="search" value="{{ $search }}"
-                                placeholder="Поиск по имени, телефону или email..."
-                                class="pl-11 pr-4 py-3 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
                         </div>
+                        <button type="submit" class="px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shrink-0">
+                            <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                        </button>
+                        <button @click="toggleFilters()" type="button"
+                            class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0"
+                            :class="showFilters ? 'border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400' : ''">
+                            <i class="fa-solid fa-sliders text-sm"></i>
+                            <span x-text="showFilters ? 'Скрыть' : 'Фильтры'"></span>
+                        </button>
+                    </form>
+                    <div class="flex items-center gap-2 shrink-0 pb-0.5">
+                        @if($canExportClients)
+                        <a href="{{ route('clients.export', request()->query()) }}"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <i class="fa-solid fa-file-csv text-sm"></i>
+                            <span>Экспорт</span>
+                        </a>
+                        @endif
+                        @if($canCreateClients && $canCreateClient)
+                        <a href="{{ route('clients.create') }}"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>Добавить</span>
+                        </a>
+                        @elseif($canCreateClients && !$canCreateClient)
+                        <button type="button" disabled
+                            class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                            title="Достигнут лимит клиентов для вашего тарифа.">
+                            <i class="fa-solid fa-user-plus text-sm"></i>
+                            <span>Добавить</span>
+                        </button>
+                        @endif
                     </div>
-
-                    <!-- Кнопка поиска -->
-                    <button type="submit"
-                        class="px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                    </button>
-
-                    <!-- Кнопка фильтров -->
-                    <button @click="toggleFilters()" type="button"
-                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ml-auto"
-                        :class="showFilters ? 'border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400' : ''">
-                        <i class="fa-solid fa-sliders text-sm"></i>
-                        <span x-text="showFilters ? 'Скрыть' : 'Фильтры'"></span>
-                    </button>
-                </form>
+                </div>
 
                 <!-- Панель дополнительных фильтров -->
                 <div x-show="showFilters" x-transition:enter="transition ease-out duration-300"
@@ -538,7 +513,7 @@
                                     @if($hasAnyClientAction)
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex items-center justify-end gap-2">
-                                                @if($hasBusinessPermission('client.clients.view'))
+                                                @if($canViewClients)
                                                     <a href="{{ route('clients.show', $client->id) }}"
                                                         class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                         title="Просмотр">
@@ -549,7 +524,7 @@
                                                     </a>
                                                 @endif
 
-                                                @if($hasBusinessPermission('client.clients.update'))
+                                                @if($canUpdateClients)
                                                     <a href="{{ route('clients.edit', $client->id) }}"
                                                         class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                         title="Редактировать">
@@ -559,7 +534,7 @@
                                                     </a>
                                                 @endif
 
-                                                @if($hasBusinessPermission('client.clients.delete'))
+                                                @if($canDeleteClients)
                                                     <button
                                                         @click="openDeleteModal({{ $client->id }}, '{{ addslashes($client->full_name) }}')"
                                                         class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -587,10 +562,9 @@
                         $upcomingAppointments = $client->upcoming_appointments_count ?? 0;
                         $hasActivity = $totalAppointments > 0;
                     @endphp
-                    <div
-                        class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                    <x-mobile-card>
                         <!-- Заголовок карточки -->
-                        <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                        <x-mobile-card-header>
                             <div class="flex items-center gap-3">
                                 <a href="{{ route('clients.show', $client) }}"
                                     class="flex items-center gap-3 min-w-0 flex-1">
@@ -611,10 +585,10 @@
                                     </div>
                                 </a>
                             </div>
-                        </div>
+                        </x-mobile-card-header>
 
                         <!-- Содержимое карточки -->
-                        <div class="px-4 py-3 space-y-3">
+                        <x-mobile-card-body class="space-y-3">
                             <div>
                                 <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Телефон</p>
                                 <button
@@ -631,10 +605,10 @@
                                     </p>
                                 </div>
                             @endif
-                        </div>
+                        </x-mobile-card-body>
 
                         <!-- Действия -->
-                        <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+                        <x-mobile-card-footer>
                             <div class="flex items-center gap-2">
                                 <button
                                     @click="openPhoneModal('{{ $client->phone }}', '{{ $client->phone }}', '{{ addslashes($client->full_name) }}')"
@@ -646,15 +620,15 @@
                                     Просмотр
                                 </a>
 
-                                @if($hasBusinessPermission('client.clients.update'))
+                                @if($canUpdateClients)
                                     <a href="{{ route('clients.edit', $client) }}"
                                         class="px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                                         Изменить
                                     </a>
                                 @endif
                             </div>
-                        </div>
-                    </div>
+                        </x-mobile-card-footer>
+                    </x-mobile-card>
                 @endforeach
             </div>
 
@@ -781,41 +755,34 @@
                         <i class="fa-solid fa-users text-indigo-600 dark:text-indigo-400 text-2xl"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                        @if ($search || $period)
+                        @if ($hasActiveFilters)
                             Клиенты не найдены
                         @else
-                            База клиентов пуста
+                            Клиентов пока нет
                         @endif
                     </h3>
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                        @if ($search || $period)
+                        @if ($hasActiveFilters)
                             Попробуйте изменить параметры поиска или очистить фильтры
                         @else
                             Начните работу, добавив первого клиента
                         @endif
                     </p>
                     <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                        @if ($search || $period)
-                            <a href="{{ route('clients.index') }}"
+                        @if ($hasActiveFilters)
+                            <a href="{{ route('clients.index', ['view' => 'table']) }}"
                                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                 <i class="fa-solid fa-rotate-left text-sm"></i>
                                 <span>Очистить фильтры</span>
                             </a>
                         @endif
-                        @php
-                            $canCreateClient = false;
-                            if ($hasBusinessPermission('client.clients.create')) {
-                                $subscriptionService = app(\App\Services\SubscriptionService::class);
-                                $canCreateClient = $subscriptionService->canCreateClient(Auth::user());
-                            }
-                        @endphp
-                        @if($hasBusinessPermission('client.clients.create') && $canCreateClient)
+                        @if($canCreateClients && $canCreateClient)
                             <a href="{{ route('clients.create') }}"
                                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                                 <i class="fa-solid fa-user-plus text-sm"></i>
                                 <span>Добавить клиента</span>
                             </a>
-                        @elseif($hasBusinessPermission('client.clients.create') && !$canCreateClient)
+                        @elseif($canCreateClients && !$canCreateClient)
                             <button disabled
                                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
                                 title="Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.">

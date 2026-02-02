@@ -15,8 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
             $table->foreignId('master_id')->constrained()->cascadeOnDelete();
-            $table->decimal('price', 10, 2)->nullable();
+            $table->decimal('price', 10, 2)->nullable()->comment('Если NULL, берем базовую цену из services');
+            $table->integer('duration')->nullable()->comment('Длительность в минутах. Если NULL, берем из services');
             $table->timestamps();
+
+            $table->unique(['service_id', 'master_id']);
+            $table->index(['master_id', 'service_id']);
         });
     }
 

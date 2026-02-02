@@ -8,6 +8,7 @@ use App\Models\BusinessRole;
 use App\Models\Country;
 use App\Services\AdminNotificationService;
 use App\Services\SubscriptionService;
+use Endroid\QrCode\Builder\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -47,22 +48,34 @@ class BusinessSettingsController extends Controller
         }
 
         $validated = $request->validated();
-        $ownerData = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['nullable', 'string', 'max:255'],
-        ], [
-            'first_name.required' => 'Поле "Имя" обязательно для заполнения.',
-            'first_name.max' => 'Поле "Имя" не может быть длиннее 255 символов.',
-            'last_name.max' => 'Поле "Фамилия" не может быть длиннее 255 символов.',
-        ]);
+        $ownerData = $request->validate(
+            [
+                'first_name' => ['required', 'string', 'max:255'],
+                'last_name' => ['nullable', 'string', 'max:255'],
+            ],
+            [
+                'first_name.required' => 'Поле "Имя" обязательно для заполнения.',
+                'first_name.max' => 'Поле "Имя" не может быть длиннее 255 символов.',
+                'last_name.max' => 'Поле "Фамилия" не может быть длиннее 255 символов.',
+            ],
+        );
 
-        $businessData = collect($validated)->only(['name', 'slug', 'description'])->all();
         $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
 
-        $business = null;
-        DB::transaction(function () use ($businessData, $ownerData, $phoneCountryId, $phoneE164, $user, &$business) {
-            $business = Business::create($businessData);
+        $business = DB::transaction(function () use (
+            $ownerData,
+            $phoneCountryId,
+            $phoneE164,
+            $user,
+            $validated,
+        ) {
+            $business = Business::create([
+                'name' => $validated['name'],
+                'slug' => $validated['slug'],
+                'owner_id' => $user->id,
+                'description' => $validated['description'],
+            ]);
 
             $business->phones()->create([
                 'country_id' => $phoneCountryId,
@@ -72,19 +85,19 @@ class BusinessSettingsController extends Controller
 
             $ownerRole = BusinessRole::where('slug', 'owner')->first();
             $business->users()->attach($user, [
-                'role' => 'owner',
                 'role_id' => $ownerRole?->id,
                 'first_name' => $ownerData['first_name'],
                 'last_name' => $ownerData['last_name'],
             ]);
-        });
 
-        // Очищаем кэш бизнесов пользователя
-        $this->clearUserBusinessesCache($user->id);
+            return $business;
+        });
 
         AdminNotificationService::notifyBusinessCreated($business);
 
-        return redirect()->route('settings.index')->with('success', 'Бизнес успешно создан!');
+        return redirect()
+            ->route('settings.index')
+            ->with('success', 'Бизнес успешно создан!');
     }
 
     /**
@@ -95,8 +108,12 @@ class BusinessSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $business->load(['locations', 'services', 'masters', 'clients']);
@@ -117,8 +134,12 @@ class BusinessSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
@@ -146,7 +167,11 @@ class BusinessSettingsController extends Controller
 
         $telegramBotEnabled = false;
         if ($owner) {
-            $telegramBotEnabled = $subscriptionService->getLimit($owner, 'telegram_bot_enabled') === true;
+            $telegramBotEnabled =
+                $subscriptionService->getLimit(
+                    $owner,
+                    'telegram_bot_enabled',
+                ) === true;
         }
 
         return view('settings.online-booking', [
@@ -165,18 +190,29 @@ class BusinessSettingsController extends Controller
 
         if (! $business) {
             if ($request->expectsJson() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Сначала создайте бизнес или примите приглашение.',
-                ], 422);
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Сначала создайте бизнес или примите приглашение.',
+                    ],
+                    422,
+                );
             }
 
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $enabled = $request->input('online_booking_enabled');
-        $enabled = $enabled === '1' || $enabled === 1 || $enabled === true || $enabled === 'true';
+        $enabled =
+            $enabled === '1' ||
+            $enabled === 1 ||
+            $enabled === true ||
+            $enabled === 'true';
 
         $business->update([
             'online_booking_enabled' => $enabled,
@@ -185,7 +221,11 @@ class BusinessSettingsController extends Controller
         // Обновляем модель после сохранения
         $business->refresh();
 
-        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
+        if (
+            $request->expectsJson() ||
+            $request->wantsJson() ||
+            $request->ajax()
+        ) {
             return response()->json([
                 'success' => true,
                 'message' => 'Настройки онлайн-записи обновлены',
@@ -193,7 +233,59 @@ class BusinessSettingsController extends Controller
             ]);
         }
 
-        return redirect()->route('settings.online-booking')->with('success', 'Настройки онлайн-записи обновлены');
+        return redirect()
+            ->route('settings.online-booking')
+            ->with('success', 'Настройки онлайн-записи обновлены');
+    }
+
+    /**
+     * Генерация QR-кода для онлайн-записи (веб или Telegram)
+     */
+    public function onlineBookingQr(Request $request)
+    {
+        $business = $this->getCurrentBusiness();
+
+        if (! $business) {
+            abort(404);
+        }
+
+        $type = $request->query('type', 'web');
+        $size = (int) $request->query('size', 200);
+        $size = $size >= 100 && $size <= 500 ? $size : 200;
+        $download = $request->boolean('download');
+
+        $url = null;
+
+        if ($type === 'web') {
+            if (empty($business->slug)) {
+                abort(404);
+            }
+            $url = route('public.appointments.show', ['slug' => $business->slug]);
+        } elseif ($type === 'telegram') {
+            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
+            if (! $bot || empty($business->slug)) {
+                abort(404);
+            }
+            $url = 'https://t.me/'.$bot->name.'?start='.$business->slug;
+        } else {
+            abort(400);
+        }
+
+        $builder = new Builder(data: $url, size: $size, margin: 10);
+        $result = $builder->build();
+
+        $headers = [
+            'Content-Type' => $result->getMimeType(),
+            'Cache-Control' => 'private, max-age=3600',
+        ];
+        if ($download) {
+            $filename = $type === 'web'
+                ? "qr-zapisi-{$business->slug}.png"
+                : "qr-telegram-{$business->slug}.png";
+            $headers['Content-Disposition'] = 'attachment; filename="'.$filename.'"';
+        }
+
+        return response($result->getString(), 200, $headers);
     }
 
     /**
@@ -204,8 +296,12 @@ class BusinessSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         return view('settings.business.edit', [
@@ -222,12 +318,18 @@ class BusinessSettingsController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+            return redirect()
+                ->route('welcome')
+                ->with(
+                    'info',
+                    'Сначала создайте бизнес или примите приглашение.',
+                );
         }
 
         $validated = $request->validated();
-        $businessData = collect($validated)->only(['name', 'slug', 'description'])->all();
+        $businessData = collect($validated)
+            ->only(['name', 'slug', 'description'])
+            ->all();
         $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
 
@@ -235,7 +337,10 @@ class BusinessSettingsController extends Controller
 
         $primary = $business->primaryPhone;
         if ($primary) {
-            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+            $primary->update([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+            ]);
         } else {
             $business->phones()->create([
                 'country_id' => $phoneCountryId,
@@ -244,6 +349,8 @@ class BusinessSettingsController extends Controller
             ]);
         }
 
-        return redirect()->route('settings.index')->with('success', 'Данные бизнеса обновлены');
+        return redirect()
+            ->route('settings.index')
+            ->with('success', 'Данные бизнеса обновлены');
     }
 }

@@ -14,7 +14,7 @@ class Ticket extends Model
 
     protected $fillable = [
         'business_id',
-        'client_id',
+        'user_id',
         'category_id',
         'assigned_to',
         'title',
@@ -84,7 +84,7 @@ class Ticket extends Model
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function category(): BelongsTo
@@ -137,7 +137,7 @@ class Ticket extends Model
      */
     public function isInProgress(): bool
     {
-        return $this->status === 'in_progress';
+        return $this->status === 'open';
     }
 
     /**
@@ -163,7 +163,7 @@ class Ticket extends Model
     {
         return match ($this->status) {
             'new' => 'blue',
-            'in_progress' => 'yellow',
+            'open' => 'yellow',
             'resolved' => 'green',
             'closed' => 'gray',
             default => 'gray',

@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('comment_id')->nullable()->constrained('ticket_comments')->cascadeOnDelete();
             $table->string('file_path');
             $table->string('file_name');
-            $table->unsignedBigInteger('file_size');
+            $table->unsignedBigInteger('file_size')->comment('Размер в байтах');
             $table->string('mime_type');
-            $table->enum('uploaded_by_type', ['user', 'client', 'public'])->default('public');
-            $table->unsignedBigInteger('uploaded_by_id')->nullable();
+            $table->nullableMorphs('uploaded_by');
+
             $table->timestamps();
         });
     }

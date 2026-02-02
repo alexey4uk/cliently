@@ -132,6 +132,11 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
                 $q->where('service_id', $filters['service_id']);
             }
 
+            // Фильтр по мастеру
+            if (! empty($filters['master_id'])) {
+                $q->where('master_id', $filters['master_id']);
+            }
+
             return $q;
         };
 
@@ -183,17 +188,23 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getForCalendar(int $businessId, string $month)
+    public function getForCalendar(int $businessId, string $month, array $filters = [])
     {
         $startOfMonth = Carbon::parse($month.'-01')->startOfMonth();
         $endOfMonth = Carbon::parse($month.'-01')->endOfMonth();
 
-        return $this->model->where('business_id', $businessId)
+        $query = $this->model->where('business_id', $businessId)
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
             ->with(['client', 'service', 'master', 'location'])
             ->orderBy('date', 'asc')
-            ->orderBy('time', 'asc')
-            ->get();
+            ->orderBy('time', 'asc');
+
+        // Фильтр по мастеру - если передан в параметрах
+        if (! empty($filters['master_id'])) {
+            $query->where('master_id', $filters['master_id']);
+        }
+
+        return $query->get();
     }
 
     /**

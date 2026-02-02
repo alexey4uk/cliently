@@ -34,32 +34,73 @@ class AppointmentController extends Controller
 
         $query = Appointment::query();
 
-        // 2. ОПТИМИЗИРОВАННЫЙ ПОИСК (FULLTEXT)
         if ($search) {
-            $searchTerm = $search.'*';
+            // Разбиваем поисковый запрос на отдельные слова
+            $searchWords = array_filter(explode(' ', trim($search)));
+            $hasAnyResults = false;
 
-            // Поиск ID через быстрые FULLTEXT индексы
-            $clientIds = DB::table('clients')
-                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                ->pluck('id');
-
-            $serviceIds = DB::table('services')
-                ->whereRaw('MATCH(name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                ->pluck('id');
-
-            $masterIds = DB::table('masters')
-                ->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                ->pluck('id');
-
-            $query->where(function ($q) use ($clientIds, $serviceIds, $masterIds) {
-                if ($clientIds->isNotEmpty()) {
-                    $q->orWhereIn('client_id', $clientIds);
+            foreach ($searchWords as $word) {
+                $wordLike = '%'.mb_strtolower($word).'%';
+                $clientIds = DB::table('clients')
+                    ->where(function ($clientQuery) use ($wordLike) {
+                        $clientQuery->where('first_name', 'like', $wordLike)
+                            ->orWhere('last_name', 'like', $wordLike)
+                            ->orWhere('phone', 'like', $wordLike)
+                            ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                    })
+                    ->pluck('id');
+                $serviceIds = DB::table('services')->where('name', 'like', $wordLike)->pluck('id');
+                $masterIds = DB::table('masters')
+                    ->where(function ($masterQuery) use ($wordLike) {
+                        $masterQuery->where('first_name', 'like', $wordLike)
+                            ->orWhere('last_name', 'like', $wordLike)
+                            ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                    })
+                    ->pluck('id');
+                if ($clientIds->isNotEmpty() || $serviceIds->isNotEmpty() || $masterIds->isNotEmpty()) {
+                    $hasAnyResults = true;
+                    break;
                 }
-                if ($serviceIds->isNotEmpty()) {
-                    $q->orWhereIn('service_id', $serviceIds);
+            }
+
+            $query->where(function ($q) use ($searchWords, $hasAnyResults) {
+                foreach ($searchWords as $word) {
+                    if ($word === '') {
+                        continue;
+                    }
+                    $wordLike = '%'.mb_strtolower($word).'%';
+
+                    $clientIds = DB::table('clients')
+                        ->where(function ($clientQuery) use ($wordLike) {
+                            $clientQuery->where('first_name', 'like', $wordLike)
+                                ->orWhere('last_name', 'like', $wordLike)
+                                ->orWhere('phone', 'like', $wordLike)
+                                ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                        })
+                        ->pluck('id');
+                    if ($clientIds->isNotEmpty()) {
+                        $q->orWhereIn('client_id', $clientIds);
+                    }
+
+                    $serviceIds = DB::table('services')->where('name', 'like', $wordLike)->pluck('id');
+                    if ($serviceIds->isNotEmpty()) {
+                        $q->orWhereIn('service_id', $serviceIds);
+                    }
+
+                    $masterIds = DB::table('masters')
+                        ->where(function ($masterQuery) use ($wordLike) {
+                            $masterQuery->where('first_name', 'like', $wordLike)
+                                ->orWhere('last_name', 'like', $wordLike)
+                                ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                        })
+                        ->pluck('id');
+                    if ($masterIds->isNotEmpty()) {
+                        $q->orWhereIn('master_id', $masterIds);
+                    }
                 }
-                if ($masterIds->isNotEmpty()) {
-                    $q->orWhereIn('master_id', $masterIds);
+
+                if (! $hasAnyResults) {
+                    $q->whereRaw('1=0');
                 }
             });
         }

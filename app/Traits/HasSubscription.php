@@ -4,7 +4,6 @@ namespace App\Traits;
 
 use App\Models\Subscription;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Cache;
 
 trait HasSubscription
 {
@@ -17,58 +16,35 @@ trait HasSubscription
     }
 
     /**
-     * Получить подписку пользователя (с кешированием)
-     * Кеш на 5 минут (критично для биллинга!)
-     * При изменении подписки кеш автоматически очищается через Observer
+     * Получить подписку пользователя (без кеширования)
      */
     public function getSubscription()
     {
-        $cacheKey = "user_subscription_{$this->id}";
-
-        return Cache::remember($cacheKey, 300, function () {
-            return $this->subscription()->with('plan')->first();
-        });
+        return $this->subscription()->with('plan')->first();
     }
 
     /**
-     * Получить активную подписку (с кешированием)
-     * Кеш на 5 минут (критично для биллинга!)
-     * При изменении подписки кеш автоматически очищается через Observer
+     * Получить активную подписку (без кеширования)
      */
     public function activeSubscription()
     {
-        $cacheKey = "user_active_subscription_{$this->id}";
-
-        return Cache::remember($cacheKey, 300, function () {
-            return $this->subscription()
-                ->whereIn('status', ['active', 'trial'])
-                ->where(function ($query) {
-                    $query->whereNull('ends_at')
-                        ->orWhere('ends_at', '>', now());
-                })
-                ->where(function ($query) {
-                    // Для пробных подписок проверяем, что пробный период еще не истек
-                    $query->where('status', '!=', 'trial')
-                        ->orWhere(function ($q) {
-                            $q->where('status', 'trial')
-                                ->where(function ($subQ) {
-                                    $subQ->whereNull('trial_ends_at')
-                                        ->orWhere('trial_ends_at', '>', now());
-                                });
-                        });
-                })
-                ->with('plan') // Загружаем план сразу, чтобы избежать N+1
-                ->first();
-        });
-    }
-
-    /**
-     * Очистить кеш подписок пользователя
-     */
-    public function clearSubscriptionCache(): void
-    {
-        Cache::forget("user_subscription_{$this->id}");
-        Cache::forget("user_active_subscription_{$this->id}");
+        return $this->subscription()
+            ->whereIn('status', ['active', 'trial'])
+            ->where(function ($query) {
+                $query->whereNull('ends_at')->orWhere('ends_at', '>', now());
+            })
+            ->where(function ($query) {
+                // Для пробных подписок проверяем, что пробный период еще не истек
+                $query->where('status', '!=', 'trial')->orWhere(function ($q) {
+                    $q->where('status', 'trial')->where(function ($subQ) {
+                        $subQ
+                            ->whereNull('trial_ends_at')
+                            ->orWhere('trial_ends_at', '>', now());
+                    });
+                });
+            })
+            ->with('plan') // Загружаем план сразу, чтобы избежать N+1
+            ->first();
     }
 
     /**
@@ -87,5 +63,13 @@ trait HasSubscription
         $subscription = $this->activeSubscription();
 
         return $subscription ? $subscription->plan : null;
+    }
+
+    /**
+     * Очистить кеш подписок (пустая реализация, поскольку кеширование убрано)
+     */
+    public function clearSubscriptionCache()
+    {
+        // Кеширование убрано, метод оставлен для совместимости
     }
 }

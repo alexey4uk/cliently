@@ -295,9 +295,9 @@ class TelegramKeyboards
     public static function hasPrevMonth(string $month): bool
     {
         $monthDate = \Carbon\Carbon::parse($month.'-01');
-        $today = \Carbon\Carbon::today();
+        $todayStart = \Carbon\Carbon::today()->startOfMonth();
 
-        return $monthDate->gt($today->startOfMonth());
+        return $monthDate->gt($todayStart);
     }
 
     /**

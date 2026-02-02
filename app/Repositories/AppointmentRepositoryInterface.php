@@ -48,7 +48,7 @@ interface AppointmentRepositoryInterface extends RepositoryInterface
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getForCalendar(int $businessId, string $month);
+    public function getForCalendar(int $businessId, string $month, array $filters = []);
 
     /**
      * Проверить, принадлежит ли запись бизнесу

@@ -141,7 +141,7 @@ $csrfToken = csrf_token();
         
         <!-- Футер -->
         <div class="px-4 py-3 border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-800/50">
-            <a href="{{ route('notifications.index') }}" 
+            <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.notifications.index') : route('notifications.index') }}" 
                x-show="notifications.length > 0 || unreadCount > 0"
                class="text-sm text-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors block">
                 Показать все уведомления

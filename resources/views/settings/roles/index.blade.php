@@ -10,54 +10,17 @@
 
 @section('content')
 
-@php
-    // Получаем бизнес и роль для проверки прав доступа
-    $user = Auth::user();
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role ?? null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-    
-    // Проверяем, есть ли хотя бы одно действие для ролей
-    $hasAnyRoleAction = $hasBusinessPermission('client.business.roles.manage');
-@endphp
-
 <div class="max-w-6xl mx-auto">
-    <!-- Заголовок -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Права ролей</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400">
-                    Настройте права доступа для ролей. Изменения применяются ко всем бизнесам.
-                </p>
-            </div>
-            @if($hasBusinessPermission('client.business.roles.manage'))
-                <a href="{{ route('settings.roles.create') }}"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    <span>Создать роль</span>
-                </a>
+    <!-- Строка: заголовок + действие -->
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <h1 class="text-lg font-semibold text-slate-900 dark:text-white">Права ролей</h1>
+        <div class="flex items-center gap-2 shrink-0">
+            @if($canManageRoles)
+            <a href="{{ route('settings.roles.create') }}"
+                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Создать роль</span>
+            </a>
             @endif
         </div>
     </div>

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\BusinessRole;
 use App\Models\Ticket;
 use App\Models\TicketComment;
-use App\Models\TicketSettings;
 use App\Models\User;
 use App\Notifications\TicketAssigned;
 use App\Notifications\TicketCommentAdded;
@@ -74,8 +73,6 @@ class TicketNotificationService
      */
     public function notifyTicketCreated(Ticket $ticket): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
 
@@ -95,7 +92,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && $settings->email_notifications_enabled) {
+        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && config('tickets.notifications.email_enabled')) {
             if (NotificationSettingsService::shouldSendEmail($ticket->assignedUser, 'ticket.created')) {
                 try {
                     $ticket->assignedUser->notify(new TicketCreated($ticket));
@@ -110,8 +107,8 @@ class TicketNotificationService
         }
 
         // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-        if ($settings->email_notification_recipients && $settings->email_notifications_enabled) {
-            foreach ($settings->email_notification_recipients as $email) {
+        if (config('tickets.notifications.recipients', []) && config('tickets.notifications.email_enabled')) {
+            foreach (config('tickets.notifications.recipients', []) as $email) {
                 try {
                     Notification::route('mail', $email)
                         ->notify(new TicketCreated($ticket));
@@ -144,8 +141,6 @@ class TicketNotificationService
      */
     public function notifyCommentAdded(Ticket $ticket, TicketComment $comment): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
         $comment->loadMissing('user');
@@ -255,7 +250,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($settings->email_notifications_enabled) {
+        if (config('tickets.notifications.email_enabled')) {
             foreach ($usersToNotify as $user) {
                 if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
                     continue;
@@ -274,8 +269,8 @@ class TicketNotificationService
             }
 
             // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-            if ($settings->email_notification_recipients) {
-                foreach ($settings->email_notification_recipients as $email) {
+            if (config('tickets.notifications.recipients', [])) {
+                foreach (config('tickets.notifications.recipients', []) as $email) {
                     try {
                         Notification::route('mail', $email)
                             ->notify(new TicketCommentAdded($ticket, $comment));
@@ -366,8 +361,6 @@ class TicketNotificationService
      */
     public function notifyStatusChanged(Ticket $ticket, string $oldStatus, string $newStatus): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
 
@@ -390,7 +383,7 @@ class TicketNotificationService
 
         $statusText = match ($newStatus) {
             'pending' => 'ожидает',
-            'in_progress' => 'в работе',
+            'open' => 'в работе',
             'completed' => 'выполнен',
             'cancelled' => 'отменен',
             default => 'обновлен',
@@ -415,7 +408,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($settings->email_notifications_enabled) {
+        if (config('tickets.notifications.email_enabled')) {
             foreach ($usersToNotify as $user) {
                 if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
                     continue;
@@ -434,8 +427,8 @@ class TicketNotificationService
             }
 
             // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-            if ($settings->email_notification_recipients) {
-                foreach ($settings->email_notification_recipients as $email) {
+            if (config('tickets.notifications.recipients', [])) {
+                foreach (config('tickets.notifications.recipients', []) as $email) {
                     try {
                         Notification::route('mail', $email)
                             ->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));

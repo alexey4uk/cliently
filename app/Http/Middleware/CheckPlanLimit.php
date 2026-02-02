@@ -27,7 +27,7 @@ class CheckPlanLimit
 
         if (! $subscriptionService->checkLimit($user, $feature)) {
             return redirect()->back()
-                ->with('error', 'Достигнут лимит для вашего тарифа. Обновите тариф для увеличения лимита.');
+                ->with('error', SubscriptionService::planLimitErrorMessage());
         }
 
         return $next($request);

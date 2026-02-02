@@ -313,9 +313,9 @@
             </div>
 
             <!-- Карточки для мобильных -->
-            <div class="md:hidden grid grid-cols-1 gap-5">
+            <div class="md:hidden grid grid-cols-1 gap-4">
                 @foreach ($appointments as $appointment)
-                    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 overflow-hidden group">
+                    <x-mobile-card>
                         <!-- Заголовок карточки -->
                         <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/30 dark:to-slate-800/20">
                             <div class="flex items-start justify-between gap-4">
@@ -442,7 +442,7 @@
                                 </div>
                             @endif
                         </div>
-                    </div>
+                    </x-mobile-card>
                 @endforeach
             </div>
 

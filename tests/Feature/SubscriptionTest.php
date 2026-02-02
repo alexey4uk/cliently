@@ -22,12 +22,25 @@ class SubscriptionTest extends TestCase
         parent::setUp();
 
         // Создаем необходимые права и роли (client.access нужен для OnlyClientAccess middleware)
-        Permission::firstOrCreate(['name' => 'client.access', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'client.subscription.view', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'client.subscription.manage', 'guard_name' => 'web']);
+        Permission::firstOrCreate([
+            'name' => 'client.access',
+            'guard_name' => 'web',
+        ]);
+        Permission::firstOrCreate([
+            'name' => 'client.subscription.view',
+            'guard_name' => 'web',
+        ]);
+        Permission::firstOrCreate([
+            'name' => 'client.subscription.manage',
+            'guard_name' => 'web',
+        ]);
 
         $role = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
-        $role->syncPermissions(['client.access', 'client.subscription.view', 'client.subscription.manage']);
+        $role->syncPermissions([
+            'client.access',
+            'client.subscription.view',
+            'client.subscription.manage',
+        ]);
     }
 
     /**
@@ -38,7 +51,7 @@ class SubscriptionTest extends TestCase
         $user = User::factory()->create();
         $user->assignRole('user');
 
-        $business = Business::factory()->create();
+        $business = Business::factory()->create(['owner_id' => $user->id]);
 
         // Создаем роль owner (если еще не создана)
         $ownerRole = \App\Models\BusinessRole::firstOrCreate(
@@ -46,15 +59,13 @@ class SubscriptionTest extends TestCase
             [
                 'name' => 'Владелец',
                 'is_system' => true,
-            ]
+            ],
         );
 
-        // Очищаем кеш роли
-        $ownerRole->clearCache();
+        // Cache clearing removed
 
         // Привязываем пользователя к бизнесу с ролью owner
         $user->businesses()->attach($business->id, [
-            'role' => 'owner',
             'role_id' => $ownerRole->id,
         ]);
 
@@ -63,13 +74,25 @@ class SubscriptionTest extends TestCase
 
         // Очищаем все кеши, связанные с пользователем и бизнесом
         $user->clearSubscriptionCache();
-        \Illuminate\Support\Facades\Cache::forget("user_businesses_{$user->id}");
-        \Illuminate\Support\Facades\Cache::forget("current_business_{$user->id}");
-        \Illuminate\Support\Facades\Cache::forget("current_business_role_{$user->id}_{$business->id}");
-        \Illuminate\Support\Facades\Cache::forget("business_user_pivot_{$user->id}_{$business->id}");
-        \Illuminate\Support\Facades\Cache::forget("business_owner_{$business->id}");
+        \Illuminate\Support\Facades\Cache::forget(
+            "user_businesses_{$user->id}",
+        );
+        \Illuminate\Support\Facades\Cache::forget(
+            "current_business_{$user->id}",
+        );
+        \Illuminate\Support\Facades\Cache::forget(
+            "current_business_role_{$user->id}_{$business->id}",
+        );
+        \Illuminate\Support\Facades\Cache::forget(
+            "business_user_pivot_{$user->id}_{$business->id}",
+        );
+        \Illuminate\Support\Facades\Cache::forget(
+            "business_owner_{$business->id}",
+        );
         \Illuminate\Support\Facades\Cache::forget("business_{$business->id}");
-        \Illuminate\Support\Facades\Cache::forget("business_role_{$ownerRole->id}");
+        \Illuminate\Support\Facades\Cache::forget(
+            "business_role_{$ownerRole->id}",
+        );
         \Illuminate\Support\Facades\Cache::forget('business_role_slug_owner');
 
         return ['user' => $user, 'business' => $business, 'role' => $ownerRole];
@@ -82,7 +105,9 @@ class SubscriptionTest extends TestCase
     {
         $business = $data['business'] ?? null;
         if (! $business) {
-            throw new \InvalidArgumentException('createUserWithBusiness must return business');
+            throw new \InvalidArgumentException(
+                'createUserWithBusiness must return business',
+            );
         }
 
         return $this->withSession(['current_business_id' => $business->id]);
@@ -90,14 +115,24 @@ class SubscriptionTest extends TestCase
 
     public function test_subscription_index_page_can_be_rendered()
     {
-        ['user' => $user, 'business' => $business, 'role' => $role] = $this->createUserWithBusiness();
+        [
+            'user' => $user,
+            'business' => $business,
+            'role' => $role,
+        ] = $this->createUserWithBusiness();
 
         // Проверяем, что роль owner имеет права
         $service = app(\App\Services\BusinessRolePermissionService::class);
-        $this->assertTrue($service->hasPermission($role->id, 'client.subscription.view'), 'Owner role should have subscription.view permission');
+        $this->assertTrue(
+            $service->hasPermission($role->id, 'client.subscription.view'),
+            'Owner role should have subscription.view permission',
+        );
 
         // Проверяем, что пользователь имеет бизнес
-        $this->assertTrue($user->businesses->contains($business->id), 'User should have business');
+        $this->assertTrue(
+            $user->businesses->contains($business->id),
+            'User should have business',
+        );
 
         // Проверяем, что pivot данные записаны в БД
         $pivotData = \Illuminate\Support\Facades\DB::table('business_user')
@@ -105,14 +140,22 @@ class SubscriptionTest extends TestCase
             ->where('business_id', $business->id)
             ->first();
         $this->assertNotNull($pivotData, 'Pivot data should exist');
-        $this->assertEquals($role->id, $pivotData->role_id, 'Pivot should have correct role_id');
+        $this->assertEquals(
+            $role->id,
+            $pivotData->role_id,
+            'Pivot should have correct role_id',
+        );
 
         Plan::factory()->count(3)->create();
-        SubscriptionMetric::factory()->count(2)->create(['is_active' => true]);
+        SubscriptionMetric::factory()
+            ->count(2)
+            ->create(['is_active' => true]);
 
         $user->load('businesses');
 
-        $response = $this->withBusinessSession(compact('user', 'business', 'role'))
+        $response = $this->withBusinessSession(
+            compact('user', 'business', 'role'),
+        )
             ->actingAs($user)
             ->get('/subscription');
 
@@ -132,7 +175,9 @@ class SubscriptionTest extends TestCase
             'plan_id' => $plan->id,
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->get('/subscription');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get('/subscription');
 
         $response->assertStatus(200);
         $response->assertSee($plan->name);
@@ -145,7 +190,9 @@ class SubscriptionTest extends TestCase
 
         $plan = Plan::factory()->create();
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->get("/subscription/{$plan->id}");
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get("/subscription/{$plan->id}");
 
         $response->assertStatus(200);
         $response->assertViewIs('subscription.show');
@@ -158,7 +205,9 @@ class SubscriptionTest extends TestCase
 
         $plan = Plan::factory()->inactive()->create();
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->get("/subscription/{$plan->id}");
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get("/subscription/{$plan->id}");
 
         $response->assertRedirect(route('subscription.index'));
         $response->assertSessionHas('error');
@@ -171,7 +220,9 @@ class SubscriptionTest extends TestCase
 
         $plan = Plan::factory()->free()->create();
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post("/subscription/{$plan->id}/subscribe");
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post("/subscription/{$plan->id}/subscribe");
 
         $response->assertRedirect(route('subscription.current'));
         $response->assertSessionHas('success');
@@ -192,9 +243,11 @@ class SubscriptionTest extends TestCase
 
         $plan = Plan::factory()->withTrial(7)->create();
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post("/subscription/{$plan->id}/subscribe", [
-            'use_trial' => '1',
-        ]);
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post("/subscription/{$plan->id}/subscribe", [
+                'use_trial' => '1',
+            ]);
 
         $response->assertRedirect(route('subscription.current'));
         $response->assertSessionHas('success');
@@ -211,19 +264,24 @@ class SubscriptionTest extends TestCase
 
         $plan = Plan::factory()->withTrial(7)->create();
 
-        $this->withBusinessSession($data)->actingAs($user)->post("/subscription/{$plan->id}/subscribe", [
-            'use_trial' => '1',
-        ]);
+        $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post("/subscription/{$plan->id}/subscribe", [
+                'use_trial' => '1',
+            ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post("/subscription/{$plan->id}/subscribe", [
-            'use_trial' => '1',
-        ]);
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post("/subscription/{$plan->id}/subscribe", [
+                'use_trial' => '1',
+            ]);
 
         $response->assertRedirect();
     }
 
-    public function test_subscribe_preserves_ends_at_when_changing_plan()
+    public function test_subscribe_to_free_blocked_when_active_paid_subscription()
     {
+        // При активной платной подписке переход на бесплатный тариф блокируется — сначала отмена на странице «Текущая подписка»
         $data = $this->createUserWithBusiness();
         ['user' => $user] = $data;
 
@@ -238,11 +296,18 @@ class SubscriptionTest extends TestCase
             'ends_at' => $futureEndsAt,
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post("/subscription/{$newPlan->id}/subscribe");
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post("/subscription/{$newPlan->id}/subscribe");
 
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
         $subscription = Subscription::where('user_id', $user->id)->first();
-        $this->assertEquals($futureEndsAt->format('Y-m-d H:i:s'), $subscription->ends_at->format('Y-m-d H:i:s'));
-        $this->assertArrayHasKey('previous_plan_id', $subscription->metadata);
+        $this->assertEquals($oldPlan->id, $subscription->plan_id);
+        $this->assertEquals(
+            $futureEndsAt->format('Y-m-d H:i:s'),
+            $subscription->ends_at->format('Y-m-d H:i:s'),
+        );
     }
 
     public function test_current_subscription_page_can_be_rendered()
@@ -257,10 +322,47 @@ class SubscriptionTest extends TestCase
             'plan_id' => $plan->id,
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->get('/subscription/current');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get('/subscription/current');
 
         $response->assertStatus(200);
         $response->assertViewIs('subscription.current');
+    }
+
+    public function test_current_subscription_page_shows_only_plan_metrics()
+    {
+        $data = $this->createUserWithBusiness();
+        ['user' => $user] = $data;
+        $metric = \App\Models\SubscriptionMetric::factory()->create([
+            'key' => 'max_locations',
+            'type' => 'integer',
+            'label' => 'Локации',
+        ]);
+        $plan = Plan::factory()->create();
+        \App\Models\PlanFeature::create([
+            'plan_id' => $plan->id,
+            'metric_id' => $metric->id,
+            'value' => '5',
+        ]);
+        Subscription::factory()->create([
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'ends_at' => now()->addMonth(),
+        ]);
+
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get('/subscription/current');
+
+        $response->assertStatus(200);
+        $response->assertViewIs('subscription.current');
+        $response->assertViewHas('metricsInPlan');
+        $response->assertSee('Использование лимитов');
+        $metricsInPlan = $response->viewData('metricsInPlan');
+        $this->assertCount(1, $metricsInPlan);
+        $this->assertEquals('max_locations', $metricsInPlan[0]['metric']->key);
     }
 
     public function test_current_subscription_redirects_when_no_subscription()
@@ -268,7 +370,9 @@ class SubscriptionTest extends TestCase
         $data = $this->createUserWithBusiness();
         ['user' => $user] = $data;
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->get('/subscription/current');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get('/subscription/current');
 
         $response->assertRedirect(route('subscription.index'));
         $response->assertSessionHas('info');
@@ -288,7 +392,9 @@ class SubscriptionTest extends TestCase
             'ends_at' => now()->addMonth(),
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post('/subscription/cancel');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post('/subscription/cancel');
 
         $response->assertRedirect(route('subscription.current'));
         $response->assertSessionHas('success');
@@ -309,7 +415,9 @@ class SubscriptionTest extends TestCase
             'plan_id' => $plan->id,
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post('/subscription/cancel');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post('/subscription/cancel');
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -329,17 +437,13 @@ class SubscriptionTest extends TestCase
             'ends_at' => now()->addMonth(),
         ]);
 
-        \App\Models\BepaidSettings::firstOrCreate(
-            ['id' => 1],
-            [
-                'enabled' => true,
-                'test_mode' => true,
-                'test_shop_id' => 'test',
-                'test_secret_key' => 'test',
-            ]
-        );
+        \Illuminate\Support\Facades\Config::set('bepaid.enabled', true);
+        \Illuminate\Support\Facades\Config::set('bepaid.shop_id', 'test');
+        \Illuminate\Support\Facades\Config::set('bepaid.secret_key', 'test');
 
-        $this->withBusinessSession($data)->actingAs($user)->post('/subscription/renew');
+        $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post('/subscription/renew');
 
         $this->assertDatabaseHas('invoices', [
             'user_id' => $user->id,
@@ -359,7 +463,9 @@ class SubscriptionTest extends TestCase
             'plan_id' => $plan->id,
         ]);
 
-        $response = $this->withBusinessSession($data)->actingAs($user)->post('/subscription/renew');
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->post('/subscription/renew');
 
         $response->assertRedirect();
         $response->assertSessionHas('error');

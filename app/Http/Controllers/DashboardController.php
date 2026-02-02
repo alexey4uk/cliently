@@ -6,8 +6,6 @@ use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Traits\HasOwnDataFiltering;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -59,31 +57,11 @@ class DashboardController extends Controller
                 ->with('info', 'Добавьте мастеров для предоставления услуг.');
         }
 
-        // Кэширование ВСЕХ данных dashboard в одном ключе (5 минут)
-        $user = Auth::user();
-        $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-        $roleId = $role ? $role->id : 'no_role';
-        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
+        $dashboardData = $this->getDashboardData($business, $role, $permissionService);
 
-        // Проверяем, поддерживает ли драйвер кеша теги
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-
-        // Получаем ВСЕ данные одним кэш-запросом
-        $dashboardData = $supportsTags
-            ? Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
-                return $this->getDashboardData($business, $role, $permissionService);
-            })
-            : Cache::remember($cacheKey, 300, function () use ($business, $role, $permissionService) {
-                return $this->getDashboardData($business, $role, $permissionService);
-            });
-
-        // Извлекаем данные из кэша
         $stats = $dashboardData['stats'];
         $appointments = $dashboardData['appointments'];
         $clients = $dashboardData['clients'];
-        $financialStats = $dashboardData['financialStats'];
-        $topServices = $dashboardData['topServices'];
-        $topMasters = $dashboardData['topMasters'];
         $subscriptionStatus = $dashboardData['subscriptionStatus'];
 
         return view('dashboard', [
@@ -91,29 +69,12 @@ class DashboardController extends Controller
             'stats' => $stats,
             'appointments' => $appointments,
             'clients' => $clients,
-            'financialStats' => $financialStats,
-            'topServices' => $topServices,
-            'topMasters' => $topMasters,
             'subscriptionStatus' => $subscriptionStatus,
         ]);
     }
 
     public function refresh()
     {
-        $user = Auth::user();
-        $role = $this->getCurrentBusinessRole();
-        $roleId = $role ? $role->id : 'no_role';
-        $cacheKey = "dashboard_data_{$user->id}_{$roleId}";
-
-        // Очистка кэша через теги для групповой очистки (если поддерживается)
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        if ($supportsTags) {
-            Cache::tags(['dashboard', "user_{$user->id}", "role_{$roleId}"])->flush();
-        } else {
-            // Если теги не поддерживаются, очищаем один ключ
-            Cache::forget($cacheKey);
-        }
-
         return redirect()->back()->with('success', 'Данные обновлены');
     }
 
@@ -126,40 +87,6 @@ class DashboardController extends Controller
         $appointments = $this->getAppointments($business, $role);
         $clients = $this->getRecentClients($business, $role, 5);
 
-        // Финансовые метрики (если есть доступ)
-        $financialStats = null;
-        if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $financialStats = $this->getFinancialStats($business, $role);
-            }
-        }
-
-        // Топ услуги (если есть доступ)
-        $topServices = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.services.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topServices = $this->getTopServices($business);
-            }
-        }
-
-        // Топ мастера (если есть доступ)
-        $topMasters = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.masters.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topMasters = $this->getTopMasters($business);
-            }
-        }
-
-        // Статус подписки (если есть доступ)
         $subscriptionStatus = null;
         if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
             $subscriptionStatus = $this->getSubscriptionStatus($business);
@@ -169,9 +96,6 @@ class DashboardController extends Controller
             'stats' => $stats,
             'appointments' => $appointments,
             'clients' => $clients,
-            'financialStats' => $financialStats,
-            'topServices' => $topServices,
-            'topMasters' => $topMasters,
             'subscriptionStatus' => $subscriptionStatus,
         ];
     }
@@ -263,9 +187,11 @@ class DashboardController extends Controller
             ? round(($confirmedCount / $totalAppointments) * 100, 1)
             : 0;
 
-        // Средние значения
+        // Средние значения (дни считаем по отфильтрованному набору записей)
+        $minCreated = (clone $appointmentsQuery)->min('created_at');
+        $days = $minCreated ? Carbon::parse($minCreated)->diffInDays(now()) : 0;
         $avgAppointmentsPerDay = $totalAppointments > 0
-            ? round($totalAppointments / max(1, \Carbon\Carbon::parse(\App\Models\Appointment::where('business_id', $businessId)->min('created_at'))->diffInDays(now())), 1)
+            ? round($totalAppointments / max(1, $days), 1)
             : 0;
         $avgClientsPerAppointment = $totalAppointments > 0
             ? round($totalClients / $totalAppointments, 2)
@@ -574,20 +500,38 @@ class DashboardController extends Controller
 
         $subscriptionService = app(\App\Services\SubscriptionService::class);
 
-        // Получаем использование для всех метрик одним запросом (оптимизация N+1)
-        $metrics = ['max_locations', 'max_masters', 'max_services', 'max_clients', 'max_appointments_per_month', 'max_business_users'];
-        $usage = $subscriptionService->getMultipleUsageAndLimits($owner, $metrics);
+        // Показываем активный тариф (пока действует оплаченный период — предыдущий план)
+        $plan = $subscription->getEffectivePlan();
+        $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
+        $metricKeys = $plan->features
+            ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
+            ->sortBy(fn ($f) => $f->metric->sort_order)
+            ->map(fn ($f) => $f->metric->key)
+            ->values()
+            ->all();
+
+        $usage = $metricKeys === []
+            ? []
+            : $subscriptionService->getMultipleUsageAndLimits($owner, $metricKeys);
+
+        $metadata = $subscription->metadata ?? [];
+        $currentPlan = $subscription->plan;
+        $isPreservedPeriod = $plan->id !== $currentPlan->id && $subscription->ends_at && $subscription->ends_at->isFuture();
 
         return [
-            'plan_name' => $subscription->plan->name,
-            'plan_slug' => $subscription->plan->slug,
-            'plan_price' => $subscription->plan->price,
+            'plan_name' => $plan->name,
+            'plan_slug' => $plan->slug,
+            'plan_price' => $plan->price,
             'status' => $subscription->status,
             'ends_at' => $subscription->ends_at,
             'cancelled_at' => $subscription->cancelled_at,
             'is_cancelled' => $subscription->isCancelled(),
             'will_cancel_at_end' => $subscription->willCancelAtEnd(),
             'usage' => $usage,
+            'previous_plan_name' => $metadata['previous_plan_name'] ?? null,
+            'preserved_ends_at' => $metadata['preserved_ends_at'] ?? null,
+            'is_preserved_period' => $isPreservedPeriod,
+            'next_plan_name' => $isPreservedPeriod ? $currentPlan->name : null,
         ];
     }
 }

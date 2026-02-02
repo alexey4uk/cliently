@@ -6,7 +6,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HasSubscriptionTest extends TestCase
@@ -45,10 +44,12 @@ class HasSubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()->expired()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ]);
+        Subscription::factory()
+            ->expired()
+            ->create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
 
         $activeSubscription = $user->activeSubscription();
 
@@ -60,10 +61,12 @@ class HasSubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()->trial()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ]);
+        Subscription::factory()
+            ->trial()
+            ->create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
 
         $activeSubscription = $user->activeSubscription();
 
@@ -76,10 +79,12 @@ class HasSubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()->expiredTrial()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-        ]);
+        Subscription::factory()
+            ->expiredTrial()
+            ->create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
 
         $activeSubscription = $user->activeSubscription();
 
@@ -133,54 +138,5 @@ class HasSubscriptionTest extends TestCase
         $currentPlan = $user->getCurrentPlan();
 
         $this->assertNull($currentPlan);
-    }
-
-    public function test_active_subscription_is_cached()
-    {
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create();
-
-        Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => now()->addMonth(),
-        ]);
-
-        // Первый вызов - должен загрузить из БД
-        $firstCall = $user->activeSubscription();
-
-        // Удаляем подписку из БД
-        Subscription::where('user_id', $user->id)->delete();
-
-        // Второй вызов - должен вернуть из кеша
-        $secondCall = $user->activeSubscription();
-
-        $this->assertNotNull($secondCall);
-        $this->assertEquals($firstCall->id, $secondCall->id);
-    }
-
-    public function test_clear_subscription_cache_clears_both_caches()
-    {
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create();
-
-        Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => now()->addMonth(),
-        ]);
-
-        // Заполняем кеш
-        $user->activeSubscription();
-        $user->getSubscription();
-
-        // Очищаем кеш
-        $user->clearSubscriptionCache();
-
-        // Проверяем, что кеш очищен
-        $this->assertFalse(Cache::has("user_active_subscription_{$user->id}"));
-        $this->assertFalse(Cache::has("user_subscription_{$user->id}"));
     }
 }

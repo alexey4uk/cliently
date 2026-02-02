@@ -8,6 +8,7 @@ use App\Models\Location;
 use App\Models\Master;
 use App\Models\Service;
 use App\Repositories\BusinessRepositoryInterface;
+use App\Services\MasterScheduleService;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
@@ -31,28 +32,28 @@ class MasterController extends Controller
         $businessFilter = request('business_id', '');
 
         // ОПТИМИЗИРОВАНО: Подзапрос вместо withCount
-        $query = Master::query()
-            ->with(['business'])
-            ->selectRaw('masters.*, 
-                (SELECT COUNT(*) FROM appointments WHERE appointments.master_id = masters.id) as appointments_count'
-            );
+        $query = Master::query()->with(['business'])->selectRaw('masters.*,
+                (SELECT COUNT(*) FROM appointments WHERE appointments.master_id = masters.id) as appointments_count');
 
-        // ОПТИМИЗИРОВАННЫЙ ПОИСК с FULLTEXT
         if ($search) {
             $searchTerm = $search.'*';
-            $query->where(function ($q) use ($searchTerm, $search) {
-                // FULLTEXT поиск по именам (быстро!)
-                $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('specialization', 'like', "%{$search}%")
-                    // Поиск по телефону через подзапрос (быстрее whereHas)
-                    ->orWhereIn('id', function ($subquery) use ($search) {
-                        $subquery->select('phoneable_id')
-                            ->from('phones')
-                            ->where('phoneable_type', Master::class)
-                            ->where('phone', 'like', "%{$search}%");
-                    });
-            })->limit(1000); // Ограничение для поиска
+            $query
+                ->where(function ($q) use ($searchTerm, $search) {
+                    $q->whereRaw(
+                        'MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)',
+                        [$searchTerm],
+                    )
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('specialization', 'like', "%{$search}%")
+                        ->orWhereIn('id', function ($subquery) use ($search) {
+                            $subquery
+                                ->select('phoneable_id')
+                                ->from('phones')
+                                ->where('phoneable_type', Master::class)
+                                ->where('phone', 'like', "%{$search}%");
+                        });
+                })
+                ->limit(1000);
         }
 
         // Фильтр по бизнесу
@@ -74,15 +75,18 @@ class MasterController extends Controller
         // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
 
-        return view('panel.masters.index', compact(
-            'masters',
-            'search',
-            'sort',
-            'direction',
-            'perPage',
-            'businessFilter',
-            'businesses'
-        ));
+        return view(
+            'panel.masters.index',
+            compact(
+                'masters',
+                'search',
+                'sort',
+                'direction',
+                'perPage',
+                'businessFilter',
+                'businesses',
+            ),
+        );
     }
 
     /**
@@ -114,13 +118,26 @@ class MasterController extends Controller
         $services = collect();
 
         if ($master->business_id) {
-            $locations = Location::where('business_id', $master->business_id)->orderBy('name')->get();
-            $services = Service::where('business_id', $master->business_id)->orderBy('name')->get();
+            $locations = Location::where('business_id', $master->business_id)
+                ->orderBy('name')
+                ->get();
+            $services = Service::where('business_id', $master->business_id)
+                ->orderBy('name')
+                ->get();
         }
 
         $countries = Country::getCached();
 
-        return view('panel.masters.edit', compact('master', 'businesses', 'locations', 'services', 'countries'));
+        return view(
+            'panel.masters.edit',
+            compact(
+                'master',
+                'businesses',
+                'locations',
+                'services',
+                'countries',
+            ),
+        );
     }
 
     /**
@@ -160,18 +177,25 @@ class MasterController extends Controller
             'is_active' => $validated['is_active'] ?? false,
         ];
 
-        // Добавляем working_hours, если они переданы
-        if (isset($validated['working_hours'])) {
-            $updateData['working_hours'] = \App\Services\WorkingHoursService::toJson($validated['working_hours']);
-        }
-
         $master->update($updateData);
+
+        // Обновить расписание
+        if (isset($validated['working_hours'])) {
+            $scheduleService = app(MasterScheduleService::class);
+            $scheduleService->saveScheduleForMaster(
+                $validated['working_hours'],
+                $master,
+            );
+        }
 
         $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
         $primary = $master->primaryPhone;
         if ($primary) {
-            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
+            $primary->update([
+                'country_id' => $phoneCountryId,
+                'phone' => $phoneE164,
+            ]);
         } else {
             $master->phones()->create([
                 'country_id' => $phoneCountryId,
@@ -194,7 +218,9 @@ class MasterController extends Controller
             $master->services()->sync([]);
         }
 
-        return redirect()->route('panel.masters.show', $master)->with('success', 'Мастер успешно обновлен');
+        return redirect()
+            ->route('panel.masters.show', $master)
+            ->with('success', 'Мастер успешно обновлен');
     }
 
     /**
@@ -204,12 +230,18 @@ class MasterController extends Controller
     {
         // ОПТИМИЗАЦИЯ: exists() вместо count()
         if ($master->appointments()->exists()) {
-            return redirect()->back()
-                ->with('error', 'Невозможно удалить мастера, так как у него есть связанные записи.');
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Невозможно удалить мастера, так как у него есть связанные записи.',
+                );
         }
 
         $master->delete();
 
-        return redirect()->route('panel.masters')->with('success', 'Мастер успешно удален');
+        return redirect()
+            ->route('panel.masters')
+            ->with('success', 'Мастер успешно удален');
     }
 }

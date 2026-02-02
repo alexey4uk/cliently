@@ -6,7 +6,6 @@ use App\Services\SubscriptionAccessService;
 use App\Services\SubscriptionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AnalyticsController extends Controller
 {
@@ -170,143 +169,113 @@ class AnalyticsController extends Controller
 
     private function getFinancialData(int $businessId, array $filters): array
     {
-        $cacheKey = 'analytics_financial_'.$businessId.'_'.md5(json_encode($filters));
-        $cacheTags = ['analytics', "business_{$businessId}"];
+        $startDate = Carbon::parse($filters['date_from'])->startOfDay();
+        $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
-        // Проверяем поддержку тегов
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
-            }
+        $query = \App\Models\Appointment::where('business_id', $businessId)
+            ->where('status', 'completed')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
 
-            return Cache::remember($key, 300, $callback);
-        };
+        if ($filters['service_id']) {
+            $query->where('service_id', $filters['service_id']);
+        }
+        if ($filters['master_id']) {
+            $query->where('master_id', $filters['master_id']);
+        }
+        if ($filters['location_id']) {
+            $query->where('location_id', $filters['location_id']);
+        }
 
-        return $getCache($cacheKey, function () use ($businessId, $filters) {
-            $startDate = Carbon::parse($filters['date_from'])->startOfDay();
-            $endDate = Carbon::parse($filters['date_to'])->endOfDay();
+        $appointments = $query->with('service')->get();
 
-            $query = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('status', 'completed')
-                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
-
-            if ($filters['service_id']) {
-                $query->where('service_id', $filters['service_id']);
-            }
-            if ($filters['master_id']) {
-                $query->where('master_id', $filters['master_id']);
-            }
-            if ($filters['location_id']) {
-                $query->where('location_id', $filters['location_id']);
-            }
-
-            $appointments = $query->with('service')->get();
-
-            // Общая выручка
-            $totalRevenue = $appointments->sum(function ($appointment) {
-                return $appointment->price ?? $appointment->service->price ?? 0;
-            });
-
-            // Количество завершенных записей
-            $completedCount = $appointments->count();
-
-            // Средний чек
-            $averageCheck = $completedCount > 0 ? round($totalRevenue / $completedCount, 2) : 0;
-
-            // Выручка по периодам (по дням)
-            $revenueByPeriod = $this->getRevenueByPeriod($businessId, $startDate, $endDate, $filters);
-
-            // Выручка по услугам
-            $revenueByService = $this->getRevenueByService($businessId, $filters);
-
-            // Выручка по мастерам
-            $revenueByMaster = $this->getRevenueByMaster($businessId, $filters);
-
-            // Выручка по локациям
-            $revenueByLocation = $this->getRevenueByLocation($businessId, $filters);
-
-            return [
-                'total_revenue' => $totalRevenue,
-                'completed_count' => $completedCount,
-                'average_check' => $averageCheck,
-                'revenue_by_period' => $revenueByPeriod,
-                'revenue_by_service' => $revenueByService,
-                'revenue_by_master' => $revenueByMaster,
-                'revenue_by_location' => $revenueByLocation,
-            ];
+        // Общая выручка
+        $totalRevenue = $appointments->sum(function ($appointment) {
+            return $appointment->price ?? $appointment->service->price ?? 0;
         });
+
+        // Количество завершенных записей
+        $completedCount = $appointments->count();
+
+        // Средний чек
+        $averageCheck = $completedCount > 0 ? round($totalRevenue / $completedCount, 2) : 0;
+
+        // Выручка по периодам (по дням)
+        $revenueByPeriod = $this->getRevenueByPeriod($businessId, $startDate, $endDate, $filters);
+
+        // Выручка по услугам
+        $revenueByService = $this->getRevenueByService($businessId, $filters);
+
+        // Выручка по мастерам
+        $revenueByMaster = $this->getRevenueByMaster($businessId, $filters);
+
+        // Выручка по локациям
+        $revenueByLocation = $this->getRevenueByLocation($businessId, $filters);
+
+        return [
+            'total_revenue' => $totalRevenue,
+            'completed_count' => $completedCount,
+            'average_check' => $averageCheck,
+            'revenue_by_period' => $revenueByPeriod,
+            'revenue_by_service' => $revenueByService,
+            'revenue_by_master' => $revenueByMaster,
+            'revenue_by_location' => $revenueByLocation,
+        ];
     }
 
     private function getGeneralData(int $businessId, array $filters): array
     {
-        $cacheKey = 'analytics_general_'.$businessId.'_'.md5(json_encode($filters));
-        $cacheTags = ['analytics', "business_{$businessId}"];
+        $startDate = Carbon::parse($filters['date_from'])->startOfDay();
+        $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
-        // Проверяем поддержку тегов
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
-            }
+        $query = \App\Models\Appointment::where('business_id', $businessId)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
 
-            return Cache::remember($key, 300, $callback);
-        };
+        if ($filters['service_id']) {
+            $query->where('service_id', $filters['service_id']);
+        }
+        if ($filters['master_id']) {
+            $query->where('master_id', $filters['master_id']);
+        }
+        if ($filters['location_id']) {
+            $query->where('location_id', $filters['location_id']);
+        }
 
-        return $getCache($cacheKey, function () use ($businessId, $filters) {
-            $startDate = Carbon::parse($filters['date_from'])->startOfDay();
-            $endDate = Carbon::parse($filters['date_to'])->endOfDay();
+        $appointments = $query->get();
 
-            $query = \App\Models\Appointment::where('business_id', $businessId)
-                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        // Статистика по статусам
+        $statsByStatus = [
+            'pending' => $appointments->where('status', 'pending')->count(),
+            'confirmed' => $appointments->where('status', 'confirmed')->count(),
+            'completed' => $appointments->where('status', 'completed')->count(),
+            'cancelled' => $appointments->where('status', 'cancelled')->count(),
+        ];
 
-            if ($filters['service_id']) {
-                $query->where('service_id', $filters['service_id']);
-            }
-            if ($filters['master_id']) {
-                $query->where('master_id', $filters['master_id']);
-            }
-            if ($filters['location_id']) {
-                $query->where('location_id', $filters['location_id']);
-            }
+        $total = $appointments->count();
+        $completed = $statsByStatus['completed'];
+        $cancelled = $statsByStatus['cancelled'];
 
-            $appointments = $query->get();
+        // Конверсия и процент отмен
+        $conversionRate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
+        $cancellationRate = $total > 0 ? round(($cancelled / $total) * 100, 1) : 0;
 
-            // Статистика по статусам
-            $statsByStatus = [
-                'pending' => $appointments->where('status', 'pending')->count(),
-                'confirmed' => $appointments->where('status', 'confirmed')->count(),
-                'completed' => $appointments->where('status', 'completed')->count(),
-                'cancelled' => $appointments->where('status', 'cancelled')->count(),
-            ];
+        // Статистика по периодам
+        $statsByPeriod = $this->getAppointmentsStatsByPeriod($businessId, $startDate, $endDate, $filters);
 
-            $total = $appointments->count();
-            $completed = $statsByStatus['completed'];
-            $cancelled = $statsByStatus['cancelled'];
+        // Статистика по услугам
+        $statsByService = $this->getAppointmentsStatsByService($businessId, $filters);
 
-            // Конверсия и процент отмен
-            $conversionRate = $total > 0 ? round(($completed / $total) * 100, 1) : 0;
-            $cancellationRate = $total > 0 ? round(($cancelled / $total) * 100, 1) : 0;
+        // Статистика по мастерам
+        $statsByMaster = $this->getAppointmentsStatsByMaster($businessId, $filters);
 
-            // Статистика по периодам
-            $statsByPeriod = $this->getAppointmentsStatsByPeriod($businessId, $startDate, $endDate, $filters);
-
-            // Статистика по услугам
-            $statsByService = $this->getAppointmentsStatsByService($businessId, $filters);
-
-            // Статистика по мастерам
-            $statsByMaster = $this->getAppointmentsStatsByMaster($businessId, $filters);
-
-            return [
-                'total' => $total,
-                'stats_by_status' => $statsByStatus,
-                'conversion_rate' => $conversionRate,
-                'cancellation_rate' => $cancellationRate,
-                'stats_by_period' => $statsByPeriod,
-                'stats_by_service' => $statsByService,
-                'stats_by_master' => $statsByMaster,
-            ];
-        });
+        return [
+            'total' => $total,
+            'stats_by_status' => $statsByStatus,
+            'conversion_rate' => $conversionRate,
+            'cancellation_rate' => $cancellationRate,
+            'stats_by_period' => $statsByPeriod,
+            'stats_by_service' => $statsByService,
+            'stats_by_master' => $statsByMaster,
+        ];
     }
 
     private function getRevenueByPeriod(int $businessId, Carbon $startDate, Carbon $endDate, array $filters): array
@@ -583,11 +552,10 @@ class AnalyticsController extends Controller
 
     /**
      * Получить владельца бизнеса
-     * Uses cached method for owner role.
      */
     private function getBusinessOwner(\App\Models\Business $business): ?\App\Models\User
     {
-        $ownerRole = \App\Models\BusinessRole::getOwnerRole();
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
 
         if (! $ownerRole) {
             return null;
@@ -697,100 +665,84 @@ class AnalyticsController extends Controller
      */
     private function getKPIData(int $businessId): array
     {
-        $cacheKey = 'analytics_kpi_'.$businessId;
-        $cacheTags = ['analytics', "business_{$businessId}"];
+        $now = Carbon::now();
+        $last30Days = $now->copy()->subDays(30);
+        $last90Days = $now->copy()->subDays(90);
 
-        // Проверяем поддержку тегов
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
-            }
+        // Получаем все завершенные записи за последние 90 дней для расчета метрик
+        $completedAppointments = \App\Models\Appointment::where('business_id', $businessId)
+            ->where('status', 'completed')
+            ->where('date', '>=', $last90Days->format('Y-m-d'))
+            ->with(['client', 'service'])
+            ->get();
 
-            return Cache::remember($key, 300, $callback);
-        };
+        // Уникальные клиенты за последние 90 дней
+        $uniqueClients = $completedAppointments->pluck('client_id')->unique();
+        $totalClients = $uniqueClients->count();
 
-        return $getCache($cacheKey, function () use ($businessId) {
-            $now = Carbon::now();
-            $last30Days = $now->copy()->subDays(30);
-            $last90Days = $now->copy()->subDays(90);
+        // Общая выручка за последние 90 дней
+        $totalRevenue = $completedAppointments->sum(function ($appointment) {
+            return $appointment->price ?? $appointment->service->price ?? 0;
+        });
 
-            // Получаем все завершенные записи за последние 90 дней для расчета метрик
-            $completedAppointments = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('status', 'completed')
-                ->where('date', '>=', $last90Days->format('Y-m-d'))
-                ->with(['client', 'service'])
-                ->get();
+        // ARPU (Average Revenue Per User)
+        $arpu = $totalClients > 0 ? round($totalRevenue / $totalClients, 2) : 0;
 
-            // Уникальные клиенты за последние 90 дней
-            $uniqueClients = $completedAppointments->pluck('client_id')->unique();
-            $totalClients = $uniqueClients->count();
+        // Retention Rate - клиенты с более чем одной записью за последние 90 дней
+        $returningClients = $uniqueClients->filter(function ($clientId) use ($completedAppointments) {
+            return $completedAppointments->where('client_id', $clientId)->count() > 1;
+        })->count();
 
-            // Общая выручка за последние 90 дней
-            $totalRevenue = $completedAppointments->sum(function ($appointment) {
+        $retentionRate = $totalClients > 0 ? round(($returningClients / $totalClients) * 100, 1) : 0;
+
+        // Прогноз выручки на следующий месяц (средняя выручка за последние 3 месяца)
+        $threeMonthsAgo = $now->copy()->subMonths(3)->startOfMonth();
+        $allMonthlyAppointments = \App\Models\Appointment::where('business_id', $businessId)
+            ->where('status', 'completed')
+            ->where('date', '>=', $threeMonthsAgo->format('Y-m-d'))
+            ->where('date', '<', $now->copy()->startOfMonth()->format('Y-m-d'))
+            ->with('service')
+            ->get();
+
+        // Группируем по месяцам
+        $monthlyRevenues = [];
+        $groupedByMonth = $allMonthlyAppointments->groupBy(function ($appointment) {
+            return $appointment->date->format('Y-m');
+        });
+
+        for ($i = 0; $i < 3; $i++) {
+            $monthKey = $now->copy()->subMonths($i + 1)->format('Y-m');
+            $monthAppointments = $groupedByMonth->get($monthKey, collect());
+
+            $monthRevenue = $monthAppointments->sum(function ($appointment) {
                 return $appointment->price ?? $appointment->service->price ?? 0;
             });
 
-            // ARPU (Average Revenue Per User)
-            $arpu = $totalClients > 0 ? round($totalRevenue / $totalClients, 2) : 0;
+            if ($monthRevenue > 0) {
+                $monthlyRevenues[] = $monthRevenue;
+            }
+        }
 
-            // Retention Rate - клиенты с более чем одной записью за последние 90 дней
-            $returningClients = $uniqueClients->filter(function ($clientId) use ($completedAppointments) {
-                return $completedAppointments->where('client_id', $clientId)->count() > 1;
-            })->count();
+        $averageMonthlyRevenue = count($monthlyRevenues) > 0 ? round(array_sum($monthlyRevenues) / count($monthlyRevenues), 0) : 0;
+        $revenueForecast = $averageMonthlyRevenue;
 
-            $retentionRate = $totalClients > 0 ? round(($returningClients / $totalClients) * 100, 1) : 0;
-
-            // Прогноз выручки на следующий месяц (средняя выручка за последние 3 месяца)
-            // Оптимизировано: загружаем все данные одним запросом
-            $threeMonthsAgo = $now->copy()->subMonths(3)->startOfMonth();
-            $allMonthlyAppointments = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('status', 'completed')
-                ->where('date', '>=', $threeMonthsAgo->format('Y-m-d'))
-                ->where('date', '<', $now->copy()->startOfMonth()->format('Y-m-d'))
-                ->with('service')
-                ->get();
-
-            // Группируем по месяцам
-            $monthlyRevenues = [];
-            $groupedByMonth = $allMonthlyAppointments->groupBy(function ($appointment) {
-                return $appointment->date->format('Y-m');
+        // Выручка за последние 30 дней (используем уже загруженные данные)
+        $revenueLast30Days = $completedAppointments
+            ->filter(function ($appointment) use ($last30Days) {
+                return $appointment->date->format('Y-m-d') >= $last30Days->format('Y-m-d');
+            })
+            ->sum(function ($appointment) {
+                return $appointment->price ?? $appointment->service->price ?? 0;
             });
 
-            for ($i = 0; $i < 3; $i++) {
-                $monthKey = $now->copy()->subMonths($i + 1)->format('Y-m');
-                $monthAppointments = $groupedByMonth->get($monthKey, collect());
-
-                $monthRevenue = $monthAppointments->sum(function ($appointment) {
-                    return $appointment->price ?? $appointment->service->price ?? 0;
-                });
-
-                if ($monthRevenue > 0) {
-                    $monthlyRevenues[] = $monthRevenue;
-                }
-            }
-
-            $averageMonthlyRevenue = count($monthlyRevenues) > 0 ? round(array_sum($monthlyRevenues) / count($monthlyRevenues), 0) : 0;
-            $revenueForecast = $averageMonthlyRevenue;
-
-            // Выручка за последние 30 дней (используем уже загруженные данные)
-            $revenueLast30Days = $completedAppointments
-                ->filter(function ($appointment) use ($last30Days) {
-                    return $appointment->date->format('Y-m-d') >= $last30Days->format('Y-m-d');
-                })
-                ->sum(function ($appointment) {
-                    return $appointment->price ?? $appointment->service->price ?? 0;
-                });
-
-            return [
-                'retention_rate' => $retentionRate,
-                'arpu' => $arpu,
-                'revenue_forecast' => $revenueForecast,
-                'revenue_last_30_days' => $revenueLast30Days,
-                'total_clients' => $totalClients,
-                'returning_clients' => $returningClients,
-            ];
-        });
+        return [
+            'retention_rate' => $retentionRate,
+            'arpu' => $arpu,
+            'revenue_forecast' => $revenueForecast,
+            'revenue_last_30_days' => $revenueLast30Days,
+            'total_clients' => $totalClients,
+            'returning_clients' => $returningClients,
+        ];
     }
 
     /**
@@ -798,98 +750,81 @@ class AnalyticsController extends Controller
      */
     private function getClientsAnalyticsData(int $businessId, array $filters): array
     {
-        $cacheKey = 'analytics_clients_'.$businessId.'_'.md5(json_encode($filters));
-        $cacheTags = ['analytics', "business_{$businessId}"];
+        $startDate = Carbon::parse($filters['date_from'])->startOfDay();
+        $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
-        // Проверяем поддержку тегов
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
+        // Все клиенты с записями в периоде
+        $appointmentsInPeriod = \App\Models\Appointment::where('business_id', $businessId)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->with('client')
+            ->get();
+
+        $clientIdsInPeriod = $appointmentsInPeriod->pluck('client_id')->unique();
+
+        // Новые клиенты (первая запись в периоде)
+        $firstAppointments = \App\Models\Appointment::where('business_id', $businessId)
+            ->whereIn('client_id', $clientIdsInPeriod)
+            ->select('client_id', \DB::raw('MIN(date) as first_date'))
+            ->groupBy('client_id')
+            ->get()
+            ->keyBy('client_id');
+
+        $newClients = [];
+        $returningClients = [];
+
+        foreach ($clientIdsInPeriod as $clientId) {
+            $firstAppointment = $firstAppointments->get($clientId);
+
+            if ($firstAppointment && $firstAppointment->first_date >= $startDate->format('Y-m-d')) {
+                $newClients[] = $clientId;
+            } else {
+                $returningClients[] = $clientId;
             }
+        }
 
-            return Cache::remember($key, 300, $callback);
-        };
+        // LTV клиентов (только завершенные записи)
+        $completedAppointments = \App\Models\Appointment::where('business_id', $businessId)
+            ->where('status', 'completed')
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->with(['client', 'service'])
+            ->get();
 
-        return $getCache($cacheKey, function () use ($businessId, $filters) {
-            $startDate = Carbon::parse($filters['date_from'])->startOfDay();
-            $endDate = Carbon::parse($filters['date_to'])->endOfDay();
-
-            // Все клиенты с записями в периоде
-            $appointmentsInPeriod = \App\Models\Appointment::where('business_id', $businessId)
-                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                ->with('client')
-                ->get();
-
-            $clientIdsInPeriod = $appointmentsInPeriod->pluck('client_id')->unique();
-
-            // Новые клиенты (первая запись в периоде)
-            // Оптимизация: получаем все первые записи одним запросом вместо N+1
-            $firstAppointments = \App\Models\Appointment::where('business_id', $businessId)
-                ->whereIn('client_id', $clientIdsInPeriod)
-                ->select('client_id', \DB::raw('MIN(date) as first_date'))
-                ->groupBy('client_id')
-                ->get()
-                ->keyBy('client_id');
-
-            $newClients = [];
-            $returningClients = [];
-
-            foreach ($clientIdsInPeriod as $clientId) {
-                $firstAppointment = $firstAppointments->get($clientId);
-
-                if ($firstAppointment && $firstAppointment->first_date >= $startDate->format('Y-m-d')) {
-                    $newClients[] = $clientId;
-                } else {
-                    $returningClients[] = $clientId;
-                }
-            }
-
-            // LTV клиентов (только завершенные записи)
-            $completedAppointments = \App\Models\Appointment::where('business_id', $businessId)
-                ->where('status', 'completed')
-                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                ->with(['client', 'service'])
-                ->get();
-
-            $clientsLTV = $completedAppointments->groupBy('client_id')->map(function ($group, $clientId) {
-                $client = $group->first()->client;
-
-                return [
-                    'client_id' => $clientId,
-                    'client_name' => $client ? $client->full_name : 'Неизвестный клиент',
-                    'ltv' => $group->sum(function ($appointment) {
-                        return $appointment->price ?? ($appointment->service ? ($appointment->service->price ?? 0) : 0);
-                    }),
-                    'appointments_count' => $group->count(),
-                ];
-            })->sortByDesc('ltv')->take(10)->values();
-
-            $averageLTV = $clientsLTV->count() > 0 ? round($clientsLTV->avg('ltv'), 2) : 0;
-
-            // Частота визитов
-            $totalAppointments = $appointmentsInPeriod->count();
-            $uniqueClientsCount = $clientIdsInPeriod->count();
-            $visitFrequency = $uniqueClientsCount > 0 ? round($totalAppointments / $uniqueClientsCount, 2) : 0;
-
-            // Привлечение новых клиентов по периодам
-            $newClientsByPeriod = $this->getNewClientsByPeriod($businessId, $startDate, $endDate);
+        $clientsLTV = $completedAppointments->groupBy('client_id')->map(function ($group, $clientId) {
+            $client = $group->first()->client;
 
             return [
-                'new_clients' => count($newClients),
-                'returning_clients' => count($returningClients),
-                'total_clients' => $uniqueClientsCount,
-                'average_ltv' => $averageLTV,
-                'top_clients' => $clientsLTV->toArray(),
-                'visit_frequency' => $visitFrequency,
-                'new_clients_by_period' => $newClientsByPeriod,
+                'client_id' => $clientId,
+                'client_name' => $client ? $client->full_name : 'Неизвестный клиент',
+                'ltv' => $group->sum(function ($appointment) {
+                    return $appointment->price ?? ($appointment->service ? ($appointment->service->price ?? 0) : 0);
+                }),
+                'appointments_count' => $group->count(),
             ];
-        });
+        })->sortByDesc('ltv')->take(10)->values();
+
+        $averageLTV = $clientsLTV->count() > 0 ? round($clientsLTV->avg('ltv'), 2) : 0;
+
+        // Частота визитов
+        $totalAppointments = $appointmentsInPeriod->count();
+        $uniqueClientsCount = $clientIdsInPeriod->count();
+        $visitFrequency = $uniqueClientsCount > 0 ? round($totalAppointments / $uniqueClientsCount, 2) : 0;
+
+        // Привлечение новых клиентов по периодам
+        $newClientsByPeriod = $this->getNewClientsByPeriod($businessId, $startDate, $endDate);
+
+        return [
+            'new_clients' => count($newClients),
+            'returning_clients' => count($returningClients),
+            'total_clients' => $uniqueClientsCount,
+            'average_ltv' => $averageLTV,
+            'top_clients' => $clientsLTV->toArray(),
+            'visit_frequency' => $visitFrequency,
+            'new_clients_by_period' => $newClientsByPeriod,
+        ];
     }
 
     /**
      * Получить привлечение новых клиентов по периодам
-     * Optimized: loads all appointments with single query instead of N queries per day.
      */
     private function getNewClientsByPeriod(int $businessId, Carbon $startDate, Carbon $endDate): array
     {
@@ -951,122 +886,106 @@ class AnalyticsController extends Controller
      */
     private function getTimeAnalytics(int $businessId, array $filters): array
     {
-        $cacheKey = 'analytics_time_'.$businessId.'_'.md5(json_encode($filters));
-        $cacheTags = ['analytics', "business_{$businessId}"];
+        $startDate = Carbon::parse($filters['date_from'])->startOfDay();
+        $endDate = Carbon::parse($filters['date_to'])->endOfDay();
 
-        // Проверяем поддержку тегов
-        $supportsTags = method_exists(Cache::getStore(), 'tags');
-        $getCache = function ($key, $callback) use ($cacheTags, $supportsTags) {
-            if ($supportsTags) {
-                return Cache::tags($cacheTags)->remember($key, 300, $callback);
-            }
+        $query = \App\Models\Appointment::where('business_id', $businessId)
+            ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
 
-            return Cache::remember($key, 300, $callback);
-        };
+        if ($filters['service_id']) {
+            $query->where('service_id', $filters['service_id']);
+        }
+        if ($filters['master_id']) {
+            $query->where('master_id', $filters['master_id']);
+        }
+        if ($filters['location_id']) {
+            $query->where('location_id', $filters['location_id']);
+        }
 
-        return $getCache($cacheKey, function () use ($businessId, $filters) {
-            $startDate = Carbon::parse($filters['date_from'])->startOfDay();
-            $endDate = Carbon::parse($filters['date_to'])->endOfDay();
+        $appointments = $query->get();
 
-            $query = \App\Models\Appointment::where('business_id', $businessId)
-                ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        // Heatmap по часам и дням недели
+        $heatmapData = [];
+        $daysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
-            if ($filters['service_id']) {
-                $query->where('service_id', $filters['service_id']);
-            }
-            if ($filters['master_id']) {
-                $query->where('master_id', $filters['master_id']);
-            }
-            if ($filters['location_id']) {
-                $query->where('location_id', $filters['location_id']);
-            }
-
-            $appointments = $query->get();
-
-            // Heatmap по часам и дням недели
-            $heatmapData = [];
-            $daysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
-
-            // Инициализация массива
-            for ($day = 0; $day < 7; $day++) {
-                for ($hour = 0; $hour < 24; $hour++) {
-                    $heatmapData[$day][$hour] = 0;
-                }
-            }
-
-            // Заполнение данных
-            foreach ($appointments as $appointment) {
-                if ($appointment->time) {
-                    $time = Carbon::parse($appointment->time);
-                    $hour = (int) $time->format('H');
-                    $dayOfWeek = $appointment->date->dayOfWeek; // 0 = воскресенье, 1 = понедельник
-
-                    // Конвертируем в формат где 0 = понедельник
-                    $dayIndex = $dayOfWeek == 0 ? 6 : $dayOfWeek - 1;
-
-                    if (isset($heatmapData[$dayIndex][$hour])) {
-                        $heatmapData[$dayIndex][$hour]++;
-                    }
-                }
-            }
-
-            // Находим максимальное значение для нормализации
-            $maxValue = 0;
-            foreach ($heatmapData as $day) {
-                foreach ($day as $count) {
-                    if ($count > $maxValue) {
-                        $maxValue = $count;
-                    }
-                }
-            }
-
-            // Статистика по дням недели
-            $byDayOfWeek = [];
-            foreach ($daysOfWeek as $index => $dayName) {
-                $byDayOfWeek[] = [
-                    'day' => $dayName,
-                    'count' => array_sum($heatmapData[$index]),
-                ];
-            }
-
-            // Статистика по часам
-            $byHour = [];
+        // Инициализация массива
+        for ($day = 0; $day < 7; $day++) {
             for ($hour = 0; $hour < 24; $hour++) {
-                $total = 0;
-                for ($day = 0; $day < 7; $day++) {
-                    $total += $heatmapData[$day][$hour] ?? 0;
+                $heatmapData[$day][$hour] = 0;
+            }
+        }
+
+        // Заполнение данных
+        foreach ($appointments as $appointment) {
+            if ($appointment->time) {
+                $time = Carbon::parse($appointment->time);
+                $hour = (int) $time->format('H');
+                $dayOfWeek = $appointment->date->dayOfWeek;
+
+                // Конвертируем в формат где 0 = понедельник
+                $dayIndex = $dayOfWeek == 0 ? 6 : $dayOfWeek - 1;
+
+                if (isset($heatmapData[$dayIndex][$hour])) {
+                    $heatmapData[$dayIndex][$hour]++;
                 }
-                $byHour[] = [
-                    'hour' => $hour,
-                    'count' => $total,
+            }
+        }
+
+        // Находим максимальное значение для нормализации
+        $maxValue = 0;
+        foreach ($heatmapData as $day) {
+            foreach ($day as $count) {
+                if ($count > $maxValue) {
+                    $maxValue = $count;
+                }
+            }
+        }
+
+        // Статистика по дням недели
+        $byDayOfWeek = [];
+        foreach ($daysOfWeek as $index => $dayName) {
+            $byDayOfWeek[] = [
+                'day' => $dayName,
+                'count' => array_sum($heatmapData[$index]),
+            ];
+        }
+
+        // Статистика по часам
+        $byHour = [];
+        for ($hour = 0; $hour < 24; $hour++) {
+            $total = 0;
+            for ($day = 0; $day < 7; $day++) {
+                $total += $heatmapData[$day][$hour] ?? 0;
+            }
+            $byHour[] = [
+                'hour' => $hour,
+                'count' => $total,
+            ];
+        }
+
+        // Сезонность по месяцам
+        $byMonth = [];
+        foreach ($appointments as $appointment) {
+            $monthKey = $appointment->date->format('Y-m');
+            if (! isset($byMonth[$monthKey])) {
+                $date = Carbon::parse($appointment->date);
+                $byMonth[$monthKey] = [
+                    'month' => $date->format('F Y'),
+                    'label' => $date->locale('ru')->translatedFormat('M Y'),
+                    'count' => 0,
                 ];
             }
+            $byMonth[$monthKey]['count']++;
+        }
+        ksort($byMonth);
 
-            // Сезонность по месяцам
-            $byMonth = [];
-            foreach ($appointments as $appointment) {
-                $monthKey = $appointment->date->format('Y-m');
-                if (! isset($byMonth[$monthKey])) {
-                    $date = Carbon::parse($appointment->date);
-                    $byMonth[$monthKey] = [
-                        'month' => $date->format('F Y'),
-                        'label' => $date->locale('ru')->translatedFormat('M Y'),
-                        'count' => 0,
-                    ];
-                }
-                $byMonth[$monthKey]['count']++;
-            }
-            // Сортируем по ключу месяца
-            ksort($byMonth);
-
-            return [
-                'heatmap' => $heatmapData,
-                'max_value' => $maxValue,
-                'by_day_of_week' => $byDayOfWeek,
-                'by_hour' => $byHour,
-                'by_month' => array_values($byMonth),
-                'days_of_week' => $daysOfWeek,
-            ];
-        });
+        return [
+            'heatmap' => $heatmapData,
+            'max_value' => $maxValue,
+            'by_day_of_week' => $byDayOfWeek,
+            'by_hour' => $byHour,
+            'by_month' => array_values($byMonth),
+            'days_of_week' => $daysOfWeek,
+        ];
     }
 }

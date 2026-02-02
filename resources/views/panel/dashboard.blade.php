@@ -28,7 +28,6 @@
             $canViewAppointments = auth()->user()->can('panel.appointments.view');
             $canViewAnalytics = auth()->user()->can('panel.analytics.view');
             $canViewSupport = auth()->user()->can('panel.support.view');
-            $canViewTickets = auth()->user()->can('panel.tickets.view');
         @endphp
 
         <!-- Основные метрики - Улучшенный дизайн с акцентами -->
@@ -498,16 +497,7 @@
                         <div class="w-12 h-12 bg-teal-600 dark:bg-teal-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <i class="fa-solid fa-headset text-white text-lg"></i>
                         </div>
-                        <span class="text-sm font-medium text-slate-900 dark:text-white text-center">Поддержка</span>
-                    </a>
-                    @endif
-                    @if($canViewTickets)
-                    <a href="{{ route('panel.tickets') }}" 
-                       class="flex flex-col items-center justify-center p-4 bg-orange-50 dark:bg-orange-500/10 hover:bg-orange-100 dark:hover:bg-orange-500/20 rounded-xl border border-orange-200 dark:border-orange-800 transition-all duration-200 group">
-                        <div class="w-12 h-12 bg-orange-600 dark:bg-orange-500 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-ticket text-white text-lg"></i>
-                        </div>
-                        <span class="text-sm font-medium text-slate-900 dark:text-white text-center">Тикеты</span>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white text-center">Поддержка / Тикеты</span>
                     </a>
                     @endif
                 </div>

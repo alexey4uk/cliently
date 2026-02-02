@@ -24,7 +24,7 @@ class UserBusinessSeeder extends Seeder
                 'name' => 'Тестовый Пользователь',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-            ]
+            ],
         );
 
         $this->command->info("Пользователь создан: {$user->email}");
@@ -44,13 +44,11 @@ class UserBusinessSeeder extends Seeder
         if ($ownerRole) {
             $business->users()->attach($user, [
                 'role_id' => $ownerRole->id,
-                'role' => 'owner',
                 'first_name' => 'Тестовый',
                 'last_name' => 'Пользователь',
             ]);
         } else {
             $business->users()->attach($user, [
-                'role' => 'owner',
                 'first_name' => 'Тестовый',
                 'last_name' => 'Пользователь',
             ]);
@@ -58,12 +56,36 @@ class UserBusinessSeeder extends Seeder
 
         // Создаем локацию
         $workingHours = [
-            'monday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'tuesday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'wednesday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'thursday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'friday' => ['from' => '09:00', 'to' => '21:00', 'day_off' => false],
-            'saturday' => ['from' => '10:00', 'to' => '20:00', 'day_off' => false],
+            'monday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'tuesday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'wednesday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'thursday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'friday' => [
+                'from' => '09:00',
+                'to' => '21:00',
+                'day_off' => false,
+            ],
+            'saturday' => [
+                'from' => '10:00',
+                'to' => '20:00',
+                'day_off' => false,
+            ],
             'sunday' => ['from' => null, 'to' => null, 'day_off' => true],
         ];
 
@@ -74,7 +96,10 @@ class UserBusinessSeeder extends Seeder
             'street' => 'Тестовая',
             'house' => '1',
             'description' => 'Описание локации',
-            'working_hours' => json_encode($workingHours, JSON_UNESCAPED_UNICODE),
+            'working_hours' => json_encode(
+                $workingHours,
+                JSON_UNESCAPED_UNICODE,
+            ),
         ]);
 
         $this->command->info("Локация создана: {$location->name}");
@@ -85,7 +110,7 @@ class UserBusinessSeeder extends Seeder
             'name' => 'Тестовая услуга',
             'description' => 'Описание тестовой услуги',
             'duration' => 60,
-            'price' => 50.00,
+            'price' => 50.0,
             'is_active' => true,
         ]);
 
@@ -103,19 +128,25 @@ class UserBusinessSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        $this->command->info("Мастер создан: {$master->first_name} {$master->last_name}");
+        $this->command->info(
+            "Мастер создан: {$master->first_name} {$master->last_name}",
+        );
 
         // Привязываем мастера к локации
         $master->locations()->attach($location->id);
 
         // Привязываем мастера к услуге
-        $master->services()->attach($service->id, ['price' => 50.00]);
+        $master->services()->attach($service->id, ['price' => 50.0]);
 
         $this->command->info('Все данные успешно созданы!');
         $this->command->info("Пользователь: {$user->email} (пароль: password)");
-        $this->command->info("Бизнес: {$business->name} (slug: {$business->slug})");
+        $this->command->info(
+            "Бизнес: {$business->name} (slug: {$business->slug})",
+        );
         $this->command->info("Локация: {$location->name}");
         $this->command->info("Услуга: {$service->name}");
-        $this->command->info("Мастер: {$master->first_name} {$master->last_name}");
+        $this->command->info(
+            "Мастер: {$master->first_name} {$master->last_name}",
+        );
     }
 }

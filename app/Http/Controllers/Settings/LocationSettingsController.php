@@ -7,8 +7,10 @@ use App\Http\Requests\LocationRequest;
 use App\Models\Country;
 use App\Models\Location;
 use App\Repositories\LocationRepositoryInterface;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use App\Services\WorkingHoursService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LocationSettingsController extends Controller
@@ -23,7 +25,7 @@ class LocationSettingsController extends Controller
     /**
      * Список локаций
      */
-    public function index()
+    public function index(Request $request)
     {
         $business = $this->getCurrentBusiness();
 
@@ -32,11 +34,38 @@ class LocationSettingsController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $business->load('locations');
+        $query = $business->locations();
+
+        $search = $request->get('search', '');
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('city', 'like', '%'.$search.'%')
+                    ->orWhere('street', 'like', '%'.$search.'%')
+                    ->orWhere('house', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
+
+        $locations = $query->orderBy('name')->get();
+
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canCreateLocations = $role && $permissionService->hasPermission($role->id, 'client.locations.create');
+        $canUpdateLocations = $role && $permissionService->hasPermission($role->id, 'client.locations.update');
+        $canDeleteLocations = $role && $permissionService->hasPermission($role->id, 'client.locations.delete');
+        $hasAnyLocationAction = $canUpdateLocations || $canDeleteLocations;
+        $canCreateLocation = $canCreateLocations && app(SubscriptionService::class)->canCreateLocation(Auth::user());
 
         return view('settings.locations.index', [
             'business' => $business,
-            'locations' => $business->locations,
+            'locations' => $locations,
+            'search' => $search,
+            'canCreateLocations' => $canCreateLocations,
+            'canUpdateLocations' => $canUpdateLocations,
+            'canDeleteLocations' => $canDeleteLocations,
+            'canCreateLocation' => $canCreateLocation,
+            'hasAnyLocationAction' => $hasAnyLocationAction,
         ]);
     }
 
@@ -76,7 +105,7 @@ class LocationSettingsController extends Controller
         if (! $subscriptionService->canCreateLocation($user)) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит локаций для вашего тарифа. Обновите тариф для добавления большего количества локаций.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();

@@ -30,6 +30,10 @@ class BusinessRolePermissionsController extends Controller
 
         $this->authorizeBusinessPermission('client.business.roles.manage');
 
+        $role = $this->getCurrentBusinessRole();
+        $canManageRoles = $role && app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.business.roles.manage');
+        $hasAnyRoleAction = $canManageRoles;
+
         $service = app(BusinessRolePermissionService::class);
         $ownerId = $this->getBusinessOwnerId($business);
         $roles = $service->getAvailableRoles(false, $ownerId);
@@ -39,16 +43,18 @@ class BusinessRolePermissionsController extends Controller
         $allPermissions = $service->getPermissionsForRoles($roleIds);
 
         $rolesWithPermissions = [];
-        foreach ($roles as $role) {
+        foreach ($roles as $roleItem) {
             $rolesWithPermissions[] = [
-                'role' => $role,
-                'permissions' => $allPermissions[$role->id] ?? [],
+                'role' => $roleItem,
+                'permissions' => $allPermissions[$roleItem->id] ?? [],
             ];
         }
 
         return view('settings.roles.index', [
             'business' => $business,
             'roles' => $rolesWithPermissions,
+            'canManageRoles' => $canManageRoles,
+            'hasAnyRoleAction' => $hasAnyRoleAction,
         ]);
     }
 

@@ -19,7 +19,7 @@
         'admin' => 'fa-user-shield',
         'master' => 'fa-user',
     ];
-    $roleSlug = $invitation->role;
+    $roleSlug = $invitation->businessRole?->slug ?? '';
     $roleLabel = $invitation->businessRole?->name ?? ($roleLabels[$roleSlug] ?? ucfirst($roleSlug));
     $roleBadge = $roleBadgeClasses[$roleSlug] ?? 'text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
     $roleIcon = $roleIcons[$roleSlug] ?? 'fa-user';

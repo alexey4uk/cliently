@@ -33,7 +33,7 @@ trait HasOwnDataFiltering
             ->where('user_id', $user->id)
             ->first();
 
-        if ($businessUser && $businessUser->master_id) {
+        if ($businessUser && isset($businessUser->master_id) && $businessUser->master_id) {
             // Проверяем, что мастер существует и принадлежит этому бизнесу
             $master = Master::where('id', $businessUser->master_id)
                 ->where('business_id', $business->id)
@@ -69,6 +69,7 @@ trait HasOwnDataFiltering
         // Проверяем, есть ли право на просмотр только своих данных
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
+
             if ($masterId) {
                 $query->where('master_id', $masterId);
             } else {

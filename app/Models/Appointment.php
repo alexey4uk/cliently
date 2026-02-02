@@ -215,6 +215,7 @@ class Appointment extends Model
         $appointments = self::where('master_id', $masterId)
             ->where('date', $date->format('Y-m-d'))
             ->where('status', '!=', 'cancelled')
+            ->with('service')
             ->get();
 
         foreach ($appointments as $appointment) {

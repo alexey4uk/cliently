@@ -14,10 +14,14 @@ return new class extends Migration
         Schema::create('plan_features', function (Blueprint $table) {
             $table->id();
             $table->foreignId('plan_id')->constrained()->cascadeOnDelete();
-            $table->string('feature_key');
-            $table->string('feature_value');
-            $table->enum('feature_type', ['integer', 'boolean'])->default('integer');
+            $table
+                ->foreignId('metric_id')
+                ->constrained('subscription_metrics')
+                ->cascadeOnDelete();
+            $table->string('value');
             $table->timestamps();
+
+            $table->unique(['plan_id', 'metric_id']);
         });
     }
 

@@ -15,9 +15,7 @@ class BusinessCreated extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(
-        public Business $business
-    ) {}
+    public function __construct(public Business $business) {}
 
     /**
      * Get the notification's delivery channels.
@@ -35,7 +33,13 @@ class BusinessCreated extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $business = $this->business;
-        $owner = $business->users()->wherePivot('role', 'owner')->first();
+        $ownerRoleId = \App\Models\BusinessRole::where('slug', 'owner')->value(
+            'id',
+        );
+        $owner = $business
+            ->users()
+            ->wherePivotIn('role_id', [$ownerRoleId])
+            ->first();
 
         return (new MailMessage)
             ->subject('Новый бизнес зарегистрирован: '.$business->name)
@@ -43,7 +47,10 @@ class BusinessCreated extends Notification implements ShouldQueue
             ->line('Название: '.$business->name)
             ->line('Владелец: '.($owner ? $owner->name : 'Не указан'))
             ->line('Email владельца: '.($owner ? $owner->email : 'Не указан'))
-            ->action('Просмотреть бизнес', route('panel.businesses.show', $business))
+            ->action(
+                'Просмотреть бизнес',
+                route('panel.businesses.show', $business),
+            )
             ->line('Спасибо за использование нашей системы!');
     }
 

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\BusinessRolePermission;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class BusinessRolePermissionService
@@ -54,26 +53,23 @@ class BusinessRolePermissionService
 
     /**
      * Get owner ID for a business.
-     * Uses caching to avoid repeated DB queries.
      *
      * @param  int  $businessId  Business ID
      * @return int|null Owner ID or null if not found
      */
     private function getBusinessOwnerId(int $businessId): ?int
     {
-        return Cache::remember("business_owner_{$businessId}", 3600, function () use ($businessId) {
-            $ownerRole = \App\Models\BusinessRole::getOwnerRole();
-            if (! $ownerRole) {
-                return null;
-            }
+        $ownerRole = \App\Models\BusinessRole::getOwnerRole();
+        if (! $ownerRole) {
+            return null;
+        }
 
-            $ownerPivot = DB::table('business_user')
-                ->where('business_id', $businessId)
-                ->where('role_id', $ownerRole->id)
-                ->first();
+        $ownerPivot = DB::table('business_user')
+            ->where('business_id', $businessId)
+            ->where('role_id', $ownerRole->id)
+            ->first();
 
-            return $ownerPivot ? $ownerPivot->user_id : null;
-        });
+        return $ownerPivot ? $ownerPivot->user_id : null;
     }
 
     /**
@@ -86,7 +82,7 @@ class BusinessRolePermissionService
         }
 
         // Получаем все permissions одним запросом
-        $permissions = \App\Models\BusinessRolePermission::whereIn('role_id', $roleIds)
+        $permissions = BusinessRolePermission::whereIn('role_id', $roleIds)
             ->where('granted', true)
             ->get()
             ->groupBy('role_id')
@@ -107,33 +103,27 @@ class BusinessRolePermissionService
 
     /**
      * Get permissions for a role in a specific business (with overrides).
-     * Uses caching to avoid repeated DB queries.
      */
     public function getPermissionsForRole(int $roleId): array
     {
-        return Cache::remember("role_permissions_{$roleId}", 3600, function () use ($roleId) {
-            return BusinessRolePermission::where('role_id', $roleId)
-                ->where('granted', true)
-                ->pluck('permission')
-                ->toArray();
-        });
+        return \App\Models\BusinessRolePermission::where('role_id', $roleId)
+            ->where('granted', true)
+            ->pluck('permission')
+            ->toArray();
     }
 
     /**
      * Get explicitly denied permissions for a role.
      * These are permissions with granted = false that override wildcards.
-     * Uses caching to avoid repeated DB queries.
      *
      * @return array Array of denied permission names
      */
     public function getDeniedPermissions(int $roleId): array
     {
-        return Cache::remember("role_denied_permissions_{$roleId}", 3600, function () use ($roleId) {
-            return BusinessRolePermission::where('role_id', $roleId)
-                ->where('granted', false)
-                ->pluck('permission')
-                ->toArray();
-        });
+        return \App\Models\BusinessRolePermission::where('role_id', $roleId)
+            ->where('granted', false)
+            ->pluck('permission')
+            ->toArray();
     }
 
     /**
@@ -149,7 +139,7 @@ class BusinessRolePermissionService
     public function hasPermission(int $roleId, string $permission): bool
     {
         // First check: Is this the owner role? Owner has all permissions
-        $role = \App\Models\BusinessRole::getCached($roleId);
+        $role = \App\Models\BusinessRole::find($roleId);
         if ($role && $role->slug === 'owner') {
             return true;
         }
@@ -237,18 +227,5 @@ class BusinessRolePermissionService
         }
 
         return false;
-    }
-
-    /**
-     * Invalidate cache for a role.
-     * Call this method when role permissions are changed.
-     *
-     * @param  int  $roleId  Role ID
-     */
-    public function invalidateRoleCache(int $roleId): void
-    {
-        Cache::forget("role_permissions_{$roleId}");
-        Cache::forget("role_denied_permissions_{$roleId}");
-        Cache::forget("business_role_{$roleId}");
     }
 }

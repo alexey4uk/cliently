@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentSlotService;
+use App\Services\MasterScheduleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +18,7 @@ class AppointmentSlotController extends Controller
 
     public function __construct(
         AppointmentSlotService $slotService,
-        BusinessRepositoryInterface $businessRepository
+        BusinessRepositoryInterface $businessRepository,
     ) {
         $this->slotService = $slotService;
         $this->businessRepository = $businessRepository;
@@ -28,8 +29,10 @@ class AppointmentSlotController extends Controller
      *
      * @param  string  $slug  Slug бизнеса
      */
-    public function getAvailableSlots(Request $request, string $slug): JsonResponse
-    {
+    public function getAvailableSlots(
+        Request $request,
+        string $slug,
+    ): JsonResponse {
         $business = $this->businessRepository->findBySlug($slug);
         if (! $business) {
             abort(404);
@@ -40,7 +43,11 @@ class AppointmentSlotController extends Controller
             'date' => ['required', 'date', 'date_format:Y-m-d'],
             'master_id' => ['nullable', 'integer', 'exists:masters,id'],
             'location_id' => ['nullable', 'integer', 'exists:locations,id'],
-            'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'], // Для исключения текущей записи при редактировании
+            'appointment_id' => [
+                'nullable',
+                'integer',
+                'exists:appointments,id',
+            ], // Для исключения текущей записи при редактировании
         ]);
 
         // Дополнительная проверка, что услуга и мастер принадлежат бизнесу
@@ -52,20 +59,33 @@ class AppointmentSlotController extends Controller
             $serviceId = $validator->getData()['service_id'] ?? null;
             $masterId = $validator->getData()['master_id'] ?? null;
 
-            if ($serviceId && ! $business->services()->where('id', $serviceId)->exists()) {
-                $validator->errors()->add('service_id', 'Услуга не принадлежит этому бизнесу.');
+            if (
+                $serviceId &&
+                ! $business->services()->where('id', $serviceId)->exists()
+            ) {
+                $validator
+                    ->errors()
+                    ->add('service_id', 'Услуга не принадлежит этому бизнесу.');
             }
 
-            if ($masterId && ! $business->masters()->where('id', $masterId)->exists()) {
-                $validator->errors()->add('master_id', 'Мастер не принадлежит этому бизнесу.');
+            if (
+                $masterId &&
+                ! $business->masters()->where('id', $masterId)->exists()
+            ) {
+                $validator
+                    ->errors()
+                    ->add('master_id', 'Мастер не принадлежит этому бизнесу.');
             }
         });
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         try {
@@ -73,13 +93,20 @@ class AppointmentSlotController extends Controller
             $masterId = $request->input('master_id');
             $locationId = $request->input('location_id');
 
-            $masterId = ($masterId === '' || $masterId === null) ? null : (int) $masterId;
-            $locationId = ($locationId === '' || $locationId === null) ? null : (int) $locationId;
+            $masterId =
+                $masterId === '' || $masterId === null ? null : (int) $masterId;
+            $locationId =
+                $locationId === '' || $locationId === null
+                ? null
+                : (int) $locationId;
 
             $serviceId = (int) $request->input('service_id');
             $date = $request->input('date');
             $appointmentId = $request->input('appointment_id');
-            $appointmentId = ($appointmentId === '' || $appointmentId === null) ? null : (int) $appointmentId;
+            $appointmentId =
+                $appointmentId === '' || $appointmentId === null
+                ? null
+                : (int) $appointmentId;
 
             // Получаем дополнительную информацию для отладки
             $debugInfo = [
@@ -96,23 +123,17 @@ class AppointmentSlotController extends Controller
                     $selectedDate = \Carbon\Carbon::parse($date);
                     $dayOfWeek = $selectedDate->dayOfWeek;
 
-                    // Получаем working_hours через getRawOriginal, чтобы обойти cast
-                    $rawWorkingHours = $master->getRawOriginal('working_hours');
-
-                    $workingHoursArray = null;
-                    if (! empty($rawWorkingHours)) {
-                        if (is_array($rawWorkingHours)) {
-                            $workingHoursArray = $rawWorkingHours;
-                        } elseif (is_string($rawWorkingHours)) {
-                            $workingHoursArray = json_decode($rawWorkingHours, true);
-                        }
-                    }
+                    // Используем новый сервис расписания
+                    $scheduleService = app(MasterScheduleService::class);
 
                     try {
-                        $isDayOff = $master->isDayOff($selectedDate);
-                        $workingTime = $master->getWorkingTimeForDate($selectedDate);
+                        $workingTime = $scheduleService->getWorkingTimeForDate(
+                            $master,
+                            $selectedDate,
+                        );
+                        $isDayOff = $workingTime === null;
                     } catch (\Exception $e) {
-                        \Log::error('Ошибка при проверке working_hours мастера', [
+                        \Log::error('Ошибка при проверке расписания мастера', [
                             'master_id' => $masterId,
                             'error' => $e->getMessage(),
                         ]);
@@ -122,22 +143,23 @@ class AppointmentSlotController extends Controller
 
                     $debugInfo['master'] = [
                         'name' => $master->first_name.' '.$master->last_name,
-                        'has_working_hours' => ! empty($workingHoursArray),
-                        'working_hours_raw_type' => gettype($rawWorkingHours),
-                        'working_hours' => $workingHoursArray,
                         'day_of_week' => $dayOfWeek,
                         'is_day_off' => $isDayOff,
                         'working_time_for_date' => $workingTime,
                     ];
 
-                    // Если у мастера нет working_hours, возвращаем понятную ошибку
-                    if (empty($workingHoursArray)) {
-                        return response()->json([
+                    // Если мастер не работает в этот день, возвращаем понятную ошибку
+                    if ($isDayOff) {
+                        $payload = [
                             'success' => false,
-                            'message' => 'У мастера не настроено рабочее время. Обратитесь к администратору.',
-                            'error_type' => 'no_working_hours',
-                            'debug' => $debugInfo,
-                        ], 400);
+                            'message' => 'Мастер не работает в выбранный день.',
+                            'error_type' => 'master_day_off',
+                        ];
+                        if (config('app.debug')) {
+                            $payload['debug'] = $debugInfo;
+                        }
+
+                        return response()->json($payload, 400);
                     }
                 }
             }
@@ -149,7 +171,7 @@ class AppointmentSlotController extends Controller
                 $masterId,
                 $locationId,
                 $debugInfoFromService,
-                $appointmentId
+                $appointmentId,
             );
 
             $debugInfo = array_merge($debugInfo, $debugInfoFromService);
@@ -158,14 +180,20 @@ class AppointmentSlotController extends Controller
 
             // Получаем информацию об услуге для передачи времени подготовки
             $service = \App\Models\Service::find($serviceId);
-            $preparationTime = $service ? ($service->preparation_time ?? null) : null;
+            $preparationTime = $service
+                ? $service->preparation_time ?? null
+                : null;
 
-            return response()->json([
+            $payload = [
                 'success' => true,
                 'slots' => $slots,
                 'preparation_time' => $preparationTime, // Время подготовки для показа уведомления
-                'debug' => $debugInfo,
-            ]);
+            ];
+            if (config('app.debug')) {
+                $payload['debug'] = $debugInfo;
+            }
+
+            return response()->json($payload);
         } catch (\Exception $e) {
             \Log::error('Ошибка при получении слотов', [
                 'error' => $e->getMessage(),
@@ -173,10 +201,14 @@ class AppointmentSlotController extends Controller
                 'request' => $request->all(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Ошибка при получении доступных слотов: '.$e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Ошибка при получении доступных слотов: '.
+                        $e->getMessage(),
+                ],
+                500,
+            );
         }
     }
 }

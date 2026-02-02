@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,20 +14,24 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
+
+            $table->foreignId('category_id')->nullable()->constrained('service_categories')->nullOnDelete();
+
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('duration')->default(30);
-            $table->integer('preparation_time')->nullable()->comment('Время подготовки между записями в минутах');
+
+            $table->integer('duration')->default(30)->comment('Длительность в минутах');
+            $table->integer('preparation_time')->default(0)->comment('Технический перерыв после услуги');
+
             $table->decimal('price', 10, 2)->default(0);
-            $table->boolean('is_active')->default(false);
+            $table->boolean('is_active')->default(true);
+
             $table->timestamps();
 
-            $table->index(['business_id', 'is_active'], 'services_business_active');
-
+            // Индексы
+            $table->index(['business_id', 'is_active'], 'idx_services_list');
+            $table->index('price');
         });
-
-        // FULLTEXT индекс для быстрого текстового поиска
-        DB::statement('ALTER TABLE services ADD FULLTEXT INDEX ft_services_name (name)');
     }
 
     /**

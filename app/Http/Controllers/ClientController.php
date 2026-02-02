@@ -6,6 +6,7 @@ use App\Http\Requests\ClientRequest;
 use App\Models\Client;
 use App\Models\Country;
 use App\Repositories\ClientRepositoryInterface;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use App\Traits\HasOwnDataFiltering;
 use Illuminate\Http\Request;
@@ -46,9 +47,7 @@ class ClientController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                // Используем мощь FULLTEXT индекса (летает на миллионах)
                 $q->whereFullText(['first_name', 'last_name'], $search)
-                    // Для телефона и email оставляем LIKE (или тоже делаем FULLTEXT)
                     ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "{$search}%"))
                     ->orWhere('email', 'like', "{$search}%");
             });
@@ -106,6 +105,15 @@ class ClientController extends Controller
                 ->whereIn('status', ['confirmed', 'pending']);
         }])->paginate($perPage)->withQueryString();
 
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canViewClients = $role && $permissionService->hasPermission($role->id, 'client.clients.view');
+        $canExportClients = $role && $permissionService->hasPermission($role->id, 'client.clients.export');
+        $canCreateClients = $role && $permissionService->hasPermission($role->id, 'client.clients.create');
+        $canUpdateClients = $role && $permissionService->hasPermission($role->id, 'client.clients.update');
+        $canDeleteClients = $role && $permissionService->hasPermission($role->id, 'client.clients.delete');
+        $hasAnyClientAction = $canViewClients || $canUpdateClients || $canDeleteClients;
+        $canCreateClient = $canCreateClients && app(SubscriptionService::class)->canCreateClient(Auth::user());
+
         return view('clients.index', [
             'business' => $business,
             'clients' => $clients,
@@ -115,6 +123,13 @@ class ClientController extends Controller
             'period' => $period,
             'activity' => $activity,
             'perPage' => $perPage,
+            'canViewClients' => $canViewClients,
+            'canExportClients' => $canExportClients,
+            'canCreateClients' => $canCreateClients,
+            'canUpdateClients' => $canUpdateClients,
+            'canDeleteClients' => $canDeleteClients,
+            'canCreateClient' => $canCreateClient,
+            'hasAnyClientAction' => $hasAnyClientAction,
         ]);
     }
 
@@ -157,7 +172,7 @@ class ClientController extends Controller
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();
@@ -236,6 +251,11 @@ class ClientController extends Controller
             ->limit(10)
             ->get();
 
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canCreateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.create');
+        $canUpdateClients = $role && $permissionService->hasPermission($role->id, 'client.clients.update');
+        $canDeleteClients = $role && $permissionService->hasPermission($role->id, 'client.clients.delete');
+
         return view('clients.show', [
             'business' => $business,
             'client' => $client,
@@ -247,6 +267,9 @@ class ClientController extends Controller
             'cancelledAppointments' => $cancelledAppointments,
             'upcomingAppointmentsList' => $upcomingAppointmentsList,
             'appointmentHistory' => $appointmentHistory,
+            'canCreateAppointments' => $canCreateAppointments,
+            'canUpdateClients' => $canUpdateClients,
+            'canDeleteClients' => $canDeleteClients,
         ]);
     }
 
@@ -413,7 +436,7 @@ class ClientController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        $clients = $query->get();
+        $clients = $query->with('primaryPhone')->get();
 
         $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
 

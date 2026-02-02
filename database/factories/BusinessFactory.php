@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Business;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,7 @@ class BusinessFactory extends Factory
     public function definition(): array
     {
         return [
+            'owner_id' => User::factory(),
             'name' => fake()->company(),
             'slug' => fake()->unique()->slug(),
             'description' => fake()->text(200),
@@ -33,9 +35,11 @@ class BusinessFactory extends Factory
      */
     public function withTelegram(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'telegram_chat_id' => fake()->randomNumber(9, true),
-        ]);
+        return $this->state(
+            fn (array $attributes) => [
+                'telegram_chat_id' => fake()->randomNumber(9, true),
+            ],
+        );
     }
 
     /**

@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Ticket;
 use App\Services\AdminNotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 class NotifyTicketCritical extends Command
 {
@@ -26,11 +25,8 @@ class NotifyTicketCritical extends Command
 
         $count = 0;
         foreach ($tickets as $ticket) {
-            $key = 'admin_ticket_critical_notify_'.$ticket->id;
-            if (Cache::add($key, 1, now()->addHours(24))) {
-                AdminNotificationService::notifyTicketCritical($ticket);
-                $count++;
-            }
+            AdminNotificationService::notifyTicketCritical($ticket);
+            $count++;
         }
 
         $this->info("Обработано тикетов: {$count}");

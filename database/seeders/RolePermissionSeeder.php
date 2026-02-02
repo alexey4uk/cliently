@@ -81,7 +81,6 @@ class RolePermissionSeeder extends Seeder
             'client.tickets.view' => 'Просмотр тикетов',
             'client.tickets.create' => 'Создание тикетов',
             'client.tickets.update' => 'Ответ на тикеты',
-            'panel.tickets.settings' => 'Настройка тикет-системы',
             'panel.tickets.categories.manage' => 'Управление категориями тикетов',
 
             // Telegram

@@ -179,7 +179,7 @@ class TicketController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'category_id' => ['nullable', 'exists:ticket_categories,id'],
-            'status' => ['required', 'in:new,in_progress,resolved,closed'],
+            'status' => ['required', 'in:new,open,resolved,closed'],
             'assigned_to' => ['nullable', 'exists:users,id'],
             'client_id' => ['nullable', 'exists:clients,id'],
         ]);
@@ -230,7 +230,7 @@ class TicketController extends Controller
 
         $ticket->update([
             'assigned_to' => $validated['assigned_to'] ?? null,
-            'status' => $validated['assigned_to'] ? 'in_progress' : $ticket->status,
+            'status' => $validated['assigned_to'] ? 'open' : $ticket->status,
         ]);
 
         // Отправляем уведомление о назначении
@@ -259,7 +259,7 @@ class TicketController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => ['required', 'in:new,in_progress,resolved,closed'],
+            'status' => ['required', 'in:new,open,resolved,closed'],
         ]);
 
         $oldStatus = $ticket->status;
@@ -316,7 +316,7 @@ class TicketController extends Controller
 
         // Обновляем статус тикета на "в работе", если он был "новый"
         if ($ticket->status === 'new') {
-            $ticket->update(['status' => 'in_progress']);
+            $ticket->update(['status' => 'open']);
             // Обновляем объект в памяти
             $ticket->refresh();
         }

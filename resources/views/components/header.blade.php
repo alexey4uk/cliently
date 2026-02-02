@@ -1,5 +1,4 @@
 @props([
-    'showNotifications' => false,
     'showProfile' => true,
     'showMobileMenu' => true,
     'showRoleBadge' => false,
@@ -75,7 +74,7 @@
                                     $businessRoleSlug = $businessRole?->slug;
                                     $businessRoleName = $businessRole?->name;
                                 } else {
-                                    $businessRoleSlug = $pivot?->pivot->role ?? null;
+                                    $businessRoleSlug = null;
                                 }
                             }
                         }

@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('notification_broadcast_recipients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('notification_broadcast_id')->constrained('notification_broadcasts')->cascadeOnDelete()->name('nbr_broadcast_id_foreign');
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete()->name('nbr_user_id_foreign');
+            $table->foreignId('notification_broadcast_id')
+                ->constrained(indexName: 'nb_recipients_broadcast_id_foreign')
+                ->cascadeOnDelete();
+
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->index(['notification_broadcast_id', 'user_id'], 'idx_recipient_broadcast_user');
+            $table->unique(['notification_broadcast_id', 'user_id'], 'nbr_broadcast_user_unique');
         });
     }
 

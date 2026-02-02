@@ -6,43 +6,36 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('oauth_provider')->nullable()->after('email');
+            $table->string('first_name')->nullable()->after('name');
+            $table->string('last_name')->nullable()->after('first_name');
+            $table->string('phone', 20)->nullable()->unique()->after('email');
+            $table->string('oauth_provider')->nullable()->after('password');
             $table->string('oauth_id')->nullable()->after('oauth_provider');
-            $table->string('avatar')->after('oauth_id')->nullable();
-            $table->json('dashboard_settings')->nullable()->after('avatar');
-            $table->string('telegram_chat_id')->nullable()->after('dashboard_settings');
+            $table->string('avatar')->nullable()->after('oauth_id');
+            $table->string('telegram_chat_id')->nullable()->after('avatar');
             $table->string('telegram_token', 64)->unique()->nullable()->after('telegram_chat_id');
-        });
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable()->change();
-            $table->string('password')->nullable()->change();
+            $table->index(['first_name', 'last_name'], 'idx_users_full_name');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex('oauth_provider_id_index');
+            $table->dropIndex('idx_users_full_name');
             $table->dropColumn([
-                'avatar',
-                'dashboard_settings',
-                'telegram_chat_id',
-                'telegram_token',
+                'first_name',
+                'last_name',
+                'phone',
                 'oauth_provider',
                 'oauth_id',
+                'avatar',
+                'telegram_chat_id',
+                'telegram_token',
             ]);
-            $table->string('email')->nullable(false)->change();
-            $table->string('password')->nullable(false)->change();
         });
     }
 };

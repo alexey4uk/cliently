@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Webhook;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Http\Controllers\Controller;
-use App\Models\BepaidSettings;
 use App\Models\Invoice;
-use App\Services\BepaidService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class BepaidWebhookController extends Controller
 {
-    protected BepaidService $bepaidService;
+    protected PaymentGatewayInterface $paymentGateway;
 
     protected SubscriptionService $subscriptionService;
 
-    public function __construct(BepaidService $bepaidService, SubscriptionService $subscriptionService)
-    {
-        $this->bepaidService = $bepaidService;
+    public function __construct(
+        PaymentGatewayInterface $paymentGateway,
+        SubscriptionService $subscriptionService,
+    ) {
+        $this->paymentGateway = $paymentGateway;
         $this->subscriptionService = $subscriptionService;
     }
 
@@ -39,8 +40,8 @@ class BepaidWebhookController extends Controller
      *
      * 3. На нашей стороне (validateBasicAuth):
      *    - Извлекаем shop_id и secret_key из заголовка Authorization
-     *    - Сравниваем с настройками из нашей БД (BepaidSettings)
-     *    - Если совпадают - пропускаем, если нет - возвращаем 401
+     *    - Сравниваем с config (BEPAID_SHOP_ID, BEPAID_SECRET_KEY из .env)
+     *    - Если совпадают — пропускаем, иначе 401
      *
      * ВАЖНО: Мы НЕ задаем Basic Auth на стороне bePaid!
      * bePaid сам использует shop_id и secret_key из настроек магазина.
@@ -63,7 +64,7 @@ class BepaidWebhookController extends Controller
 
             // КРИТИЧЕСКИ ВАЖНО: Проверка HTTP Basic Auth от bePaid
             // bePaid автоматически отправляет shop_id и secret_key в заголовке Authorization
-            // Мы проверяем, что они совпадают с нашими настройками из БД
+            // Мы проверяем, что они совпадают с нашими настройками из config
             // Если не совпадают - это может быть поддельный webhook
             if (! $this->validateBasicAuth($request)) {
                 Log::warning('bePaid webhook: invalid Basic Auth credentials');
@@ -86,14 +87,14 @@ class BepaidWebhookController extends Controller
             }
 
             // Валидация данных через сервис
-            if (! $this->bepaidService->validateWebhookRequest($data)) {
+            if (! $this->paymentGateway->validateWebhookRequest($data)) {
                 Log::warning('bePaid webhook: invalid data', ['data' => $data]);
 
                 return response()->json(['error' => 'Invalid data'], 400);
             }
 
             // Обрабатываем webhook через сервис
-            $invoice = $this->bepaidService->processWebhook($data);
+            $invoice = $this->paymentGateway->processWebhook($data);
 
             if (! $invoice) {
                 Log::warning('bePaid webhook: invoice not found');
@@ -106,7 +107,9 @@ class BepaidWebhookController extends Controller
                 $this->activateSubscription($invoice);
             } elseif ($invoice->status === 'failed') {
                 // Уведомляем о неудачной оплате
-                \App\Services\SubscriptionNotificationService::notifyPaymentFailed($invoice);
+                \App\Services\SubscriptionNotificationService::notifyPaymentFailed(
+                    $invoice,
+                );
             }
 
             // Возвращаем успешный ответ
@@ -144,7 +147,7 @@ class BepaidWebhookController extends Controller
      *
      * 3. Мы извлекаем shop_id и secret_key из заголовка
      *
-     * 4. Сравниваем с настройками из нашей БД (BepaidSettings)
+     * 4. Сравниваем с настройками из config (config/bepaid.php, .env)
      *    - Если test_mode = true → используем test_shop_id и test_secret_key
      *    - Если test_mode = false → используем production_shop_id и production_secret_key
      *
@@ -181,24 +184,20 @@ class BepaidWebhookController extends Controller
         // Разделяем на shop_id и secret_key
         [$shopId, $secretKey] = explode(':', $credentials, 2);
 
-        // Получаем настройки bePaid из кеша (кеш сбрасывается при обновлении через Observer)
-        // Это оптимизирует запросы к БД, так как настройки меняются редко
-        $settings = BepaidSettings::getSettings();
-
-        // Если настройки не найдены или bePaid не включен - отклоняем
-        if (! $settings || ! $settings->enabled) {
+        if (! config('bepaid.enabled')) {
             return false;
         }
 
-        // Получаем текущие настройки (test или production в зависимости от test_mode)
-        $currentSettings = $settings->getCurrentSettings();
+        $expectedShopId = config('bepaid.shop_id');
+        $expectedSecretKey = config('bepaid.secret_key');
 
-        // Сравниваем shop_id и secret_key из webhook с настройками из БД
-        // Используем trim() для удаления возможных пробелов
-        $shopIdMatches = trim($shopId) === trim($currentSettings['shop_id'] ?? '');
-        $secretKeyMatches = trim($secretKey) === trim($currentSettings['secret_key'] ?? '');
+        if (empty($expectedShopId) || empty($expectedSecretKey)) {
+            return false;
+        }
 
-        // Оба значения должны совпадать
+        $shopIdMatches = trim($shopId) === trim((string) $expectedShopId);
+        $secretKeyMatches = trim($secretKey) === trim((string) $expectedSecretKey);
+
         return $shopIdMatches && $secretKeyMatches;
     }
 
@@ -215,7 +214,11 @@ class BepaidWebhookController extends Controller
         $oldEndsAt = $subscription?->ends_at;
 
         // Идемпотентность: если подписка уже активна и оплачена этим инвойсом - не обновляем
-        if ($subscription && $subscription->invoice_id === $invoice->id && $subscription->status === 'active') {
+        if (
+            $subscription &&
+            $subscription->invoice_id === $invoice->id &&
+            $subscription->status === 'active'
+        ) {
             if (config('bepaid.logging.enabled')) {
                 Log::info('Subscription already activated for this invoice', [
                     'subscription_id' => $subscription->id,
@@ -228,7 +231,12 @@ class BepaidWebhookController extends Controller
 
         // Если подписки нет, создаем её
         if (! $subscription) {
-            $subscription = $this->subscriptionService->createSubscription($user, $plan, false, $invoice);
+            $subscription = $this->subscriptionService->createSubscription(
+                $user,
+                $plan,
+                false,
+                $invoice,
+            );
 
             if (config('bepaid.logging.enabled')) {
                 Log::info('Subscription created after payment', [
@@ -237,6 +245,8 @@ class BepaidWebhookController extends Controller
                     'plan_id' => $plan->id,
                 ]);
             }
+
+            \App\Services\SubscriptionNotificationService::notifyPaymentSuccess($invoice);
         } else {
             // Обновляем существующую подписку
             $now = now();
@@ -254,15 +264,26 @@ class BepaidWebhookController extends Controller
             $metadata = $subscription->metadata ?? [];
 
             // Если это смена тарифа и нужно сохранить ends_at (старая подписка еще активна)
-            if ($isPlanChange && $preserveEndsAt && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+            if (
+                $isPlanChange &&
+                $preserveEndsAt &&
+                $subscription->ends_at &&
+                $subscription->ends_at->isFuture()
+            ) {
                 // Сохраняем оплаченное время от старой подписки
                 $endsAt = $subscription->ends_at;
 
                 // Сохраняем информацию о предыдущем тарифе в metadata
                 $metadata['previous_plan_id'] = $oldPlan->id;
                 $metadata['previous_plan_name'] = $oldPlan->name;
-                $metadata['preserved_ends_at'] = $subscription->ends_at->toIso8601String();
-            } elseif ($isRenewal && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+                $metadata[
+                    'preserved_ends_at'
+                ] = $subscription->ends_at->toIso8601String();
+            } elseif (
+                $isRenewal &&
+                $subscription->ends_at &&
+                $subscription->ends_at->isFuture()
+            ) {
                 // Продление: продлеваем от текущего ends_at
                 $baseDate = $subscription->ends_at;
                 if ($plan->interval === 'monthly') {
@@ -300,9 +321,6 @@ class BepaidWebhookController extends Controller
                 'metadata' => $metadata, // Обновляем metadata с информацией о предыдущем тарифе
             ]);
 
-            // Очищаем кеш подписок пользователя
-            $user->clearSubscriptionCache();
-
             if (config('bepaid.logging.enabled')) {
                 Log::info('Subscription activated after payment', [
                     'subscription_id' => $subscription->id,
@@ -312,11 +330,19 @@ class BepaidWebhookController extends Controller
             }
 
             // Уведомляем об успешной оплате
-            \App\Services\SubscriptionNotificationService::notifyPaymentSuccess($invoice);
+            \App\Services\SubscriptionNotificationService::notifyPaymentSuccess(
+                $invoice,
+            );
 
             // Проверяем, является ли это продлением (старый ends_at < новый ends_at)
-            if ($oldEndsAt && $subscription->ends_at && $oldEndsAt->lt($subscription->ends_at)) {
-                \App\Services\SubscriptionNotificationService::notifyRenewed($subscription);
+            if (
+                $oldEndsAt &&
+                $subscription->ends_at &&
+                $oldEndsAt->lt($subscription->ends_at)
+            ) {
+                \App\Services\SubscriptionNotificationService::notifyRenewed(
+                    $subscription,
+                );
             }
         }
     }

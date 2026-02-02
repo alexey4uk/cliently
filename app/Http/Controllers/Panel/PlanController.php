@@ -182,12 +182,14 @@ class PlanController extends Controller
                     $featureValue = 'false';
                 }
 
-                PlanFeature::create([
-                    'plan_id' => $plan->id,
-                    'feature_key' => $feature['key'],
-                    'feature_value' => $featureValue,
-                    'feature_type' => $featureType,
-                ]);
+                $metric = SubscriptionMetric::where('key', $feature['key'])->first();
+                if ($metric) {
+                    PlanFeature::create([
+                        'plan_id' => $plan->id,
+                        'metric_id' => $metric->id,
+                        'value' => $featureValue,
+                    ]);
+                }
             }
         }
 
@@ -325,12 +327,14 @@ class PlanController extends Controller
                         $featureValue = 'false';
                     }
 
-                    PlanFeature::create([
-                        'plan_id' => $plan->id,
-                        'feature_key' => $feature['key'],
-                        'feature_value' => $featureValue,
-                        'feature_type' => $featureType,
-                    ]);
+                    $metric = SubscriptionMetric::where('key', $feature['key'])->first();
+                    if ($metric) {
+                        PlanFeature::create([
+                            'plan_id' => $plan->id,
+                            'metric_id' => $metric->id,
+                            'value' => $featureValue,
+                        ]);
+                    }
                 }
             }
         } elseif (! isset($validated['features'])) {

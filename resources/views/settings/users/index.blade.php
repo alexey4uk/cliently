@@ -11,37 +11,6 @@
 @section('content')
 
 @php
-    // Получаем бизнес и роль для проверки прав доступа
-    $user = Auth::user();
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role ?? null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-    
-    // Проверяем, есть ли хотя бы одно действие для пользователей
-    $hasAnyUserAction = $hasBusinessPermission('client.business.users.update') || 
-                        $hasBusinessPermission('client.business.users.delete');
-    
     $roleLabels = [
         'owner' => 'Владелец',
         'admin' => 'Администратор',
@@ -86,51 +55,69 @@
         }
     }
 }">
-    <!-- Заголовок страницы -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Пользователи бизнеса</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление пользователями и их ролями в бизнесе</p>
+    <!-- Строка: заголовок + действие -->
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <h1 class="text-lg font-semibold text-slate-900 dark:text-white">Пользователи бизнеса</h1>
+        <div class="flex items-center gap-2 shrink-0">
+            @if($canCreateUsers && $canAddUser)
+            <a href="{{ route('settings.users.create') }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Добавить пользователя</span>
+            </a>
+            @elseif($canCreateUsers && !$canAddUser)
+            <button type="button" disabled
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                title="Достигнут лимит пользователей для вашего тарифа.">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Добавить пользователя</span>
+            </button>
+            @endif
+        </div>
+    </div>
+
+    @if($canCreateUsers && !$canAddUser)
+    <div x-data="{ showLimitNotice: true }" x-show="showLimitNotice"
+         class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+        <i class="fa-solid fa-info-circle shrink-0 text-amber-600 dark:text-amber-400"></i>
+        <span>Достигнут лимит пользователей для вашего тарифа. Добавление новых пользователей недоступно.</span>
+        <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Обновить тариф</a>
+        <button type="button" @click="showLimitNotice = false" class="ml-auto p-1 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200" aria-label="Закрыть">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    @endif
+
+    <!-- Поиск и фильтры -->
+    <form method="GET" action="{{ route('settings.users.index') }}" class="mb-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 min-w-0">
+                <label for="users-search" class="sr-only">Поиск</label>
+                <input type="text" id="users-search" name="search" value="{{ $search ?? '' }}"
+                    placeholder="Поиск по имени или email..."
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
             </div>
-            <div class="flex gap-3">
-                @php
-                    // Проверяем лимит пользователей бизнеса согласно тарифу
-                    $canAddUser = false;
-                    if ($hasBusinessPermission('client.business.users.create') && $currentBusiness) {
-                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-                        if ($ownerRole) {
-                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
-                                ->where('business_id', $currentBusiness->id)
-                                ->where('role_id', $ownerRole->id)
-                                ->first();
-                            if ($ownerPivot) {
-                                $owner = \App\Models\User::find($ownerPivot->user_id);
-                                if ($owner) {
-                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
-                                    $canAddUser = $subscriptionService->canCreateBusinessUser($owner);
-                                }
-                            }
-                        }
-                    }
-                @endphp
-                @if($hasBusinessPermission('client.business.users.create') && $canAddUser)
-                    <a href="{{ route('settings.users.create') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Добавить пользователя</span>
-                    </a>
-                @elseif($hasBusinessPermission('client.business.users.create') && !$canAddUser)
-                    <button disabled
-                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
-                        title="Достигнут лимит пользователей для вашего тарифа. Обновите тариф для добавления новых пользователей.">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Добавить пользователя</span>
-                    </button>
+            <div class="sm:w-52">
+                <label for="users-role" class="sr-only">Роль</label>
+                <select id="users-role" name="role_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <option value="">Все роли</option>
+                    @foreach($rolesById as $id => $role)
+                    <option value="{{ $id }}" {{ ($roleId ?? '') == (string)$id ? 'selected' : '' }}>{{ $role->name ?? ucfirst($role->slug) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-search mr-1.5"></i>Найти
+                </button>
+                @if(($search ?? '') !== '' || ($roleId ?? '') !== '')
+                <a href="{{ route('settings.users.index') }}" class="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    Сбросить
+                </a>
                 @endif
             </div>
         </div>
-    </div>
+    </form>
 
     <!-- Список пользователей -->
     @if($users->count() > 0 || $invitations->count() > 0)
@@ -154,15 +141,15 @@
                             @php
                                 $pivot = $business->users()->where('user_id', $user->id)->first();
                                 $roleModel = $rolesById[$pivot->pivot->role_id] ?? null;
-                                $role = $roleModel?->slug ?? ($pivot->pivot->role ?? null);
+                                $role = $roleModel?->slug ?? null;
                             @endphp
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                                             @if($user->getAvatarUrl())
-                                                <img src="{{ $user->getAvatarUrl() }}" 
-                                                     alt="{{ $user->name }}" 
+                                                <img src="{{ $user->getAvatarUrl() }}"
+                                                     alt="{{ $user->name }}"
                                                      class="w-full h-full rounded-full object-cover"
                                                      referrerpolicy="no-referrer">
                                             @else
@@ -198,16 +185,16 @@
                                 @if($hasAnyUserAction)
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @if($hasBusinessPermission('client.business.users.update'))
-                                                <a href="{{ route('settings.users.edit', $user) }}" 
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                            @if($canUpdateUsers)
+                                                <a href="{{ route('settings.users.edit', $user) }}"
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                     title="Редактировать">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                     </svg>
                                                 </a>
                                             @endif
-                                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivot('role', 'owner')->count() > 1))
+                                            @if($canDeleteUsers && ($role !== 'owner' || $business->users()->wherePivotIn('role_id', [\App\Models\BusinessRole::where('slug', 'owner')->value('id')])->count() > 1))
                                                 <form method="POST" action="{{ route('settings.users.destroy', $user) }}"
                                                     id="delete-form-{{ $user->id }}" class="inline">
                                                     @csrf
@@ -215,7 +202,7 @@
                                                 </form>
                                                 <button type="button"
                                                     @click="openDeleteModal({{ $user->id }}, '{{ addslashes($user->name) }}')"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                                     title="Удалить">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -249,9 +236,9 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
-                                        <i class="fa-solid {{ $getRoleIcon($invitation->role) }} text-xs"></i>
-                                        {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->role) }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->businessRole?->slug ?? '') }}">
+                                        <i class="fa-solid {{ $getRoleIcon($invitation->businessRole?->slug ?? '') }} text-xs"></i>
+                                        {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->businessRole?->slug ?? '') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
@@ -263,8 +250,8 @@
                                 <td class="px-6 py-4 text-right">
                                     <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="inline">
                                         @csrf
-                                        <button type="submit" 
-                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
+                                        <button type="submit"
+                                            class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Отправить повторно">
                                             <i class="fa-solid fa-paper-plane text-sm"></i>
                                         </button>
@@ -283,15 +270,15 @@
                 @php
                     $pivot = $business->users()->where('user_id', $user->id)->first();
                     $roleModel = $rolesById[$pivot->pivot->role_id] ?? null;
-                    $role = $roleModel?->slug ?? ($pivot->pivot->role ?? null);
+                    $role = $roleModel?->slug ?? null;
                 @endphp
-                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                    <div class="p-6">
+                <x-mobile-card>
+                    <x-mobile-card-body>
                         <div class="flex items-center gap-3 mb-4">
                             <div class="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                                 @if($user->getAvatarUrl())
-                                    <img src="{{ $user->getAvatarUrl() }}" 
-                                         alt="{{ $user->name }}" 
+                                    <img src="{{ $user->getAvatarUrl() }}"
+                                         alt="{{ $user->name }}"
                                          class="w-full h-full rounded-full object-cover"
                                          referrerpolicy="no-referrer">
                                 @else
@@ -315,14 +302,14 @@
                             @endif
                         </div>
                         <div class="flex gap-2">
-                            @if($hasBusinessPermission('client.business.users.update'))
+                            @if($canUpdateUsers)
                                 <a href="{{ route('settings.users.edit', $user) }}"
                                     class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                     <i class="fa-solid fa-pencil text-xs"></i>
                                     <span>Редактировать</span>
                                 </a>
                             @endif
-                            @if($hasBusinessPermission('client.business.users.delete') && ($role !== 'owner' || $business->users()->wherePivot('role', 'owner')->count() > 1))
+                            @if($canDeleteUsers && ($role !== 'owner' || $business->users()->wherePivotIn('role_id', [\App\Models\BusinessRole::where('slug', 'owner')->value('id')])->count() > 1))
                                 <form method="POST" action="{{ route('settings.users.destroy', $user) }}"
                                     id="delete-form-{{ $user->id }}" class="flex-1">
                                     @csrf
@@ -336,13 +323,13 @@
                                 </button>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </x-mobile-card-body>
+                </x-mobile-card>
             @endforeach
 
             @foreach($invitations as $invitation)
-                <div class="bg-amber-50/50 dark:bg-amber-900/10 rounded-xl border border-amber-200 dark:border-amber-800 shadow-sm overflow-hidden">
-                    <div class="p-6">
+                <x-mobile-card class="bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
+                    <x-mobile-card-body>
                         <div class="flex items-center gap-3 mb-4">
                             <div class="h-12 w-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                                 <i class="fa-solid fa-envelope text-slate-400 dark:text-slate-500"></i>
@@ -357,23 +344,31 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
-                                {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->role) }}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->businessRole?->slug ?? '') }}">
+                                {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->businessRole?->slug ?? '') }}
                             </span>
                         </div>
                         <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="w-full">
                             @csrf
-                            <button type="submit" 
+                            <button type="submit"
                                 class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
                                 <span>Отправить повторно</span>
                             </button>
                         </form>
-                    </div>
-                </div>
+                    </x-mobile-card-body>
+                </x-mobile-card>
             @endforeach
         </div>
     @else
+        @if(($search ?? '') !== '' || ($roleId ?? '') !== '')
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center">
+            <p class="text-slate-600 dark:text-slate-400 mb-4">По вашему запросу ничего не найдено.</p>
+            <a href="{{ route('settings.users.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+                Сбросить фильтры
+            </a>
+        </div>
+        @else
         <!-- Пустое состояние -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
             <div class="max-w-sm mx-auto">
@@ -386,46 +381,27 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
                     Начните работу, добавив пользователей в ваш бизнес
                 </p>
-                @php
-                    // Проверяем лимит пользователей бизнеса согласно тарифу
-                    $canAddUser = false;
-                    if ($hasBusinessPermission('client.business.users.create') && $currentBusiness) {
-                        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
-                        if ($ownerRole) {
-                            $ownerPivot = \Illuminate\Support\Facades\DB::table('business_user')
-                                ->where('business_id', $currentBusiness->id)
-                                ->where('role_id', $ownerRole->id)
-                                ->first();
-                            if ($ownerPivot) {
-                                $owner = \App\Models\User::find($ownerPivot->user_id);
-                                if ($owner) {
-                                    $subscriptionService = app(\App\Services\SubscriptionService::class);
-                                    $canAddUser = $subscriptionService->canCreateBusinessUser($owner);
-                                }
-                            }
-                        }
-                    }
-                @endphp
-                @if($hasBusinessPermission('client.business.users.create') && $canAddUser)
-                    <a href="{{ route('settings.users.create') }}"
-                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Добавить пользователя</span>
-                    </a>
-                @elseif($hasBusinessPermission('client.business.users.create') && !$canAddUser)
-                    <button disabled
-                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
-                        title="Достигнут лимит пользователей для вашего тарифа. Обновите тариф для добавления новых пользователей.">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Добавить пользователя</span>
-                    </button>
+                @if($canCreateUsers && $canAddUser)
+                <a href="{{ route('settings.users.create') }}"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить пользователя</span>
+                </a>
+                @elseif($canCreateUsers && !$canAddUser)
+                <button type="button" disabled
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                    title="Достигнут лимит пользователей для вашего тарифа.">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить пользователя</span>
+                </button>
                 @endif
             </div>
         </div>
+        @endif
     @endif
 
     <!-- Модальное окно подтверждения удаления -->
-    <div x-show="showDeleteModal" 
+    <div x-show="showDeleteModal"
          @click.away="closeDeleteModal()"
          @keydown.escape.window="closeDeleteModal()"
          x-transition:enter="transition ease-out duration-200"
