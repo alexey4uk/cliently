@@ -182,43 +182,6 @@ class TelegramNotificationService
         }
     }
 
-    /**
-     * Отправить сообщение в Telegram (для бизнеса - оставлено для обратной совместимости)
-     *
-     * @deprecated Используйте sendMessageToUser для отправки пользователям
-     */
-    private static function sendMessage(Business $business, string $message)
-    {
-        try {
-            $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
-
-            if (!$bot) {
-                return;
-            }
-
-            if (!$business->telegram_chat_id) {
-                return;
-            }
-
-            $chat = TelegraphChat::where(
-                "chat_id",
-                $business->telegram_chat_id,
-            )->first();
-
-            if (!$chat) {
-                $chat = $bot->chats()->create([
-                    "chat_id" => $business->telegram_chat_id,
-                    "name" => "Business Notifications",
-                ]);
-            }
-
-            $chat->message($message)->send();
-        } catch (\Exception $e) {
-            // Логируем ошибку, но не прерываем выполнение
-            Log::error("Telegram notification failed: " . $e->getMessage());
-        }
-    }
-
     private static function sendMessageForClient(int $id, string $message)
     {
         try {

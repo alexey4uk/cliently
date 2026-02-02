@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\TicketAttachment;
 use App\Models\TicketComment;
 use App\Services\BusinessRolePermissionService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -197,41 +198,28 @@ class TicketController extends Controller
      */
     public function show($id)
     {
-        // Валидация ID
         if (! is_numeric($id)) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Неверный идентификатор тикета.');
         }
 
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        $result = $this->findTicketForCurrentUser((int) $id);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
-
-        $user = Auth::user();
-
-        // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', (int) $id)
-            ->where('business_id', $business->id)
-            ->where('created_by_type', 'user')
-            ->where('created_by_id', $user->id)
-            ->first();
-
-        if (! $ticket) {
+        if ($result === null) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Тикет не найден или у вас нет доступа к этому тикету.');
         }
+        $ticket = $result;
 
-        // Загружаем только публичные комментарии для клиента (не внутренние)
         $ticket->load(['category', 'assignedUser', 'client', 'attachments']);
         $ticket->load(['comments' => function ($query) {
             $query->where('is_internal', false)->with(['user', 'attachments']);
         }]);
 
         return view('tickets.show', [
-            'business' => $business,
+            'business' => $this->getCurrentBusiness(),
             'ticket' => $ticket,
         ]);
     }
@@ -241,26 +229,16 @@ class TicketController extends Controller
      */
     public function edit($id)
     {
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        $result = $this->findTicketForCurrentUser((int) $id);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
-
-        $user = Auth::user();
-
-        // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', $id)
-            ->where('business_id', $business->id)
-            ->where('created_by_type', 'user')
-            ->where('created_by_id', $user->id)
-            ->first();
-
-        if (! $ticket) {
+        if ($result === null) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Тикет не найден или у вас нет доступа к этому тикету.');
         }
+        $ticket = $result;
+        $business = $this->getCurrentBusiness();
 
         $categories = \App\Models\TicketCategory::where('is_active', true)->orderBy('sort_order')->get();
         $clients = $business->clients()->orderBy('first_name')->get();
@@ -278,26 +256,16 @@ class TicketController extends Controller
      */
     public function update(TicketRequest $request, $id)
     {
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        $result = $this->findTicketForCurrentUser((int) $id);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
-
-        $user = Auth::user();
-
-        // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', $id)
-            ->where('business_id', $business->id)
-            ->where('created_by_type', 'user')
-            ->where('created_by_id', $user->id)
-            ->first();
-
-        if (! $ticket) {
+        if ($result === null) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Тикет не найден или у вас нет доступа к этому тикету.');
         }
+        $ticket = $result;
+        $user = Auth::user();
 
         $validated = $request->validated();
 
@@ -334,26 +302,16 @@ class TicketController extends Controller
      */
     public function addComment(TicketCommentRequest $request, $id)
     {
-        $business = $this->getCurrentBusiness();
-
-        if (! $business) {
-            return redirect()->route('welcome')
-                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        $result = $this->findTicketForCurrentUser((int) $id);
+        if ($result instanceof RedirectResponse) {
+            return $result;
         }
-
-        $user = Auth::user();
-
-        // Ищем тикет с проверкой принадлежности к бизнесу и пользователю
-        $ticket = Ticket::where('id', $id)
-            ->where('business_id', $business->id)
-            ->where('created_by_type', 'user')
-            ->where('created_by_id', $user->id)
-            ->first();
-
-        if (! $ticket) {
+        if ($result === null) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Тикет не найден или у вас нет доступа к этому тикету.');
         }
+        $ticket = $result;
+        $user = Auth::user();
 
         $validated = $request->validated();
 
@@ -389,5 +347,28 @@ class TicketController extends Controller
 
         return redirect()->route('tickets.show', $ticket->id)
             ->with('success', 'Комментарий добавлен.');
+    }
+
+    /**
+     * Find ticket by ID for the current user (creator). Returns redirect if no business, null if not found.
+     *
+     * @return Ticket|RedirectResponse|null
+     */
+    private function findTicketForCurrentUser(int $id): Ticket|RedirectResponse|null
+    {
+        $business = $this->getCurrentBusiness();
+
+        if (! $business) {
+            return redirect()->route('welcome')
+                ->with('info', 'Сначала создайте бизнес или примите приглашение.');
+        }
+
+        $user = Auth::user();
+
+        return Ticket::where('id', $id)
+            ->where('business_id', $business->id)
+            ->where('created_by_type', 'user')
+            ->where('created_by_id', $user->id)
+            ->first();
     }
 }

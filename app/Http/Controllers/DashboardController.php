@@ -188,9 +188,11 @@ class DashboardController extends Controller
             ? round(($confirmedCount / $totalAppointments) * 100, 1)
             : 0;
 
-        // Средние значения
+        // Средние значения (дни считаем по отфильтрованному набору записей)
+        $minCreated = (clone $appointmentsQuery)->min('created_at');
+        $days = $minCreated ? Carbon::parse($minCreated)->diffInDays(now()) : 0;
         $avgAppointmentsPerDay = $totalAppointments > 0
-            ? round($totalAppointments / max(1, \Carbon\Carbon::parse(\App\Models\Appointment::where('business_id', $businessId)->min('created_at'))->diffInDays(now())), 1)
+            ? round($totalAppointments / max(1, $days), 1)
             : 0;
         $avgClientsPerAppointment = $totalAppointments > 0
             ? round($totalClients / $totalAppointments, 2)

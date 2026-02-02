@@ -191,7 +191,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
 
     // === КЛИЕНТСКАЯ ЧАСТЬ ===
     // Для пользователей с доступом к клиентской части
-    Route::middleware(["auth", "only.client"])->group(function () {
+    Route::middleware(["only.client"])->group(function () {
         Route::get("/dashboard", [DashboardController::class, "index"])->name(
             "dashboard",
         );
@@ -749,7 +749,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
 
     // === АДМИНСКАЯ ПАНЕЛЬ ===
     // Для пользователей с доступом к админке
-    Route::middleware(["auth", "only.panel"])
+    Route::middleware(["only.panel"])
         ->prefix("panel")
         ->name("panel.")
         ->group(function () {
