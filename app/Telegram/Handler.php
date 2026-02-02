@@ -1469,6 +1469,8 @@ class Handler extends WebhookHandler
                 $appointment,
             );
 
+            $appointment->load(['service', 'master', 'location']);
+
             // Форматируем для сообщения
             $formattedDate = $appointment->date->format("d.m.Y");
             $formattedTime = $appointment->time;

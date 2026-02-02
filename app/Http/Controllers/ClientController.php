@@ -436,7 +436,7 @@ class ClientController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        $clients = $query->get();
+        $clients = $query->with('primaryPhone')->get();
 
         $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
 
