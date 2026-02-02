@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
-use App\Models\BepaidSettings;
 use App\Models\Invoice;
 use App\Services\BepaidService;
 use App\Services\SubscriptionService;
@@ -41,8 +40,8 @@ class BepaidWebhookController extends Controller
      *
      * 3. На нашей стороне (validateBasicAuth):
      *    - Извлекаем shop_id и secret_key из заголовка Authorization
-     *    - Сравниваем с настройками из нашей БД (BepaidSettings)
-     *    - Если совпадают - пропускаем, если нет - возвращаем 401
+     *    - Сравниваем с config (BEPAID_SHOP_ID, BEPAID_SECRET_KEY из .env)
+     *    - Если совпадают — пропускаем, иначе 401
      *
      * ВАЖНО: Мы НЕ задаем Basic Auth на стороне bePaid!
      * bePaid сам использует shop_id и secret_key из настроек магазина.
@@ -65,7 +64,7 @@ class BepaidWebhookController extends Controller
 
             // КРИТИЧЕСКИ ВАЖНО: Проверка HTTP Basic Auth от bePaid
             // bePaid автоматически отправляет shop_id и secret_key в заголовке Authorization
-            // Мы проверяем, что они совпадают с нашими настройками из БД
+            // Мы проверяем, что они совпадают с нашими настройками из config
             // Если не совпадают - это может быть поддельный webhook
             if (!$this->validateBasicAuth($request)) {
                 Log::warning("bePaid webhook: invalid Basic Auth credentials");
@@ -148,7 +147,7 @@ class BepaidWebhookController extends Controller
      *
      * 3. Мы извлекаем shop_id и secret_key из заголовка
      *
-     * 4. Сравниваем с настройками из нашей БД (BepaidSettings)
+     * 4. Сравниваем с настройками из config (config/bepaid.php, .env)
      *    - Если test_mode = true → используем test_shop_id и test_secret_key
      *    - Если test_mode = false → используем production_shop_id и production_secret_key
      *
@@ -185,26 +184,20 @@ class BepaidWebhookController extends Controller
         // Разделяем на shop_id и secret_key
         [$shopId, $secretKey] = explode(":", $credentials, 2);
 
-        // Получаем настройки bePaid из кеша (кеш сбрасывается при обновлении через Observer)
-        // Это оптимизирует запросы к БД, так как настройки меняются редко
-        $settings = BepaidSettings::getSettings();
-
-        // Если настройки не найдены или bePaid не включен - отклоняем
-        if (!$settings || !$settings->enabled) {
+        if (! config('bepaid.enabled')) {
             return false;
         }
 
-        // Получаем текущие настройки (test или production в зависимости от test_mode)
-        $currentSettings = $settings->getCurrentSettings();
+        $expectedShopId = config('bepaid.shop_id');
+        $expectedSecretKey = config('bepaid.secret_key');
 
-        // Сравниваем shop_id и secret_key из webhook с настройками из БД
-        // Используем trim() для удаления возможных пробелов
-        $shopIdMatches =
-            trim($shopId) === trim($currentSettings["shop_id"] ?? "");
-        $secretKeyMatches =
-            trim($secretKey) === trim($currentSettings["secret_key"] ?? "");
+        if (empty($expectedShopId) || empty($expectedSecretKey)) {
+            return false;
+        }
 
-        // Оба значения должны совпадать
+        $shopIdMatches = trim($shopId) === trim((string) $expectedShopId);
+        $secretKeyMatches = trim($secretKey) === trim((string) $expectedSecretKey);
+
         return $shopIdMatches && $secretKeyMatches;
     }
 

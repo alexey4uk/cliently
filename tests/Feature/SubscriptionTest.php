@@ -400,15 +400,9 @@ class SubscriptionTest extends TestCase
             "ends_at" => now()->addMonth(),
         ]);
 
-        \App\Models\BepaidSettings::firstOrCreate(
-            ["id" => 1],
-            [
-                "enabled" => true,
-                "test_mode" => true,
-                "test_shop_id" => "test",
-                "test_secret_key" => "test",
-            ],
-        );
+        \Illuminate\Support\Facades\Config::set('bepaid.enabled', true);
+        \Illuminate\Support\Facades\Config::set('bepaid.shop_id', 'test');
+        \Illuminate\Support\Facades\Config::set('bepaid.secret_key', 'test');
 
         $this->withBusinessSession($data)
             ->actingAs($user)

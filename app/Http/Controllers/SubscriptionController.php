@@ -149,9 +149,7 @@ class SubscriptionController extends Controller
 
         // Для платных тарифов создаем Invoice и перенаправляем на оплату
         try {
-            // Проверяем, включен ли bePaid
-            $bepaidSettings = \App\Models\BepaidSettings::getSettings();
-            if (! $bepaidSettings->enabled) {
+            if (! config('bepaid.enabled')) {
                 return redirect()->back()
                     ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
             }
@@ -293,9 +291,7 @@ class SubscriptionController extends Controller
 
         $bepaidService = app(BepaidService::class);
 
-        // Проверяем, включен ли bePaid
-        $bepaidSettings = \App\Models\BepaidSettings::getSettings();
-        if (! $bepaidSettings->enabled) {
+        if (! config('bepaid.enabled')) {
             return redirect()->back()
                 ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
         }

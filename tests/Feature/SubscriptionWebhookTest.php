@@ -7,7 +7,7 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -19,36 +19,14 @@ class SubscriptionWebhookTest extends TestCase
     {
         parent::setUp();
 
-        // Удаляем существующие настройки и создаем заново для чистоты тестов
-        \App\Models\BepaidSettings::where('id', 1)->delete();
-
-        \App\Models\BepaidSettings::create([
-            'id' => 1,
-            'test_mode' => true,
-            'enabled' => true,
-            'test_shop_id' => 'test_shop',
-            'test_secret_key' => 'test_secret',
-        ]);
+        Config::set('bepaid.enabled', true);
+        Config::set('bepaid.shop_id', 'test_shop');
+        Config::set('bepaid.secret_key', 'test_secret');
     }
 
     protected function getBasicAuthHeader(): string
     {
-        $settings = \App\Models\BepaidSettings::updateOrCreate(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-            ]
-        );
-
-        // Убеждаемся, что модель обновлена из базы данных
-        $settings->refresh();
-
-        $current = $settings->getCurrentSettings();
-
-        return 'Basic '.base64_encode($current['shop_id'].':'.$current['secret_key']);
+        return 'Basic '.base64_encode(config('bepaid.shop_id').':'.config('bepaid.secret_key'));
     }
 
     public function test_webhook_activates_subscription_after_payment()
@@ -76,20 +54,6 @@ class SubscriptionWebhookTest extends TestCase
             ],
         ];
 
-        // Убеждаемся, что настройки актуальны перед запросом
-        // Используем DB::table для прямого обновления, чтобы избежать кеша моделей
-        DB::table('bepaid_settings')->updateOrInsert(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-                'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-            ]
-        );
-
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
         ]);
@@ -106,17 +70,6 @@ class SubscriptionWebhookTest extends TestCase
     public function test_webhook_renews_subscription_from_current_ends_at()
     {
         Notification::fake();
-
-        // Убеждаемся, что настройки актуальны
-        \App\Models\BepaidSettings::updateOrCreate(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-            ]
-        );
 
         $user = User::factory()->create();
         $plan = Plan::factory()->monthly()->create();
@@ -149,20 +102,6 @@ class SubscriptionWebhookTest extends TestCase
             ],
         ];
 
-        // Убеждаемся, что настройки актуальны перед запросом
-        // Используем DB::table для прямого обновления, чтобы избежать кеша моделей
-        DB::table('bepaid_settings')->updateOrInsert(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-                'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-            ]
-        );
-
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),
         ]);
@@ -178,17 +117,6 @@ class SubscriptionWebhookTest extends TestCase
     public function test_webhook_preserves_ends_at_when_changing_plan()
     {
         Notification::fake();
-
-        // Убеждаемся, что настройки актуальны
-        \App\Models\BepaidSettings::updateOrCreate(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-            ]
-        );
 
         $user = User::factory()->create();
         $oldPlan = Plan::factory()->monthly()->create();
@@ -221,20 +149,6 @@ class SubscriptionWebhookTest extends TestCase
                 'id' => (string) $invoice->id,
             ],
         ];
-
-        // Убеждаемся, что настройки актуальны перед запросом
-        // Используем DB::table для прямого обновления, чтобы избежать кеша моделей
-        DB::table('bepaid_settings')->updateOrInsert(
-            ['id' => 1],
-            [
-                'test_mode' => true,
-                'enabled' => true,
-                'test_shop_id' => 'test_shop',
-                'test_secret_key' => 'test_secret',
-                'updated_at' => now(),
-                'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-            ]
-        );
 
         $response = $this->postJson('/webhooks/bepaid', $payload, [
             'Authorization' => $this->getBasicAuthHeader(),

@@ -1492,23 +1492,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
                     ])->name("telegram.disconnect");
                 });
 
-            // Настройки bePaid (только админ)
-            Route::middleware([
-                "check.permission:panel.payments.settings",
-            ])->group(function () {
-                Route::get("/settings/bepaid", [
-                    \App\Http\Controllers\Panel\BepaidSettingsController::class,
-                    "index",
-                ])->name("settings.bepaid");
-                Route::patch("/settings/bepaid", [
-                    \App\Http\Controllers\Panel\BepaidSettingsController::class,
-                    "update",
-                ])->name("settings.bepaid.update");
-                Route::post("/settings/bepaid/test-connection", [
-                    \App\Http\Controllers\Panel\BepaidSettingsController::class,
-                    "testConnection",
-                ])->name("settings.bepaid.test-connection");
-            });
+            // Настройки bePaid перенесены в .env (config/bepaid.php). Маршруты админки удалены.
 
             // Управление платежами (инвойсы)
             Route::middleware(["check.permission:panel.payments.view"])->group(

@@ -102,8 +102,7 @@
     platformOpen: {{ 
         (Str::startsWith(Request::path(), 'panel') && (
             Str::startsWith(Request::path(), 'panel/plans') ||
-            Str::startsWith(Request::path(), 'panel/invoices') ||
-            Str::startsWith(Request::path(), 'panel/settings/bepaid')
+            Str::startsWith(Request::path(), 'panel/invoices')
         )) 
         ? 'true' : 'false' 
     }},

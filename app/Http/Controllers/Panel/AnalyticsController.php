@@ -86,12 +86,11 @@ class AnalyticsController extends Controller
     {
         $userId = Auth::id();
 
-        return [
-            $today = Carbon::today();
-            $monthAgo = Carbon::now()->subMonth();
-            $twoMonthsAgo = Carbon::now()->subMonths(2);
+        $today = Carbon::today();
+        $monthAgo = Carbon::now()->subMonth();
+        $twoMonthsAgo = Carbon::now()->subMonths(2);
 
-            // ОПТИМИЗИРОВАНО: Используем приблизительные значения из INFORMATION_SCHEMA для больших таблиц
+        // ОПТИМИЗИРОВАНО: Используем приблизительные значения из INFORMATION_SCHEMA для больших таблиц
             // Это в 100+ раз быстрее COUNT(*) на миллионах записей!
             $totalBusinesses = Business::count(); // Мало записей - быстро
             $totalUsers = User::count(); // Мало записей - быстро

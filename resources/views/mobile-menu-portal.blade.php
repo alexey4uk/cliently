@@ -14,7 +14,7 @@
     panelOperationsOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/appointments') || Str::startsWith(Request::path(), 'panel/clients') || Str::startsWith(Request::path(), 'panel/businesses'))) ? 'true' : 'false' }},
     adminAccessOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/users') || Str::startsWith(Request::path(), 'panel/roles') || Str::startsWith(Request::path(), 'panel/permissions') || Str::startsWith(Request::path(), 'panel/business-roles'))) ? 'true' : 'false' }},
     commsOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/broadcasts') || Str::startsWith(Request::path(), 'panel/notifications') || Str::startsWith(Request::path(), 'panel/settings/notifications'))) ? 'true' : 'false' }},
-    platformOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/plans') || Str::startsWith(Request::path(), 'panel/invoices') || Str::startsWith(Request::path(), 'panel/settings/bepaid'))) ? 'true' : 'false' }},
+    platformOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/plans') || Str::startsWith(Request::path(), 'panel/invoices'))) ? 'true' : 'false' }},
     panelIntegrationsOpen: {{ (Str::startsWith(Request::path(), 'panel') && Str::startsWith(Request::path(), 'panel/telegram-management')) ? 'true' : 'false' }},
     contentOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/services') || Str::startsWith(Request::path(), 'panel/locations') || Str::startsWith(Request::path(), 'panel/masters'))) ? 'true' : 'false' }},
     closeMenu() {

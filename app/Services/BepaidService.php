@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\BepaidSettings;
 use App\Models\Invoice;
 use BeGateway\GetPaymentToken;
 use BeGateway\QueryByUid;
@@ -13,64 +12,45 @@ use Illuminate\Support\Facades\Log;
 
 class BepaidService
 {
-    protected ?BepaidSettings $settings = null;
-
     /**
-     * Инициализировать настройки SDK из БД
+     * Инициализировать настройки SDK из config (.env)
      *
-     * ВАЖНО: Эти shop_id и secret_key используются для:
-     * 1. API запросов к bePaid (создание платежей, проверка статуса, возвраты)
-     * 2. Проверки webhook от bePaid (в BepaidWebhookController::validateBasicAuth)
+     * shop_id и secret_key используются для:
+     * - API запросов к bePaid (создание платежей, проверка статуса, возвраты)
+     * - Проверки webhook (BepaidWebhookController::validateBasicAuth)
      *
-     * Когда bePaid отправляет webhook, они используют те же shop_id и secret_key
-     * для формирования заголовка Authorization: Basic base64(shop_id:secret_key)
-     *
-     * Поэтому важно, чтобы shop_id и secret_key в нашей БД совпадали с теми,
-     * которые указаны в настройках магазина в системе bePaid.
+     * bePaid отправляет webhook с заголовком: Authorization: Basic base64(shop_id:secret_key)
      */
     public function initializeSettings(): void
     {
-        $settings = BepaidSettings::getSettings();
-
-        if (! $settings->enabled) {
-            throw new \RuntimeException('bePaid настройки не включены. Включите их в админ панели.');
+        if (! config('bepaid.enabled')) {
+            throw new \RuntimeException('bePaid отключен. Установите BEPAID_ENABLED=true в .env.');
         }
 
-        // Получаем текущие настройки (test или production в зависимости от test_mode)
-        $currentSettings = $settings->getCurrentSettings();
+        $shopId = config('bepaid.shop_id');
+        $secretKey = config('bepaid.secret_key');
 
-        if (empty($currentSettings['shop_id']) || empty($currentSettings['secret_key'])) {
-            throw new \RuntimeException('bePaid настройки не заполнены. Заполните их в админ панели.');
+        if (empty($shopId) || empty($secretKey)) {
+            throw new \RuntimeException('bePaid настройки не заполнены. Укажите BEPAID_SHOP_ID и BEPAID_SECRET_KEY в .env.');
         }
 
-        // Валидация Shop ID - должен быть числом
-        $shopId = trim($currentSettings['shop_id']);
+        $shopId = trim((string) $shopId);
         if (! is_numeric($shopId)) {
-            throw new \RuntimeException('Shop ID должен быть числом. Текущее значение: '.$shopId.'. Проверьте настройки в админ панели.');
+            throw new \RuntimeException('BEPAID_SHOP_ID должен быть числом. Текущее значение: '.$shopId);
         }
 
-        // Убеждаемся, что shop_id - это строка (не число), так как SDK может ожидать строку
-        // Эти значения используются для:
-        // - API запросов к bePaid (авторизация запросов)
-        // - Проверки webhook (сравнение с credentials из заголовка Authorization)
-        BeGatewaySettings::$shopId = (string) $shopId;
-        BeGatewaySettings::$shopKey = (string) trim($currentSettings['secret_key']);
-
-        // Устанавливаем базовые URL
-        // Если не указаны в БД, используются дефолтные значения из config/bepaid.php
-        BeGatewaySettings::$gatewayBase = $currentSettings['gateway_base'] ?? 'https://demo-gateway.begateway.com';
-        BeGatewaySettings::$checkoutBase = $currentSettings['checkout_base'] ?? 'https://checkout.begateway.com';
-
-        $this->settings = $settings;
+        BeGatewaySettings::$shopId = $shopId;
+        BeGatewaySettings::$shopKey = (string) trim($secretKey);
+        BeGatewaySettings::$gatewayBase = config('bepaid.gateway_base');
+        BeGatewaySettings::$checkoutBase = config('bepaid.checkout_base');
 
         if (config('bepaid.logging.enabled')) {
             Log::info('bePaid settings initialized', [
-                'test_mode' => $settings->test_mode,
-                'shop_id' => $currentSettings['shop_id'],
-                'shop_id_type' => gettype(BeGatewaySettings::$shopId),
-                'has_secret_key' => ! empty($currentSettings['secret_key']),
-                'gateway_base' => BeGatewaySettings::$gatewayBase ?? 'default',
-                'checkout_base' => BeGatewaySettings::$checkoutBase ?? 'default',
+                'test_mode' => config('bepaid.test_mode'),
+                'shop_id' => $shopId,
+                'has_secret_key' => ! empty($secretKey),
+                'gateway_base' => BeGatewaySettings::$gatewayBase,
+                'checkout_base' => BeGatewaySettings::$checkoutBase,
             ]);
         }
     }
@@ -88,7 +68,7 @@ class BepaidService
                 'shop_id_set' => ! empty(BeGatewaySettings::$shopId),
                 'shop_key_set' => ! empty(BeGatewaySettings::$shopKey),
             ]);
-            throw new \RuntimeException('Настройки bePaid не инициализированы. Проверьте Shop ID и Secret Key в админ панели.');
+            throw new \RuntimeException('Настройки bePaid не инициализированы. Проверьте BEPAID_SHOP_ID и BEPAID_SECRET_KEY в .env.');
         }
 
         $transaction = new GetPaymentToken;
@@ -125,13 +105,13 @@ class BepaidService
         //
         // 3. На нашей стороне (BepaidWebhookController::validateBasicAuth):
         //    - Мы извлекаем shop_id и secret_key из заголовка Authorization
-        //    - Сравниваем с настройками из нашей БД (BepaidSettings)
+        //    - Сравниваем с config (BEPAID_* из .env)
         //    - Если совпадают - обрабатываем webhook, если нет - возвращаем 401
         //
         // ВАЖНО: Мы НЕ задаем Basic Auth здесь!
         // bePaid сам использует shop_id и secret_key из настроек магазина.
         // Мы только указываем URL, куда отправлять webhook.
-        $webhookUrl = $this->settings->webhook_url ?? config('bepaid.webhook.url');
+        $webhookUrl = config('bepaid.webhook.url');
         if ($webhookUrl) {
             // url() - формирует полный URL (например: https://example.com/webhooks/bepaid)
             $transaction->setNotificationUrl(url($webhookUrl));
@@ -192,7 +172,7 @@ class BepaidService
             'error_code' => $errorCode,
             'response' => method_exists($response, 'getResponse') ? $response->getResponse() : null,
             'shop_id' => BeGatewaySettings::$shopId ?? null,
-            'test_mode' => $this->settings->test_mode ?? null,
+            'test_mode' => config('bepaid.test_mode'),
         ]);
 
         throw new \RuntimeException("Ошибка создания платежа: {$errorMessage}");
@@ -476,15 +456,4 @@ class BepaidService
         });
     }
 
-    /**
-     * Получить настройки bePaid
-     */
-    public function getSettings(): ?BepaidSettings
-    {
-        if (! $this->settings) {
-            $this->settings = BepaidSettings::getSettings();
-        }
-
-        return $this->settings;
-    }
 }
