@@ -75,7 +75,9 @@ class Plan extends Model
      */
     public function hasFeature(string $key): bool
     {
-        return $this->features()->where('feature_key', $key)->exists();
+        return $this->features()
+            ->whereHas('metric', fn ($q) => $q->where('key', $key))
+            ->exists();
     }
 
     /**

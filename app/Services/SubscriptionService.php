@@ -149,17 +149,23 @@ class SubscriptionService
         $periodStart = now()->startOfMonth();
         $periodEnd = now()->endOfMonth();
 
-        foreach ($subscription->plan->features as $feature) {
-            // Инициализируем usage только для месячных метрик
+        $features = $subscription->plan->features()->with('metric')->get();
+
+        foreach ($features as $feature) {
+            $metric = $feature->metric;
+            if (!$metric) {
+                continue;
+            }
+            // Инициализируем usage только для месячных метрик (integer)
             if (
-                $feature->feature_type === "integer" &&
-                $this->isMonthlyMetric($feature->feature_key)
+                $metric->type === 'integer' &&
+                $this->isMonthlyMetric($metric->key)
             ) {
                 SubscriptionUsage::firstOrCreate(
                     [
                         "subscription_id" => $subscription->id,
                         "user_id" => $subscription->user_id,
-                        "feature_key" => $feature->feature_key,
+                        "feature_key" => $metric->key,
                         "period_start" => $periodStart,
                     ],
                     [
@@ -395,6 +401,7 @@ class SubscriptionService
 
     /**
      * Сбросить месячные метрики
+     * Удаляем старые периоды и создаём записи на текущий месяц с нулём, чтобы не нарушать unique (user_id, feature_key, period_start).
      */
     public function resetMonthlyUsage(User $user): void
     {
@@ -404,20 +411,40 @@ class SubscriptionService
             return;
         }
 
-        // Сбрасываем только месячные метрики
+        $periodStart = now()->startOfMonth();
+        $periodEnd = now()->endOfMonth();
+
+        // Удаляем все старые записи месячных метрик (избегаем дубликата при обновлении)
         SubscriptionUsage::where("user_id", $user->id)
-            ->where("period_end", "<", now()->startOfMonth())
+            ->where("period_end", "<", $periodStart)
             ->where(function ($query) {
                 $query
                     ->where("feature_key", "max_appointments_per_month")
                     ->orWhere("feature_key", "like", "%_per_month")
                     ->orWhere("feature_key", "like", "%_monthly");
             })
-            ->update([
-                "current_usage" => 0,
-                "period_start" => now()->startOfMonth(),
-                "period_end" => now()->endOfMonth(),
-            ]);
+            ->delete();
+
+        // Инициализируем текущий месяц для всех месячных метрик тарифа (если ещё нет записи)
+        $features = $subscription->plan->features()->with('metric')->get();
+        foreach ($features as $feature) {
+            $metric = $feature->metric;
+            if (!$metric || $metric->type !== 'integer' || !$this->isMonthlyMetric($metric->key)) {
+                continue;
+            }
+            SubscriptionUsage::firstOrCreate(
+                [
+                    "subscription_id" => $subscription->id,
+                    "user_id" => $user->id,
+                    "feature_key" => $metric->key,
+                    "period_start" => $periodStart,
+                ],
+                [
+                    "current_usage" => 0,
+                    "period_end" => $periodEnd,
+                ],
+            );
+        }
     }
 
     /**

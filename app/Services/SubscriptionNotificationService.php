@@ -836,6 +836,6 @@ class SubscriptionNotificationService
             return null;
         }
 
-        return $owner;
+        return User::find($business->owner_id);
     }
 }

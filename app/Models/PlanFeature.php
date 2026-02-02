@@ -12,12 +12,11 @@ class PlanFeature extends Model
 
     protected $fillable = [
         'plan_id',
-        'feature_key',
-        'feature_value',
-        'feature_type',
+        'metric_id',
+        'value',
     ];
 
-    // feature_value хранится как строка, кастинг выполняется в модели Plan через getFeatureValue()
+    // value хранится как строка, кастинг выполняется в модели Plan через getFeatureValue()
 
     public function plan(): BelongsTo
     {

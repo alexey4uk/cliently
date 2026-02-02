@@ -219,35 +219,23 @@ class SubscriptionController extends Controller
         }
 
         $subscriptionService = app(SubscriptionService::class);
-        $plan = $subscription->plan;
+        $plan = $subscription->getEffectivePlan();
+        $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
 
-        // Получаем использование лимитов (суммарно по всем бизнесам пользователя)
-        $usage = [
-            'locations' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_locations'),
-                'limit' => $subscriptionService->getLimit($user, 'max_locations'),
-            ],
-            'masters' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_masters'),
-                'limit' => $subscriptionService->getLimit($user, 'max_masters'),
-            ],
-            'services' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_services'),
-                'limit' => $subscriptionService->getLimit($user, 'max_services'),
-            ],
-            'clients' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_clients'),
-                'limit' => $subscriptionService->getLimit($user, 'max_clients'),
-            ],
-            'appointments_per_month' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_appointments_per_month'),
-                'limit' => $subscriptionService->getLimit($user, 'max_appointments_per_month'),
-            ],
-            'business_users' => [
-                'current' => $subscriptionService->getCurrentUsage($user, 'max_business_users'),
-                'limit' => $subscriptionService->getLimit($user, 'max_business_users'),
-            ],
-        ];
+        // Только метрики типа integer, которые есть в тарифе (лимиты использования)
+        $metricsInPlan = $plan->features
+            ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
+            ->sortBy(fn ($f) => $f->metric->sort_order)
+            ->values()
+            ->map(function ($feature) use ($user, $subscriptionService) {
+                $key = $feature->metric->key;
+                return [
+                    'metric' => $feature->metric,
+                    'limit' => $subscriptionService->getLimit($user, $key),
+                    'current' => $subscriptionService->getCurrentUsage($user, $key),
+                ];
+            })
+            ->all();
 
         // Загружаем инвойсы для подписки
         $subscription->load('invoices');
@@ -259,7 +247,7 @@ class SubscriptionController extends Controller
             'user' => $user,
             'subscription' => $subscription,
             'plan' => $plan,
-            'usage' => $usage,
+            'metricsInPlan' => $metricsInPlan,
             'canManageSubscription' => $canManageSubscription,
         ]);
     }

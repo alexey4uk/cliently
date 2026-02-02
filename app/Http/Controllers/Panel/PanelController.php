@@ -72,7 +72,7 @@ class PanelController extends Controller
             ? round((($newBizThisMonth - $newBizLastMonth) / $newBizLastMonth) * 100, 1)
             : ($newBizThisMonth > 0 ? 100 : 0);
 
-        // Топ-бизнесы по записям (через агрегацию, а не подзапрос)
+        // Топ-бизнесы по записям за всё время (для блока «Топ бизнесов по активности»)
         $topStats = DB::table('appointments')
             ->select('business_id', DB::raw('count(*) as total'))
             ->groupBy('business_id')->orderByDesc('total')->limit(5)->get();
@@ -82,6 +82,20 @@ class PanelController extends Controller
                 $b->appointments_count = $topStats->firstWhere('business_id', $b->id)->total ?? 0;
                 return $b;
             })->sortByDesc('appointments_count');
+
+        // Активные бизнесы за неделю: топ по записям за последние 7 дней (для блока «Активные бизнесы за неделю»)
+        $activeWeekStats = DB::table('appointments')
+            ->where('created_at', '>=', $weekAgo)
+            ->select('business_id', DB::raw('count(*) as total'))
+            ->groupBy('business_id')->orderByDesc('total')->limit(5)->get();
+
+        $data['activeBusinesses'] = $activeWeekStats->isEmpty()
+            ? collect()
+            : Business::whereIn('id', $activeWeekStats->pluck('business_id'))->get()
+                ->map(function ($b) use ($activeWeekStats) {
+                    $b->appointments_count = $activeWeekStats->firstWhere('business_id', $b->id)->total ?? 0;
+                    return $b;
+                })->sortByDesc('appointments_count')->values();
 
         // 3. ПОЛЬЗОВАТЕЛИ (Регистрации и Активность)
         $data['stats']['total_users'] = $totalUsers;
@@ -109,13 +123,13 @@ class PanelController extends Controller
             ? round((($newClientsMonth - $newClientsLastMonth) / $newClientsLastMonth) * 100, 1)
             : ($newClientsMonth > 0 ? 100 : 0);
 
-        // 5. ЗАПИСИ (Схлопываем всё в один запрос)
+        // 5. ЗАПИСИ (схлопываем в один запрос; «неделя» = даты от week_ago до сегодня)
         $appStats = Appointment::selectRaw("
             COUNT(CASE WHEN date = ? AND status != 'cancelled' THEN 1 END) as today,
-            COUNT(CASE WHEN date >= ? AND status != 'cancelled' THEN 1 END) as week,
+            COUNT(CASE WHEN date >= ? AND date <= ? AND status != 'cancelled' THEN 1 END) as week,
             COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
             COUNT(CASE WHEN status = 'cancelled' AND updated_at >= ? THEN 1 END) as cancelled_week
-        ", [$today, $weekAgo->toDateString(), $weekAgo])->first();
+        ", [$today, $weekAgo->toDateString(), $today, $weekAgo])->first();
 
         $data['stats']['total_appointments'] = $totalAppointments;
         $data['stats']['appointments_today'] = $appStats->today ?? 0;
@@ -127,7 +141,6 @@ class PanelController extends Controller
         $data['recentAppointments'] = Appointment::with(['business', 'client', 'service'])->latest()->limit(10)->get();
 
         // 6. ДОПОЛНИТЕЛЬНЫЕ СПИСКИ
-        $data['activeBusinesses'] = $data['topBusinesses'];
         $data['inactiveBusinesses'] = Business::whereNotIn('id', $activeBizIdsMonth)
             ->withCount(['appointments', 'clients'])
             ->latest()->limit(5)->get();
