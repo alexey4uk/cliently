@@ -11,46 +11,6 @@
 @section('content')
 
 @php
-    // Получаем бизнес и роль для проверки прав доступа
-    $user = Auth::user();
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role_id ? \App\Models\BusinessRole::find($pivot->pivot->role_id)?->slug : null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-    
-    // Проверяем, есть ли хотя бы одно действие для записей
-    $hasAnyAppointmentAction = $hasBusinessPermission('client.appointments.view') || 
-                               $hasBusinessPermission('client.appointments.update') || 
-                               $hasBusinessPermission('client.appointments.delete');
-
-    $canCreateAppointment = false;
-    if ($hasBusinessPermission('client.appointments.create')) {
-        $subscriptionService = app(\App\Services\SubscriptionService::class);
-        $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
-    }
-@endphp
-
-@php
     $hasActiveFilters = $date || $status || request('service_id') || request('master_id') || $search;
 @endphp
 
@@ -76,43 +36,6 @@
     }
 }" class="max-w-[1400px] mx-auto">
     <div class="space-y-4 md:space-y-6">
-
-    <!-- Заголовок -->
-    <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">
-                    Записи
-                </h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                    Управление записями клиентов
-                </p>
-            </div>
-            <div class="flex items-center gap-3">
-                @if($hasBusinessPermission('client.appointments.export'))
-                    <a href="{{ route('appointments.export', request()->query()) }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <i class="fa-solid fa-file-csv text-sm"></i>
-                        <span>Экспорт</span>
-                    </a>
-                @endif
-                @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
-                    <a href="{{ route('appointments.create') }}"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Создать запись</span>
-                    </a>
-                @elseif($hasBusinessPermission('client.appointments.create') && !$canCreateAppointment)
-                    <button disabled
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
-                        title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Создать запись</span>
-                    </button>
-                @endif
-            </div>
-        </div>
-    </div>
 
     <!-- Поиск и фильтры -->
     <div class="space-y-4">
@@ -163,147 +86,153 @@
             </div>
         @endif
 
-        <!-- Мобильная версия: поиск и кнопка фильтров -->
-        <div class="md:hidden space-y-4">
-            <!-- Всегда видимый поиск -->
-            <form method="GET" action="{{ route('appointments.index') }}" class="flex gap-3">
-                <div class="flex-1 relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
-                    </div>
-                    <input type="text" name="search" value="{{ $search }}" placeholder="Поиск записей..."
-                        class="pl-11 pr-4 py-3 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+        <!-- Мобильная версия: действия + поиск и фильтры -->
+        <div class="md:hidden space-y-3">
+            <div class="flex items-center justify-between gap-2">
+                <h1 class="text-lg font-semibold text-slate-900 dark:text-white truncate">Записи</h1>
+                <div class="flex items-center gap-2 shrink-0">
+                    @if($canExportAppointments)
+                    <a href="{{ route('appointments.export', request()->query()) }}"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        aria-label="Экспорт">
+                        <i class="fa-solid fa-file-csv text-sm"></i>
+                        <span>Экспорт</span>
+                    </a>
+                    @endif
+                    @if($canCreateAppointments && $canCreateAppointment)
+                    <a href="{{ route('appointments.create') }}"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Создать</span>
+                    </a>
+                    @elseif($canCreateAppointments && !$canCreateAppointment)
+                    <button type="button" disabled
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                        title="Достигнут месячный лимит записей для вашего тарифа.">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Создать</span>
+                    </button>
+                    @endif
                 </div>
-                <button type="submit"
-                    class="h-12 px-4 rounded-lg bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 transition-colors">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </div>
+            <form method="GET" action="{{ route('appointments.index') }}" class="flex gap-2">
+                <label class="sr-only" for="mobile-search">Поиск записей</label>
+                <div class="flex-1 min-w-0 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none" aria-hidden="true"></i>
+                    <input id="mobile-search" type="text" name="search" value="{{ $search }}" placeholder="Клиент, услуга, мастер..."
+                        class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                </div>
+                <button type="submit" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] transition-all" aria-label="Искать">
+                    <i class="fa-solid fa-magnifying-glass text-base"></i>
                 </button>
-                <button type="button" @click="toggleFilters()"
-                    class="h-12 w-12 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                    :class="showFilters ? 'border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400' : ''">
-                    <i class="fa-solid fa-sliders text-sm"></i>
+                <button type="button" @click="toggleFilters()" aria-label="Фильтры" :aria-expanded="showFilters"
+                    class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all shrink-0"
+                    :class="showFilters ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : ''">
+                    <i class="fa-solid fa-sliders text-base"></i>
                 </button>
             </form>
 
-            <!-- Выпадающая панель дополнительных фильтров -->
             <div x-show="showFilters" @click.away="showFilters = false"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 transform -translate-y-4 scale-95"
-                x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 transform -translate-y-4 scale-95"
-                class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-4 space-y-4"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2"
+                class="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3"
                 style="display: none;">
-                <form method="GET" action="{{ route('appointments.index') }}" class="space-y-4">
+                <form method="GET" action="{{ route('appointments.index') }}" class="space-y-3">
                     <input type="hidden" name="search" value="{{ $search }}">
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Дата</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-calendar-days text-slate-400 text-sm"></i>
-                            </div>
-                            <input type="date" name="date" value="{{ $date }}" onchange="this.form.submit()"
-                                class="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white">
-                        </div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Дата</label>
+                        <input type="date" name="date" value="{{ $date }}" onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Статус</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-circle-check text-slate-400 text-sm"></i>
-                            </div>
-                            <select name="status" onchange="this.form.submit()"
-                                class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
-                                <option value="">Все статусы</option>
-                                <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтвержденные</option>
-                                <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидающие</option>
-                                <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершенные</option>
-                                <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отмененные</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-sm"></i>
-                            </div>
-                        </div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Статус</label>
+                        <select name="status" onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer">
+                            <option value="">Все статусы</option>
+                            <option value="confirmed" {{ $status === 'confirmed' ? 'selected' : '' }}>Подтвержденные</option>
+                            <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Ожидающие</option>
+                            <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Завершенные</option>
+                            <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Отмененные</option>
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Услуга</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-scissors text-slate-400 text-sm"></i>
-                            </div>
-                            <select name="service_id" onchange="this.form.submit()"
-                                class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
-                                <option value="">Все услуги</option>
-                                @foreach($services as $service)
-                                    <option value="{{ $service->id }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>
-                                        {{ $service->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-sm"></i>
-                            </div>
-                        </div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Услуга</label>
+                        <select name="service_id" onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer">
+                            <option value="">Все услуги</option>
+                            @foreach($services as $service)
+                                <option value="{{ $service->id }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>{{ $service->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Мастер</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-user-tie text-slate-400 text-sm"></i>
-                            </div>
-                            <select name="master_id" onchange="this.form.submit()"
-                                class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
-                                <option value="">Все мастера</option>
-                                @foreach($masters as $master)
-                                    <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>
-                                        {{ $master->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-sm"></i>
-                            </div>
-                        </div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Мастер</label>
+                        <select name="master_id" onchange="this.form.submit()"
+                            class="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer">
+                            <option value="">Все мастера</option>
+                            @foreach($masters as $master)
+                                <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>{{ $master->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
+                    <a href="{{ route('appointments.index', ['search' => $search]) }}" class="block text-center text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 py-2">
+                        Сбросить фильтры
+                    </a>
                 </form>
             </div>
         </div>
 
-        <!-- Десктопная версия фильтров -->
+        <!-- Десктопная версия: поиск + фильтры + действия в одной строке -->
         <div class="hidden md:flex flex-col gap-4">
-            <!-- Всегда видимый поиск -->
-            <form method="GET" action="{{ route('appointments.index') }}" class="flex items-end gap-4">
-                <!-- Поиск -->
-                <div class="flex-1 max-w-lg">
-                    <label for="search-input"
-                        class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-                        Поиск записей
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i>
+            <div class="flex flex-wrap items-end gap-4">
+                <form method="GET" action="{{ route('appointments.index') }}" class="flex items-end gap-4 flex-1 min-w-0">
+                    <div class="flex-1 max-w-md min-w-0">
+                        <label for="search-input" class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Поиск записей</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                            <input id="search-input" type="text" name="search" value="{{ $search }}"
+                                placeholder="Клиент, услуга, мастер..."
+                                class="pl-11 pr-4 py-3 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm text-slate-900 dark:text-white placeholder-slate-400">
                         </div>
-                        <input id="search-input" type="text" name="search" value="{{ $search }}"
-                            placeholder="Поиск по клиенту, услуге или мастеру..."
-                            class="pl-11 pr-4 py-3 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
                     </div>
+                    <button type="submit" class="px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shrink-0">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </button>
+                    <button @click="toggleFilters()" type="button"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shrink-0"
+                        :class="showFilters ? 'border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400' : ''">
+                        <i class="fa-solid fa-sliders text-sm"></i>
+                        <span x-text="showFilters ? 'Скрыть' : 'Фильтры'"></span>
+                    </button>
+                </form>
+                <div class="flex items-center gap-2 shrink-0 pb-0.5">
+                    @if($canExportAppointments)
+                    <a href="{{ route('appointments.export', request()->query()) }}"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <i class="fa-solid fa-file-csv text-sm"></i>
+                        <span>Экспорт</span>
+                    </a>
+                    @endif
+                    @if($canCreateAppointments && $canCreateAppointment)
+                    <a href="{{ route('appointments.create') }}"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Создать запись</span>
+                    </a>
+                    @elseif($canCreateAppointments && !$canCreateAppointment)
+                    <button type="button" disabled
+                        class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                        title="Достигнут месячный лимит записей для вашего тарифа.">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>Создать запись</span>
+                    </button>
+                    @endif
                 </div>
-
-                <!-- Кнопка поиска -->
-                <button type="submit"
-                    class="px-4 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </button>
-
-                <!-- Кнопка фильтров -->
-                <button @click="toggleFilters()" type="button"
-                    class="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ml-auto"
-                    :class="showFilters ? 'border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400' : ''">
-                    <i class="fa-solid fa-sliders text-sm"></i>
-                    <span x-text="showFilters ? 'Скрыть' : 'Фильтры'"></span>
-                </button>
-            </form>
+            </div>
 
             <!-- Панель дополнительных фильтров -->
             <div x-show="showFilters" x-transition:enter="transition ease-out duration-300"
@@ -439,7 +368,7 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Статус</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Цена</th>
                             @if($hasAnyAppointmentAction)
-                                <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Действия</th>
+                                <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-0">Действия</th>
                             @endif
                         </tr>
                     </thead>
@@ -527,12 +456,12 @@
                                     @endif
                                 </td>
                                 @if($hasAnyAppointmentAction)
-                                    <td class="px-6 py-4 text-right">
+                                    <td class="px-4 py-4 text-right w-0 whitespace-nowrap">
                                         <div class="relative" x-data="{ openActions: false }"
                                              @click.outside="openActions = false"
                                              @keydown.escape.window="openActions = false">
                                             <button type="button" @click="openActions = !openActions"
-                                                    class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                    class="min-h-10 min-w-10 flex items-center justify-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                 <i class="fa-solid fa-ellipsis-vertical"></i>
                                             </button>
                                             
@@ -546,14 +475,14 @@
                                                  class="absolute right-0 z-10 mt-2 min-w-[11rem] origin-top-right rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg focus:outline-none py-1"
                                                  style="display: none;">
                                                     {{-- Просмотр и редактирование — для всех статусов --}}
-                                                    @if($hasBusinessPermission('client.appointments.view'))
+                                                    @if($canViewAppointments)
                                                     <a href="{{ route('appointments.show', $appointment) }}"
                                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
                                                         <span class="w-5 text-center text-slate-400 dark:text-slate-500"><i class="fa-regular fa-eye text-xs"></i></span>
                                                         <span>Просмотр</span>
                                                     </a>
                                                     @endif
-                                                    @if($hasBusinessPermission('client.appointments.update'))
+                                                    @if($canUpdateAppointments)
                                                     <a href="{{ route('appointments.edit', $appointment) }}"
                                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
                                                         <span class="w-5 text-center text-slate-400 dark:text-slate-500"><i class="fa-regular fa-pen-to-square text-xs"></i></span>
@@ -610,147 +539,145 @@
         </div>
 
         <!-- Карточки для мобильных -->
-        <div class="md:hidden grid grid-cols-1 gap-4">
+        <div class="md:hidden space-y-3">
             @foreach ($appointments as $appointment)
-                <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-                    <!-- Заголовок карточки -->
-                    <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-calendar text-slate-600 dark:text-slate-400"></i>
-                                </div>
-                                <div>
-                                    <div class="text-base font-medium text-slate-900 dark:text-white">
-                                        {{ $appointment->date->format('d.m.Y') }}
-                                    </div>
-                                    <div class="text-sm text-slate-500 dark:text-slate-400">
-                                        {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
-                                {{ $appointment->status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-600' : '' }}
-                                {{ $appointment->status === 'cancelled' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 border border-rose-200 dark:border-rose-600' : '' }}
-                                {{ $appointment->status === 'confirmed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-200 dark:border-blue-600' : '' }}
-                                {{ $appointment->status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-200 dark:border-amber-600' : '' }}">
-                                @if($appointment->status === 'completed')
-                                    <i class="fa-solid fa-check-circle text-xs"></i>
-                                    Завершена
-                                @elseif($appointment->status === 'cancelled')
-                                    <i class="fa-solid fa-xmark-circle text-xs"></i>
-                                    Отменена
-                                @elseif($appointment->status === 'confirmed')
-                                    <i class="fa-solid fa-circle-check text-xs"></i>
-                                    Подтверждена
-                                @else
-                                    <i class="fa-solid fa-clock text-xs"></i>
-                                    Ожидает
-                                @endif
+                <article class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    {{-- Шапка: дата, время, статус --}}
+                    <header class="px-4 py-3 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700/50">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="shrink-0 text-sm font-semibold text-slate-900 dark:text-white">
+                                {{ $appointment->date->format('d.m.Y') }}, {{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}
                             </span>
                         </div>
-                    </div>
+                        <span class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium
+                            {{ $appointment->status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : '' }}
+                            {{ $appointment->status === 'cancelled' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300' : '' }}
+                            {{ $appointment->status === 'confirmed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' : '' }}
+                            {{ $appointment->status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300' : '' }}">
+                            @if($appointment->status === 'completed')<i class="fa-solid fa-check-circle text-[10px]"></i>Завершена
+                            @elseif($appointment->status === 'cancelled')<i class="fa-solid fa-xmark-circle text-[10px]"></i>Отменена
+                            @elseif($appointment->status === 'confirmed')<i class="fa-solid fa-circle-check text-[10px]"></i>Подтверждена
+                            @else<i class="fa-solid fa-clock text-[10px]"></i>Ожидает
+                            @endif
+                        </span>
+                    </header>
 
-                    <!-- Содержимое карточки -->
-                    <div class="px-4 py-3 space-y-3">
-                        <div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Клиент</p>
-                            <div class="flex items-center gap-2">
-                                <div class="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white">
-                                        {{ $appointment->client->full_name }}
-                                    </p>
-                                    @if($appointment->client->phone)
-                                        <button type="button"
-                                            data-phone="{{ $appointment->client->phone }}"
-                                            data-phone-display="{{ $appointment->client->phone }}"
-                                            data-client-name="{{ $appointment->client->full_name }}"
-                                            @click="openPhoneModal($event)"
-                                            class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                                            {{ $appointment->client->phone }}
-                                        </button>
-                                    @endif
-                                </div>
+                    {{-- Основная информация --}}
+                    <div class="px-4 py-3 space-y-2.5">
+                        <div class="flex items-start gap-3">
+                            <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client->full_name }}</p>
+                                @if($appointment->client->phone)
+                                    <button type="button" data-phone="{{ $appointment->client->phone }}" data-phone-display="{{ $appointment->client->phone }}" data-client-name="{{ $appointment->client->full_name }}"
+                                        @click="openPhoneModal($event)"
+                                        class="min-h-[44px] -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
+                                        {{ $appointment->client->phone }}
+                                    </button>
+                                @endif
                             </div>
                         </div>
-                        <div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Услуга</p>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">
-                                {{ $appointment->service->name }}
-                                @if ($appointment->final_duration)
-                                    <span class="text-slate-500 dark:text-slate-400">• {{ $appointment->final_duration }} мин</span>
-                                @endif
-                            </p>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <i class="fa-solid fa-scissors text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
+                            <span class="truncate">{{ $appointment->service->name }}</span>
+                            @if ($appointment->final_duration)
+                                <span class="shrink-0">· {{ $appointment->final_duration }} мин</span>
+                            @endif
                         </div>
-                        <div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Мастер</p>
-                            <p class="text-sm text-slate-900 dark:text-white">
-                                {{ $appointment->master->name ?? 'Не назначен' }}
-                            </p>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                            <i class="fa-solid fa-user-tie text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
+                            <span class="truncate">{{ $appointment->master->name ?? 'Не назначен' }}</span>
                         </div>
                         @if ($appointment->final_price)
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Цена</p>
-                                <p class="text-sm font-semibold text-slate-900 dark:text-white">
-                                    {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
-                                </p>
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white pt-0.5">
+                                <i class="fa-solid fa-tag text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
+                                {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                             </div>
                         @endif
                     </div>
 
-                    <!-- Действия: просмотр и редактирование всегда; по статусу — подтвердить/завершить/отменить -->
-                    <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-                        <div class="flex flex-wrap items-center gap-2">
-                            @if($hasBusinessPermission('client.appointments.view'))
+                    {{-- Действия: Просмотр + выпадающее меню --}}
+                    <footer class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+                        <div class="flex items-center gap-2">
+                            @if($canViewAppointments)
                             <a href="{{ route('appointments.show', $appointment) }}"
-                                class="flex-1 min-w-0 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center rounded-lg">
-                                Просмотр
+                                class="flex-1 min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-[0.98] transition-all">
+                                <i class="fa-regular fa-eye text-sm"></i>Просмотр
                             </a>
                             @endif
-                            @if($hasBusinessPermission('client.appointments.update'))
-                            <a href="{{ route('appointments.edit', $appointment) }}"
-                                class="flex-1 min-w-0 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center rounded-lg">
-                                Изменить
-                            </a>
-                            @if($appointment->status === 'pending')
-                            <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="flex-shrink-0">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit"
-                                    class="px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30 rounded-lg transition-colors">
-                                    <i class="fa-solid fa-check-circle text-xs mr-1"></i>Подтвердить
+                            @if($hasAnyAppointmentAction)
+                            <div class="relative shrink-0" x-data="{ openActions: false }"
+                                 @click.outside="openActions = false"
+                                 @keydown.escape.window="openActions = false">
+                                <button type="button" @click="openActions = !openActions" aria-label="Действия"
+                                    class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
+                                    <i class="fa-solid fa-ellipsis-vertical text-base"></i>
                                 </button>
-                            </form>
-                            @endif
-                            @if($appointment->status === 'confirmed')
-                            <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="flex-shrink-0">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit"
-                                    class="px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 hover:bg-emerald-200 dark:hover:bg-emerald-500/30 rounded-lg transition-colors"
-                                    onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
-                                    <i class="fa-solid fa-check text-xs mr-1"></i>Завершить
-                                </button>
-                            </form>
-                            @endif
-                            @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
-                            <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="flex-shrink-0">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit"
-                                    class="px-3 py-2 text-sm font-medium text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/20 hover:bg-rose-200 dark:hover:bg-rose-500/30 rounded-lg transition-colors"
-                                    onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
-                                    <i class="fa-solid fa-xmark-circle text-xs mr-1"></i>Отменить
-                                </button>
-                            </form>
-                            @endif
+                                <div x-show="openActions"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute right-0 bottom-full mb-2 z-10 min-w-[11rem] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg py-1"
+                                     style="display: none;">
+                                    @if($canViewAppointments)
+                                    <a href="{{ route('appointments.show', $appointment) }}"
+                                       class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80">
+                                        <span class="w-5 text-center text-slate-400"><i class="fa-regular fa-eye text-xs"></i></span>
+                                        <span>Просмотр</span>
+                                    </a>
+                                    @endif
+                                    @if($canUpdateAppointments)
+                                    <a href="{{ route('appointments.edit', $appointment) }}"
+                                       class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80">
+                                        <span class="w-5 text-center text-slate-400"><i class="fa-regular fa-pen-to-square text-xs"></i></span>
+                                        <span>Редактировать</span>
+                                    </a>
+                                    @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
+                                    <div class="border-t border-slate-100 dark:border-slate-700/80 mt-1 pt-1">
+                                        @if($appointment->status === 'pending')
+                                        <form method="POST" action="{{ route('appointments.confirm', $appointment) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10">
+                                                <span class="w-5 text-center"><i class="fa-solid fa-check-circle text-xs"></i></span>
+                                                <span>Подтвердить</span>
+                                            </button>
+                                        </form>
+                                        @endif
+                                        @if($appointment->status === 'confirmed')
+                                        <form method="POST" action="{{ route('appointments.complete', $appointment) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                                                onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
+                                                <span class="w-5 text-center"><i class="fa-solid fa-check text-xs"></i></span>
+                                                <span>Завершить</span>
+                                            </button>
+                                        </form>
+                                        @endif
+                                        <form method="POST" action="{{ route('appointments.cancel', $appointment) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                                                onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
+                                                <span class="w-5 text-center"><i class="fa-solid fa-xmark-circle text-xs"></i></span>
+                                                <span>Отменить</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    @endif
+                                    @endif
+                                </div>
+                            </div>
                             @endif
                         </div>
-                    </div>
-                </div>
+                    </footer>
+                </article>
             @endforeach
         </div>
 
@@ -885,13 +812,13 @@
                             <span>Очистить фильтры</span>
                         </a>
                     @endif
-                    @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
+                    @if($canCreateAppointments && $canCreateAppointment)
                         <a href="{{ route('appointments.create') }}"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i class="fa-solid fa-plus text-sm"></i>
                             <span>Создать запись</span>
                         </a>
-                    @elseif($hasBusinessPermission('client.appointments.create') && !$canCreateAppointment)
+                    @elseif($canCreateAppointments && !$canCreateAppointment)
                         <button disabled
                             class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
                             title="Достигнут месячный лимит записей для вашего тарифа. Обновите тариф для увеличения лимита.">

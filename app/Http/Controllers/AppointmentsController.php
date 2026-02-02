@@ -134,6 +134,15 @@ class AppointmentsController extends Controller
         $services = $this->serviceRepository->getActiveByBusiness($business->id);
         $masters = $this->masterRepository->getActiveByBusiness($business->id);
 
+        // Права через BusinessRolePermissionService (единый источник)
+        $canViewAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.view');
+        $canExportAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.export');
+        $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
+        $canDeleteAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.delete');
+        $canCreateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.create');
+        $hasAnyAppointmentAction = $canViewAppointments || $canUpdateAppointments || $canDeleteAppointments;
+        $canCreateAppointment = $canCreateAppointments && app(SubscriptionService::class)->canCreateAppointment(Auth::user());
+
         return view('appointments.index', [
             'business' => $business,
             'appointments' => $appointments,
@@ -151,6 +160,13 @@ class AppointmentsController extends Controller
             'perPage' => $perPage,
             'services' => $services,
             'masters' => $masters,
+            'canViewAppointments' => $canViewAppointments,
+            'canExportAppointments' => $canExportAppointments,
+            'canUpdateAppointments' => $canUpdateAppointments,
+            'canDeleteAppointments' => $canDeleteAppointments,
+            'canCreateAppointments' => $canCreateAppointments,
+            'canCreateAppointment' => $canCreateAppointment,
+            'hasAnyAppointmentAction' => $hasAnyAppointmentAction,
         ]);
     }
 
