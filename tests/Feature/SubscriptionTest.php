@@ -51,7 +51,7 @@ class SubscriptionTest extends TestCase
         $user = User::factory()->create();
         $user->assignRole("user");
 
-        $business = Business::factory()->create();
+        $business = Business::factory()->create(["owner_id" => $user->id]);
 
         // Создаем роль owner (если еще не создана)
         $ownerRole = \App\Models\BusinessRole::firstOrCreate(
@@ -66,7 +66,6 @@ class SubscriptionTest extends TestCase
 
         // Привязываем пользователя к бизнесу с ролью owner
         $user->businesses()->attach($business->id, [
-            "role" => "owner",
             "role_id" => $ownerRole->id,
         ]);
 
@@ -280,8 +279,9 @@ class SubscriptionTest extends TestCase
         $response->assertRedirect();
     }
 
-    public function test_subscribe_preserves_ends_at_when_changing_plan()
+    public function test_subscribe_to_free_blocked_when_active_paid_subscription()
     {
+        // При активной платной подписке переход на бесплатный тариф блокируется — сначала отмена на странице «Текущая подписка»
         $data = $this->createUserWithBusiness();
         ["user" => $user] = $data;
 
@@ -300,12 +300,14 @@ class SubscriptionTest extends TestCase
             ->actingAs($user)
             ->post("/subscription/{$newPlan->id}/subscribe");
 
+        $response->assertRedirect();
+        $response->assertSessionHas("error");
         $subscription = Subscription::where("user_id", $user->id)->first();
+        $this->assertEquals($oldPlan->id, $subscription->plan_id);
         $this->assertEquals(
             $futureEndsAt->format("Y-m-d H:i:s"),
             $subscription->ends_at->format("Y-m-d H:i:s"),
         );
-        $this->assertArrayHasKey("previous_plan_id", $subscription->metadata);
     }
 
     public function test_current_subscription_page_can_be_rendered()
@@ -326,6 +328,41 @@ class SubscriptionTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs("subscription.current");
+    }
+
+    public function test_current_subscription_page_shows_only_plan_metrics()
+    {
+        $data = $this->createUserWithBusiness();
+        ["user" => $user] = $data;
+        $metric = \App\Models\SubscriptionMetric::factory()->create([
+            "key" => "max_locations",
+            "type" => "integer",
+            "label" => "Локации",
+        ]);
+        $plan = Plan::factory()->create();
+        \App\Models\PlanFeature::create([
+            "plan_id" => $plan->id,
+            "metric_id" => $metric->id,
+            "value" => "5",
+        ]);
+        Subscription::factory()->create([
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
+            "status" => "active",
+            "ends_at" => now()->addMonth(),
+        ]);
+
+        $response = $this->withBusinessSession($data)
+            ->actingAs($user)
+            ->get("/subscription/current");
+
+        $response->assertStatus(200);
+        $response->assertViewIs("subscription.current");
+        $response->assertViewHas("metricsInPlan");
+        $response->assertSee("Использование лимитов");
+        $metricsInPlan = $response->viewData("metricsInPlan");
+        $this->assertCount(1, $metricsInPlan);
+        $this->assertEquals("max_locations", $metricsInPlan[0]["metric"]->key);
     }
 
     public function test_current_subscription_redirects_when_no_subscription()

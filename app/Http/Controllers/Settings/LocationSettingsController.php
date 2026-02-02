@@ -105,7 +105,7 @@ class LocationSettingsController extends Controller
         if (! $subscriptionService->canCreateLocation($user)) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит локаций для вашего тарифа. Обновите тариф для добавления большего количества локаций.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();

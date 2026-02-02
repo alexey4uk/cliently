@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Models\Invoice;
 use BeGateway\GetPaymentToken;
 use BeGateway\QueryByUid;
@@ -10,7 +13,7 @@ use BeGateway\Settings as BeGatewaySettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class BepaidService
+class BepaidService implements PaymentGatewayInterface
 {
     /**
      * Инициализировать настройки SDK из config (.env)
@@ -352,11 +355,9 @@ class BepaidService
             // Идемпотентность: если инвойс уже обработан с тем же transaction_id
             if ($invoice->bepaid_transaction_id === $transactionUid) {
                 if (config('bepaid.logging.enabled')) {
-                    Log::info('bePaid webhook: duplicate transaction, already processed', [
-                        'invoice_id' => $invoice->id,
-                        'transaction_uid' => $transactionUid,
+                    Log::info('bePaid webhook: duplicate transaction, already processed', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'current_status' => $invoice->status,
-                    ]);
+                    ]));
                 }
 
                 return $invoice;
@@ -365,11 +366,9 @@ class BepaidService
             // Если инвойс уже оплачен, но приходит другой transaction_id - логируем
             if ($invoice->isPaid() && $invoice->bepaid_transaction_id !== $transactionUid) {
                 if (config('bepaid.logging.enabled')) {
-                    Log::warning('bePaid webhook: invoice already paid with different transaction', [
-                        'invoice_id' => $invoice->id,
+                    Log::warning('bePaid webhook: invoice already paid with different transaction', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'existing_transaction_id' => $invoice->bepaid_transaction_id,
-                        'new_transaction_uid' => $transactionUid,
-                    ]);
+                    ]));
                 }
 
                 return $invoice;
@@ -383,13 +382,10 @@ class BepaidService
                 $webhookAmountInt = (int) $webhookAmount;
 
                 if ($webhookAmountInt !== $invoiceAmountInCents) {
-                    Log::error('bePaid webhook: amount mismatch', [
-                        'invoice_id' => $invoice->id,
-                        'invoice_amount' => $invoice->amount,
+                    Log::error('bePaid webhook: amount mismatch', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'invoice_amount_cents' => $invoiceAmountInCents,
                         'webhook_amount_cents' => $webhookAmountInt,
-                        'transaction_uid' => $transactionUid,
-                    ]);
+                    ]));
                     throw new \RuntimeException("Сумма платежа не совпадает. Ожидалось: {$invoiceAmountInCents}, получено: {$webhookAmountInt}");
                 }
             }
@@ -397,12 +393,10 @@ class BepaidService
             // Проверка валюты (дополнительная защита)
             $webhookCurrency = $transaction['currency'] ?? null;
             if ($webhookCurrency !== null && $webhookCurrency !== $invoice->currency) {
-                Log::error('bePaid webhook: currency mismatch', [
-                    'invoice_id' => $invoice->id,
+                Log::error('bePaid webhook: currency mismatch', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                     'invoice_currency' => $invoice->currency,
                     'webhook_currency' => $webhookCurrency,
-                    'transaction_uid' => $transactionUid,
-                ]);
+                ]));
                 throw new \RuntimeException("Валюта платежа не совпадает. Ожидалось: {$invoice->currency}, получено: {$webhookCurrency}");
             }
 
@@ -420,11 +414,9 @@ class BepaidService
             // Логируем неизвестные статусы
             if (! in_array($status, ['successful', 'failed', 'canceled', 'cancelled', 'expired', 'pending', 'processing'])) {
                 if (config('bepaid.logging.enabled')) {
-                    Log::warning('bePaid webhook: unknown transaction status', [
-                        'invoice_id' => $invoice->id,
-                        'transaction_uid' => $transactionUid,
+                    Log::warning('bePaid webhook: unknown transaction status', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'status' => $status,
-                    ]);
+                    ]));
                 }
             }
 
@@ -444,16 +436,26 @@ class BepaidService
             $invoice->update($updateData);
 
             if (config('bepaid.logging.enabled')) {
-                Log::info('bePaid webhook processed', [
-                    'invoice_id' => $invoice->id,
-                    'transaction_uid' => $transactionUid,
+                Log::info('bePaid webhook processed', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                     'status' => $newStatus,
                     'original_status' => $status,
-                ]);
+                ]));
             }
 
             return $invoice;
         });
     }
 
+    /**
+     * Контекст для структурированного логирования webhook (фильтрация и алерты).
+     */
+    private function webhookLogContext(int|string $invoiceId, string $transactionUid): array
+    {
+        return [
+            'channel' => 'payment',
+            'event' => 'bepaid_webhook',
+            'invoice_id' => (int) $invoiceId,
+            'transaction_uid' => $transactionUid,
+        ];
+    }
 }

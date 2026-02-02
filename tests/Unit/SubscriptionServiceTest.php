@@ -5,8 +5,10 @@ namespace Tests\Unit;
 use App\Models\Plan;
 use App\Models\PlanFeature;
 use App\Models\Subscription;
+use App\Models\SubscriptionMetric;
 use App\Models\SubscriptionUsage;
 use App\Models\User;
+use Carbon\Carbon;
 use App\Services\SubscriptionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -173,6 +175,23 @@ class SubscriptionServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    public function test_check_limit_returns_false_when_metric_not_in_plan()
+    {
+        $user = User::factory()->create();
+        $plan = Plan::factory()->create();
+        Subscription::factory()->create([
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
+            "status" => "active",
+            "ends_at" => now()->addMonth(),
+        ]);
+        // Plan has no PlanFeature for max_locations, so metric is unavailable
+
+        $result = $this->service->checkLimit($user, "max_locations");
+
+        $this->assertFalse($result);
+    }
+
     public function test_check_limit_returns_true_when_limit_is_unlimited()
     {
         $user = User::factory()->create();
@@ -180,9 +199,9 @@ class SubscriptionServiceTest extends TestCase
 
         PlanFeature::factory()
             ->unlimited()
+            ->forMetricKey("max_locations")
             ->create([
                 "plan_id" => $plan->id,
-                "feature_key" => "max_locations",
             ]);
 
         Subscription::factory()->create([
@@ -202,9 +221,9 @@ class SubscriptionServiceTest extends TestCase
 
         PlanFeature::factory()
             ->integer(10)
+            ->forMetricKey("max_locations")
             ->create([
                 "plan_id" => $plan->id,
-                "feature_key" => "max_locations",
             ]);
 
         $subscription = Subscription::factory()->create([
@@ -235,9 +254,9 @@ class SubscriptionServiceTest extends TestCase
         // max_locations_per_month — месячная метрика, usage берётся из SubscriptionUsage
         PlanFeature::factory()
             ->integer(10)
+            ->forMetricKey("max_locations_per_month")
             ->create([
                 "plan_id" => $plan->id,
-                "feature_key" => "max_locations_per_month",
             ]);
 
         $subscription = Subscription::factory()->create([
@@ -317,5 +336,54 @@ class SubscriptionServiceTest extends TestCase
         $result = $this->service->cancelSubscription($user);
 
         $this->assertFalse($result);
+    }
+
+    public function test_reset_monthly_usage_removes_old_periods_and_creates_current_month()
+    {
+        $metric = SubscriptionMetric::factory()->create([
+            "key" => "max_appointments_per_month",
+            "type" => "integer",
+        ]);
+        $plan = Plan::factory()->create();
+        PlanFeature::create([
+            "plan_id" => $plan->id,
+            "metric_id" => $metric->id,
+            "value" => "100",
+        ]);
+        $user = User::factory()->create();
+        $subscription = Subscription::factory()->create([
+            "user_id" => $user->id,
+            "plan_id" => $plan->id,
+            "status" => "active",
+            "ends_at" => now()->addMonth(),
+        ]);
+        $lastMonth = Carbon::now()->subMonth()->startOfMonth();
+        $twoMonthsAgo = Carbon::now()->subMonths(2)->startOfMonth();
+        SubscriptionUsage::factory()->create([
+            "subscription_id" => $subscription->id,
+            "user_id" => $user->id,
+            "feature_key" => "max_appointments_per_month",
+            "period_start" => $lastMonth,
+            "period_end" => $lastMonth->copy()->endOfMonth(),
+            "current_usage" => 5,
+        ]);
+        SubscriptionUsage::factory()->create([
+            "subscription_id" => $subscription->id,
+            "user_id" => $user->id,
+            "feature_key" => "max_appointments_per_month",
+            "period_start" => $twoMonthsAgo,
+            "period_end" => $twoMonthsAgo->copy()->endOfMonth(),
+            "current_usage" => 3,
+        ]);
+
+        $this->service->resetMonthlyUsage($user);
+
+        $currentPeriodStart = Carbon::now()->startOfMonth();
+        $usages = SubscriptionUsage::where("user_id", $user->id)
+            ->where("feature_key", "max_appointments_per_month")
+            ->get();
+        $this->assertCount(1, $usages);
+        $this->assertEquals($currentPeriodStart->format("Y-m-d"), $usages->first()->period_start->format("Y-m-d"));
+        $this->assertEquals(0, $usages->first()->current_usage);
     }
 }

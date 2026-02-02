@@ -156,7 +156,7 @@ style="width: 0; height: 0;">
                 @if(!Str::startsWith(Request::path(), 'panel') && $hasBusinessPermission('client.subscription.view'))
                     @php
                         $subscription = Auth::user()->activeSubscription();
-                        $plan = $subscription && $subscription->plan ? $subscription->plan : null;
+                        $plan = $subscription ? $subscription->getEffectivePlan() : null;
                     @endphp
                     @if($subscription && $plan)
                         <a href="{{ route('subscription.current') }}" @click="closeMenu()"

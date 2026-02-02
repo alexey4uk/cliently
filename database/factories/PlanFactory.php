@@ -40,7 +40,7 @@ class PlanFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Бесплатный',
             'slug' => 'free',
-            'price' => null,
+            'price' => 0,
             'trial_days' => 0,
             'is_default' => true,
             'sort_order' => 0,

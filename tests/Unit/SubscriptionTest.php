@@ -195,11 +195,14 @@ class SubscriptionTest extends TestCase
         $currentPlan = Plan::factory()->free()->create();
         $previousPlan = Plan::factory()->create();
 
-        PlanFeature::factory()->create([
+        $metric = \App\Models\SubscriptionMetric::firstOrCreate(
+            ['key' => 'analytics_enabled'],
+            ['label' => 'Analytics', 'type' => 'boolean', 'is_active' => true, 'sort_order' => 0]
+        );
+        PlanFeature::factory()->boolean(true)->create([
             'plan_id' => $previousPlan->id,
-            'feature_key' => 'analytics_enabled',
-            'feature_type' => 'boolean',
-            'feature_value' => 'true',
+            'metric_id' => $metric->id,
+            'value' => 'true',
         ]);
 
         $subscription = Subscription::factory()->withPreviousPlan($previousPlan->id, $previousPlan->name)->create([
@@ -217,9 +220,14 @@ class SubscriptionTest extends TestCase
         $currentPlan = Plan::factory()->free()->create();
         $previousPlan = Plan::factory()->create();
 
+        $metric = \App\Models\SubscriptionMetric::firstOrCreate(
+            ['key' => 'max_locations'],
+            ['label' => 'Locations', 'type' => 'integer', 'is_active' => true, 'sort_order' => 0]
+        );
         PlanFeature::factory()->integer(50)->create([
             'plan_id' => $previousPlan->id,
-            'feature_key' => 'max_locations',
+            'metric_id' => $metric->id,
+            'value' => '50',
         ]);
 
         $subscription = Subscription::factory()->withPreviousPlan($previousPlan->id, $previousPlan->name)->create([

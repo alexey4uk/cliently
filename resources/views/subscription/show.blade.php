@@ -102,42 +102,140 @@
             </button>
         @else
             @php
+                $isFreePlan = !$plan->price || $plan->price == 0;
+                $blockFreeBecausePaid = ($hasActivePaidSubscription ?? false) && $isFreePlan;
+            @endphp
+            @if($blockFreeBecausePaid)
+                <div class="p-5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl max-w-md">
+                    <p class="text-sm text-amber-800 dark:text-amber-300 mb-4">
+                        Чтобы перейти на бесплатный тариф, сначала отмените платную подписку. Она останется активной до конца оплаченного периода, после чего будет подключён бесплатный тариф.
+                    </p>
+                    <a href="{{ route('subscription.current') }}" class="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 rounded-lg font-medium text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors">
+                        <i class="fa-solid fa-external-link-alt"></i>
+                        Перейти к подписке и отмене
+                    </a>
+                </div>
+            @else
+            @php
                 $subscriptionService = app(\App\Services\SubscriptionService::class);
                 $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
                 $hasUsedTrial = $canUseTrial ? $subscriptionService->hasUsedTrialForPlan($user, $plan) : false;
             @endphp
 
-            <form action="{{ route('subscription.subscribe', $plan) }}" method="POST" class="subscription-form">
+            <div x-data="{
+                showConfirmModal: false,
+                selectedForm: null,
+                useTrialInput: null,
+                useTrial: true,
+                planName: '{{ addslashes($plan->name) }}',
+                planPrice: {{ $plan->price ? number_format($plan->price, 2, '.', '') : 0 }},
+                planInterval: '{{ $plan->interval }}',
+                trialDays: {{ $plan->trial_days ?? 0 }},
+                hasUsedTrial: {{ $hasUsedTrial ? 'true' : 'false' }},
+                openModal() {
+                    this.selectedForm = this.$refs.subscribeForm;
+                    this.useTrialInput = this.selectedForm?.querySelector('input[name=\'use_trial\']');
+                    this.useTrial = this.trialDays > 0 && !this.hasUsedTrial;
+                    this.showConfirmModal = true;
+                },
+                closeModal() {
+                    this.showConfirmModal = false;
+                    this.selectedForm = null;
+                },
+                confirmSubmit() {
+                    if (this.selectedForm) {
+                        if (this.useTrialInput) {
+                            this.useTrialInput.value = (this.useTrial && this.trialDays > 0 && !this.hasUsedTrial) ? '1' : '0';
+                        }
+                        this.showConfirmModal = false;
+                        this.selectedForm.submit();
+                    }
+                }
+            }">
+            <form x-ref="subscribeForm" action="{{ route('subscription.subscribe', $plan) }}" method="POST" class="subscription-form">
                 @csrf
-                @if($plan->price && $plan->price > 0)
-                    @if($canUseTrial && !$hasUsedTrial)
-                        <div class="mb-4 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fa-solid fa-gift text-green-600 dark:text-green-400"></i>
-                                <span class="text-sm font-medium text-green-900 dark:text-green-300">
-                                    Доступен пробный период {{ $plan->trial_days }} {{ $plan->trial_days === 1 ? 'день' : ($plan->trial_days < 5 ? 'дня' : 'дней') }}
-                                </span>
-                            </div>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" name="use_trial" value="1" checked class="rounded">
-                                <span class="text-sm text-green-800 dark:text-green-300">Использовать пробный период</span>
-                            </label>
-                            <p class="text-xs text-green-700 dark:text-green-300 mt-2">Пробный период начнется сразу после активации</p>
-                        </div>
-                    @endif
-                    <button type="submit"
-                        class="subscription-submit-btn inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-md hover:shadow-lg">
+                @if($plan->price && $plan->price > 0 && $canUseTrial && !$hasUsedTrial)
+                    <input type="hidden" name="use_trial" value="0">
+                @endif
+                <button type="button" @click="openModal()"
+                    class="subscription-submit-btn inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-md hover:shadow-lg">
+                    @if($plan->price && $plan->price > 0)
                         <i class="fa-solid fa-credit-card"></i>
                         <span class="btn-text">Оплатить подписку</span>
-                    </button>
-                @else
-                    <button type="submit"
-                        class="subscription-submit-btn inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-md hover:shadow-lg">
+                    @else
                         <i class="fa-solid fa-check"></i>
                         <span class="btn-text">Оформить подписку</span>
-                    </button>
-                @endif
+                    @endif
+                </button>
             </form>
+
+            {{-- Модальное окно подтверждения (как на странице списка тарифов) --}}
+            <div x-show="showConfirmModal"
+                 @click.away="closeModal()"
+                 @keydown.escape.window="closeModal()"
+                 x-transition
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
+                 style="display: none;">
+                <div @click.stop class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md w-full overflow-hidden">
+                    <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Подтверждение смены тарифа</h3>
+                            <button @click="closeModal()" type="button" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="text-center mb-4">
+                            <h4 class="text-xl font-bold text-slate-900 dark:text-white mb-2" x-text="planName"></h4>
+                            <div class="flex items-baseline justify-center gap-2 mb-2">
+                                <template x-if="planPrice > 0">
+                                    <div>
+                                        <span class="text-3xl font-bold text-slate-900 dark:text-white" x-text="Math.round(planPrice).toLocaleString('ru-RU')"></span>
+                                        <span class="text-lg text-slate-600 dark:text-slate-400 ml-1">BYN</span>
+                                    </div>
+                                </template>
+                                <template x-if="!planPrice || planPrice === 0">
+                                    <span class="text-3xl font-bold text-slate-900 dark:text-white">Бесплатно</span>
+                                </template>
+                            </div>
+                            <template x-if="trialDays > 0 && !hasUsedTrial">
+                                <div class="mt-3 p-3 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" x-model="useTrial" class="rounded">
+                                        <span class="text-sm text-green-700 dark:text-green-300">Использовать пробный период (<span x-text="trialDays + ' ' + (trialDays === 1 ? 'день' : (trialDays < 5 ? 'дня' : 'дней'))"></span>)</span>
+                                    </label>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl p-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-info-circle text-indigo-600 dark:text-indigo-400 mt-0.5"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-indigo-900 dark:text-indigo-300 mb-1">Вы уверены, что хотите перейти на этот тариф?</p>
+                                    <template x-if="planPrice > 0">
+                                        <p class="text-xs text-indigo-700 dark:text-indigo-400">Тариф будет активирован после подтверждения.</p>
+                                    </template>
+                                    <template x-if="!planPrice || planPrice === 0">
+                                        <p class="text-xs text-indigo-700 dark:text-indigo-400">Переход на бесплатный тариф. Будут применены ограничения по лимитам.</p>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 flex items-center justify-end gap-3">
+                        <button @click="closeModal()" type="button" class="px-4 py-2.5 min-h-[44px] text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600">
+                            Отмена
+                        </button>
+                        <button @click="confirmSubmit()" type="button" class="px-6 py-2.5 min-h-[44px] text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+                            <i class="fa-solid fa-check-circle mr-2"></i>
+                            Подтвердить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            @endif
         @endif
     </div>
 </div>

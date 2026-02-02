@@ -5,12 +5,12 @@
     'trialUsage' => [],
     'integerMetricsList',
     'booleanMetricsList',
+    'hasActivePaidSubscription' => false,
 ])
 
 @php
     $hasUsedTrial = isset($trialUsage[$plan->id]) && $trialUsage[$plan->id];
     $canUseTrial = $plan->trial_days > 0 && $plan->price !== null && !$hasUsedTrial;
-    $needsModal = !$isCurrent && $plan->price && $canUseTrial;
 @endphp
 
 <div class="relative flex flex-col transition-all duration-300">
@@ -88,6 +88,18 @@
 
         {{-- Actions --}}
         <div class="px-4 sm:px-6 pb-4 sm:pb-6 pt-3 sm:pt-4 space-y-2">
+            @php $isFreePlan = !$plan->price || $plan->price == 0; $blockFreeBecausePaid = $hasActivePaidSubscription && $isFreePlan; @endphp
+            @if($blockFreeBecausePaid)
+                <div class="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+                    <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">
+                        Чтобы перейти на бесплатный тариф, сначала отмените платную подписку. Она останется активной до конца оплаченного периода.
+                    </p>
+                    <a href="{{ route('subscription.current') }}" class="w-full min-h-[44px] py-2.5 sm:py-3 px-4 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors">
+                        <i class="fa-solid fa-external-link-alt"></i>
+                        Перейти к подписке и отмене
+                    </a>
+                </div>
+            @else
             <form action="{{ route('subscription.subscribe', $plan) }}" method="POST" class="subscription-form" x-ref="form-{{ $plan->id }}">
                 @csrf
                 @if($canUseTrial)
@@ -99,26 +111,17 @@
                         Текущий тариф
                     </button>
                 @else
-                    @if($needsModal)
-                        <button type="button"
-                            @click="openConfirmModal('{{ addslashes($plan->name) }}', {{ $plan->price ? number_format($plan->price, 2, '.', '') : 0 }}, '{{ $plan->interval }}', {{ $plan->trial_days ?? 0 }}, {{ $hasUsedTrial ? 'true' : 'false' }}, $refs['form-{{ $plan->id }}'])"
-                            class="subscription-submit-btn w-full min-h-[44px] py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md hover:shadow-lg">
-                            <span class="btn-text">
-                                <i class="fa-solid fa-check-circle mr-2"></i>
-                                Выбрать тариф
-                            </span>
-                        </button>
-                    @else
-                        <button type="submit"
-                            class="subscription-submit-btn w-full min-h-[44px] py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md hover:shadow-lg">
-                            <span class="btn-text">
-                                <i class="fa-solid fa-check-circle mr-2"></i>
-                                {{ $plan->price ? 'Выбрать тариф' : 'Начать бесплатно' }}
-                            </span>
-                        </button>
-                    @endif
+                    <button type="button"
+                        @click="openConfirmModal('{{ addslashes($plan->name) }}', {{ $plan->price ? number_format($plan->price, 2, '.', '') : 0 }}, '{{ $plan->interval }}', {{ $plan->trial_days ?? 0 }}, {{ $hasUsedTrial ? 'true' : 'false' }}, $refs['form-{{ $plan->id }}'])"
+                        class="subscription-submit-btn w-full min-h-[44px] py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md hover:shadow-lg">
+                        <span class="btn-text">
+                            <i class="fa-solid fa-check-circle mr-2"></i>
+                            {{ $plan->price ? 'Выбрать тариф' : 'Начать бесплатно' }}
+                        </span>
+                    </button>
                 @endif
             </form>
+            @endif
         </div>
     </div>
 </div>

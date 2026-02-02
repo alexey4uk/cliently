@@ -28,9 +28,12 @@ class FixPlanFeaturesData extends Command
     {
         $this->info('Поиск неправильных данных в plan_features...');
 
-        // Находим все записи с типом integer, но со значениями "false" или "true"
-        $incorrectFeatures = PlanFeature::where('feature_type', 'integer')
-            ->whereIn('feature_value', ['false', 'true'])
+        // Находим записи, где метрика типа integer, но value — "true" или "false"
+        $incorrectFeatures = PlanFeature::with('metric')
+            ->whereHas('metric', function ($q) {
+                $q->where('type', 'integer');
+            })
+            ->whereIn('value', ['false', 'true'])
             ->get();
 
         if ($incorrectFeatures->isEmpty()) {
@@ -42,14 +45,14 @@ class FixPlanFeaturesData extends Command
         $this->warn("Найдено {$incorrectFeatures->count()} неправильных записей:");
 
         foreach ($incorrectFeatures as $feature) {
-            $this->line("  - Plan ID: {$feature->plan_id}, Key: {$feature->feature_key}, Value: {$feature->feature_value}");
+            $key = $feature->metric ? $feature->metric->key : '?';
+            $this->line("  - Plan ID: {$feature->plan_id}, Key: {$key}, Value: {$feature->value}");
         }
 
         $this->info('Исправление записей...');
         $fixed = 0;
         foreach ($incorrectFeatures as $feature) {
-            $feature->feature_value = '';
-            $feature->save();
+            $feature->update(['value' => '0']);
             $fixed++;
         }
 

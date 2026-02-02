@@ -226,6 +226,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
         // ВАЖНО: Специфичные маршруты (create) должны быть ПЕРЕД динамическими ({client})
         Route::middleware([
             "check.business.permission:client.clients.create",
+            "check.plan.limit:max_clients",
         ])->group(function () {
             Route::get("/clients/create", [
                 \App\Http\Controllers\ClientController::class,
@@ -285,6 +286,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
         // ВАЖНО: /services/create перед /services/{service}
         Route::middleware([
             "check.business.permission:client.services.create",
+            "check.plan.limit:max_services",
         ])->group(function () {
             Route::get("/services/create", [
                 \App\Http\Controllers\ServiceController::class,
@@ -331,6 +333,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
         // ВАЖНО: Специфичные маршруты (create, calendar) должны быть ПЕРЕД динамическими ({appointment})
         Route::middleware([
             "check.business.permission:client.appointments.create",
+            "check.plan.limit:max_appointments_per_month",
         ])->group(function () {
             Route::get("/appointments/create", [
                 \App\Http\Controllers\AppointmentsController::class,
@@ -569,6 +572,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
             // Локации: /locations/create перед /locations/{location}
             Route::middleware([
                 "check.business.permission:client.locations.create",
+                "check.plan.limit:max_locations",
             ])->group(function () {
                 Route::get("/locations/create", [
                     LocationSettingsController::class,
@@ -614,6 +618,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
             // Мастера: /masters/create перед /masters/{master}
             Route::middleware([
                 "check.business.permission:client.masters.create",
+                "check.plan.limit:max_masters",
             ])->group(function () {
                 Route::get("/masters/create", [
                     MasterSettingsController::class,
@@ -669,6 +674,7 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
             // Пользователи бизнеса: /users/create перед /users/{user}
             Route::middleware([
                 "check.business.permission:client.business.users.create",
+                "check.plan.limit:max_business_users",
             ])->group(function () {
                 Route::get("/users/create", [
                     \App\Http\Controllers\Settings\BusinessUsersController::class,

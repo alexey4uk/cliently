@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Services\BepaidService;
+use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -102,7 +102,7 @@ class InvoiceController extends Controller
             $bepaidService = app(BepaidService::class);
             $refundAmount = $request->input('amount');
 
-            $result = $bepaidService->refund($invoice, $refundAmount);
+            $result = $paymentGateway->refund($invoice, $refundAmount);
 
             return redirect()->route('panel.invoices.show', $invoice)
                 ->with('success', 'Возврат средств успешно выполнен.');

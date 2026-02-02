@@ -124,7 +124,7 @@ class MasterSettingsController extends Controller
                 ->withInput()
                 ->with(
                     "error",
-                    "Достигнут лимит мастеров для вашего тарифа. Обновите тариф для добавления большего количества мастеров.",
+                    \App\Services\SubscriptionService::planLimitErrorMessage(),
                 );
         }
 

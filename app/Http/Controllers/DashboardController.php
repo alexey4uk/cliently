@@ -501,20 +501,38 @@ class DashboardController extends Controller
 
         $subscriptionService = app(\App\Services\SubscriptionService::class);
 
-        // Получаем использование для всех метрик одним запросом (оптимизация N+1)
-        $metrics = ['max_locations', 'max_masters', 'max_services', 'max_clients', 'max_appointments_per_month', 'max_business_users'];
-        $usage = $subscriptionService->getMultipleUsageAndLimits($owner, $metrics);
+        // Показываем активный тариф (пока действует оплаченный период — предыдущий план)
+        $plan = $subscription->getEffectivePlan();
+        $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
+        $metricKeys = $plan->features
+            ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
+            ->sortBy(fn ($f) => $f->metric->sort_order)
+            ->map(fn ($f) => $f->metric->key)
+            ->values()
+            ->all();
+
+        $usage = $metricKeys === []
+            ? []
+            : $subscriptionService->getMultipleUsageAndLimits($owner, $metricKeys);
+
+        $metadata = $subscription->metadata ?? [];
+        $currentPlan = $subscription->plan;
+        $isPreservedPeriod = $plan->id !== $currentPlan->id && $subscription->ends_at && $subscription->ends_at->isFuture();
 
         return [
-            'plan_name' => $subscription->plan->name,
-            'plan_slug' => $subscription->plan->slug,
-            'plan_price' => $subscription->plan->price,
+            'plan_name' => $plan->name,
+            'plan_slug' => $plan->slug,
+            'plan_price' => $plan->price,
             'status' => $subscription->status,
             'ends_at' => $subscription->ends_at,
             'cancelled_at' => $subscription->cancelled_at,
             'is_cancelled' => $subscription->isCancelled(),
             'will_cancel_at_end' => $subscription->willCancelAtEnd(),
             'usage' => $usage,
+            'previous_plan_name' => $metadata['previous_plan_name'] ?? null,
+            'preserved_ends_at' => $metadata['preserved_ends_at'] ?? null,
+            'is_preserved_period' => $isPreservedPeriod,
+            'next_plan_name' => $isPreservedPeriod ? $currentPlan->name : null,
         ];
     }
 }

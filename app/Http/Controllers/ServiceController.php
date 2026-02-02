@@ -109,7 +109,7 @@ class ServiceController extends Controller
         if (! $subscriptionService->canCreateService($user)) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит услуг для вашего тарифа. Обновите тариф для добавления большего количества услуг.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();

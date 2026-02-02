@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers\Webhook;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Services\BepaidService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class BepaidWebhookController extends Controller
 {
-    protected BepaidService $bepaidService;
+    protected PaymentGatewayInterface $paymentGateway;
 
     protected SubscriptionService $subscriptionService;
 
     public function __construct(
-        BepaidService $bepaidService,
+        PaymentGatewayInterface $paymentGateway,
         SubscriptionService $subscriptionService,
     ) {
-        $this->bepaidService = $bepaidService;
+        $this->paymentGateway = $paymentGateway;
         $this->subscriptionService = $subscriptionService;
     }
 
@@ -87,14 +87,14 @@ class BepaidWebhookController extends Controller
             }
 
             // Валидация данных через сервис
-            if (!$this->bepaidService->validateWebhookRequest($data)) {
+            if (!$this->paymentGateway->validateWebhookRequest($data)) {
                 Log::warning("bePaid webhook: invalid data", ["data" => $data]);
 
                 return response()->json(["error" => "Invalid data"], 400);
             }
 
             // Обрабатываем webhook через сервис
-            $invoice = $this->bepaidService->processWebhook($data);
+            $invoice = $this->paymentGateway->processWebhook($data);
 
             if (!$invoice) {
                 Log::warning("bePaid webhook: invoice not found");

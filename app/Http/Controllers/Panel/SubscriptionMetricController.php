@@ -137,7 +137,7 @@ class SubscriptionMetricController extends Controller
     public function destroy(SubscriptionMetric $metric)
     {
         // Проверяем, используется ли метрика в тарифах
-        $usedInPlans = PlanFeature::where('feature_key', $metric->key)->exists();
+        $usedInPlans = PlanFeature::where('metric_id', $metric->id)->exists();
 
         if ($usedInPlans) {
             return redirect()->back()

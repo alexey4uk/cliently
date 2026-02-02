@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Plan;
@@ -9,6 +11,14 @@ use App\Models\User;
 
 class SubscriptionService
 {
+    /**
+     * Стандартное сообщение при достижении лимита тарифа (для единообразия ответов).
+     */
+    public static function planLimitErrorMessage(): string
+    {
+        return 'Достигнут лимит для вашего тарифа. Обновите тариф для увеличения лимита.';
+    }
+
     /**
      * Создать подписку для пользователя
      */
@@ -48,16 +58,21 @@ class SubscriptionService
         // Сохраняем старый план для проверки изменения
         $oldPlan = $subscription?->plan;
 
-        // Если это смена тарифа (не новая подписка), сохраняем оплаченное время
+        // Если это смена тарифа (не новая подписка), сохраняем оплаченное время только при понижении
         $isPlanChange = $subscription && $oldPlan && $oldPlan->id !== $plan->id;
         $preserveEndsAt = false;
 
         if ($isPlanChange && !$isTrial) {
-            // Если старая подписка еще активна (ends_at в будущем), сохраняем ends_at
-            if ($subscription->ends_at && $subscription->ends_at->isFuture()) {
+            $oldPrice = $oldPlan->price !== null ? (float) $oldPlan->price : 0;
+            $newPrice = $plan->price !== null ? (float) $plan->price : 0;
+            $isDowngrade = $newPrice < $oldPrice || ($oldPrice > 0 && $newPrice === 0.0);
+
+            // Сохраняем ends_at только при понижении (дешевле или переход на бесплатный)
+            if ($isDowngrade && $subscription->ends_at && $subscription->ends_at->isFuture()) {
                 $preserveEndsAt = true;
-                $endsAt = $subscription->ends_at; // Сохраняем старую дату окончания
+                $endsAt = $subscription->ends_at;
             }
+            // При повышении (free → платный или дешевле → дороже) ends_at уже задан выше (now + interval)
         }
 
         // Получаем текущий metadata или создаем новый
@@ -124,6 +139,13 @@ class SubscriptionService
 
         // Проверяем изменение тарифа
         if ($subscription && $oldPlan && $oldPlan->id !== $plan->id) {
+            \Illuminate\Support\Facades\Log::info('Subscription plan changed', [
+                'channel' => 'subscription',
+                'event' => 'subscription_plan_changed',
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $plan->id,
+            ]);
             \App\Services\SubscriptionNotificationService::notifyPlanChanged(
                 $subscription,
                 $oldPlan,
@@ -531,8 +553,10 @@ class SubscriptionService
      */
     /**
      * Проверить использование trial для нескольких планов сразу (оптимизация N+1)
+     *
+     * @return array<int, bool> plan_id => used
      */
-    public function hasUsedTrialForPlans(User $user, $plans): array
+    public function hasUsedTrialForPlans(User $user, \Illuminate\Support\Collection $plans): array
     {
         $subscription = $user->subscription;
 

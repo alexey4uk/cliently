@@ -7,7 +7,10 @@
                         @php
                             $user = Auth::user();
                             $subscription = $user ? $user->activeSubscription() : null;
-                            $plan = $subscription && $subscription->plan ? $subscription->plan : null;
+                            // Эффективный план (при сохранённом периоде — старый платный, иначе текущий)
+                            $plan = $subscription ? $subscription->getEffectivePlan() : null;
+                            $isPreservedPeriod = $subscription && $subscription->plan && $plan && $subscription->plan_id !== $plan->id && $subscription->ends_at && $subscription->ends_at->isFuture();
+                            $nextPlanName = $isPreservedPeriod ? $subscription->plan->name : null;
 
                             // Используем уже полученные данные о бизнесе и роли
                             $business = $currentBusiness ?? null;
@@ -40,6 +43,14 @@
                                             <i class="fa-solid fa-exclamation-triangle text-[10px]"></i>
                                             <span>Отменена</span>
                                         </div>
+                                    @elseif($isPreservedPeriod && $subscription->ends_at)
+                                        <div class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                                            <i class="fa-solid fa-clock text-[10px]"></i>
+                                            <span>Действует до {{ $subscription->ends_at->format('d.m.Y') }}</span>
+                                        </div>
+                                        @if($nextPlanName)
+                                            <div class="text-[10px] text-slate-500 dark:text-slate-500">Потом «{{ $nextPlanName }}»</div>
+                                        @endif
                                     @elseif($plan->price)
                                         <div class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                                             <i class="fa-solid fa-check-circle text-[10px]"></i>
@@ -61,6 +72,11 @@
                                         <div class="text-green-400 text-[10px]">Пробный до {{ $subscription->trial_ends_at->format('d.m.Y') }}</div>
                                     @elseif($subscription->isCancelled())
                                         <div class="text-amber-400 text-[10px]">Отменена</div>
+                                    @elseif($isPreservedPeriod && $subscription->ends_at)
+                                        <div class="text-slate-400 text-[10px]">Действует до {{ $subscription->ends_at->format('d.m.Y') }}</div>
+                                        @if($nextPlanName)
+                                            <div class="text-slate-500 text-[10px]">Потом «{{ $nextPlanName }}»</div>
+                                        @endif
                                     @elseif($plan->price)
                                         <div class="text-slate-400 text-[10px]">Активна</div>
                                     @endif

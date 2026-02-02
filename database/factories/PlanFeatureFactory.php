@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Plan;
 use App\Models\PlanFeature;
+use App\Models\SubscriptionMetric;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,6 +16,7 @@ class PlanFeatureFactory extends Factory
 
     /**
      * Define the model's default state.
+     * Table plan_features: plan_id, metric_id, value.
      *
      * @return array<string, mixed>
      */
@@ -22,20 +24,18 @@ class PlanFeatureFactory extends Factory
     {
         return [
             'plan_id' => Plan::factory(),
-            'feature_key' => $this->faker->word(),
-            'feature_value' => $this->faker->numberBetween(1, 100),
-            'feature_type' => 'integer',
+            'metric_id' => SubscriptionMetric::factory(),
+            'value' => (string) $this->faker->numberBetween(1, 100),
         ];
     }
 
     /**
-     * Boolean feature
+     * Boolean feature (value 'true' / 'false')
      */
     public function boolean(bool $value = true): static
     {
         return $this->state(fn (array $attributes) => [
-            'feature_type' => 'boolean',
-            'feature_value' => $value ? 'true' : 'false',
+            'value' => $value ? 'true' : 'false',
         ]);
     }
 
@@ -45,8 +45,7 @@ class PlanFeatureFactory extends Factory
     public function integer(int $value = 10): static
     {
         return $this->state(fn (array $attributes) => [
-            'feature_type' => 'integer',
-            'feature_value' => (string) $value,
+            'value' => (string) $value,
         ]);
     }
 
@@ -56,8 +55,22 @@ class PlanFeatureFactory extends Factory
     public function unlimited(): static
     {
         return $this->state(fn (array $attributes) => [
-            'feature_type' => 'integer',
-            'feature_value' => '-1',
+            'value' => '-1',
         ]);
+    }
+
+    /**
+     * Use metric by key (creates metric if needed). Use in tests: forMetricKey('max_locations')
+     */
+    public function forMetricKey(string $key, string $type = 'integer'): static
+    {
+        return $this->state(function (array $attributes) use ($key, $type) {
+            $metric = SubscriptionMetric::firstOrCreate(
+                ['key' => $key],
+                ['label' => $key, 'type' => $type, 'is_active' => true, 'sort_order' => 0]
+            );
+
+            return ['metric_id' => $metric->id];
+        });
     }
 }

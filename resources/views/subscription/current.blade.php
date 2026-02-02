@@ -72,6 +72,19 @@
                 @endif
             </div>
 
+            @if(!empty($nextPlanName) && $subscription->ends_at)
+                <div class="mb-6 p-4 sm:p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                        <i class="fa-solid fa-info-circle mr-1 text-slate-500 dark:text-slate-500"></i>
+                        После {{ $subscription->ends_at->format('d.m.Y') }} будет подключён тариф «{{ $nextPlanName }}».
+                    </p>
+                    <a href="{{ route('subscription.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        Вернуться на платный тариф сейчас
+                    </a>
+                </div>
+            @endif
+
             <!-- Предупреждение об отмене -->
             @if($subscription->isCancelled())
                 <div class="mb-6 p-4 sm:p-5 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-200 dark:border-orange-500/20">
@@ -108,7 +121,7 @@
 
             <!-- Действия -->
             <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
-                @if($canManageSubscription && $plan->price && $plan->price > 0)
+                @if($canManageSubscription && $subscription->plan->price && $subscription->plan->price > 0)
                     <form action="{{ route('subscription.renew') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
                         @csrf
                         <button type="submit"
@@ -123,7 +136,8 @@
                     <i class="fa-solid fa-arrow-right shrink-0"></i>
                     <span>Изменить тариф</span>
                 </a>
-                @if($canManageSubscription && !$subscription->isCancelled() && $plan->slug !== 'free')
+                {{-- Кнопка «Отменить подписку» только если в БД реально платный тариф (не период после перехода на бесплатный) --}}
+                @if($canManageSubscription && !$subscription->isCancelled() && $subscription->plan->slug !== 'free')
                     <form action="{{ route('subscription.cancel') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
                         @csrf
                         <button type="submit" onclick="return confirm('Вы уверены, что хотите отменить подписку? Она будет активна до окончания текущего периода ({{ $subscription->ends_at ? $subscription->ends_at->format('d.m.Y') : 'даты окончания' }}).');"

@@ -349,6 +349,11 @@
                                 <span class="text-xs text-slate-500 dark:text-slate-400">Действует до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}</span>
                             @endif
                         </div>
+                        @if(!empty($subscriptionStatus['is_preserved_period']) && !empty($subscriptionStatus['ends_at']) && !empty($subscriptionStatus['next_plan_name']))
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                После этой даты будет подключён тариф «{{ $subscriptionStatus['next_plan_name'] }}»
+                            </p>
+                        @endif
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-3 shrink-0">
@@ -411,16 +416,6 @@
                         @endif
                     </div>
                 </div>
-                @elseif(isset($subscriptionStatus['plan_slug']) && $subscriptionStatus['plan_slug'] !== 'free')
-                <form action="{{ route('subscription.cancel') }}" method="POST" class="pt-4 border-t border-teal-200/50 dark:border-teal-800/30">
-                    @csrf
-                    <button type="submit" onclick="return confirm('Вы уверены, что хотите отменить подписку? Она будет активна до окончания текущего периода.')" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        Отменить подписку
-                    </button>
-                </form>
                 @endif
             @endif
         </div>

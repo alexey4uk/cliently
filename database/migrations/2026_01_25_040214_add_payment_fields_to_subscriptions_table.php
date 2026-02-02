@@ -12,6 +12,7 @@ return new class extends Migration {
     {
         Schema::table('subscriptions', function (Blueprint $table) {
             $table->foreignId('invoice_id')->nullable()->after('user_id')->constrained()->nullOnDelete();
+            $table->string('payment_status', 20)->nullable()->after('invoice_id');
         });
     }
 

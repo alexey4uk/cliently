@@ -16,6 +16,9 @@
     $booleanMetricsList = $metrics->where('type', 'boolean')->values();
 @endphp
 
+@php
+    $currentPlanPriceForModal = $currentPlan && $currentPlan->price !== null ? (float) $currentPlan->price : 0;
+@endphp
 <div class="max-w-[1400px] mx-auto">
     <div x-data="{
         showConfirmModal: false,
@@ -23,6 +26,7 @@
         selectedForm: null,
         useTrialInput: null,
         useTrial: true,
+        currentPlanPrice: {{ $currentPlanPriceForModal }},
         openConfirmModal(planName, planPrice, planInterval, trialDays, hasUsedTrial, form) {
             this.selectedPlan = {
                 name: planName,
@@ -92,6 +96,7 @@
                     :trial-usage="$trialUsage"
                     :integer-metrics-list="$integerMetricsList"
                     :boolean-metrics-list="$booleanMetricsList"
+                    :has-active-paid-subscription="$hasActivePaidSubscription ?? false"
                 />
             @endforeach
         </div>
@@ -281,6 +286,9 @@
                                     <template x-if="selectedPlan && selectedPlan.price > 0">
                                         <p class="text-xs text-indigo-700 dark:text-indigo-400">
                                             Тариф будет активирован сразу после подтверждения.
+                                            <template x-if="currentPlanPrice > 0 && selectedPlan.price < currentPlanPrice">
+                                                <span class="block mt-1 font-medium text-indigo-800 dark:text-indigo-300">Оплаченное время текущего тарифа сохранится до конца периода, затем применятся лимиты нового тарифа.</span>
+                                            </template>
                                             <template x-if="selectedPlan.trialDays > 0 && !selectedPlan.hasUsedTrial">
                                                 <span> Пробный период начнется сразу.</span>
                                             </template>
@@ -291,7 +299,7 @@
                                     </template>
                                     <template x-if="!selectedPlan || !selectedPlan.price || selectedPlan.price === 0">
                                         <p class="text-xs text-indigo-700 dark:text-indigo-400">
-                                            Бесплатный тариф будет активирован сразу после подтверждения.
+                                            Переход на бесплатный тариф. Будут применены ограничения по лимитам. Тариф активируется сразу после подтверждения.
                                         </p>
                                     </template>
                                 </div>

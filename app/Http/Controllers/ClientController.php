@@ -172,7 +172,7 @@ class ClientController extends Controller
 
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Достигнут лимит клиентов для вашего тарифа. Обновите тариф для добавления большего количества клиентов.');
+                ->with('error', \App\Services\SubscriptionService::planLimitErrorMessage());
         }
 
         $validated = $request->validated();
