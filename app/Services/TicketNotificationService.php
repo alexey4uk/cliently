@@ -81,8 +81,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $ticket->assignedUser->id,
                 'type' => 'ticket.created',
-                'title' => 'Новый тикет #'.$ticket->id,
-                'message' => 'Вам назначен тикет: '.$ticket->title,
+                'title' => 'Новый тикет #' . $ticket->id,
+                'message' => 'Вам назначен тикет: ' . $ticket->title,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
@@ -92,7 +92,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && $settings->email_notifications_enabled) {
+        if ($ticket->assignedUser && NotificationSettingsService::isTypeEnabled($ticket->assignedUser, 'ticket.created') && config('tickets.notifications.email_enabled')) {
             if (NotificationSettingsService::shouldSendEmail($ticket->assignedUser, 'ticket.created')) {
                 try {
                     $ticket->assignedUser->notify(new TicketCreated($ticket));
@@ -107,8 +107,8 @@ class TicketNotificationService
         }
 
         // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-        if ($settings->email_notification_recipients && $settings->email_notifications_enabled) {
-            foreach ($settings->email_notification_recipients as $email) {
+        if (config('tickets.notifications.recipients', []) && config('tickets.notifications.email_enabled')) {
+            foreach (config('tickets.notifications.recipients', []) as $email) {
                 try {
                     Notification::route('mail', $email)
                         ->notify(new TicketCreated($ticket));
@@ -238,8 +238,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.comment',
-                'title' => 'Новый комментарий к тикету #'.$ticket->id,
-                'message' => ($comment->user->name ?? 'Пользователь').' добавил(а) комментарий: '.substr($comment->content, 0, 50).'...',
+                'title' => 'Новый комментарий к тикету #' . $ticket->id,
+                'message' => ($comment->user->name ?? 'Пользователь') . ' добавил(а) комментарий: ' . substr($comment->content, 0, 50) . '...',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
@@ -250,7 +250,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($settings->email_notifications_enabled) {
+        if (config('tickets.notifications.email_enabled')) {
             foreach ($usersToNotify as $user) {
                 if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.comment')) {
                     continue;
@@ -269,8 +269,8 @@ class TicketNotificationService
             }
 
             // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-            if ($settings->email_notification_recipients) {
-                foreach ($settings->email_notification_recipients as $email) {
+            if (config('tickets.notifications.recipients', [])) {
+                foreach (config('tickets.notifications.recipients', []) as $email) {
                     try {
                         Notification::route('mail', $email)
                             ->notify(new TicketCommentAdded($ticket, $comment));
@@ -318,8 +318,8 @@ class TicketNotificationService
         NotificationService::send([
             'user_id' => $user->id,
             'type' => 'ticket.assigned',
-            'title' => 'Вам назначен тикет #'.$ticket->id,
-            'message' => 'Тикет "'.$ticket->title.'" назначен вам',
+            'title' => 'Вам назначен тикет #' . $ticket->id,
+            'message' => 'Тикет "' . $ticket->title . '" назначен вам',
             'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
             'data' => [
                 'ticket_id' => $ticket->id,
@@ -383,7 +383,7 @@ class TicketNotificationService
 
         $statusText = match ($newStatus) {
             'pending' => 'ожидает',
-            'in_progress' => 'в работе',
+            'open' => 'в работе',
             'completed' => 'выполнен',
             'cancelled' => 'отменен',
             default => 'обновлен',
@@ -397,8 +397,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.status_changed',
-                'title' => 'Тикет #'.$ticket->id.' обновлен',
-                'message' => 'Статус тикета изменен: '.$statusText,
+                'title' => 'Тикет #' . $ticket->id . ' обновлен',
+                'message' => 'Статус тикета изменен: ' . $statusText,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
@@ -408,7 +408,7 @@ class TicketNotificationService
         }
 
         // === ПОЧТОВОЕ УВЕДОМЛЕНИЕ ===
-        if ($settings->email_notifications_enabled) {
+        if (config('tickets.notifications.email_enabled')) {
             foreach ($usersToNotify as $user) {
                 if (! NotificationSettingsService::isTypeEnabled($user, 'ticket.status_changed')) {
                     continue;
@@ -427,8 +427,8 @@ class TicketNotificationService
             }
 
             // Уведомляем получателей из настроек (без проверки настроек пользователя, т.к. это внешние email)
-            if ($settings->email_notification_recipients) {
-                foreach ($settings->email_notification_recipients as $email) {
+            if (config('tickets.notifications.recipients', [])) {
+                foreach (config('tickets.notifications.recipients', []) as $email) {
                     try {
                         Notification::route('mail', $email)
                             ->notify(new TicketStatusChanged($ticket, $oldStatus, $newStatus));

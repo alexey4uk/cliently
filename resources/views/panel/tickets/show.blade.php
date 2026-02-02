@@ -36,20 +36,20 @@
                                         {{ $ticket->category->name }}
                                     </span>
                                 @endif
-                                @if($ticket->client)
+                                @if($ticket->creator())
                                     <span class="flex items-center gap-1.5">
                                         <i class="fa-solid fa-user text-slate-400"></i>
-                                        {{ $ticket->client->first_name }} {{ $ticket->client->last_name }}
+                                        {{ $ticket->creator()->name }}
                                     </span>
                                 @endif
                             </div>
                         </div>
                         <span class="px-3 py-1.5 text-sm font-medium rounded-full
                             {{ $ticket->status === 'new' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400' : '' }}
-                            {{ $ticket->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400' : '' }}
+                            {{ $ticket->status === 'open' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400' : '' }}
                             {{ $ticket->status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : '' }}
                             {{ $ticket->status === 'closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-400' : '' }}">
-                            {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'in_progress' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
+                            {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'open' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
                         </span>
                     </div>
 
@@ -251,7 +251,7 @@
                                 <select name="status" onchange="this.form.submit()" 
                                     class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                                     <option value="new" {{ $ticket->status === 'new' ? 'selected' : '' }}>Новый</option>
-                                    <option value="in_progress" {{ $ticket->status === 'in_progress' ? 'selected' : '' }}>В работе</option>
+                                    <option value="open" {{ $ticket->status === 'open' ? 'selected' : '' }}>В работе</option>
                                     <option value="resolved" {{ $ticket->status === 'resolved' ? 'selected' : '' }}>Решен</option>
                                     <option value="closed" {{ $ticket->status === 'closed' ? 'selected' : '' }}>Закрыт</option>
                                 </select>
@@ -278,11 +278,11 @@
                             <p class="text-slate-500 dark:text-slate-400 mb-1">Бизнес</p>
                             <p class="font-medium text-slate-900 dark:text-white">{{ $ticket->business->name }}</p>
                         </div>
-                        @if($ticket->client)
+                        @if($ticket->creator())
                             <div>
-                                <p class="text-slate-500 dark:text-slate-400 mb-1">Клиент</p>
+                                <p class="text-slate-500 dark:text-slate-400 mb-1">Создатель</p>
                                 <p class="font-medium text-slate-900 dark:text-white">
-                                    {{ $ticket->client->first_name }} {{ $ticket->client->last_name }}
+                                    {{ $ticket->creator()->name }}
                                 </p>
                             </div>
                         @endif

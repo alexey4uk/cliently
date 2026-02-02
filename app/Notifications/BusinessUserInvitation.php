@@ -42,7 +42,7 @@ class BusinessUserInvitation extends Notification
         return (new MailMessage)
             ->subject('Приглашение в бизнес '.$this->business->name)
             ->greeting('Здравствуйте!')
-            ->line('Вас пригласили присоединиться к бизнесу "'.$this->business->name.'" в роли '.$this->getRoleLabel($this->invitation->role).'.')
+            ->line('Вас пригласили присоединиться к бизнесу "'.$this->business->name.'" в роли '.$this->getRoleLabel($this->invitation->businessRole?->slug ?? '').'.')
             ->line('Для активации аккаунта и присоединения к бизнесу перейдите по ссылке ниже:')
             ->action('Принять приглашение', $url)
             ->line('Ссылка действительна до '.$this->invitation->expires_at->format('d.m.Y H:i'))
@@ -73,7 +73,7 @@ class BusinessUserInvitation extends Notification
             'invitation_id' => $this->invitation->id,
             'business_id' => $this->business->id,
             'business_name' => $this->business->name,
-            'role' => $this->invitation->role,
+            'role' => $this->invitation->businessRole?->slug ?? null,
         ];
     }
 }

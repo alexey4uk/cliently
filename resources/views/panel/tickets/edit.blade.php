@@ -53,7 +53,7 @@
                         <select name="status" 
                             class="w-full px-4 py-3 rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                             <option value="new" {{ $ticket->status === 'new' ? 'selected' : '' }}>Новый</option>
-                            <option value="in_progress" {{ $ticket->status === 'in_progress' ? 'selected' : '' }}>В работе</option>
+                            <option value="open" {{ $ticket->status === 'open' ? 'selected' : '' }}>В работе</option>
                             <option value="resolved" {{ $ticket->status === 'resolved' ? 'selected' : '' }}>Решен</option>
                             <option value="closed" {{ $ticket->status === 'closed' ? 'selected' : '' }}>Закрыт</option>
                         </select>

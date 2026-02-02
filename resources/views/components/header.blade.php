@@ -75,7 +75,7 @@
                                     $businessRoleSlug = $businessRole?->slug;
                                     $businessRoleName = $businessRole?->name;
                                 } else {
-                                    $businessRoleSlug = $pivot?->pivot->role ?? null;
+                                    $businessRoleSlug = null;
                                 }
                             }
                         }

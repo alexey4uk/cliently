@@ -297,7 +297,7 @@ class TelegramNotificationService
 
         $statusText = match ($newStatus) {
             "pending" => "ожидает",
-            "in_progress" => "в работе",
+            "open" => "в работе",
             "completed" => "выполнен",
             "cancelled" => "отменен",
             default => "обновлен",
@@ -349,7 +349,7 @@ class TelegramNotificationService
 
         $statusText = match ($ticket->status) {
             "pending" => "⏳ Ожидает",
-            "in_progress" => "🔄 В работе",
+            "open" => "🔄 В работе",
             "completed" => "✅ Выполнен",
             "cancelled" => "❌ Отменен",
             default => "📌 " . ucfirst($ticket->status),

@@ -22,7 +22,7 @@
         $currentBusiness = $user->businesses->first();
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            $currentBusinessRole = $pivot?->pivot->role_id ? \App\Models\BusinessRole::find($pivot->pivot->role_id)?->slug : null;
             $currentBusinessRoleId = $pivot?->pivot->role_id;
             if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
@@ -76,7 +76,7 @@
                             class="w-full rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
                             <option value="">Все статусы</option>
                             <option value="new" {{ $status === 'new' ? 'selected' : '' }}>Новый</option>
-                            <option value="in_progress" {{ $status === 'in_progress' ? 'selected' : '' }}>В работе</option>
+                            <option value="open" {{ $status === 'open' ? 'selected' : '' }}>В работе</option>
                             <option value="resolved" {{ $status === 'resolved' ? 'selected' : '' }}>Решен</option>
                             <option value="closed" {{ $status === 'closed' ? 'selected' : '' }}>Закрыт</option>
                         </select>
@@ -133,10 +133,10 @@
                             <div class="ml-4 flex flex-col items-end gap-3">
                                 <span class="px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap
                                     {{ $ticket->status === 'new' ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400' : '' }}
-                                    {{ $ticket->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400' : '' }}
+                                    {{ $ticket->status === 'open' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400' : '' }}
                                     {{ $ticket->status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' : '' }}
                                     {{ $ticket->status === 'closed' ? 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-400' : '' }}">
-                                    {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'in_progress' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
+                                    {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'open' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
                                 </span>
                                 
                                 <a href="{{ route('tickets.show', $ticket->id) }}" 

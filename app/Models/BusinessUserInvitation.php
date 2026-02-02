@@ -14,7 +14,6 @@ class BusinessUserInvitation extends Model
     protected $fillable = [
         'business_id',
         'email',
-        'role',
         'role_id',
         'master_id',
         'token',

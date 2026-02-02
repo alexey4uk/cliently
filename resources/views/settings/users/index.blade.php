@@ -22,7 +22,7 @@
         $currentBusiness = $user->businesses->first();
         if ($currentBusiness) {
             $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role ?? null;
+            $currentBusinessRole = $pivot?->pivot->role_id ? \App\Models\BusinessRole::find($pivot->pivot->role_id)?->slug : null;
             $currentBusinessRoleId = $pivot?->pivot->role_id;
             if ($currentBusinessRoleId) {
                 $permissionService = app(\App\Services\BusinessRolePermissionService::class);
@@ -154,7 +154,7 @@
                             @php
                                 $pivot = $business->users()->where('user_id', $user->id)->first();
                                 $roleModel = $rolesById[$pivot->pivot->role_id] ?? null;
-                                $role = $roleModel?->slug ?? ($pivot->pivot->role ?? null);
+                                $role = $roleModel?->slug ?? null;
                             @endphp
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
@@ -249,9 +249,9 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
-                                        <i class="fa-solid {{ $getRoleIcon($invitation->role) }} text-xs"></i>
-                                        {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->role) }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->businessRole?->slug ?? '') }}">
+                                        <i class="fa-solid {{ $getRoleIcon($invitation->businessRole?->slug ?? '') }} text-xs"></i>
+                                        {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->businessRole?->slug ?? '') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
@@ -283,7 +283,7 @@
                 @php
                     $pivot = $business->users()->where('user_id', $user->id)->first();
                     $roleModel = $rolesById[$pivot->pivot->role_id] ?? null;
-                    $role = $roleModel?->slug ?? ($pivot->pivot->role ?? null);
+                    $role = $roleModel?->slug ?? null;
                 @endphp
                 <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div class="p-6">
@@ -357,8 +357,8 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->role) }}">
-                                {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->role) }}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full {{ $getRoleBadgeClass($invitation->businessRole?->slug ?? '') }}">
+                                {{ $invitation->businessRole?->name ?? $getRoleLabel($invitation->businessRole?->slug ?? '') }}
                             </span>
                         </div>
                         <form method="POST" action="{{ route('settings.users.resend', $invitation) }}" class="w-full">

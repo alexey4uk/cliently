@@ -23,7 +23,7 @@
                     <select name="status" class="rounded-lg border-slate-300 dark:border-slate-700 dark:bg-slate-800">
                         <option value="">Все статусы</option>
                         <option value="new" {{ $statusFilter === 'new' ? 'selected' : '' }}>Новый</option>
-                        <option value="in_progress" {{ $statusFilter === 'in_progress' ? 'selected' : '' }}>В работе</option>
+                        <option value="open" {{ $statusFilter === 'open' ? 'selected' : '' }}>В работе</option>
                         <option value="resolved" {{ $statusFilter === 'resolved' ? 'selected' : '' }}>Решен</option>
                         <option value="closed" {{ $statusFilter === 'closed' ? 'selected' : '' }}>Закрыт</option>
                     </select>
@@ -59,10 +59,10 @@
                                 <td class="px-6 py-4">
                                     <span class="px-2 py-1 text-xs rounded-full
                                         {{ $ticket->status === 'new' ? 'bg-blue-100 text-blue-800' : '' }}
-                                        {{ $ticket->status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                        {{ $ticket->status === 'open' ? 'bg-yellow-100 text-yellow-800' : '' }}
                                         {{ $ticket->status === 'resolved' ? 'bg-green-100 text-green-800' : '' }}
                                         {{ $ticket->status === 'closed' ? 'bg-gray-100 text-gray-800' : '' }}">
-                                        {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'in_progress' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
+                                        {{ $ticket->status === 'new' ? 'Новый' : ($ticket->status === 'open' ? 'В работе' : ($ticket->status === 'resolved' ? 'Решен' : 'Закрыт')) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">{{ $ticket->comments_count }}</td>

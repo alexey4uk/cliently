@@ -16,7 +16,7 @@ class TicketService
         // Автоматическое назначение, если включено
         if ($settings['auto_assign']['enabled'] && $settings['auto_assign']['user_id']) {
             $data['assigned_to'] = $settings['auto_assign']['user_id'];
-            $data['status'] = 'in_progress';
+            $data['status'] = 'open';
         }
 
         return Ticket::create($data);
@@ -29,7 +29,7 @@ class TicketService
     {
         $ticket->update([
             'assigned_to' => $userId,
-            'status' => $userId ? 'in_progress' : $ticket->status,
+            'status' => $userId ? 'open' : $ticket->status,
         ]);
     }
 
@@ -61,7 +61,7 @@ class TicketService
         return [
             'total' => $tickets->count(),
             'new' => $tickets->where('status', 'new')->count(),
-            'in_progress' => $tickets->where('status', 'in_progress')->count(),
+            'open' => $tickets->where('status', 'open')->count(),
             'resolved' => $tickets->where('status', 'resolved')->count(),
             'closed' => $tickets->where('status', 'closed')->count(),
             'high_priority' => $tickets->whereIn('priority', ['high', 'critical'])->count(),

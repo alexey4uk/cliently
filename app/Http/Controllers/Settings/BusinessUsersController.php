@@ -204,7 +204,6 @@ class BusinessUsersController extends Controller
         $invitationData = [
             "business_id" => $business->id,
             "email" => $request->email,
-            "role" => $role->slug,
             "role_id" => $role->id,
             "token" => BusinessUserInvitation::generateToken(),
             "created_by" => Auth::id(),
@@ -550,7 +549,6 @@ class BusinessUsersController extends Controller
 
         // Обновляем роль
         $business->users()->updateExistingPivot($user->id, [
-            "role" => $nextRole->slug,
             "role_id" => $nextRole->id,
         ]);
 

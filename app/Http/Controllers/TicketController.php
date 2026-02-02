@@ -144,7 +144,7 @@ class TicketController extends Controller
 
         $ticket = Ticket::create([
             'business_id' => $business->id,
-            'client_id' => $validated['client_id'] ?? null,
+            'user_id' => $user->id, // ID пользователя, создающего тикет
             'category_id' => $validated['category_id'] ?? null,
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -297,7 +297,7 @@ class TicketController extends Controller
             'title' => $validated['title'],
             'description' => $validated['description'],
             'category_id' => $validated['category_id'] ?? null,
-            'client_id' => $validated['client_id'] ?? $ticket->client_id,
+            'user_id' => $validated['user_id'] ?? $ticket->user_id,
         ]);
 
         // Обработка загрузки новых файлов
@@ -376,7 +376,7 @@ class TicketController extends Controller
 
         // Обновляем статус тикета на "в работе", если он был "новый"
         if ($ticket->status === 'new') {
-            $ticket->update(['status' => 'in_progress']);
+            $ticket->update(['status' => 'open']);
         }
 
         return redirect()->route('tickets.show', $ticket->id)

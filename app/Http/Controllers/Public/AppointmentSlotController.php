@@ -1,5 +1,6 @@
+<?php
 
-<?php namespace App\Http\Controllers\Public;
+namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\BusinessRepositoryInterface;
@@ -96,16 +97,16 @@ class AppointmentSlotController extends Controller
                 $masterId === "" || $masterId === null ? null : (int) $masterId;
             $locationId =
                 $locationId === "" || $locationId === null
-                    ? null
-                    : (int) $locationId;
+                ? null
+                : (int) $locationId;
 
             $serviceId = (int) $request->input("service_id");
             $date = $request->input("date");
             $appointmentId = $request->input("appointment_id");
             $appointmentId =
                 $appointmentId === "" || $appointmentId === null
-                    ? null
-                    : (int) $appointmentId;
+                ? null
+                : (int) $appointmentId;
 
             // Получаем дополнительную информацию для отладки
             $debugInfo = [
@@ -142,7 +143,7 @@ class AppointmentSlotController extends Controller
 
                     $debugInfo["master"] = [
                         "name" =>
-                            $master->first_name . " " . $master->last_name,
+                        $master->first_name . " " . $master->last_name,
                         "day_of_week" => $dayOfWeek,
                         "is_day_off" => $isDayOff,
                         "working_time_for_date" => $workingTime,
@@ -154,7 +155,7 @@ class AppointmentSlotController extends Controller
                             [
                                 "success" => false,
                                 "message" =>
-                                    "Мастер не работает в выбранный день.",
+                                "Мастер не работает в выбранный день.",
                                 "error_type" => "master_day_off",
                                 "debug" => $debugInfo,
                             ],
@@ -201,7 +202,7 @@ class AppointmentSlotController extends Controller
                 [
                     "success" => false,
                     "message" =>
-                        "Ошибка при получении доступных слотов: " .
+                    "Ошибка при получении доступных слотов: " .
                         $e->getMessage(),
                 ],
                 500,
