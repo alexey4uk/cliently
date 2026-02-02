@@ -20,8 +20,13 @@ return [
 
     'default_payment_method' => env('BEPAID_DEFAULT_PAYMENT_METHOD', 'redirect'),
 
+    // Язык интерфейса чекаута bePaid (ru, en и др. — по документации bePaid)
+    'checkout_language' => env('BEPAID_CHECKOUT_LANGUAGE', 'ru'),
+
     'webhook' => [
+        // Относительный путь (дополняется APP_URL) или полный URL
         'url' => env('BEPAID_WEBHOOK_URL', '/webhooks/bepaid'),
+        // Резерв: проверка подписи тела (пока не реализована, bePaid использует Basic Auth)
         'verify_signature' => (bool) env('BEPAID_VERIFY_WEBHOOK_SIGNATURE', true),
     ],
 

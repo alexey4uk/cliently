@@ -89,8 +89,8 @@ class BepaidService implements PaymentGatewayInterface
         // Уникальный ID транзакции
         $transaction->setTrackingId("invoice_{$invoice->id}");
 
-        // Язык интерфейса
-        $transaction->setLanguage('ru');
+        // Язык интерфейса чекаута
+        $transaction->setLanguage(config('bepaid.checkout_language', 'ru'));
 
         // URL для уведомлений (webhook)
         //

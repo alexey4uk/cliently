@@ -245,6 +245,8 @@ class BepaidWebhookController extends Controller
                     "plan_id" => $plan->id,
                 ]);
             }
+
+            \App\Services\SubscriptionNotificationService::notifyPaymentSuccess($invoice);
         } else {
             // Обновляем существующую подписку
             $now = now();

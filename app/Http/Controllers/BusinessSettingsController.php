@@ -71,7 +71,7 @@ class BusinessSettingsController extends Controller
             $phoneCountryId,
             $phoneE164,
             $user,
-            &$business, $validated,
+            $validated,
         ) {
             $business = Business::create([
                 'name' => $validated['name'],
@@ -92,6 +92,8 @@ class BusinessSettingsController extends Controller
                 "first_name" => $ownerData["first_name"],
                 "last_name" => $ownerData["last_name"],
             ]);
+
+            return $business;
         });
 
         AdminNotificationService::notifyBusinessCreated($business);

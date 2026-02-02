@@ -84,7 +84,7 @@ trait HasCurrentBusiness
         }
 
         // Fallback: try to get role by slug (for backward compatibility)
-        if ($pivotData->role) {
+        if (isset($pivotData->role) && $pivotData->role) {
             $role = \App\Models\BusinessRole::where('slug', $pivotData->role)->first();
             if ($role) {
                 // Update role_id for future use

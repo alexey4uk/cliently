@@ -22,7 +22,7 @@ class SetupTest extends TestCase
             [
                 'name' => 'Бесплатный',
                 'description' => 'Для начинающих',
-                'price' => null,
+                'price' => 0,
                 'interval' => 'monthly',
                 'trial_days' => 0,
                 'is_active' => true,

@@ -15,7 +15,6 @@ use App\Traits\HasOwnDataFiltering;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class AppointmentsController extends Controller
 {
@@ -532,15 +531,6 @@ class AppointmentsController extends Controller
 
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'cancelled']);
-
-        Log::info('Appointment cancelled', [
-            'channel' => 'appointments',
-            'event' => 'appointment_cancelled',
-            'appointment_id' => $appointment->id,
-            'business_id' => $business->id,
-            'old_status' => $oldStatus,
-            'new_status' => 'cancelled',
-        ]);
 
         // Отправить уведомление в Telegram
         TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);

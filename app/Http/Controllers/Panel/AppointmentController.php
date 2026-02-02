@@ -36,57 +36,70 @@ class AppointmentController extends Controller
 
         if ($search) {
             // Разбиваем поисковый запрос на отдельные слова
-            $searchWords = explode(' ', trim($search));
+            $searchWords = array_filter(explode(' ', trim($search)));
             $hasAnyResults = false;
 
-            $query->where(function ($q) use ($searchWords, &$hasAnyResults) {
+            foreach ($searchWords as $word) {
+                $wordLike = '%' . mb_strtolower($word) . '%';
+                $clientIds = DB::table('clients')
+                    ->where(function ($clientQuery) use ($wordLike) {
+                        $clientQuery->where('first_name', 'like', $wordLike)
+                            ->orWhere('last_name', 'like', $wordLike)
+                            ->orWhere('phone', 'like', $wordLike)
+                            ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                    })
+                    ->pluck('id');
+                $serviceIds = DB::table('services')->where('name', 'like', $wordLike)->pluck('id');
+                $masterIds = DB::table('masters')
+                    ->where(function ($masterQuery) use ($wordLike) {
+                        $masterQuery->where('first_name', 'like', $wordLike)
+                            ->orWhere('last_name', 'like', $wordLike)
+                            ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                    })
+                    ->pluck('id');
+                if ($clientIds->isNotEmpty() || $serviceIds->isNotEmpty() || $masterIds->isNotEmpty()) {
+                    $hasAnyResults = true;
+                    break;
+                }
+            }
+
+            $query->where(function ($q) use ($searchWords, $hasAnyResults) {
                 foreach ($searchWords as $word) {
-                    if (!empty($word)) {
-                        $wordLike = '%' . mb_strtolower($word) . '%';
+                    if ($word === '') {
+                        continue;
+                    }
+                    $wordLike = '%' . mb_strtolower($word) . '%';
 
-                        // Поиск по клиентам (имя, фамилия, телефон, полное имя)
-                        $clientIds = DB::table('clients')
-                            ->where(function ($clientQuery) use ($wordLike) {
-                                $clientQuery->where('first_name', 'like', $wordLike)
-                                    ->orWhere('last_name', 'like', $wordLike)
-                                    ->orWhere('phone', 'like', $wordLike)
-                                    ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
-                            })
-                            ->pluck('id');
+                    $clientIds = DB::table('clients')
+                        ->where(function ($clientQuery) use ($wordLike) {
+                            $clientQuery->where('first_name', 'like', $wordLike)
+                                ->orWhere('last_name', 'like', $wordLike)
+                                ->orWhere('phone', 'like', $wordLike)
+                                ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                        })
+                        ->pluck('id');
+                    if ($clientIds->isNotEmpty()) {
+                        $q->orWhereIn('client_id', $clientIds);
+                    }
 
-                        if ($clientIds->isNotEmpty()) {
-                            $hasAnyResults = true;
-                            $q->orWhereIn('client_id', $clientIds);
-                        }
+                    $serviceIds = DB::table('services')->where('name', 'like', $wordLike)->pluck('id');
+                    if ($serviceIds->isNotEmpty()) {
+                        $q->orWhereIn('service_id', $serviceIds);
+                    }
 
-                        // Поиск по услугам
-                        $serviceIds = DB::table('services')
-                            ->where('name', 'like', $wordLike)
-                            ->pluck('id');
-
-                        if ($serviceIds->isNotEmpty()) {
-                            $hasAnyResults = true;
-                            $q->orWhereIn('service_id', $serviceIds);
-                        }
-
-                        // Поиск по мастерам
-                        $masterIds = DB::table('masters')
-                            ->where(function ($masterQuery) use ($wordLike) {
-                                $masterQuery->where('first_name', 'like', $wordLike)
-                                    ->orWhere('last_name', 'like', $wordLike)
-                                    ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
-                            })
-                            ->pluck('id');
-
-                        if ($masterIds->isNotEmpty()) {
-                            $hasAnyResults = true;
-                            $q->orWhereIn('master_id', $masterIds);
-                        }
+                    $masterIds = DB::table('masters')
+                        ->where(function ($masterQuery) use ($wordLike) {
+                            $masterQuery->where('first_name', 'like', $wordLike)
+                                ->orWhere('last_name', 'like', $wordLike)
+                                ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", [$wordLike]);
+                        })
+                        ->pluck('id');
+                    if ($masterIds->isNotEmpty()) {
+                        $q->orWhereIn('master_id', $masterIds);
                     }
                 }
 
-                // Если ни одно слово не нашло результатов, возвращаем пустой результат
-                if (!$hasAnyResults) {
+                if (! $hasAnyResults) {
                     $q->whereRaw('1=0');
                 }
             });

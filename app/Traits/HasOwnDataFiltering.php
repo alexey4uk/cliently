@@ -69,18 +69,13 @@ trait HasOwnDataFiltering
         // Проверяем, есть ли право на просмотр только своих данных
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
-            \Log::info("APPOINTMENTS_FILTER: role_id={$roleId}, permission={$permission}, hasOwnDataPermission=true, masterId={$masterId}");
 
             if ($masterId) {
                 $query->where('master_id', $masterId);
-                \Log::info("APPOINTMENTS_FILTER: Applied filter WHERE master_id={$masterId}");
             } else {
                 // Если у пользователя нет мастера, не показываем ничего
                 $query->whereRaw('1 = 0');
-                \Log::info("APPOINTMENTS_FILTER: No master found, applying whereRaw('1 = 0')");
             }
-        } else {
-            \Log::info("APPOINTMENTS_FILTER: No hasOwnDataPermission, filter not applied");
         }
 
         return $query;

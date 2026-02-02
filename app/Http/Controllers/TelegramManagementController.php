@@ -148,14 +148,6 @@ class TelegramManagementController extends Controller
         }
 
         try {
-            // Получаем отладочную информацию о webhook перед установкой
-            $debugInfo = $bot->getWebhookDebugInfo()->send();
-
-            Log::info('Webhook debug info before setup', [
-                'bot_id' => $bot->id,
-                'debug_info' => $debugInfo->json(),
-            ]);
-
             // Используем параметры из документации: dropPendingUpdates = true
             $reply = $bot->registerWebhook(dropPendingUpdates: true)->send();
 
@@ -198,12 +190,6 @@ class TelegramManagementController extends Controller
         }
 
         try {
-            // Логируем информацию перед удалением
-            Log::info('Attempting to delete webhook', [
-                'bot_id' => $bot->id,
-                'bot_token' => substr($bot->token, 0, 10).'***',
-            ]);
-
             // Используем именованный параметр для лучшей читаемости
             $reply = $bot->unregisterWebhook(dropPendingUpdates: true)->send();
 
@@ -250,13 +236,6 @@ class TelegramManagementController extends Controller
 
             // Также получаем информацию о webhook
             $webhookDebugInfo = $bot->getWebhookDebugInfo()->send();
-
-            Log::info('Bot and webhook info retrieved', [
-                'bot_id' => $bot->id,
-                'username' => $botInfo['username'] ?? 'unknown',
-                'webhook_info' => $webhookDebugInfo->json(),
-            ]);
-
             $webhookUrl = $webhookDebugInfo->json()['result']['url'] ?? 'не установлен';
             $webhookStatus = ! empty($webhookUrl) ? 'установлен' : 'не установлен';
 

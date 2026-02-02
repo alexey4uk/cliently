@@ -612,9 +612,14 @@ class Handler extends WebhookHandler
         Business $business,
         array $data,
     ) {
-        $location = $business->locations()->find($data["location_id"]);
-        $service = $business->services()->find($data["service_id"]);
-        $master = $business->masters()->find($data["master_id"]);
+        $location = $business->locations()->find($data["location_id"] ?? null);
+        $service = $business->services()->find($data["service_id"] ?? null);
+        $master = $business->masters()->find($data["master_id"] ?? null);
+
+        if (!$location || !$service || !$master) {
+            $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
+            return;
+        }
 
         // Форматируем дату и время
         $date = Carbon::parse($data["date"])->format("d.m.Y");
@@ -873,13 +878,16 @@ class Handler extends WebhookHandler
             $this->lastMessageId = $messageId;
         }
 
-        // Извлекаем action из Collection
-        $action = $callbackData->get("action");
+        // Извлекаем action (Telegraph может вернуть Collection или array)
+        $dataArray = $callbackData instanceof \Illuminate\Support\Collection
+            ? $callbackData->toArray()
+            : (array) $callbackData;
+        $action = $dataArray["action"] ?? null;
 
         if (!$action) {
             Log::error("No action found in callback data", [
                 "user_id" => $userId,
-                "callback_data" => $callbackData->toArray(),
+                "callback_data" => $dataArray,
             ]);
             $this->replyWithMessage("❌ Ошибка данных. Попробуйте снова.");
 
@@ -1002,6 +1010,12 @@ class Handler extends WebhookHandler
         }
 
         $business = $state->business;
+
+        // У пользователя может быть только состояние поиска (без бизнеса) — тогда кнопки записи от старого сообщения невалидны
+        if (!$business) {
+            $this->replyWithMessage(TelegramMessages::MSG_SESSION_EXPIRED);
+            return;
+        }
 
         if (str_starts_with($action, "location_")) {
             $locationId = str_replace("location_", "", $action);
@@ -1189,8 +1203,8 @@ class Handler extends WebhookHandler
             ]) .
             "\n\n📅 " .
             Carbon::parse($month . "-01")
-                ->locale("ru")
-                ->isoFormat("MMMM YYYY");
+            ->locale("ru")
+            ->isoFormat("MMMM YYYY");
 
         // Проверяем возможность перехода к предыдущему месяцу
         $hasPrevMonth = TelegramKeyboards::hasPrevMonth($month);
@@ -1406,7 +1420,7 @@ class Handler extends WebhookHandler
                     "first_name" => $data["client_data"]["first_name"],
                     "last_name" => $data["client_data"]["last_name"] ?? null,
                     "email" => $data["client_data"]["email"] ?? null,
-                    "telegram_user_id" => $this->callbackQuery->from()->id(),
+                    "telegram_user_id" => (string) $this->callbackQuery->from()->id(),
                 ]);
 
                 $countryBy = \App\Models\Country::getCached()->firstWhere(
@@ -1424,9 +1438,9 @@ class Handler extends WebhookHandler
                 $client->update([
                     "first_name" => $data["client_data"]["first_name"],
                     "last_name" =>
-                        $data["client_data"]["last_name"] ?? $client->last_name,
+                    $data["client_data"]["last_name"] ?? $client->last_name,
                     "email" => $data["client_data"]["email"] ?? $client->email,
-                    "telegram_user_id" => $this->callbackQuery->from()->id(),
+                    "telegram_user_id" => (string) $this->callbackQuery->from()->id(),
                 ]);
             }
 
@@ -1485,7 +1499,7 @@ class Handler extends WebhookHandler
                     "time" => $formattedTime,
                     "service" => $appointment->service->name,
                     "master" =>
-                        $appointment->master->first_name .
+                    $appointment->master->first_name .
                         " " .
                         $appointment->master->last_name,
                     "location" => $appointment->location->name,

@@ -109,7 +109,7 @@ class TelegramKeyboards
     {
         $buttons = [];
         foreach ($masters as $master) {
-            $buttons[] = Button::make($master->first_name.' '.$master->last_name)->action("master_{$master->id}");
+            $buttons[] = Button::make($master->first_name . ' ' . $master->last_name)->action("master_{$master->id}");
         }
 
         return self::selectionGrid($buttons, 1);
@@ -136,7 +136,7 @@ class TelegramKeyboards
         $keyboard = $keyboard->row($weekDayButtons);
 
         // Генерируем календарь
-        $startDate = \Carbon\Carbon::parse($month.'-01');
+        $startDate = \Carbon\Carbon::parse($month . '-01');
         $endDate = $startDate->copy()->endOfMonth();
 
         // Определяем первый день недели (понедельник = 1, воскресенье = 0)
@@ -167,9 +167,9 @@ class TelegramKeyboards
 
                 // Добавляем оформление
                 if ($isSelected) {
-                    $displayText = '✅ '.$displayText;
+                    $displayText = '✅ ' . $displayText;
                 } elseif ($isToday) {
-                    $displayText = '•'.$displayText.'•';
+                    $displayText = '•' . $displayText . '•';
                 }
             } else {
                 $action = "disabled_{$dateStr}"; // Пустая ячейка
@@ -235,7 +235,7 @@ class TelegramKeyboards
                 $display = $time;
                 $callback = $time;
             } else {
-                $display = $time.':00';
+                $display = $time . ':00';
                 $callback = $time;
             }
             $buttons[] = Button::make($display)->action("time_{$callback}");
@@ -254,7 +254,7 @@ class TelegramKeyboards
     public static function getAvailableDatesForMonth($slotService, int $serviceId, int $masterId, int $locationId, string $month): array
     {
         $availableDates = [];
-        $startDate = \Carbon\Carbon::parse($month.'-01');
+        $startDate = \Carbon\Carbon::parse($month . '-01');
         $endDate = $startDate->copy()->endOfMonth();
         $today = \Carbon\Carbon::today();
 
@@ -294,10 +294,10 @@ class TelegramKeyboards
      */
     public static function hasPrevMonth(string $month): bool
     {
-        $monthDate = \Carbon\Carbon::parse($month.'-01');
-        $today = \Carbon\Carbon::today();
+        $monthDate = \Carbon\Carbon::parse($month . '-01');
+        $todayStart = \Carbon\Carbon::today()->startOfMonth();
 
-        return $monthDate->gt($today->startOfMonth());
+        return $monthDate->gt($todayStart);
     }
 
     /**

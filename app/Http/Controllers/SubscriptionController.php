@@ -454,6 +454,11 @@ class SubscriptionController extends Controller
                 ->with('error', 'Инвойс не найден.');
         }
 
+        if ($invoice->user_id !== auth()->id()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Доступ запрещён.');
+        }
+
         // Проверяем статус инвойса
         if ($invoice->isPaid()) {
             // Проверяем, не пытаемся ли мы повторно активировать подписку
@@ -549,7 +554,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'failed']);
             }
         }
@@ -567,7 +572,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'failed']);
             }
         }
@@ -585,7 +590,7 @@ class SubscriptionController extends Controller
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
-            if ($invoice && $invoice->isPending()) {
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
                 $invoice->update(['status' => 'cancelled']);
             }
         }
