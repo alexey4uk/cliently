@@ -1,5 +1,4 @@
 @props([
-    'showNotifications' => false,
     'showProfile' => true,
     'showMobileMenu' => true,
     'showRoleBadge' => false,
