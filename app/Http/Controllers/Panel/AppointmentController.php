@@ -40,7 +40,7 @@ class AppointmentController extends Controller
             $hasAnyResults = false;
 
             foreach ($searchWords as $word) {
-                $wordLike = '%' . mb_strtolower($word) . '%';
+                $wordLike = '%'.mb_strtolower($word).'%';
                 $clientIds = DB::table('clients')
                     ->where(function ($clientQuery) use ($wordLike) {
                         $clientQuery->where('first_name', 'like', $wordLike)
@@ -68,7 +68,7 @@ class AppointmentController extends Controller
                     if ($word === '') {
                         continue;
                     }
-                    $wordLike = '%' . mb_strtolower($word) . '%';
+                    $wordLike = '%'.mb_strtolower($word).'%';
 
                     $clientIds = DB::table('clients')
                         ->where(function ($clientQuery) use ($wordLike) {

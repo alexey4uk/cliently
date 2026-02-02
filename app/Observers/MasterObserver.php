@@ -23,14 +23,14 @@ class MasterObserver
     public function deleting(Master $master): void
     {
         // Очищаем master_id в business_user для всех пользователей, связанных с этим мастером
-        DB::table("business_user")
-            ->where("master_id", $master->id)
-            ->update(["master_id" => null]);
+        DB::table('business_user')
+            ->where('master_id', $master->id)
+            ->update(['master_id' => null]);
 
         // Очищаем master_id в business_user_invitations для всех приглашений, связанных с этим мастером
-        DB::table("business_user_invitations")
-            ->where("master_id", $master->id)
-            ->update(["master_id" => null]);
+        DB::table('business_user_invitations')
+            ->where('master_id', $master->id)
+            ->update(['master_id' => null]);
     }
 
     /**

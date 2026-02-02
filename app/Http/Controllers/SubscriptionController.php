@@ -261,6 +261,7 @@ class SubscriptionController extends Controller
             ->values()
             ->map(function ($feature) use ($user, $subscriptionService) {
                 $key = $feature->metric->key;
+
                 return [
                     'metric' => $feature->metric,
                     'limit' => $subscriptionService->getLimit($user, $key),

@@ -17,20 +17,20 @@ class Master extends Model
     use HasFactory;
 
     protected $fillable = [
-        "business_id",
-        "user_id",
-        "name",
-        "description",
-        "photo",
-        "specialization",
-        "email",
-        "is_active",
-        "last_name",
-        "first_name",
+        'business_id',
+        'user_id',
+        'name',
+        'description',
+        'photo',
+        'specialization',
+        'email',
+        'is_active',
+        'last_name',
+        'first_name',
     ];
 
     protected $casts = [
-        "working_hours" => "array",
+        'working_hours' => 'array',
     ];
 
     /**
@@ -38,21 +38,21 @@ class Master extends Model
      */
     public function getNameAttribute(): string
     {
-        return trim($this->first_name . " " . $this->last_name);
+        return trim($this->first_name.' '.$this->last_name);
     }
 
     public function locations(): BelongsToMany
     {
         return $this->belongsToMany(
             Location::class,
-            "master_location",
+            'master_location',
         )->withTimestamps();
     }
 
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, "service_master")
-            ->withPivot("price")
+        return $this->belongsToMany(Service::class, 'service_master')
+            ->withPivot('price')
             ->withTimestamps();
     }
 
@@ -68,14 +68,14 @@ class Master extends Model
 
     public function phones(): MorphMany
     {
-        return $this->morphMany(Phone::class, "phoneable");
+        return $this->morphMany(Phone::class, 'phoneable');
     }
 
     public function primaryPhone(): MorphOne
     {
-        return $this->morphOne(Phone::class, "phoneable")->where(
-            "type",
-            "primary",
+        return $this->morphOne(Phone::class, 'phoneable')->where(
+            'type',
+            'primary',
         );
     }
 
@@ -97,17 +97,17 @@ class Master extends Model
         $workingHours = [];
         $daysOff = [];
 
-        foreach ($schedule["schedules"] as $day => $data) {
-            if (!$data["is_working"]) {
+        foreach ($schedule['schedules'] as $day => $data) {
+            if (! $data['is_working']) {
                 $daysOff[] = $day;
             } else {
-                $workingHours["from"] = $data["start_time"];
-                $workingHours["to"] = $data["end_time"];
+                $workingHours['from'] = $data['start_time'];
+                $workingHours['to'] = $data['end_time'];
             }
         }
 
-        $workingHours["days_off"] = $daysOff;
-        $workingHours["24_hours"] = false; // Пока не поддерживаем
+        $workingHours['days_off'] = $daysOff;
+        $workingHours['24_hours'] = false; // Пока не поддерживаем
 
         return $workingHours;
     }
@@ -131,6 +131,7 @@ class Master extends Model
     public function getWorkingTimeForDate(Carbon $date): ?array
     {
         $service = app(MasterScheduleService::class);
+
         return $service->getWorkingTimeForDate($this, $date);
     }
 
@@ -140,6 +141,7 @@ class Master extends Model
     public function isWorkingAt(Carbon $date, string $time): bool
     {
         $service = app(MasterScheduleService::class);
+
         return $service->isWorkingAt($this, $date, $time);
     }
 

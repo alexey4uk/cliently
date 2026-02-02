@@ -23,12 +23,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "invoice_id" => $invoice->id,
+                    'user_id' => $user->id,
+                    'invoice_id' => $invoice->id,
                 ],
             );
 
@@ -36,29 +36,29 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.payment.success",
+                'subscription.payment.success',
             )
         ) {
             return;
         }
 
-        $title = "Оплата успешна";
+        $title = 'Оплата успешна';
         $message = "Оплата подписки на тариф «{$plan->name}» успешно выполнена. Сумма: {$invoice->amount} {$invoice->currency}.";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.payment.success",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "invoice_id" => $invoice->id,
-                "subscription_id" => $subscription?->id,
-                "plan_id" => $plan->id,
-                "amount" => $invoice->amount,
-                "currency" => $invoice->currency,
+            'user_id' => $owner->id,
+            'type' => 'subscription.payment.success',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'invoice_id' => $invoice->id,
+                'subscription_id' => $subscription?->id,
+                'plan_id' => $plan->id,
+                'amount' => $invoice->amount,
+                'currency' => $invoice->currency,
             ],
         ]);
 
@@ -66,7 +66,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.payment.success",
+                'subscription.payment.success',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -78,10 +78,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.payment.success",
+                    'Failed to send email notification for subscription.payment.success',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -91,7 +91,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.payment.success",
+                'subscription.payment.success',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -102,10 +102,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.payment.success",
+                    'Failed to send telegram notification for subscription.payment.success',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -125,12 +125,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "invoice_id" => $invoice->id,
+                    'user_id' => $user->id,
+                    'invoice_id' => $invoice->id,
                 ],
             );
 
@@ -138,15 +138,15 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.payment.failed",
+                'subscription.payment.failed',
             )
         ) {
             return;
         }
 
-        $title = "Оплата не прошла";
+        $title = 'Оплата не прошла';
         $message = "Оплата подписки на тариф «{$plan->name}» не прошла. Сумма: {$invoice->amount} {$invoice->currency}.";
         if ($reason) {
             $message .= " Причина: {$reason}";
@@ -154,17 +154,17 @@ class SubscriptionNotificationService
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.payment.failed",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "invoice_id" => $invoice->id,
-                "subscription_id" => $subscription?->id,
-                "plan_id" => $plan->id,
-                "amount" => $invoice->amount,
-                "currency" => $invoice->currency,
-                "reason" => $reason,
+            'user_id' => $owner->id,
+            'type' => 'subscription.payment.failed',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'invoice_id' => $invoice->id,
+                'subscription_id' => $subscription?->id,
+                'plan_id' => $plan->id,
+                'amount' => $invoice->amount,
+                'currency' => $invoice->currency,
+                'reason' => $reason,
             ],
         ]);
 
@@ -172,7 +172,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.payment.failed",
+                'subscription.payment.failed',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -185,10 +185,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.payment.failed",
+                    'Failed to send email notification for subscription.payment.failed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -198,7 +198,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.payment.failed",
+                'subscription.payment.failed',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -210,10 +210,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.payment.failed",
+                    'Failed to send telegram notification for subscription.payment.failed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -232,12 +232,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -245,27 +245,27 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.plan.changed",
+                'subscription.plan.changed',
             )
         ) {
             return;
         }
 
-        $title = "Тариф изменён";
+        $title = 'Тариф изменён';
         $message = "Тариф подписки изменён с «{$oldPlan->name}» на «{$newPlan->name}».";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.plan.changed",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "old_plan_id" => $oldPlan->id,
-                "new_plan_id" => $newPlan->id,
+            'user_id' => $owner->id,
+            'type' => 'subscription.plan.changed',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $newPlan->id,
             ],
         ]);
 
@@ -273,7 +273,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.plan.changed",
+                'subscription.plan.changed',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -287,10 +287,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.plan.changed",
+                    'Failed to send email notification for subscription.plan.changed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -300,7 +300,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.plan.changed",
+                'subscription.plan.changed',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -313,10 +313,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.plan.changed",
+                    'Failed to send telegram notification for subscription.plan.changed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -333,12 +333,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -346,30 +346,30 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.renewed",
+                'subscription.renewed',
             )
         ) {
             return;
         }
 
         $endsAt = $subscription->ends_at
-            ? $subscription->ends_at->format("d.m.Y")
-            : "не указано";
-        $title = "Подписка продлена";
+            ? $subscription->ends_at->format('d.m.Y')
+            : 'не указано';
+        $title = 'Подписка продлена';
         $message = "Подписка на тариф «{$plan->name}» успешно продлена. Действует до: {$endsAt}.";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.renewed",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "plan_id" => $plan->id,
-                "ends_at" => $subscription->ends_at?->toIso8601String(),
+            'user_id' => $owner->id,
+            'type' => 'subscription.renewed',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'plan_id' => $plan->id,
+                'ends_at' => $subscription->ends_at?->toIso8601String(),
             ],
         ]);
 
@@ -377,7 +377,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.renewed",
+                'subscription.renewed',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -387,10 +387,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.renewed",
+                    'Failed to send email notification for subscription.renewed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -400,7 +400,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.renewed",
+                'subscription.renewed',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -411,10 +411,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.renewed",
+                    'Failed to send telegram notification for subscription.renewed',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -431,12 +431,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -444,30 +444,30 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.trial.started",
+                'subscription.trial.started',
             )
         ) {
             return;
         }
 
         $trialEndsAt = $subscription->trial_ends_at
-            ? $subscription->trial_ends_at->format("d.m.Y")
-            : "не указано";
-        $title = "Начат пробный период";
+            ? $subscription->trial_ends_at->format('d.m.Y')
+            : 'не указано';
+        $title = 'Начат пробный период';
         $message = "Начат пробный период для тарифа «{$plan->name}». Пробный период действует до: {$trialEndsAt}.";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.trial.started",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "plan_id" => $plan->id,
-                "trial_ends_at" => $subscription->trial_ends_at?->toIso8601String(),
+            'user_id' => $owner->id,
+            'type' => 'subscription.trial.started',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'plan_id' => $plan->id,
+                'trial_ends_at' => $subscription->trial_ends_at?->toIso8601String(),
             ],
         ]);
 
@@ -475,7 +475,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.trial.started",
+                'subscription.trial.started',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -487,10 +487,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.trial.started",
+                    'Failed to send email notification for subscription.trial.started',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -500,7 +500,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.trial.started",
+                'subscription.trial.started',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -511,10 +511,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.trial.started",
+                    'Failed to send telegram notification for subscription.trial.started',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -531,12 +531,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -544,34 +544,34 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.trial.ending",
+                'subscription.trial.ending',
             )
         ) {
             return;
         }
 
         $trialEndsAt = $subscription->trial_ends_at
-            ? $subscription->trial_ends_at->format("d.m.Y H:i")
-            : "не указано";
+            ? $subscription->trial_ends_at->format('d.m.Y H:i')
+            : 'не указано';
         $daysLeft = $subscription->trial_ends_at
             ? now()->diffInDays($subscription->trial_ends_at, false)
             : 0;
-        $title = "Пробный период заканчивается";
+        $title = 'Пробный период заканчивается';
         $message = "Пробный период для тарифа «{$plan->name}» заканчивается {$trialEndsAt}. Осталось дней: {$daysLeft}.";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.trial.ending",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "plan_id" => $plan->id,
-                "trial_ends_at" => $subscription->trial_ends_at?->toIso8601String(),
-                "days_left" => $daysLeft,
+            'user_id' => $owner->id,
+            'type' => 'subscription.trial.ending',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'plan_id' => $plan->id,
+                'trial_ends_at' => $subscription->trial_ends_at?->toIso8601String(),
+                'days_left' => $daysLeft,
             ],
         ]);
 
@@ -579,7 +579,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.trial.ending",
+                'subscription.trial.ending',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
@@ -591,10 +591,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.trial.ending",
+                    'Failed to send email notification for subscription.trial.ending',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -604,7 +604,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.trial.ending",
+                'subscription.trial.ending',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -615,10 +615,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.trial.ending",
+                    'Failed to send telegram notification for subscription.trial.ending',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -637,12 +637,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -650,28 +650,28 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.trial.expired",
+                'subscription.trial.expired',
             )
         ) {
             return;
         }
 
-        $title = "Пробный период истек";
+        $title = 'Пробный период истек';
         $message = "Пробный период для тарифа «{$oldPlan->name}» истек. Ваш тариф автоматически изменен на «{$newPlan->name}».";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.trial.expired",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "old_plan_id" => $oldPlan->id,
-                "new_plan_id" => $newPlan->id,
-                "trial_ended_at" => $subscription->trial_ends_at?->toIso8601String(),
+            'user_id' => $owner->id,
+            'type' => 'subscription.trial.expired',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $newPlan->id,
+                'trial_ended_at' => $subscription->trial_ends_at?->toIso8601String(),
             ],
         ]);
 
@@ -679,22 +679,22 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.trial.expired",
+                'subscription.trial.expired',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
             try {
                 // Можно создать отдельное уведомление, но пока используем простое логирование
-                Log::info("Trial expired notification sent via email", [
-                    "user_id" => $owner->id,
-                    "subscription_id" => $subscription->id,
+                Log::info('Trial expired notification sent via email', [
+                    'user_id' => $owner->id,
+                    'subscription_id' => $subscription->id,
                 ]);
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.trial.expired",
+                    'Failed to send email notification for subscription.trial.expired',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -704,7 +704,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.trial.expired",
+                'subscription.trial.expired',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -716,10 +716,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.trial.expired",
+                    'Failed to send telegram notification for subscription.trial.expired',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -738,12 +738,12 @@ class SubscriptionNotificationService
 
         // Получаем владельца бизнеса
         $owner = self::getBusinessOwner($user);
-        if (!$owner) {
+        if (! $owner) {
             Log::warning(
-                "SubscriptionNotificationService: Business owner not found",
+                'SubscriptionNotificationService: Business owner not found',
                 [
-                    "user_id" => $user->id,
-                    "subscription_id" => $subscription->id,
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
                 ],
             );
 
@@ -751,28 +751,28 @@ class SubscriptionNotificationService
         }
 
         if (
-            !NotificationSettingsService::isTypeEnabled(
+            ! NotificationSettingsService::isTypeEnabled(
                 $owner,
-                "subscription.expired",
+                'subscription.expired',
             )
         ) {
             return;
         }
 
-        $title = "Подписка истекла";
+        $title = 'Подписка истекла';
         $message = "Ваша подписка на тариф «{$oldPlan->name}» истекла. Тариф автоматически изменен на «{$newPlan->name}». Для продолжения использования платных функций оформите новую подписку.";
 
         // In-app уведомление
         NotificationService::send([
-            "user_id" => $owner->id,
-            "type" => "subscription.expired",
-            "title" => $title,
-            "message" => $message,
-            "data" => [
-                "subscription_id" => $subscription->id,
-                "old_plan_id" => $oldPlan->id,
-                "new_plan_id" => $newPlan->id,
-                "expired_at" => $subscription->ends_at?->toIso8601String(),
+            'user_id' => $owner->id,
+            'type' => 'subscription.expired',
+            'title' => $title,
+            'message' => $message,
+            'data' => [
+                'subscription_id' => $subscription->id,
+                'old_plan_id' => $oldPlan->id,
+                'new_plan_id' => $newPlan->id,
+                'expired_at' => $subscription->ends_at?->toIso8601String(),
             ],
         ]);
 
@@ -780,22 +780,22 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendEmail(
                 $owner,
-                "subscription.expired",
+                'subscription.expired',
             ) &&
             $owner->hasVerifiedEmail()
         ) {
             try {
                 // Можно создать отдельное уведомление, но пока используем простое логирование
-                Log::info("Subscription expired notification sent via email", [
-                    "user_id" => $owner->id,
-                    "subscription_id" => $subscription->id,
+                Log::info('Subscription expired notification sent via email', [
+                    'user_id' => $owner->id,
+                    'subscription_id' => $subscription->id,
                 ]);
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for subscription.expired",
+                    'Failed to send email notification for subscription.expired',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -805,7 +805,7 @@ class SubscriptionNotificationService
         if (
             NotificationSettingsService::shouldSendTelegram(
                 $owner,
-                "subscription.expired",
+                'subscription.expired',
             ) &&
             $owner->isTelegramConnected()
         ) {
@@ -817,10 +817,10 @@ class SubscriptionNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send telegram notification for subscription.expired",
+                    'Failed to send telegram notification for subscription.expired',
                     [
-                        "user_id" => $owner->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $owner->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -834,7 +834,7 @@ class SubscriptionNotificationService
     {
         // Получаем первый бизнес пользователя
         $business = $user->businesses()->first();
-        if (!$business) {
+        if (! $business) {
             return null;
         }
 

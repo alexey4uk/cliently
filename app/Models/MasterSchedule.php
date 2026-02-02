@@ -9,18 +9,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MasterSchedule extends Model
 {
     protected $fillable = [
-        "master_id",
-        "day_of_week",
-        "start_time",
-        "end_time",
-        "is_working",
+        'master_id',
+        'day_of_week',
+        'start_time',
+        'end_time',
+        'is_working',
     ];
 
     protected $casts = [
-        "day_of_week" => "integer",
-        "is_working" => "boolean",
-        "start_time" => "datetime:H:i",
-        "end_time" => "datetime:H:i",
+        'day_of_week' => 'integer',
+        'is_working' => 'boolean',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
     ];
 
     public function master(): BelongsTo

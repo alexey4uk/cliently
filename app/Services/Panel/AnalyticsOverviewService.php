@@ -45,36 +45,36 @@ class AnalyticsOverviewService
             $totalAppointments = Appointment::count();
         }
 
-        $activeBusinesses = DB::table("businesses")
-            ->join("appointments", "businesses.id", "=", "appointments.business_id")
-            ->where("appointments.created_at", ">=", $monthAgo)
-            ->count(DB::raw("DISTINCT businesses.id"));
+        $activeBusinesses = DB::table('businesses')
+            ->join('appointments', 'businesses.id', '=', 'appointments.business_id')
+            ->where('appointments.created_at', '>=', $monthAgo)
+            ->count(DB::raw('DISTINCT businesses.id'));
 
-        $activeUsers = DB::table("users")
-            ->join("business_user", "users.id", "=", "business_user.user_id")
-            ->join("appointments", "business_user.business_id", "=", "appointments.business_id")
-            ->where("appointments.created_at", ">=", $monthAgo)
-            ->count(DB::raw("DISTINCT users.id"));
+        $activeUsers = DB::table('users')
+            ->join('business_user', 'users.id', '=', 'business_user.user_id')
+            ->join('appointments', 'business_user.business_id', '=', 'appointments.business_id')
+            ->where('appointments.created_at', '>=', $monthAgo)
+            ->count(DB::raw('DISTINCT users.id'));
 
-        $revenueTotal = Invoice::where("status", "paid")->sum("amount");
-        $revenueMonth = Invoice::where("status", "paid")
-            ->where("paid_at", ">=", $monthAgo)
-            ->sum("amount");
+        $revenueTotal = Invoice::where('status', 'paid')->sum('amount');
+        $revenueMonth = Invoice::where('status', 'paid')
+            ->where('paid_at', '>=', $monthAgo)
+            ->sum('amount');
 
-        $activeSubscriptions = \App\Models\Subscription::where("status", "active")
+        $activeSubscriptions = \App\Models\Subscription::where('status', 'active')
             ->where(function ($query) {
-                $query->whereNull("ends_at")->orWhere("ends_at", ">", now());
+                $query->whereNull('ends_at')->orWhere('ends_at', '>', now());
             })
             ->count();
 
-        $newBusinessesLastMonth = Business::whereBetween("created_at", [$twoMonthsAgo, $monthAgo])->count();
-        $newBusinessesThisMonth = Business::where("created_at", ">=", $monthAgo)->count();
+        $newBusinessesLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+        $newBusinessesThisMonth = Business::where('created_at', '>=', $monthAgo)->count();
         $businessGrowthRate = $newBusinessesLastMonth > 0
             ? round((($newBusinessesThisMonth - $newBusinessesLastMonth) / $newBusinessesLastMonth) * 100, 1)
             : ($newBusinessesThisMonth > 0 ? 100 : 0);
 
-        $newUsersLastMonth = User::whereBetween("created_at", [$twoMonthsAgo, $monthAgo])->count();
-        $newUsersThisMonth = User::where("created_at", ">=", $monthAgo)->count();
+        $newUsersLastMonth = User::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
+        $newUsersThisMonth = User::where('created_at', '>=', $monthAgo)->count();
         $userGrowthRate = $newUsersLastMonth > 0
             ? round((($newUsersThisMonth - $newUsersLastMonth) / $newUsersLastMonth) * 100, 1)
             : ($newUsersThisMonth > 0 ? 100 : 0);
@@ -93,14 +93,14 @@ class AnalyticsOverviewService
                 'businesses.*,
                 (SELECT COUNT(*) FROM appointments WHERE appointments.business_id = businesses.id) as appointments_count',
             )
-            ->orderByRaw("appointments_count DESC")
+            ->orderByRaw('appointments_count DESC')
             ->limit(5)
             ->get()
             ->map(function ($business) {
                 return [
-                    "id" => $business->id,
-                    "name" => $business->name,
-                    "count" => $business->appointments_count,
+                    'id' => $business->id,
+                    'name' => $business->name,
+                    'count' => $business->appointments_count,
                 ];
             });
 
@@ -109,39 +109,39 @@ class AnalyticsOverviewService
                 'businesses.*,
                 (SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count',
             )
-            ->orderByRaw("clients_count DESC")
+            ->orderByRaw('clients_count DESC')
             ->limit(5)
             ->get()
             ->map(function ($business) {
                 return [
-                    "id" => $business->id,
-                    "name" => $business->name,
-                    "count" => $business->clients_count,
+                    'id' => $business->id,
+                    'name' => $business->name,
+                    'count' => $business->clients_count,
                 ];
             });
 
-        $recentRegistrations = User::orderBy("created_at", "desc")
+        $recentRegistrations = User::orderBy('created_at', 'desc')
             ->limit(10)
-            ->get(["id", "name", "email", "created_at"]);
+            ->get(['id', 'name', 'email', 'created_at']);
 
         return [
-            "total_businesses" => $totalBusinesses,
-            "active_businesses" => $activeBusinesses,
-            "total_users" => $totalUsers,
-            "active_users" => $activeUsers,
-            "total_clients" => $totalClients,
-            "total_appointments" => $totalAppointments,
-            "revenue_total" => $revenueTotal,
-            "revenue_month" => $revenueMonth,
-            "active_subscriptions" => $activeSubscriptions,
-            "business_growth_rate" => $businessGrowthRate,
-            "user_growth_rate" => $userGrowthRate,
-            "avg_appointments_per_business" => $avgAppointmentsPerBusiness,
-            "avg_clients_per_business" => $avgClientsPerBusiness,
-            "chart_data" => $chartData,
-            "top_businesses_by_appointments" => $topBusinessesByAppointments,
-            "top_businesses_by_clients" => $topBusinessesByClients,
-            "recent_registrations" => $recentRegistrations,
+            'total_businesses' => $totalBusinesses,
+            'active_businesses' => $activeBusinesses,
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'total_clients' => $totalClients,
+            'total_appointments' => $totalAppointments,
+            'revenue_total' => $revenueTotal,
+            'revenue_month' => $revenueMonth,
+            'active_subscriptions' => $activeSubscriptions,
+            'business_growth_rate' => $businessGrowthRate,
+            'user_growth_rate' => $userGrowthRate,
+            'avg_appointments_per_business' => $avgAppointmentsPerBusiness,
+            'avg_clients_per_business' => $avgClientsPerBusiness,
+            'chart_data' => $chartData,
+            'top_businesses_by_appointments' => $topBusinessesByAppointments,
+            'top_businesses_by_clients' => $topBusinessesByClients,
+            'recent_registrations' => $recentRegistrations,
         ];
     }
 
@@ -150,35 +150,35 @@ class AnalyticsOverviewService
         $startDate = Carbon::now()->subDays($days)->startOfDay();
         $endDate = Carbon::now()->endOfDay();
 
-        $businessesByDate = Business::whereBetween("created_at", [$startDate, $endDate])
-            ->selectRaw("DATE(created_at) as date, COUNT(*) as count")
-            ->groupBy(DB::raw("DATE(created_at)"))
-            ->pluck("count", "date")
+        $businessesByDate = Business::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
             ->toArray();
 
-        $usersByDate = User::whereBetween("created_at", [$startDate, $endDate])
-            ->selectRaw("DATE(created_at) as date, COUNT(*) as count")
-            ->groupBy(DB::raw("DATE(created_at)"))
-            ->pluck("count", "date")
+        $usersByDate = User::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
             ->toArray();
 
-        $appointmentsByDate = Appointment::whereBetween("created_at", [$startDate, $endDate])
-            ->selectRaw("DATE(created_at) as date, COUNT(*) as count")
-            ->groupBy(DB::raw("DATE(created_at)"))
-            ->pluck("count", "date")
+        $appointmentsByDate = Appointment::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
             ->toArray();
 
-        $clientsByDate = Client::whereBetween("created_at", [$startDate, $endDate])
-            ->selectRaw("DATE(created_at) as date, COUNT(*) as count")
-            ->groupBy(DB::raw("DATE(created_at)"))
-            ->pluck("count", "date")
+        $clientsByDate = Client::whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('count', 'date')
             ->toArray();
 
-        $revenueByDate = Invoice::where("status", "paid")
-            ->whereBetween("paid_at", [$startDate, $endDate])
-            ->selectRaw("DATE(paid_at) as date, SUM(amount) as total")
-            ->groupBy(DB::raw("DATE(paid_at)"))
-            ->pluck("total", "date")
+        $revenueByDate = Invoice::where('status', 'paid')
+            ->whereBetween('paid_at', [$startDate, $endDate])
+            ->selectRaw('DATE(paid_at) as date, SUM(amount) as total')
+            ->groupBy(DB::raw('DATE(paid_at)'))
+            ->pluck('total', 'date')
             ->toArray();
 
         $businessesData = [];
@@ -190,8 +190,8 @@ class AnalyticsOverviewService
 
         for ($i = $days; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            $dateStr = $date->format("Y-m-d");
-            $labels[] = $date->format("d.m");
+            $dateStr = $date->format('Y-m-d');
+            $labels[] = $date->format('d.m');
             $businessesData[] = $businessesByDate[$dateStr] ?? 0;
             $usersData[] = $usersByDate[$dateStr] ?? 0;
             $appointmentsData[] = $appointmentsByDate[$dateStr] ?? 0;
@@ -200,12 +200,12 @@ class AnalyticsOverviewService
         }
 
         return [
-            "labels" => $labels,
-            "businesses" => $businessesData,
-            "users" => $usersData,
-            "appointments" => $appointmentsData,
-            "clients" => $clientsData,
-            "revenue" => $revenueData,
+            'labels' => $labels,
+            'businesses' => $businessesData,
+            'users' => $usersData,
+            'appointments' => $appointmentsData,
+            'clients' => $clientsData,
+            'revenue' => $revenueData,
         ];
     }
 }

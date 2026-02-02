@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserNotificationSetting;
-use Illuminate\Support\Facades\Log;
 
 class NotificationSettingsService
 {

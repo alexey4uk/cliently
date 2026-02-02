@@ -160,7 +160,7 @@ class BusinessRolePermissionService
         // This allows users with clients.view.own to access clients.view routes
         // (the controller will filter data appropriately)
         if (! str_ends_with($permission, '.own')) {
-            $ownPermission = $permission . '.own';
+            $ownPermission = $permission.'.own';
             if ($this->checkPermission($permissions, $ownPermission)) {
                 return true;
             }
@@ -192,7 +192,7 @@ class BusinessRolePermissionService
         }
 
         // Check if user has .own permission (e.g., appointments.view.own)
-        $ownPermission = $basePermission . '.own';
+        $ownPermission = $basePermission.'.own';
 
         return $this->checkPermission($permissions, $ownPermission);
     }
@@ -216,7 +216,7 @@ class BusinessRolePermissionService
             if (str_ends_with($perm, '.*')) {
                 $prefix = str_replace('.*', '', $perm);
                 // Check if permission starts with prefix
-                if (str_starts_with($permission, $prefix . '.')) {
+                if (str_starts_with($permission, $prefix.'.')) {
                     // Exclude .own permissions from wildcard matching
                     // e.g., appointments.* should NOT match appointments.view.own
                     if (! str_ends_with($permission, '.own')) {

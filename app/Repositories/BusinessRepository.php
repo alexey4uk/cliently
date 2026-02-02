@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Business;
 use Illuminate\Database\Eloquent\Collection;
+
 /**
  * Репозиторий для работы с бизнесами
  */
@@ -108,5 +109,4 @@ class BusinessRepository extends BaseRepository implements BusinessRepositoryInt
     {
         return $business->update(['telegram_chat_id' => $chatId]);
     }
-
 }

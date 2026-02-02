@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Business;
-use App\Models\BusinessRole;
 use App\Models\BusinessUserInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -31,27 +30,27 @@ class BusinessUserNotificationService
 
             // Проверяем, включен ли тип уведомления
             if (
-                !NotificationSettingsService::isTypeEnabled(
+                ! NotificationSettingsService::isTypeEnabled(
                     $recipient,
-                    "business.user.invited",
+                    'business.user.invited',
                 )
             ) {
                 continue;
             }
 
-            $title = "Отправлено приглашение";
+            $title = 'Отправлено приглашение';
             $message = "Пользователь {$invitedBy->name} отправил приглашение пользователю {$invitation->email} с ролью {$role->name} в бизнес «{$business->name}».";
 
             // In-app уведомление
             NotificationService::send([
-                "user_id" => $recipient->id,
-                "type" => "business.user.invited",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "invitation_id" => $invitation->id,
-                    "invited_by_id" => $invitedBy->id,
+                'user_id' => $recipient->id,
+                'type' => 'business.user.invited',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'invitation_id' => $invitation->id,
+                    'invited_by_id' => $invitedBy->id,
                 ],
             ]);
 
@@ -59,7 +58,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $recipient,
-                    "business.user.invited",
+                    'business.user.invited',
                 ) &&
                 $recipient->hasVerifiedEmail()
             ) {
@@ -72,10 +71,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.invited",
+                        'Failed to send email notification for business.user.invited',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -85,7 +84,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $recipient,
-                    "business.user.invited",
+                    'business.user.invited',
                 ) &&
                 $recipient->isTelegramConnected()
             ) {
@@ -97,10 +96,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.invited",
+                        'Failed to send telegram notification for business.user.invited',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -123,14 +122,14 @@ class BusinessUserNotificationService
             // Получаем роль из pivot таблицы
             $pivot = $business
                 ->users()
-                ->where("user_id", $joinedUser->id)
+                ->where('user_id', $joinedUser->id)
                 ->first();
             if ($pivot && $pivot->pivot->role_id) {
                 $role = \App\Models\BusinessRole::find($pivot->pivot->role_id);
             }
         }
 
-        $roleName = $role ? $role->name : "неизвестная роль";
+        $roleName = $role ? $role->name : 'неизвестная роль';
 
         // Получаем владельцев и админов бизнеса
         $recipients = self::getBusinessAdmins($business);
@@ -143,26 +142,26 @@ class BusinessUserNotificationService
 
             // Проверяем, включен ли тип уведомления
             if (
-                !NotificationSettingsService::isTypeEnabled(
+                ! NotificationSettingsService::isTypeEnabled(
                     $recipient,
-                    "business.user.joined",
+                    'business.user.joined',
                 )
             ) {
                 continue;
             }
 
-            $title = "Пользователь присоединился";
+            $title = 'Пользователь присоединился';
             $message = "Пользователь {$joinedUser->name} ({$joinedUser->email}) присоединился к бизнесу «{$business->name}» с ролью {$roleName}.";
 
             // In-app уведомление
             NotificationService::send([
-                "user_id" => $recipient->id,
-                "type" => "business.user.joined",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "joined_user_id" => $joinedUser->id,
+                'user_id' => $recipient->id,
+                'type' => 'business.user.joined',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'joined_user_id' => $joinedUser->id,
                 ],
             ]);
 
@@ -170,7 +169,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $recipient,
-                    "business.user.joined",
+                    'business.user.joined',
                 ) &&
                 $recipient->hasVerifiedEmail()
             ) {
@@ -184,10 +183,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.joined",
+                        'Failed to send email notification for business.user.joined',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -197,7 +196,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $recipient,
-                    "business.user.joined",
+                    'business.user.joined',
                 ) &&
                 $recipient->isTelegramConnected()
             ) {
@@ -209,10 +208,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.joined",
+                        'Failed to send telegram notification for business.user.joined',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -223,26 +222,26 @@ class BusinessUserNotificationService
         if (
             NotificationSettingsService::isTypeEnabled(
                 $joinedUser,
-                "business.user.joined",
+                'business.user.joined',
             )
         ) {
-            $title = "Добро пожаловать!";
+            $title = 'Добро пожаловать!';
             $message = "Вы успешно присоединились к бизнесу «{$business->name}» с ролью {$roleName}.";
 
             NotificationService::send([
-                "user_id" => $joinedUser->id,
-                "type" => "business.user.joined",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
+                'user_id' => $joinedUser->id,
+                'type' => 'business.user.joined',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
                 ],
             ]);
 
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $joinedUser,
-                    "business.user.joined",
+                    'business.user.joined',
                 ) &&
                 $joinedUser->hasVerifiedEmail()
             ) {
@@ -256,10 +255,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.joined to joined user",
+                        'Failed to send email notification for business.user.joined to joined user',
                         [
-                            "user_id" => $joinedUser->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $joinedUser->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -279,27 +278,27 @@ class BusinessUserNotificationService
         if (
             NotificationSettingsService::isTypeEnabled(
                 $removedUser,
-                "business.user.removed",
+                'business.user.removed',
             )
         ) {
-            $title = "Удаление из бизнеса";
+            $title = 'Удаление из бизнеса';
             $message = "Вы были удалены из бизнеса «{$business->name}» пользователем {$removedBy->name}.";
 
             NotificationService::send([
-                "user_id" => $removedUser->id,
-                "type" => "business.user.removed",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "removed_by_id" => $removedBy->id,
+                'user_id' => $removedUser->id,
+                'type' => 'business.user.removed',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'removed_by_id' => $removedBy->id,
                 ],
             ]);
 
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $removedUser,
-                    "business.user.removed",
+                    'business.user.removed',
                 ) &&
                 $removedUser->hasVerifiedEmail()
             ) {
@@ -312,10 +311,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.removed",
+                        'Failed to send email notification for business.user.removed',
                         [
-                            "user_id" => $removedUser->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $removedUser->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -324,7 +323,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $removedUser,
-                    "business.user.removed",
+                    'business.user.removed',
                 ) &&
                 $removedUser->isTelegramConnected()
             ) {
@@ -336,10 +335,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.removed",
+                        'Failed to send telegram notification for business.user.removed',
                         [
-                            "user_id" => $removedUser->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $removedUser->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -356,33 +355,33 @@ class BusinessUserNotificationService
             }
 
             if (
-                !NotificationSettingsService::isTypeEnabled(
+                ! NotificationSettingsService::isTypeEnabled(
                     $recipient,
-                    "business.user.removed",
+                    'business.user.removed',
                 )
             ) {
                 continue;
             }
 
-            $title = "Пользователь удалён";
+            $title = 'Пользователь удалён';
             $message = "Пользователь {$removedUser->name} ({$removedUser->email}) был удалён из бизнеса «{$business->name}» пользователем {$removedBy->name}.";
 
             NotificationService::send([
-                "user_id" => $recipient->id,
-                "type" => "business.user.removed",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "removed_user_id" => $removedUser->id,
-                    "removed_by_id" => $removedBy->id,
+                'user_id' => $recipient->id,
+                'type' => 'business.user.removed',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'removed_user_id' => $removedUser->id,
+                    'removed_by_id' => $removedBy->id,
                 ],
             ]);
 
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $recipient,
-                    "business.user.removed",
+                    'business.user.removed',
                 ) &&
                 $recipient->hasVerifiedEmail()
             ) {
@@ -396,10 +395,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.removed to admin",
+                        'Failed to send email notification for business.user.removed to admin',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -408,7 +407,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $recipient,
-                    "business.user.removed",
+                    'business.user.removed',
                 ) &&
                 $recipient->isTelegramConnected()
             ) {
@@ -420,10 +419,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.removed to admin",
+                        'Failed to send telegram notification for business.user.removed to admin',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -445,36 +444,36 @@ class BusinessUserNotificationService
         if (
             NotificationSettingsService::isTypeEnabled(
                 $user,
-                "business.user.role_changed",
+                'business.user.role_changed',
             )
         ) {
             $oldRoleName =
-                \App\Models\BusinessRole::where("slug", $oldRole)->first()
+                \App\Models\BusinessRole::where('slug', $oldRole)->first()
                     ?->name ?? $oldRole;
             $newRoleName =
-                \App\Models\BusinessRole::where("slug", $newRole)->first()
+                \App\Models\BusinessRole::where('slug', $newRole)->first()
                     ?->name ?? $newRole;
 
-            $title = "Изменена роль";
+            $title = 'Изменена роль';
             $message = "Ваша роль в бизнесе «{$business->name}» изменена с «{$oldRoleName}» на «{$newRoleName}» пользователем {$changedBy->name}.";
 
             NotificationService::send([
-                "user_id" => $user->id,
-                "type" => "business.user.role_changed",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "old_role" => $oldRole,
-                    "new_role" => $newRole,
-                    "changed_by_id" => $changedBy->id,
+                'user_id' => $user->id,
+                'type' => 'business.user.role_changed',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'old_role' => $oldRole,
+                    'new_role' => $newRole,
+                    'changed_by_id' => $changedBy->id,
                 ],
             ]);
 
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $user,
-                    "business.user.role_changed",
+                    'business.user.role_changed',
                 ) &&
                 $user->hasVerifiedEmail()
             ) {
@@ -489,10 +488,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.role_changed",
+                        'Failed to send email notification for business.user.role_changed',
                         [
-                            "user_id" => $user->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $user->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -501,7 +500,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $user,
-                    "business.user.role_changed",
+                    'business.user.role_changed',
                 ) &&
                 $user->isTelegramConnected()
             ) {
@@ -515,10 +514,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.role_changed",
+                        'Failed to send telegram notification for business.user.role_changed',
                         [
-                            "user_id" => $user->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $user->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -540,42 +539,42 @@ class BusinessUserNotificationService
             }
 
             if (
-                !NotificationSettingsService::isTypeEnabled(
+                ! NotificationSettingsService::isTypeEnabled(
                     $recipient,
-                    "business.user.role_changed",
+                    'business.user.role_changed',
                 )
             ) {
                 continue;
             }
 
             $oldRoleName =
-                \App\Models\BusinessRole::where("slug", $oldRole)->first()
+                \App\Models\BusinessRole::where('slug', $oldRole)->first()
                     ?->name ?? $oldRole;
             $newRoleName =
-                \App\Models\BusinessRole::where("slug", $newRole)->first()
+                \App\Models\BusinessRole::where('slug', $newRole)->first()
                     ?->name ?? $newRole;
 
-            $title = "Изменена роль пользователя";
+            $title = 'Изменена роль пользователя';
             $message = "Роль пользователя {$user->name} ({$user->email}) в бизнесе «{$business->name}» изменена с «{$oldRoleName}» на «{$newRoleName}» пользователем {$changedBy->name}.";
 
             NotificationService::send([
-                "user_id" => $recipient->id,
-                "type" => "business.user.role_changed",
-                "title" => $title,
-                "message" => $message,
-                "data" => [
-                    "business_id" => $business->id,
-                    "user_id" => $user->id,
-                    "old_role" => $oldRole,
-                    "new_role" => $newRole,
-                    "changed_by_id" => $changedBy->id,
+                'user_id' => $recipient->id,
+                'type' => 'business.user.role_changed',
+                'title' => $title,
+                'message' => $message,
+                'data' => [
+                    'business_id' => $business->id,
+                    'user_id' => $user->id,
+                    'old_role' => $oldRole,
+                    'new_role' => $newRole,
+                    'changed_by_id' => $changedBy->id,
                 ],
             ]);
 
             if (
                 NotificationSettingsService::shouldSendEmail(
                     $recipient,
-                    "business.user.role_changed",
+                    'business.user.role_changed',
                 ) &&
                 $recipient->hasVerifiedEmail()
             ) {
@@ -591,10 +590,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send email notification for business.user.role_changed to admin",
+                        'Failed to send email notification for business.user.role_changed to admin',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -603,7 +602,7 @@ class BusinessUserNotificationService
             if (
                 NotificationSettingsService::shouldSendTelegram(
                     $recipient,
-                    "business.user.role_changed",
+                    'business.user.role_changed',
                 ) &&
                 $recipient->isTelegramConnected()
             ) {
@@ -617,10 +616,10 @@ class BusinessUserNotificationService
                     );
                 } catch (\Exception $e) {
                     Log::error(
-                        "Failed to send telegram notification for business.user.role_changed to admin",
+                        'Failed to send telegram notification for business.user.role_changed to admin',
                         [
-                            "user_id" => $recipient->id,
-                            "error" => $e->getMessage(),
+                            'user_id' => $recipient->id,
+                            'error' => $e->getMessage(),
                         ],
                     );
                 }
@@ -634,15 +633,16 @@ class BusinessUserNotificationService
     protected static function getBusinessAdmins(
         Business $business,
     ): \Illuminate\Support\Collection {
-        $ownerRoleId = \App\Models\BusinessRole::where("slug", "owner")->value(
-            "id",
+        $ownerRoleId = \App\Models\BusinessRole::where('slug', 'owner')->value(
+            'id',
         );
-        $adminRoleId = \App\Models\BusinessRole::where("slug", "admin")->value(
-            "id",
+        $adminRoleId = \App\Models\BusinessRole::where('slug', 'admin')->value(
+            'id',
         );
+
         return $business
             ->users()
-            ->wherePivotIn("role_id", [$ownerRoleId, $adminRoleId])
+            ->wherePivotIn('role_id', [$ownerRoleId, $adminRoleId])
             ->get();
     }
 }

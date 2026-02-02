@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Contracts\PaymentGatewayInterface;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller

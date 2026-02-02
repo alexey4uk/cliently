@@ -15,16 +15,16 @@ class BusinessController extends Controller
      */
     public function index()
     {
-        $search = request("search", "");
-        $sort = request("sort", "created_at");
-        $direction = request("direction", "desc");
-        $perPage = min((int) request("per_page", 20), 100);
+        $search = request('search', '');
+        $sort = request('sort', 'created_at');
+        $direction = request('direction', 'desc');
+        $perPage = min((int) request('per_page', 20), 100);
 
         // ОПТИМИЗИРОВАНО: Подзапросы вместо withCount
-        $ownerRoleId = BusinessRole::where("slug", "owner")->value("id");
+        $ownerRoleId = BusinessRole::where('slug', 'owner')->value('id');
         $query = Business::query()->with([
-            "users" => function ($q) use ($ownerRoleId) {
-                $q->wherePivotIn("role_id", [$ownerRoleId]);
+            'users' => function ($q) use ($ownerRoleId) {
+                $q->wherePivotIn('role_id', [$ownerRoleId]);
             },
         ])->selectRaw('businesses.*,
                 (SELECT COUNT(*) FROM clients WHERE clients.business_id = businesses.id) as clients_count,
@@ -37,34 +37,34 @@ class BusinessController extends Controller
         if ($search) {
             $query
                 ->where(function ($q) use ($search) {
-                    $q->where("name", "like", "%{$search}%")
-                        ->orWhere("description", "like", "%{$search}%")
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
                         // Поиск по телефону через подзапрос (быстрее whereHas)
-                        ->orWhereIn("id", function ($subquery) use ($search) {
+                        ->orWhereIn('id', function ($subquery) use ($search) {
                             $subquery
-                                ->select("phoneable_id")
-                                ->from("phones")
-                                ->where("phoneable_type", Business::class)
-                                ->where("phone", "like", "%{$search}%");
+                                ->select('phoneable_id')
+                                ->from('phones')
+                                ->where('phoneable_type', Business::class)
+                                ->where('phone', 'like', "%{$search}%");
                         });
                 })
                 ->limit(1000); // Ограничение для поиска
         }
 
         // Сортировка
-        $allowedSorts = ["name", "created_at"];
+        $allowedSorts = ['name', 'created_at'];
         if (in_array($sort, $allowedSorts)) {
             $query->orderBy($sort, $direction);
         } else {
-            $query->orderBy("created_at", "desc");
+            $query->orderBy('created_at', 'desc');
         }
 
         // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate
         $businesses = $query->simplePaginate($perPage)->withQueryString();
 
         return view(
-            "panel.businesses.index",
-            compact("businesses", "search", "sort", "direction", "perPage"),
+            'panel.businesses.index',
+            compact('businesses', 'search', 'sort', 'direction', 'perPage'),
         );
     }
 
@@ -75,10 +75,10 @@ class BusinessController extends Controller
     {
         // КРИТИЧЕСКАЯ ОПТИМИЗАЦИЯ: НЕ загружаем все связанные записи!
         // Загружаем только owners и counts
-        $ownerRoleId = BusinessRole::where("slug", "owner")->value("id");
+        $ownerRoleId = BusinessRole::where('slug', 'owner')->value('id');
         $business->load([
-            "users" => function ($q) use ($ownerRoleId) {
-                $q->wherePivotIn("role_id", [$ownerRoleId]);
+            'users' => function ($q) use ($ownerRoleId) {
+                $q->wherePivotIn('role_id', [$ownerRoleId]);
             },
         ]);
 
@@ -108,7 +108,7 @@ class BusinessController extends Controller
         $business->locations_count = $counts->locations_count;
         $business->appointments_count = $counts->appointments_count;
 
-        return view("panel.businesses.show", compact("business"));
+        return view('panel.businesses.show', compact('business'));
     }
 
     /**
@@ -116,7 +116,7 @@ class BusinessController extends Controller
      */
     public function edit(Business $business)
     {
-        return view("panel.businesses.edit", compact("business"));
+        return view('panel.businesses.edit', compact('business'));
     }
 
     /**
@@ -125,16 +125,16 @@ class BusinessController extends Controller
     public function update(Request $request, Business $business)
     {
         $validated = $request->validate([
-            "name" => "required|string|max:255",
-            "phone" => "nullable|string|max:20",
-            "description" => "nullable|string|max:500",
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'description' => 'nullable|string|max:500',
         ]);
 
         $business->update($validated);
 
         return redirect()
-            ->route("panel.businesses.show", $business)
-            ->with("success", "Бизнес успешно обновлен");
+            ->route('panel.businesses.show', $business)
+            ->with('success', 'Бизнес успешно обновлен');
     }
 
     /**
@@ -151,10 +151,10 @@ class BusinessController extends Controller
             $business->locations()->exists()
         ) {
             return redirect()
-                ->route("panel.businesses.show", $business)
+                ->route('panel.businesses.show', $business)
                 ->with(
-                    "error",
-                    "Невозможно удалить бизнес, так как у него есть связанные данные (клиенты, записи, услуги, мастера или локации)",
+                    'error',
+                    'Невозможно удалить бизнес, так как у него есть связанные данные (клиенты, записи, услуги, мастера или локации)',
                 );
         }
 
@@ -166,7 +166,7 @@ class BusinessController extends Controller
         $business->delete();
 
         return redirect()
-            ->route("panel.businesses")
-            ->with("success", "Бизнес успешно удален");
+            ->route('panel.businesses')
+            ->with('success', 'Бизнес успешно удален');
     }
 }

@@ -76,9 +76,9 @@ class Handler extends WebhookHandler
                 $this->saveMessageIdToState();
             }
         } catch (\Exception $e) {
-            Log::error("Error in replyWithMessage", [
-                "error" => $e->getMessage(),
-                "last_message_id" => $this->lastMessageId,
+            Log::error('Error in replyWithMessage', [
+                'error' => $e->getMessage(),
+                'last_message_id' => $this->lastMessageId,
             ]);
 
             // Если редактирование не удалось, отправляем новое сообщение
@@ -109,7 +109,7 @@ class Handler extends WebhookHandler
                 $this->callbackQuery?->from()->id() ??
                 $this->message?->from()->id();
 
-            if (!$userId || !$this->lastMessageId) {
+            if (! $userId || ! $this->lastMessageId) {
                 return;
             }
 
@@ -124,8 +124,8 @@ class Handler extends WebhookHandler
                 );
             }
         } catch (\Exception $e) {
-            Log::error("Failed to save message_id", [
-                "error" => $e->getMessage(),
+            Log::error('Failed to save message_id', [
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -177,15 +177,15 @@ class Handler extends WebhookHandler
      */
     public function start()
     {
-        $text = $this->message->text() ?? "";
+        $text = $this->message->text() ?? '';
         $userId = $this->message->from()->id();
 
-        $parts = explode(" ", $text);
+        $parts = explode(' ', $text);
 
         if (isset($parts[1])) {
-            if (str_starts_with($parts[1], "user_auth_")) {
+            if (str_starts_with($parts[1], 'user_auth_')) {
                 // Подключение пользователя
-                $token = str_replace("user_auth_", "", $parts[1]);
+                $token = str_replace('user_auth_', '', $parts[1]);
                 $user = $this->botService->findUserByToken($token);
 
                 if ($user) {
@@ -203,21 +203,21 @@ class Handler extends WebhookHandler
                         TelegramMessages::MSG_ACCOUNT_CONNECTED,
                     );
                 } else {
-                    Log::warning("User not found for auth token", [
-                        "user_id" => $userId,
-                        "token" => $token,
+                    Log::warning('User not found for auth token', [
+                        'user_id' => $userId,
+                        'token' => $token,
                     ]);
                     $this->replyWithMessage(
-                        "Пользователь не найден. Проверьте ссылку для привязки.",
+                        'Пользователь не найден. Проверьте ссылку для привязки.',
                     );
                 }
 
                 return;
             }
 
-            if (str_starts_with($parts[1], "auth_")) {
+            if (str_starts_with($parts[1], 'auth_')) {
                 // Подключение бизнеса
-                $token = str_replace("auth_", "", $parts[1]);
+                $token = str_replace('auth_', '', $parts[1]);
                 $business = $this->botService->findBusinessByToken($token);
 
                 if ($business) {
@@ -229,9 +229,9 @@ class Handler extends WebhookHandler
                         TelegramMessages::MSG_ACCOUNT_CONNECTED,
                     );
                 } else {
-                    Log::warning("Business not found for auth token", [
-                        "user_id" => $userId,
-                        "token" => $token,
+                    Log::warning('Business not found for auth token', [
+                        'user_id' => $userId,
+                        'token' => $token,
                     ]);
                     $this->replyWithMessage(
                         TelegramMessages::MSG_BUSINESS_NOT_FOUND,
@@ -254,12 +254,12 @@ class Handler extends WebhookHandler
                     $telegramBotEnabled =
                         $subscriptionService->getLimit(
                             $owner,
-                            "telegram_bot_enabled",
+                            'telegram_bot_enabled',
                         ) === true;
 
-                    if (!$telegramBotEnabled) {
+                    if (! $telegramBotEnabled) {
                         $this->replyWithMessage(
-                            "❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.",
+                            '❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.',
                         );
 
                         return;
@@ -268,9 +268,9 @@ class Handler extends WebhookHandler
 
                 $this->startBookingProcess($business);
             } else {
-                Log::warning("Business not found for slug", [
-                    "user_id" => $userId,
-                    "slug" => $slug,
+                Log::warning('Business not found for slug', [
+                    'user_id' => $userId,
+                    'slug' => $slug,
                 ]);
                 $this->replyWithMessage(
                     TelegramMessages::MSG_BUSINESS_NOT_FOUND,
@@ -322,8 +322,8 @@ class Handler extends WebhookHandler
 
         $message = "🏢 Выберите бизнес для записи:\n\n";
         $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
-            "current" => $page,
-            "total" => $totalPages,
+            'current' => $page,
+            'total' => $totalPages,
         ]);
 
         $this->replyWithMessage(
@@ -378,11 +378,11 @@ class Handler extends WebhookHandler
 
         $message =
             TelegramMessages::format(TelegramMessages::MSG_SEARCH_RESULTS, [
-                "query" => $query,
-            ]) . "\n\n";
+                'query' => $query,
+            ])."\n\n";
         $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
-            "current" => $page,
-            "total" => $totalPages,
+            'current' => $page,
+            'total' => $totalPages,
         ]);
 
         $this->replyWithMessage(
@@ -398,8 +398,8 @@ class Handler extends WebhookHandler
     {
         // Проверка на команду отмены
         if (
-            mb_strtolower(trim($text)) === "отмена" ||
-            mb_strtolower(trim($text)) === "cancel"
+            mb_strtolower(trim($text)) === 'отмена' ||
+            mb_strtolower(trim($text)) === 'cancel'
         ) {
             $this->botService->clearUserState(
                 $state->telegram_user_id,
@@ -430,13 +430,13 @@ class Handler extends WebhookHandler
                 // На этих шагах нужно использовать кнопки
                 // Показываем сообщение об ошибке отдельно, не редактируя интерфейс записи
                 Log::warning(
-                    "Text input on step that requires buttons: " . $state->step,
+                    'Text input on step that requires buttons: '.$state->step,
                 );
                 $this->chat->message(TelegramMessages::MSG_USE_BUTTONS)->send();
                 break;
             default:
                 Log::warning(
-                    "Unknown step in handleTextMessage: " . $state->step,
+                    'Unknown step in handleTextMessage: '.$state->step,
                 );
                 $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
         }
@@ -449,8 +449,8 @@ class Handler extends WebhookHandler
     {
         // Проверка на команду отмены
         if (
-            mb_strtolower(trim($text)) === "отмена" ||
-            mb_strtolower(trim($text)) === "cancel"
+            mb_strtolower(trim($text)) === 'отмена' ||
+            mb_strtolower(trim($text)) === 'cancel'
         ) {
             $this->botService->clearUserState($state->telegram_user_id, null);
             $this->replyWithMessage(TelegramMessages::MSG_CANCEL);
@@ -469,7 +469,7 @@ class Handler extends WebhookHandler
 
         // Сохраняем запрос в состояние для пагинации
         $data = $state->data;
-        $data["search_query"] = $query;
+        $data['search_query'] = $query;
         $this->botService->updateUserStateKeepMessageId(
             $state->telegram_user_id,
             null,
@@ -491,7 +491,7 @@ class Handler extends WebhookHandler
     ) {
         [$isValid, $result] = TelegramValidators::validateName($text);
 
-        if (!$isValid) {
+        if (! $isValid) {
             $this->replyWithMessage($result, TelegramKeyboards::cancelOnly());
 
             return;
@@ -499,7 +499,7 @@ class Handler extends WebhookHandler
 
         $name = $result;
         $data = $state->data;
-        $data["client_data"]["first_name"] = $name;
+        $data['client_data']['first_name'] = $name;
 
         $this->botService->updateUserStateKeepMessageId(
             $state->telegram_user_id,
@@ -510,9 +510,9 @@ class Handler extends WebhookHandler
 
         $message =
             TelegramMessages::format(TelegramMessages::MSG_STATUS_NAME, [
-                "name" => $name,
-            ]) .
-            "\n\n" .
+                'name' => $name,
+            ]).
+            "\n\n".
             TelegramMessages::MSG_ENTER_PHONE;
 
         $this->replyWithMessage(
@@ -528,7 +528,7 @@ class Handler extends WebhookHandler
     {
         [$isValid, $cleaned] = TelegramValidators::validatePhone($text);
 
-        if (!$isValid) {
+        if (! $isValid) {
             $this->replyWithMessage(
                 TelegramMessages::MSG_PHONE_INVALID,
                 TelegramKeyboards::cancelOnly(),
@@ -538,7 +538,7 @@ class Handler extends WebhookHandler
         }
 
         $data = $state->data;
-        $data["client_data"]["phone"] = $cleaned;
+        $data['client_data']['phone'] = $cleaned;
 
         $this->botService->updateUserStateKeepMessageId(
             $state->telegram_user_id,
@@ -549,13 +549,13 @@ class Handler extends WebhookHandler
 
         $message =
             TelegramMessages::format(TelegramMessages::MSG_STATUS_NAME, [
-                "name" => $data["client_data"]["first_name"],
-            ]) .
-            "\n" .
+                'name' => $data['client_data']['first_name'],
+            ]).
+            "\n".
             TelegramMessages::format(TelegramMessages::MSG_STATUS_PHONE, [
-                "phone" => $cleaned,
-            ]) .
-            "\n\n" .
+                'phone' => $cleaned,
+            ]).
+            "\n\n".
             TelegramMessages::MSG_ENTER_NOTES;
 
         $this->replyWithMessage($message, TelegramKeyboards::skipAndCancel());
@@ -583,7 +583,7 @@ class Handler extends WebhookHandler
         // Валидация заметки
         [$isValid, $result] = TelegramValidators::validateNotes($text);
 
-        if (!$isValid) {
+        if (! $isValid) {
             $this->replyWithMessage(
                 $result,
                 TelegramKeyboards::skipAndCancel(),
@@ -594,7 +594,7 @@ class Handler extends WebhookHandler
 
         $notes = $result;
         $data = $state->data;
-        $data["client_data"]["notes"] = $notes;
+        $data['client_data']['notes'] = $notes;
 
         TelegramUserState::updateStateKeepMessageId(
             $state->telegram_user_id,
@@ -612,81 +612,82 @@ class Handler extends WebhookHandler
         Business $business,
         array $data,
     ) {
-        $location = $business->locations()->find($data["location_id"] ?? null);
-        $service = $business->services()->find($data["service_id"] ?? null);
-        $master = $business->masters()->find($data["master_id"] ?? null);
+        $location = $business->locations()->find($data['location_id'] ?? null);
+        $service = $business->services()->find($data['service_id'] ?? null);
+        $master = $business->masters()->find($data['master_id'] ?? null);
 
-        if (!$location || !$service || !$master) {
+        if (! $location || ! $service || ! $master) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
+
             return;
         }
 
         // Форматируем дату и время
-        $date = Carbon::parse($data["date"])->format("d.m.Y");
-        $time = $data["time"];
-        if (is_string($time) && !str_contains($time, ":")) {
-            $time = $time . ":00";
+        $date = Carbon::parse($data['date'])->format('d.m.Y');
+        $time = $data['time'];
+        if (is_string($time) && ! str_contains($time, ':')) {
+            $time = $time.':00';
         }
-        $time = Carbon::parse($time)->format("H:i");
+        $time = Carbon::parse($time)->format('H:i');
 
         // Формируем сообщение
         $message = TelegramMessages::MSG_CONFIRMATION_HEADER;
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "📍",
-                "label" => "Локация",
-                "value" => $location->name,
-            ]) . "\n";
+                'emoji' => '📍',
+                'label' => 'Локация',
+                'value' => $location->name,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "💇‍♀️",
-                "label" => "Услуга",
-                "value" => $service->name,
-            ]) . "\n";
+                'emoji' => '💇‍♀️',
+                'label' => 'Услуга',
+                'value' => $service->name,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "👨‍💼",
-                "label" => "Мастер",
-                "value" => $master->first_name . " " . $master->last_name,
-            ]) . "\n";
+                'emoji' => '👨‍💼',
+                'label' => 'Мастер',
+                'value' => $master->first_name.' '.$master->last_name,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "📅",
-                "label" => "Дата",
-                "value" => $date,
-            ]) . "\n";
+                'emoji' => '📅',
+                'label' => 'Дата',
+                'value' => $date,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "⏰",
-                "label" => "Время",
-                "value" => $time,
-            ]) . "\n";
+                'emoji' => '⏰',
+                'label' => 'Время',
+                'value' => $time,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "👤",
-                "label" => "Клиент",
-                "value" => $data["client_data"]["first_name"],
-            ]) . "\n";
+                'emoji' => '👤',
+                'label' => 'Клиент',
+                'value' => $data['client_data']['first_name'],
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                "emoji" => "📱",
-                "label" => "Телефон",
-                "value" => $data["client_data"]["phone"],
-            ]) . "\n";
+                'emoji' => '📱',
+                'label' => 'Телефон',
+                'value' => $data['client_data']['phone'],
+            ])."\n";
 
         if (
-            isset($data["client_data"]["notes"]) &&
-            !empty($data["client_data"]["notes"])
+            isset($data['client_data']['notes']) &&
+            ! empty($data['client_data']['notes'])
         ) {
             $message .=
                 TelegramMessages::format(
                     TelegramMessages::MSG_CONFIRMATION_LINE,
                     [
-                        "emoji" => "📝",
-                        "label" => "Примечание",
-                        "value" => $data["client_data"]["notes"],
+                        'emoji' => '📝',
+                        'label' => 'Примечание',
+                        'value' => $data['client_data']['notes'],
                     ],
-                ) . "\n";
+                )."\n";
         }
 
         $this->replyWithMessage($message, TelegramKeyboards::confirmation());
@@ -706,7 +707,7 @@ class Handler extends WebhookHandler
         // Проверяем, включена ли онлайн-запись
         if ($business->online_booking_enabled === false) {
             $this->replyWithMessage(
-                "❌ Онлайн-запись временно недоступна. Пожалуйста, свяжитесь с нами напрямую для записи.",
+                '❌ Онлайн-запись временно недоступна. Пожалуйста, свяжитесь с нами напрямую для записи.',
             );
 
             return;
@@ -767,7 +768,7 @@ class Handler extends WebhookHandler
         $message = TelegramMessages::format(
             TelegramMessages::MSG_SELECT_SERVICE,
             [
-                "location" => $location->name,
+                'location' => $location->name,
             ],
         );
 
@@ -783,7 +784,7 @@ class Handler extends WebhookHandler
             $business->id,
             TelegramUserState::STEP_SELECT_SERVICE,
             [
-                "location_id" => $locationId,
+                'location_id' => $locationId,
             ],
         );
     }
@@ -799,7 +800,7 @@ class Handler extends WebhookHandler
         $location = $business->locations()->find($locationId);
         $service = $business->services()->find($serviceId);
 
-        if (!$location || !$service) {
+        if (! $location || ! $service) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
@@ -807,29 +808,29 @@ class Handler extends WebhookHandler
 
         $masters = $location
             ->masters()
-            ->where("is_active", true)
-            ->whereHas("services", function ($q) use ($serviceId) {
-                $q->where("services.id", $serviceId);
+            ->where('is_active', true)
+            ->whereHas('services', function ($q) use ($serviceId) {
+                $q->where('services.id', $serviceId);
             })
-            ->orderBy("first_name")
+            ->orderBy('first_name')
             ->get();
 
         if ($masters->isEmpty()) {
             $masters = $location
                 ->masters()
-                ->where("is_active", true)
-                ->orderBy("first_name")
+                ->where('is_active', true)
+                ->orderBy('first_name')
                 ->get();
         }
 
         if ($masters->isEmpty()) {
             $masters = $business
                 ->masters()
-                ->where("is_active", true)
-                ->whereHas("services", function ($q) use ($serviceId) {
-                    $q->where("services.id", $serviceId);
+                ->where('is_active', true)
+                ->whereHas('services', function ($q) use ($serviceId) {
+                    $q->where('services.id', $serviceId);
                 })
-                ->orderBy("first_name")
+                ->orderBy('first_name')
                 ->get();
         }
 
@@ -842,7 +843,7 @@ class Handler extends WebhookHandler
         $message = TelegramMessages::format(
             TelegramMessages::MSG_SELECT_MASTER,
             [
-                "service" => $service->name,
+                'service' => $service->name,
             ],
         );
 
@@ -855,8 +856,8 @@ class Handler extends WebhookHandler
             $business->id,
             TelegramUserState::STEP_SELECT_MASTER,
             [
-                "location_id" => $locationId,
-                "service_id" => $serviceId,
+                'location_id' => $locationId,
+                'service_id' => $serviceId,
             ],
         );
     }
@@ -882,28 +883,28 @@ class Handler extends WebhookHandler
         $dataArray = $callbackData instanceof \Illuminate\Support\Collection
             ? $callbackData->toArray()
             : (array) $callbackData;
-        $action = $dataArray["action"] ?? null;
+        $action = $dataArray['action'] ?? null;
 
-        if (!$action) {
-            Log::error("No action found in callback data", [
-                "user_id" => $userId,
-                "callback_data" => $dataArray,
+        if (! $action) {
+            Log::error('No action found in callback data', [
+                'user_id' => $userId,
+                'callback_data' => $dataArray,
             ]);
-            $this->replyWithMessage("❌ Ошибка данных. Попробуйте снова.");
+            $this->replyWithMessage('❌ Ошибка данных. Попробуйте снова.');
 
             return;
         }
 
         // Обработка выбора бизнеса из каталога (может быть без состояния)
-        if (str_starts_with($action, "business_")) {
-            $businessId = str_replace("business_", "", $action);
+        if (str_starts_with($action, 'business_')) {
+            $businessId = str_replace('business_', '', $action);
             $business = Business::with([
-                "locations",
-                "services",
-                "users",
+                'locations',
+                'services',
+                'users',
             ])->find($businessId);
 
-            if (!$business) {
+            if (! $business) {
                 $this->replyWithMessage(
                     TelegramMessages::MSG_BUSINESS_NOT_FOUND,
                 );
@@ -919,20 +920,20 @@ class Handler extends WebhookHandler
                 $telegramBotEnabled =
                     $subscriptionService->getLimit(
                         $owner,
-                        "telegram_bot_enabled",
+                        'telegram_bot_enabled',
                     ) === true;
 
-                if (!$telegramBotEnabled) {
+                if (! $telegramBotEnabled) {
                     Log::warning(
-                        "Telegram bot booking not enabled for business from catalog",
+                        'Telegram bot booking not enabled for business from catalog',
                         [
-                            "user_id" => $userId,
-                            "business_id" => $business->id,
-                            "owner_id" => $owner->id,
+                            'user_id' => $userId,
+                            'business_id' => $business->id,
+                            'owner_id' => $owner->id,
                         ],
                     );
                     $this->replyWithMessage(
-                        "❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.",
+                        '❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.',
                     );
 
                     return;
@@ -949,17 +950,17 @@ class Handler extends WebhookHandler
         }
 
         // Обработка пагинации (может быть без состояния)
-        if (str_starts_with($action, "page_")) {
-            $parts = explode("_", $action);
+        if (str_starts_with($action, 'page_')) {
+            $parts = explode('_', $action);
             $currentPage = (int) $parts[1];
             $direction = $parts[2] ?? null;
 
-            if ($direction === "prev") {
+            if ($direction === 'prev') {
                 $newPage = $currentPage - 1;
-            } elseif ($direction === "next") {
+            } elseif ($direction === 'next') {
                 $newPage = $currentPage + 1;
             } else {
-                Log::warning("Unknown page action: " . $action);
+                Log::warning('Unknown page action: '.$action);
                 $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
 
                 return;
@@ -967,12 +968,12 @@ class Handler extends WebhookHandler
 
             // Находим состояние пользователя для определения типа списка
             $state = TelegramUserState::where(
-                "telegram_user_id",
+                'telegram_user_id',
                 $userId,
             )->first();
 
             // Определяем, что показывать - каталог или поиск
-            $searchQuery = $state?->data["search_query"] ?? null;
+            $searchQuery = $state?->data['search_query'] ?? null;
 
             if ($searchQuery) {
                 // Показываем результаты поиска
@@ -986,53 +987,54 @@ class Handler extends WebhookHandler
         }
 
         // Обработка недоступных кнопок (может быть без состояния)
-        if (str_starts_with($action, "disabled_")) {
+        if (str_starts_with($action, 'disabled_')) {
             // Недоступная кнопка - игнорируем
             return;
         }
 
         // Находим состояние пользователя
-        $states = TelegramUserState::where("telegram_user_id", $userId)->get();
+        $states = TelegramUserState::where('telegram_user_id', $userId)->get();
 
         if ($states->isEmpty()) {
-            Log::warning("No states found for user: " . $userId);
-            $this->replyWithMessage("❌ Сессия не найдена.");
+            Log::warning('No states found for user: '.$userId);
+            $this->replyWithMessage('❌ Сессия не найдена.');
 
             return;
         }
 
         // Ищем состояние с конкретным бизнесом (не поисковое)
-        $state = $states->firstWhere("business_id", "!=", null);
+        $state = $states->firstWhere('business_id', '!=', null);
 
         // Если не нашли состояние с бизнесом, используем первое (может быть поиск)
-        if (!$state) {
+        if (! $state) {
             $state = $states->first();
         }
 
         $business = $state->business;
 
         // У пользователя может быть только состояние поиска (без бизнеса) — тогда кнопки записи от старого сообщения невалидны
-        if (!$business) {
+        if (! $business) {
             $this->replyWithMessage(TelegramMessages::MSG_SESSION_EXPIRED);
+
             return;
         }
 
-        if (str_starts_with($action, "location_")) {
-            $locationId = str_replace("location_", "", $action);
+        if (str_starts_with($action, 'location_')) {
+            $locationId = str_replace('location_', '', $action);
             $this->showServiceSelection($business, $locationId);
-        } elseif (str_starts_with($action, "service_")) {
-            $serviceId = str_replace("service_", "", $action);
-            $locationId = $state?->data["location_id"] ?? null;
+        } elseif (str_starts_with($action, 'service_')) {
+            $serviceId = str_replace('service_', '', $action);
+            $locationId = $state?->data['location_id'] ?? null;
             if ($locationId) {
                 $this->showMasterSelection($business, $locationId, $serviceId);
             } else {
-                Log::error("Location ID not found in state data");
+                Log::error('Location ID not found in state data');
                 $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
             }
-        } elseif (str_starts_with($action, "master_")) {
-            $masterId = str_replace("master_", "", $action);
-            $locationId = $state?->data["location_id"] ?? null;
-            $serviceId = $state?->data["service_id"] ?? null;
+        } elseif (str_starts_with($action, 'master_')) {
+            $masterId = str_replace('master_', '', $action);
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
             if ($locationId && $serviceId) {
                 $this->showTimeSelection(
                     $business,
@@ -1041,29 +1043,29 @@ class Handler extends WebhookHandler
                     $masterId,
                 );
             } else {
-                Log::error("Location or Service ID not found in state data");
+                Log::error('Location or Service ID not found in state data');
                 $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
             }
-        } elseif (str_starts_with($action, "date_")) {
-            $date = str_replace("date_", "", $action);
+        } elseif (str_starts_with($action, 'date_')) {
+            $date = str_replace('date_', '', $action);
 
             // Проверяем, что это не недоступная дата
-            if (str_starts_with($date, "disabled_")) {
+            if (str_starts_with($date, 'disabled_')) {
                 return;
             }
 
             // Обработка специальной кнопки "След. месяц"
-            if ($date === "next_month") {
-                $locationId = $state?->data["location_id"] ?? null;
-                $serviceId = $state?->data["service_id"] ?? null;
-                $masterId = $state?->data["master_id"] ?? null;
-                $currentMonth = $state?->data["month"] ?? null;
+            if ($date === 'next_month') {
+                $locationId = $state?->data['location_id'] ?? null;
+                $serviceId = $state?->data['service_id'] ?? null;
+                $masterId = $state?->data['master_id'] ?? null;
+                $currentMonth = $state?->data['month'] ?? null;
 
                 if ($locationId && $serviceId && $masterId) {
                     $monthDate = $currentMonth
-                        ? Carbon::parse($currentMonth . "-01")
+                        ? Carbon::parse($currentMonth.'-01')
                         : Carbon::today();
-                    $nextMonth = $monthDate->addMonth()->format("Y-m");
+                    $nextMonth = $monthDate->addMonth()->format('Y-m');
                     $this->showTimeSelection(
                         $business,
                         $locationId,
@@ -1077,14 +1079,14 @@ class Handler extends WebhookHandler
             }
 
             $this->showTimeSlots($business, $date, $state);
-        } elseif (str_starts_with($action, "calendar_prev_")) {
-            $month = str_replace("calendar_prev_", "", $action);
-            $monthDate = Carbon::parse($month . "-01");
-            $prevMonth = $monthDate->subMonth()->format("Y-m");
+        } elseif (str_starts_with($action, 'calendar_prev_')) {
+            $month = str_replace('calendar_prev_', '', $action);
+            $monthDate = Carbon::parse($month.'-01');
+            $prevMonth = $monthDate->subMonth()->format('Y-m');
 
-            $locationId = $state?->data["location_id"] ?? null;
-            $serviceId = $state?->data["service_id"] ?? null;
-            $masterId = $state?->data["master_id"] ?? null;
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
+            $masterId = $state?->data['master_id'] ?? null;
 
             if ($locationId && $serviceId && $masterId) {
                 $this->showTimeSelection(
@@ -1095,14 +1097,14 @@ class Handler extends WebhookHandler
                     $prevMonth,
                 );
             }
-        } elseif (str_starts_with($action, "calendar_next_")) {
-            $month = str_replace("calendar_next_", "", $action);
-            $monthDate = Carbon::parse($month . "-01");
-            $nextMonth = $monthDate->addMonth()->format("Y-m");
+        } elseif (str_starts_with($action, 'calendar_next_')) {
+            $month = str_replace('calendar_next_', '', $action);
+            $monthDate = Carbon::parse($month.'-01');
+            $nextMonth = $monthDate->addMonth()->format('Y-m');
 
-            $locationId = $state?->data["location_id"] ?? null;
-            $serviceId = $state?->data["service_id"] ?? null;
-            $masterId = $state?->data["master_id"] ?? null;
+            $locationId = $state?->data['location_id'] ?? null;
+            $serviceId = $state?->data['service_id'] ?? null;
+            $masterId = $state?->data['master_id'] ?? null;
 
             if ($locationId && $serviceId && $masterId) {
                 $this->showTimeSelection(
@@ -1113,13 +1115,13 @@ class Handler extends WebhookHandler
                     $nextMonth,
                 );
             }
-        } elseif (str_starts_with($action, "disabled_")) {
+        } elseif (str_starts_with($action, 'disabled_')) {
             // Недоступная дата или заголовок - игнорируем
             return;
-        } elseif (str_starts_with($action, "time_")) {
-            $time = str_replace("time_", "", $action);
+        } elseif (str_starts_with($action, 'time_')) {
+            $time = str_replace('time_', '', $action);
             $this->handleTimeSelection($business, $time, $state);
-        } elseif ($action === "skip_notes") {
+        } elseif ($action === 'skip_notes') {
             $data = $state->data;
             TelegramUserState::updateStateKeepMessageId(
                 $userId,
@@ -1128,9 +1130,9 @@ class Handler extends WebhookHandler
                 $data,
             );
             $this->showAppointmentConfirmation($business, $data);
-        } elseif ($action === "confirm_appointment") {
+        } elseif ($action === 'confirm_appointment') {
             $this->createAppointment($business, $state);
-        } elseif ($action === "cancel") {
+        } elseif ($action === 'cancel') {
             // Удаляем старое сообщение с кнопками
             $this->deleteBotMessage($messageId);
 
@@ -1141,7 +1143,7 @@ class Handler extends WebhookHandler
             $this->lastMessageId = null;
 
             $this->replyWithMessage(TelegramMessages::MSG_CANCEL);
-        } elseif ($action === "restart") {
+        } elseif ($action === 'restart') {
             // Удаляем старое сообщение с кнопками
             $this->deleteBotMessage($messageId);
 
@@ -1157,7 +1159,7 @@ class Handler extends WebhookHandler
                 $this->replyWithMessage(TelegramMessages::MSG_START);
             }
         } else {
-            Log::warning("Unknown action: " . $action);
+            Log::warning('Unknown action: '.$action);
             $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
         }
     }
@@ -1176,15 +1178,15 @@ class Handler extends WebhookHandler
         $service = $business->services()->find($serviceId);
         $master = $business->masters()->find($masterId);
 
-        if (!$location || !$service || !$master) {
+        if (! $location || ! $service || ! $master) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
         }
 
         // Определяем месяц для отображения
-        if (!$month) {
-            $month = Carbon::today()->format("Y-m");
+        if (! $month) {
+            $month = Carbon::today()->format('Y-m');
         }
 
         // Получаем доступные даты для месяца
@@ -1199,12 +1201,12 @@ class Handler extends WebhookHandler
         // Формируем сообщение
         $message =
             TelegramMessages::format(TelegramMessages::MSG_SELECT_DATE, [
-                "master" => $master->first_name . " " . $master->last_name,
-            ]) .
-            "\n\n📅 " .
-            Carbon::parse($month . "-01")
-            ->locale("ru")
-            ->isoFormat("MMMM YYYY");
+                'master' => $master->first_name.' '.$master->last_name,
+            ]).
+            "\n\n📅 ".
+            Carbon::parse($month.'-01')
+                ->locale('ru')
+                ->isoFormat('MMMM YYYY');
 
         // Проверяем возможность перехода к предыдущему месяцу
         $hasPrevMonth = TelegramKeyboards::hasPrevMonth($month);
@@ -1228,11 +1230,11 @@ class Handler extends WebhookHandler
             $business->id,
             TelegramUserState::STEP_SELECT_DATE,
             [
-                "location_id" => $locationId,
-                "service_id" => $serviceId,
-                "master_id" => $masterId,
-                "month" => $month,
-                "available_dates" => $availableDates,
+                'location_id' => $locationId,
+                'service_id' => $serviceId,
+                'master_id' => $masterId,
+                'month' => $month,
+                'available_dates' => $availableDates,
             ],
         );
     }
@@ -1242,11 +1244,11 @@ class Handler extends WebhookHandler
      */
     protected function showTimeSlots(Business $business, $date, $state)
     {
-        $locationId = $state?->data["location_id"] ?? null;
-        $serviceId = $state?->data["service_id"] ?? null;
-        $masterId = $state?->data["master_id"] ?? null;
+        $locationId = $state?->data['location_id'] ?? null;
+        $serviceId = $state?->data['service_id'] ?? null;
+        $masterId = $state?->data['master_id'] ?? null;
 
-        if (!$locationId || !$serviceId || !$masterId) {
+        if (! $locationId || ! $serviceId || ! $masterId) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
@@ -1271,10 +1273,10 @@ class Handler extends WebhookHandler
         }
 
         $formattedDate = Carbon::parse($date)
-            ->locale("ru")
-            ->format("d.m.Y (l)");
+            ->locale('ru')
+            ->format('d.m.Y (l)');
         $message = TelegramMessages::format(TelegramMessages::MSG_SELECT_TIME, [
-            "date" => $formattedDate,
+            'date' => $formattedDate,
         ]);
 
         $this->replyWithMessage(
@@ -1286,18 +1288,18 @@ class Handler extends WebhookHandler
             $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
 
         // Сохраняем месяц для возврата из выбора времени
-        $month = Carbon::parse($date)->format("Y-m");
+        $month = Carbon::parse($date)->format('Y-m');
 
         TelegramUserState::updateStateKeepMessageId(
             $userId,
             $business->id,
             TelegramUserState::STEP_SELECT_TIME,
             [
-                "location_id" => $locationId,
-                "service_id" => $serviceId,
-                "master_id" => $masterId,
-                "date" => $date,
-                "month" => $month,
+                'location_id' => $locationId,
+                'service_id' => $serviceId,
+                'master_id' => $masterId,
+                'date' => $date,
+                'month' => $month,
             ],
         );
     }
@@ -1307,7 +1309,7 @@ class Handler extends WebhookHandler
      */
     protected function handleTimeSelection(Business $business, $time, $state)
     {
-        if (!$state) {
+        if (! $state) {
             $this->replyWithMessage(TelegramMessages::MSG_SESSION_EXPIRED);
 
             return;
@@ -1319,25 +1321,25 @@ class Handler extends WebhookHandler
         if (is_string($time)) {
             $time = trim($time);
 
-            if (!str_contains($time, ":")) {
-                $time = $time . ":00";
+            if (! str_contains($time, ':')) {
+                $time = $time.':00';
             }
 
             try {
                 $carbonTime = Carbon::parse($time);
-                $time = $carbonTime->format("H:i");
+                $time = $carbonTime->format('H:i');
             } catch (\Exception $e) {
                 Log::error(
-                    "Error parsing time: " .
-                        $e->getMessage() .
-                        ", time: " .
+                    'Error parsing time: '.
+                        $e->getMessage().
+                        ', time: '.
                         $time,
                 );
-                $time = "12:00";
+                $time = '12:00';
             }
         }
 
-        $data["time"] = $time;
+        $data['time'] = $time;
 
         TelegramUserState::updateStateKeepMessageId(
             $state->telegram_user_id,
@@ -1359,7 +1361,7 @@ class Handler extends WebhookHandler
      */
     protected function createAppointment(Business $business, $state)
     {
-        if (!$state || !isset($state->data["client_data"])) {
+        if (! $state || ! isset($state->data['client_data'])) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
@@ -1370,9 +1372,9 @@ class Handler extends WebhookHandler
         try {
             // Получаем пользователя через бизнес
             $user = $business->users()->first();
-            if (!$user) {
+            if (! $user) {
                 $this->replyWithMessage(
-                    "❌ Ошибка при обработке запроса. Пожалуйста, попробуйте позже.",
+                    '❌ Ошибка при обработке запроса. Пожалуйста, попробуйте позже.',
                 );
 
                 return;
@@ -1383,91 +1385,90 @@ class Handler extends WebhookHandler
             );
 
             // Проверяем лимит записей в месяц
-            if (!$subscriptionService->canCreateAppointment($user)) {
+            if (! $subscriptionService->canCreateAppointment($user)) {
                 \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled(
                     $business,
-                    "max_appointments_per_month",
+                    'max_appointments_per_month',
                 );
                 $this->replyWithMessage(
-                    "❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.",
+                    '❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.',
                 );
 
                 return;
             }
 
-            $client = Client::where("business_id", $business->id)
+            $client = Client::where('business_id', $business->id)
                 ->whereHas(
-                    "phones",
-                    fn($q) => $q->where("phone", $data["client_data"]["phone"]),
+                    'phones',
+                    fn ($q) => $q->where('phone', $data['client_data']['phone']),
                 )
                 ->first();
 
-            if (!$client) {
-                if (!$subscriptionService->canCreateClient($user)) {
+            if (! $client) {
+                if (! $subscriptionService->canCreateClient($user)) {
                     \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled(
                         $business,
-                        "max_clients",
+                        'max_clients',
                     );
                     $this->replyWithMessage(
-                        "❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.",
+                        '❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.',
                     );
 
                     return;
                 }
 
                 $client = Client::create([
-                    "business_id" => $business->id,
-                    "first_name" => $data["client_data"]["first_name"],
-                    "last_name" => $data["client_data"]["last_name"] ?? null,
-                    "email" => $data["client_data"]["email"] ?? null,
-                    "telegram_user_id" => (string) $this->callbackQuery->from()->id(),
+                    'business_id' => $business->id,
+                    'first_name' => $data['client_data']['first_name'],
+                    'last_name' => $data['client_data']['last_name'] ?? null,
+                    'email' => $data['client_data']['email'] ?? null,
+                    'telegram_user_id' => (string) $this->callbackQuery->from()->id(),
                 ]);
 
                 $countryBy = \App\Models\Country::getCached()->firstWhere(
-                    "code",
-                    "BY",
+                    'code',
+                    'BY',
                 );
                 if ($countryBy) {
                     $client->phones()->create([
-                        "country_id" => $countryBy->id,
-                        "phone" => $data["client_data"]["phone"],
-                        "type" => "primary",
+                        'country_id' => $countryBy->id,
+                        'phone' => $data['client_data']['phone'],
+                        'type' => 'primary',
                     ]);
                 }
             } else {
                 $client->update([
-                    "first_name" => $data["client_data"]["first_name"],
-                    "last_name" =>
-                    $data["client_data"]["last_name"] ?? $client->last_name,
-                    "email" => $data["client_data"]["email"] ?? $client->email,
-                    "telegram_user_id" => (string) $this->callbackQuery->from()->id(),
+                    'first_name' => $data['client_data']['first_name'],
+                    'last_name' => $data['client_data']['last_name'] ?? $client->last_name,
+                    'email' => $data['client_data']['email'] ?? $client->email,
+                    'telegram_user_id' => (string) $this->callbackQuery->from()->id(),
                 ]);
             }
 
             // Форматируем время
-            $time = $data["time"];
-            if (is_string($time) && !str_contains($time, ":")) {
-                $time = $time . ":00";
+            $time = $data['time'];
+            if (is_string($time) && ! str_contains($time, ':')) {
+                $time = $time.':00';
             }
-            $time = Carbon::parse($time)->format("H:i");
+            $time = Carbon::parse($time)->format('H:i');
 
             $appointment = Appointment::create([
-                "business_id" => $business->id,
-                "client_id" => $client->id,
-                "service_id" => $data["service_id"],
-                "master_id" => $data["master_id"],
-                "location_id" => $data["location_id"],
-                "date" => $data["date"],
-                "time" => $time,
-                "source" => "telegram",
-                "status" => "pending",
-                "notes" => $data["client_data"]["notes"] ?? null,
+                'business_id' => $business->id,
+                'client_id' => $client->id,
+                'service_id' => $data['service_id'],
+                'master_id' => $data['master_id'],
+                'location_id' => $data['location_id'],
+                'date' => $data['date'],
+                'time' => $time,
+                'source' => 'telegram',
+                'status' => 'pending',
+                'notes' => $data['client_data']['notes'] ?? null,
             ]);
 
             // Увеличиваем usage для месячной метрики
             $subscriptionService->incrementUsage(
                 $user,
-                "max_appointments_per_month",
+                'max_appointments_per_month',
             );
 
             // Удаляем старое сообщение с кнопками подтверждения
@@ -1486,7 +1487,7 @@ class Handler extends WebhookHandler
             $appointment->load(['service', 'master', 'location']);
 
             // Форматируем для сообщения
-            $formattedDate = $appointment->date->format("d.m.Y");
+            $formattedDate = $appointment->date->format('d.m.Y');
             $formattedTime = $appointment->time;
 
             // Сбрасываем lastMessageId чтобы отправить новое сообщение
@@ -1495,14 +1496,13 @@ class Handler extends WebhookHandler
             $message = TelegramMessages::format(
                 TelegramMessages::MSG_APPOINTMENT_CREATED,
                 [
-                    "date" => $formattedDate,
-                    "time" => $formattedTime,
-                    "service" => $appointment->service->name,
-                    "master" =>
-                    $appointment->master->first_name .
-                        " " .
+                    'date' => $formattedDate,
+                    'time' => $formattedTime,
+                    'service' => $appointment->service->name,
+                    'master' => $appointment->master->first_name.
+                        ' '.
                         $appointment->master->last_name,
-                    "location" => $appointment->location->name,
+                    'location' => $appointment->location->name,
                 ],
             );
 
@@ -1511,7 +1511,7 @@ class Handler extends WebhookHandler
             // Очищаем ID после отправки финального сообщения
             $this->lastMessageId = null;
         } catch (\Exception $e) {
-            Log::error("Error creating appointment: " . $e->getMessage());
+            Log::error('Error creating appointment: '.$e->getMessage());
             $this->replyWithMessage(TelegramMessages::MSG_ERROR);
         }
     }
@@ -1526,7 +1526,7 @@ class Handler extends WebhookHandler
             // Нужно использовать deleteMessage() и вызвать send()
             $this->chat->deleteMessage($messageId)->send();
         } catch (\Exception $e) {
-            Log::error("✗ Failed to delete user message: " . $e->getMessage());
+            Log::error('✗ Failed to delete user message: '.$e->getMessage());
         }
     }
 
@@ -1535,14 +1535,14 @@ class Handler extends WebhookHandler
      */
     protected function deleteBotMessage(?int $messageId): void
     {
-        if (!$messageId) {
+        if (! $messageId) {
             return;
         }
 
         try {
             $this->chat->deleteMessage($messageId)->send();
         } catch (\Exception $e) {
-            Log::warning("✗ Failed to delete bot message: " . $e->getMessage());
+            Log::warning('✗ Failed to delete bot message: '.$e->getMessage());
         }
     }
 
@@ -1551,18 +1551,18 @@ class Handler extends WebhookHandler
      */
     protected function getBusinessOwner(Business $business): ?User
     {
-        $ownerRole = BusinessRole::where("slug", "owner")->first();
+        $ownerRole = BusinessRole::where('slug', 'owner')->first();
 
-        if (!$ownerRole) {
+        if (! $ownerRole) {
             return null;
         }
 
-        $ownerPivot = DB::table("business_user")
-            ->where("business_id", $business->id)
-            ->where("role_id", $ownerRole->id)
+        $ownerPivot = DB::table('business_user')
+            ->where('business_id', $business->id)
+            ->where('role_id', $ownerRole->id)
             ->first();
 
-        if (!$ownerPivot) {
+        if (! $ownerPivot) {
             // Fallback: пробуем получить первого пользователя бизнеса
             return $business->users()->first();
         }

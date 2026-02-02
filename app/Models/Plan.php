@@ -57,7 +57,7 @@ class Plan extends Model
             })
             ->first();
 
-        if (!$feature) {
+        if (! $feature) {
             return null;
         }
 
@@ -68,7 +68,6 @@ class Plan extends Model
             default => $feature->value,
         };
     }
-
 
     /**
      * Проверить наличие метрики

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Collection;
+
 /**
  * Репозиторий для работы с услугами
  */

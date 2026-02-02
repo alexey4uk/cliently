@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Master;
 use Illuminate\Database\Eloquent\Collection;
+
 /**
  * Репозиторий для работы с мастерами
  */

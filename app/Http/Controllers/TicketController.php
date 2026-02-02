@@ -351,8 +351,6 @@ class TicketController extends Controller
 
     /**
      * Find ticket by ID for the current user (creator). Returns redirect if no business, null if not found.
-     *
-     * @return Ticket|RedirectResponse|null
      */
     private function findTicketForCurrentUser(int $id): Ticket|RedirectResponse|null
     {

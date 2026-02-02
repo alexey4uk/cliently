@@ -80,6 +80,7 @@ class PanelController extends Controller
         $data['topBusinesses'] = Business::whereIn('id', $topStats->pluck('business_id'))->get()
             ->map(function ($b) use ($topStats) {
                 $b->appointments_count = $topStats->firstWhere('business_id', $b->id)->total ?? 0;
+
                 return $b;
             })->sortByDesc('appointments_count');
 
@@ -94,6 +95,7 @@ class PanelController extends Controller
             : Business::whereIn('id', $activeWeekStats->pluck('business_id'))->get()
                 ->map(function ($b) use ($activeWeekStats) {
                     $b->appointments_count = $activeWeekStats->firstWhere('business_id', $b->id)->total ?? 0;
+
                     return $b;
                 })->sortByDesc('appointments_count')->values();
 

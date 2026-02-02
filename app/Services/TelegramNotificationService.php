@@ -19,11 +19,11 @@ class TelegramNotificationService
         Appointment $appointment,
         User $user,
     ) {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
-        $message = self::formatAppointmentMessage($appointment, "новая запись");
+        $message = self::formatAppointmentMessage($appointment, 'новая запись');
 
         self::sendMessageToUser($user, $message);
     }
@@ -36,15 +36,15 @@ class TelegramNotificationService
         User $user,
         ?string $oldStatus = null,
     ) {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
         $statusText = match ($appointment->status) {
-            "confirmed" => "подтверждена",
-            "cancelled" => "отменена",
-            "completed" => "завершена",
-            default => "обновлена",
+            'confirmed' => 'подтверждена',
+            'cancelled' => 'отменена',
+            'completed' => 'завершена',
+            default => 'обновлена',
         };
 
         $message = self::formatAppointmentMessage(
@@ -63,15 +63,15 @@ class TelegramNotificationService
         ?string $oldStatus = null,
     ) {
         // Проверяем, есть ли у клиента telegram_user_id
-        if (!$appointment->client->telegram_user_id) {
+        if (! $appointment->client->telegram_user_id) {
             return;
         }
 
         $statusText = match ($appointment->status) {
-            "confirmed" => "подтверждена",
-            "cancelled" => "отменена",
-            "completed" => "завершена",
-            default => "обновлена",
+            'confirmed' => 'подтверждена',
+            'cancelled' => 'отменена',
+            'completed' => 'завершена',
+            default => 'обновлена',
         };
 
         $message = self::formatAppointmentMessage(
@@ -110,7 +110,7 @@ class TelegramNotificationService
             $message .= "📍 Локация: {$location->name}\n";
         }
 
-        $message .= "📆 Дата: {$appointment->date->format("d.m.Y")}\n";
+        $message .= "📆 Дата: {$appointment->date->format('d.m.Y')}\n";
         $message .= "🕐 Время: {$appointment->time}\n";
 
         if ($appointment->price) {
@@ -133,7 +133,7 @@ class TelegramNotificationService
         string $title,
         string $message,
     ): void {
-        if (!$user->isTelegramConnected()) {
+        if (! $user->isTelegramConnected()) {
             return;
         }
 
@@ -149,23 +149,23 @@ class TelegramNotificationService
         try {
             $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-            if (!$bot) {
+            if (! $bot) {
                 return;
             }
 
-            if (!$user->telegram_chat_id) {
+            if (! $user->telegram_chat_id) {
                 return;
             }
 
             $chat = TelegraphChat::where(
-                "chat_id",
+                'chat_id',
                 $user->telegram_chat_id,
             )->first();
 
-            if (!$chat) {
+            if (! $chat) {
                 $chat = $bot->chats()->create([
-                    "chat_id" => $user->telegram_chat_id,
-                    "name" => $user->name ?? "User Notifications",
+                    'chat_id' => $user->telegram_chat_id,
+                    'name' => $user->name ?? 'User Notifications',
                 ]);
             }
 
@@ -173,10 +173,10 @@ class TelegramNotificationService
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
             Log::error(
-                "Telegram notification failed for user: " . $e->getMessage(),
+                'Telegram notification failed for user: '.$e->getMessage(),
                 [
-                    "user_id" => $user->id,
-                    "chat_id" => $user->telegram_chat_id,
+                    'user_id' => $user->id,
+                    'chat_id' => $user->telegram_chat_id,
                 ],
             );
         }
@@ -187,23 +187,23 @@ class TelegramNotificationService
         try {
             $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-            if (!$bot) {
+            if (! $bot) {
                 return;
             }
 
-            $chat = TelegraphChat::where("chat_id", $id)->first();
+            $chat = TelegraphChat::where('chat_id', $id)->first();
 
-            if (!$chat) {
+            if (! $chat) {
                 $chat = $bot->chats()->create([
-                    "chat_id" => $id,
-                    "name" => "Business Notifications",
+                    'chat_id' => $id,
+                    'name' => 'Business Notifications',
                 ]);
             }
 
             $chat->message($message)->send();
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
-            Log::error("Telegram notification failed: " . $e->getMessage());
+            Log::error('Telegram notification failed: '.$e->getMessage());
         }
     }
 
@@ -212,11 +212,11 @@ class TelegramNotificationService
      */
     public static function sendTicketCreated(Ticket $ticket, User $user): void
     {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
-        $message = self::formatTicketMessage($ticket, "новый тикет");
+        $message = self::formatTicketMessage($ticket, 'новый тикет');
         self::sendMessageToUser($user, $message);
     }
 
@@ -228,7 +228,7 @@ class TelegramNotificationService
         TicketComment $comment,
         User $user,
     ): void {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
@@ -236,10 +236,10 @@ class TelegramNotificationService
         $message = "💬 Новый комментарий к тикету #{$ticket->id}\n\n";
         $message .= "📋 Тикет: {$ticket->title}\n";
         $message .=
-            "👤 Автор: " . ($commentAuthor->name ?? "Пользователь") . "\n";
-        $message .= "💬 Комментарий: " . substr($comment->content, 0, 200);
+            '👤 Автор: '.($commentAuthor->name ?? 'Пользователь')."\n";
+        $message .= '💬 Комментарий: '.substr($comment->content, 0, 200);
         if (strlen($comment->content) > 200) {
-            $message .= "...";
+            $message .= '...';
         }
 
         self::sendMessageToUser($user, $message);
@@ -254,16 +254,16 @@ class TelegramNotificationService
         string $oldStatus,
         string $newStatus,
     ): void {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
         $statusText = match ($newStatus) {
-            "pending" => "ожидает",
-            "open" => "в работе",
-            "completed" => "выполнен",
-            "cancelled" => "отменен",
-            default => "обновлен",
+            'pending' => 'ожидает',
+            'open' => 'в работе',
+            'completed' => 'выполнен',
+            'cancelled' => 'отменен',
+            default => 'обновлен',
         };
 
         $message = self::formatTicketMessage($ticket, "тикет {$statusText}");
@@ -275,16 +275,16 @@ class TelegramNotificationService
      */
     public static function sendTicketAssigned(Ticket $ticket, User $user): void
     {
-        if (!$user->telegram_chat_id) {
+        if (! $user->telegram_chat_id) {
             return;
         }
 
         $message = "👤 Вам назначен тикет #{$ticket->id}\n\n";
         $message .= "📋 {$ticket->title}\n";
         if ($ticket->description) {
-            $message .= "📝 " . substr($ticket->description, 0, 200);
+            $message .= '📝 '.substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
-                $message .= "...";
+                $message .= '...';
             }
             $message .= "\n";
         }
@@ -303,19 +303,19 @@ class TelegramNotificationService
         $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
 
         if ($ticket->description) {
-            $message .= "📝 " . substr($ticket->description, 0, 200);
+            $message .= '📝 '.substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
-                $message .= "...";
+                $message .= '...';
             }
             $message .= "\n";
         }
 
         $statusText = match ($ticket->status) {
-            "pending" => "⏳ Ожидает",
-            "open" => "🔄 В работе",
-            "completed" => "✅ Выполнен",
-            "cancelled" => "❌ Отменен",
-            default => "📌 " . ucfirst($ticket->status),
+            'pending' => '⏳ Ожидает',
+            'open' => '🔄 В работе',
+            'completed' => '✅ Выполнен',
+            'cancelled' => '❌ Отменен',
+            default => '📌 '.ucfirst($ticket->status),
         };
         $message .= "📊 Статус: {$statusText}\n";
 
@@ -333,23 +333,23 @@ class TelegramNotificationService
         Business $business,
         User $admin,
     ): void {
-        if (!$admin->telegram_chat_id) {
+        if (! $admin->telegram_chat_id) {
             return;
         }
 
-        $ownerRoleId = \App\Models\BusinessRole::where("slug", "owner")->value(
-            "id",
+        $ownerRoleId = \App\Models\BusinessRole::where('slug', 'owner')->value(
+            'id',
         );
         $owner = $business
             ->users()
-            ->wherePivotIn("role_id", [$ownerRoleId])
+            ->wherePivotIn('role_id', [$ownerRoleId])
             ->first();
         $message = "🏢 Новый бизнес зарегистрирован\n\n";
         $message .= "📋 Название: {$business->name}\n";
         $message .=
-            "👤 Владелец: " . ($owner ? $owner->name : "Не указан") . "\n";
+            '👤 Владелец: '.($owner ? $owner->name : 'Не указан')."\n";
         $message .=
-            "📧 Email: " . ($owner ? $owner->email : "Не указан") . "\n";
+            '📧 Email: '.($owner ? $owner->email : 'Не указан')."\n";
 
         self::sendMessageToUser($admin, $message);
     }
@@ -361,7 +361,7 @@ class TelegramNotificationService
         Ticket $ticket,
         User $admin,
     ): void {
-        if (!$admin->telegram_chat_id) {
+        if (! $admin->telegram_chat_id) {
             return;
         }
 
@@ -370,13 +370,13 @@ class TelegramNotificationService
 
         $message = "🎫 Новый тикет от пользователя\n\n";
         $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
-        $message .= "🏢 Бизнес: " . ($business->name ?? "Не указан") . "\n";
+        $message .= '🏢 Бизнес: '.($business->name ?? 'Не указан')."\n";
         $message .=
-            "👤 Создатель: " . ($creator ? $creator->name : "Не указан") . "\n";
+            '👤 Создатель: '.($creator ? $creator->name : 'Не указан')."\n";
         if ($ticket->description) {
-            $message .= "📝 " . substr($ticket->description, 0, 200);
+            $message .= '📝 '.substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
-                $message .= "...";
+                $message .= '...';
             }
             $message .= "\n";
         }
@@ -392,7 +392,7 @@ class TelegramNotificationService
         User $invitedBy,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -416,7 +416,7 @@ class TelegramNotificationService
         User $joinedUser,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -435,7 +435,7 @@ class TelegramNotificationService
         User $removedUser,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -456,15 +456,15 @@ class TelegramNotificationService
         string $newRole,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $oldRoleName =
-            \App\Models\BusinessRole::where("slug", $oldRole)->first()?->name ??
+            \App\Models\BusinessRole::where('slug', $oldRole)->first()?->name ??
             $oldRole;
         $newRoleName =
-            \App\Models\BusinessRole::where("slug", $newRole)->first()?->name ??
+            \App\Models\BusinessRole::where('slug', $newRole)->first()?->name ??
             $newRole;
 
         $message = "🔄 Изменена роль пользователя\n\n";
@@ -483,7 +483,7 @@ class TelegramNotificationService
         \App\Models\Invoice $invoice,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -492,7 +492,7 @@ class TelegramNotificationService
         $message = "✅ Оплата успешна\n\n";
         $message .= "💳 Тариф: {$plan->name}\n";
         $message .= "💰 Сумма: {$invoice->amount} {$invoice->currency}\n";
-        $message .= "📅 Дата: {$invoice->paid_at->format("d.m.Y H:i")}\n";
+        $message .= "📅 Дата: {$invoice->paid_at->format('d.m.Y H:i')}\n";
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -505,7 +505,7 @@ class TelegramNotificationService
         User $recipient,
         ?string $reason = null,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -530,7 +530,7 @@ class TelegramNotificationService
         \App\Models\Plan $newPlan,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
@@ -548,14 +548,14 @@ class TelegramNotificationService
         \App\Models\Subscription $subscription,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $plan = $subscription->plan;
         $endsAt = $subscription->ends_at
-            ? $subscription->ends_at->format("d.m.Y")
-            : "не указано";
+            ? $subscription->ends_at->format('d.m.Y')
+            : 'не указано';
 
         $message = "🔄 Подписка продлена\n\n";
         $message .= "💳 Тариф: {$plan->name}\n";
@@ -571,14 +571,14 @@ class TelegramNotificationService
         \App\Models\Subscription $subscription,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $plan = $subscription->plan;
         $trialEndsAt = $subscription->trial_ends_at
-            ? $subscription->trial_ends_at->format("d.m.Y")
-            : "не указано";
+            ? $subscription->trial_ends_at->format('d.m.Y')
+            : 'не указано';
 
         $message = "🎁 Начат пробный период\n\n";
         $message .= "💳 Тариф: {$plan->name}\n";
@@ -594,14 +594,14 @@ class TelegramNotificationService
         \App\Models\Subscription $subscription,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $plan = $subscription->plan;
         $trialEndsAt = $subscription->trial_ends_at
-            ? $subscription->trial_ends_at->format("d.m.Y H:i")
-            : "не указано";
+            ? $subscription->trial_ends_at->format('d.m.Y H:i')
+            : 'не указано';
         $daysLeft = $subscription->trial_ends_at
             ? now()->diffInDays($subscription->trial_ends_at, false)
             : 0;
@@ -622,21 +622,21 @@ class TelegramNotificationService
         \App\Models\Plan $newPlan,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $oldPlan = $subscription->plan;
         $trialEndedAt = $subscription->trial_ends_at
-            ? $subscription->trial_ends_at->format("d.m.Y H:i")
-            : "не указано";
+            ? $subscription->trial_ends_at->format('d.m.Y H:i')
+            : 'не указано';
 
         $message = "⏸️ Пробный период истек\n\n";
         $message .= "💳 Старый тариф: {$oldPlan->name}\n";
         $message .= "📅 Истек: {$trialEndedAt}\n";
         $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
         $message .=
-            "Ваш тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите подписку.";
+            'Ваш тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите подписку.';
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -648,14 +648,14 @@ class TelegramNotificationService
         \App\Models\Subscription $subscription,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $plan = $subscription->plan;
         $endsAt = $subscription->ends_at
-            ? $subscription->ends_at->format("d.m.Y H:i")
-            : "не указано";
+            ? $subscription->ends_at->format('d.m.Y H:i')
+            : 'не указано';
         $daysLeft = $subscription->ends_at
             ? now()->diffInDays($subscription->ends_at, false)
             : 0;
@@ -665,7 +665,7 @@ class TelegramNotificationService
         $message .= "📅 Истекает: {$endsAt}\n";
         $message .= "⏳ Осталось дней: {$daysLeft}\n\n";
         $message .=
-            "Продлите подписку для продолжения использования всех функций.";
+            'Продлите подписку для продолжения использования всех функций.';
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -678,21 +678,21 @@ class TelegramNotificationService
         \App\Models\Plan $newPlan,
         User $recipient,
     ): void {
-        if (!$recipient->isTelegramConnected()) {
+        if (! $recipient->isTelegramConnected()) {
             return;
         }
 
         $oldPlan = $subscription->plan;
         $expiredAt = $subscription->ends_at
-            ? $subscription->ends_at->format("d.m.Y H:i")
-            : "не указано";
+            ? $subscription->ends_at->format('d.m.Y H:i')
+            : 'не указано';
 
         $message = "⏸️ Подписка истекла\n\n";
         $message .= "💳 Старый тариф: {$oldPlan->name}\n";
         $message .= "📅 Истекла: {$expiredAt}\n";
         $message .= "🔄 Новый тариф: {$newPlan->name}\n\n";
         $message .=
-            "Ваша подписка истекла. Тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите новую подписку.";
+            'Ваша подписка истекла. Тариф автоматически изменен на бесплатный. Для продолжения использования платных функций оформите новую подписку.';
 
         self::sendMessageToUser($recipient, $message);
     }
@@ -702,15 +702,15 @@ class TelegramNotificationService
      */
     public static function notifyConnected(User $user): void
     {
-        if (!$user->isTelegramConnected()) {
+        if (! $user->isTelegramConnected()) {
             return;
         }
 
         // Проверяем, включен ли тип уведомления
         if (
-            !\App\Services\NotificationSettingsService::isTypeEnabled(
+            ! \App\Services\NotificationSettingsService::isTypeEnabled(
                 $user,
-                "telegram.connected",
+                'telegram.connected',
             )
         ) {
             return;
@@ -718,19 +718,18 @@ class TelegramNotificationService
 
         // In-app уведомление
         \App\Services\NotificationService::send([
-            "user_id" => $user->id,
-            "type" => "telegram.connected",
-            "title" => "Telegram подключен",
-            "message" =>
-                "Ваш Telegram аккаунт успешно подключен. Теперь вы будете получать уведомления в Telegram.",
-            "data" => [],
+            'user_id' => $user->id,
+            'type' => 'telegram.connected',
+            'title' => 'Telegram подключен',
+            'message' => 'Ваш Telegram аккаунт успешно подключен. Теперь вы будете получать уведомления в Telegram.',
+            'data' => [],
         ]);
 
         // Email уведомление (если включено)
         if (
             \App\Services\NotificationSettingsService::shouldSendEmail(
                 $user,
-                "telegram.connected",
+                'telegram.connected',
             ) &&
             $user->hasVerifiedEmail()
         ) {
@@ -738,10 +737,10 @@ class TelegramNotificationService
                 $user->notify(new \App\Notifications\Telegram\Connected($user));
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for telegram.connected",
+                    'Failed to send email notification for telegram.connected',
                     [
-                        "user_id" => $user->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }
@@ -755,9 +754,9 @@ class TelegramNotificationService
     {
         // Проверяем, включен ли тип уведомления
         if (
-            !\App\Services\NotificationSettingsService::isTypeEnabled(
+            ! \App\Services\NotificationSettingsService::isTypeEnabled(
                 $user,
-                "telegram.disconnected",
+                'telegram.disconnected',
             )
         ) {
             return;
@@ -765,19 +764,18 @@ class TelegramNotificationService
 
         // In-app уведомление
         \App\Services\NotificationService::send([
-            "user_id" => $user->id,
-            "type" => "telegram.disconnected",
-            "title" => "Telegram отключен",
-            "message" =>
-                "Ваш Telegram аккаунт отключен. Вы больше не будете получать уведомления в Telegram.",
-            "data" => [],
+            'user_id' => $user->id,
+            'type' => 'telegram.disconnected',
+            'title' => 'Telegram отключен',
+            'message' => 'Ваш Telegram аккаунт отключен. Вы больше не будете получать уведомления в Telegram.',
+            'data' => [],
         ]);
 
         // Email уведомление (если включено)
         if (
             \App\Services\NotificationSettingsService::shouldSendEmail(
                 $user,
-                "telegram.disconnected",
+                'telegram.disconnected',
             ) &&
             $user->hasVerifiedEmail()
         ) {
@@ -787,10 +785,10 @@ class TelegramNotificationService
                 );
             } catch (\Exception $e) {
                 Log::error(
-                    "Failed to send email notification for telegram.disconnected",
+                    'Failed to send email notification for telegram.disconnected',
                     [
-                        "user_id" => $user->id,
-                        "error" => $e->getMessage(),
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
                     ],
                 );
             }

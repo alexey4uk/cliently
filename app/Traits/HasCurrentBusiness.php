@@ -3,7 +3,6 @@
 namespace App\Traits;
 
 use App\Models\Business;
-use App\Models\BusinessRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;

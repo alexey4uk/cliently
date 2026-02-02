@@ -81,8 +81,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $ticket->assignedUser->id,
                 'type' => 'ticket.created',
-                'title' => 'Новый тикет #' . $ticket->id,
-                'message' => 'Вам назначен тикет: ' . $ticket->title,
+                'title' => 'Новый тикет #'.$ticket->id,
+                'message' => 'Вам назначен тикет: '.$ticket->title,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
@@ -238,8 +238,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.comment',
-                'title' => 'Новый комментарий к тикету #' . $ticket->id,
-                'message' => ($comment->user->name ?? 'Пользователь') . ' добавил(а) комментарий: ' . substr($comment->content, 0, 50) . '...',
+                'title' => 'Новый комментарий к тикету #'.$ticket->id,
+                'message' => ($comment->user->name ?? 'Пользователь').' добавил(а) комментарий: '.substr($comment->content, 0, 50).'...',
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,
@@ -318,8 +318,8 @@ class TicketNotificationService
         NotificationService::send([
             'user_id' => $user->id,
             'type' => 'ticket.assigned',
-            'title' => 'Вам назначен тикет #' . $ticket->id,
-            'message' => 'Тикет "' . $ticket->title . '" назначен вам',
+            'title' => 'Вам назначен тикет #'.$ticket->id,
+            'message' => 'Тикет "'.$ticket->title.'" назначен вам',
             'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
             'data' => [
                 'ticket_id' => $ticket->id,
@@ -397,8 +397,8 @@ class TicketNotificationService
             NotificationService::send([
                 'user_id' => $user->id,
                 'type' => 'ticket.status_changed',
-                'title' => 'Тикет #' . $ticket->id . ' обновлен',
-                'message' => 'Статус тикета изменен: ' . $statusText,
+                'title' => 'Тикет #'.$ticket->id.' обновлен',
+                'message' => 'Статус тикета изменен: '.$statusText,
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
                 'data' => [
                     'ticket_id' => $ticket->id,

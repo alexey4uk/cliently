@@ -2,7 +2,7 @@
 
 /**
  * Конфигурация тикет-системы
- * 
+ *
  * Все настройки можно переопределить через .env файл:
  * TICKETS_ENABLED=true/false
  * TICKETS_AUTO_ASSIGN=true/false

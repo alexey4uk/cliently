@@ -24,7 +24,7 @@ class MasterScheduleController extends Controller
         $user = auth()->user()->load(['businesses']);
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('settings.masters');
         }
 
@@ -51,7 +51,7 @@ class MasterScheduleController extends Controller
         $user = auth()->user()->load(['businesses']);
         $business = $user->businesses->first();
 
-        if (!$business) {
+        if (! $business) {
             return redirect()->route('settings.masters');
         }
 

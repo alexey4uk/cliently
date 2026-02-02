@@ -42,12 +42,12 @@ class SubscriptionService
 
         if ($isTrial && $plan->trial_days > 0) {
             $trialEndsAt = $now->copy()->addDays($plan->trial_days);
-            $status = "trial";
+            $status = 'trial';
         } else {
-            $status = "active";
-            if ($plan->interval === "monthly") {
+            $status = 'active';
+            if ($plan->interval === 'monthly') {
                 $endsAt = $now->copy()->addMonth();
-            } elseif ($plan->interval === "yearly") {
+            } elseif ($plan->interval === 'yearly') {
                 $endsAt = $now->copy()->addYear();
             }
         }
@@ -62,7 +62,7 @@ class SubscriptionService
         $isPlanChange = $subscription && $oldPlan && $oldPlan->id !== $plan->id;
         $preserveEndsAt = false;
 
-        if ($isPlanChange && !$isTrial) {
+        if ($isPlanChange && ! $isTrial) {
             $oldPrice = $oldPlan->price !== null ? (float) $oldPlan->price : 0;
             $newPrice = $plan->price !== null ? (float) $plan->price : 0;
             $isDowngrade = $newPrice < $oldPrice || ($oldPrice > 0 && $newPrice === 0.0);
@@ -77,58 +77,58 @@ class SubscriptionService
 
         // Получаем текущий metadata или создаем новый
         $metadata = $subscription?->metadata ?? [];
-        $usedTrials = $metadata["used_trials"] ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
 
         // Если сохраняем ends_at при смене тарифа, сохраняем информацию о предыдущем тарифе
         if ($preserveEndsAt && $oldPlan) {
-            $metadata["previous_plan_id"] = $oldPlan->id;
-            $metadata["previous_plan_name"] = $oldPlan->name;
+            $metadata['previous_plan_id'] = $oldPlan->id;
+            $metadata['previous_plan_name'] = $oldPlan->name;
             $metadata[
-                "preserved_ends_at"
+                'preserved_ends_at'
             ] = $subscription->ends_at->toIso8601String();
         } else {
             // Если не сохраняем ends_at, очищаем информацию о предыдущем тарифе
-            unset($metadata["previous_plan_id"]);
-            unset($metadata["previous_plan_name"]);
-            unset($metadata["preserved_ends_at"]);
+            unset($metadata['previous_plan_id']);
+            unset($metadata['previous_plan_name']);
+            unset($metadata['preserved_ends_at']);
         }
 
         // Если пробный период активирован, добавляем plan_id в список использованных
         if ($isTrial && $plan->trial_days > 0) {
-            if (!in_array($plan->id, $usedTrials)) {
+            if (! in_array($plan->id, $usedTrials)) {
                 $usedTrials[] = $plan->id;
-                $metadata["used_trials"] = $usedTrials;
+                $metadata['used_trials'] = $usedTrials;
             }
         }
 
         $subscriptionData = [
-            "plan_id" => $plan->id,
-            "status" => $status,
-            "starts_at" => $now,
-            "ends_at" => $preserveEndsAt ? $subscription->ends_at : $endsAt, // Сохраняем ends_at при смене тарифа
-            "trial_ends_at" => $trialEndsAt,
-            "cancelled_at" => null,
-            "metadata" => $metadata,
+            'plan_id' => $plan->id,
+            'status' => $status,
+            'starts_at' => $now,
+            'ends_at' => $preserveEndsAt ? $subscription->ends_at : $endsAt, // Сохраняем ends_at при смене тарифа
+            'trial_ends_at' => $trialEndsAt,
+            'cancelled_at' => null,
+            'metadata' => $metadata,
         ];
 
         // Если есть инвойс, связываем его с подпиской
         if ($invoice) {
-            $subscriptionData["invoice_id"] = $invoice->id;
-            $subscriptionData["payment_status"] = $invoice->isPaid()
-                ? "paid"
-                : "pending";
+            $subscriptionData['invoice_id'] = $invoice->id;
+            $subscriptionData['payment_status'] = $invoice->isPaid()
+                ? 'paid'
+                : 'pending';
         }
 
         if ($subscription) {
             $subscription->update($subscriptionData);
         } else {
-            $subscriptionData["user_id"] = $user->id;
+            $subscriptionData['user_id'] = $user->id;
             $subscription = Subscription::create($subscriptionData);
         }
 
         // Если инвойс был передан, обновляем его subscription_id
-        if ($invoice && !$invoice->subscription_id) {
-            $invoice->update(["subscription_id" => $subscription->id]);
+        if ($invoice && ! $invoice->subscription_id) {
+            $invoice->update(['subscription_id' => $subscription->id]);
         }
 
         // Очищаем кеш подписок пользователя
@@ -175,7 +175,7 @@ class SubscriptionService
 
         foreach ($features as $feature) {
             $metric = $feature->metric;
-            if (!$metric) {
+            if (! $metric) {
                 continue;
             }
             // Инициализируем usage только для месячных метрик (integer)
@@ -185,14 +185,14 @@ class SubscriptionService
             ) {
                 SubscriptionUsage::firstOrCreate(
                     [
-                        "subscription_id" => $subscription->id,
-                        "user_id" => $subscription->user_id,
-                        "feature_key" => $metric->key,
-                        "period_start" => $periodStart,
+                        'subscription_id' => $subscription->id,
+                        'user_id' => $subscription->user_id,
+                        'feature_key' => $metric->key,
+                        'period_start' => $periodStart,
                     ],
                     [
-                        "current_usage" => 0,
-                        "period_end" => $periodEnd,
+                        'current_usage' => 0,
+                        'period_end' => $periodEnd,
                     ],
                 );
             }
@@ -206,7 +206,7 @@ class SubscriptionService
     {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 
@@ -235,16 +235,16 @@ class SubscriptionService
     {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return 0;
         }
 
         // Для месячных метрик получаем usage напрямую
         if ($this->isMonthlyMetric($featureKey)) {
-            $usage = SubscriptionUsage::where("user_id", $user->id)
-                ->where("feature_key", $featureKey)
-                ->where("period_start", "<=", now())
-                ->where("period_end", ">=", now())
+            $usage = SubscriptionUsage::where('user_id', $user->id)
+                ->where('feature_key', $featureKey)
+                ->where('period_start', '<=', now())
+                ->where('period_end', '>=', now())
                 ->first();
 
             return $usage ? $usage->current_usage : 0;
@@ -252,27 +252,27 @@ class SubscriptionService
 
         // Для остальных метрик получаем данные напрямую
         return match ($featureKey) {
-            "max_locations" => $user
+            'max_locations' => $user
                 ->businesses()
-                ->withCount("locations")
+                ->withCount('locations')
                 ->get()
-                ->sum("locations_count"),
-            "max_masters" => $user
+                ->sum('locations_count'),
+            'max_masters' => $user
                 ->businesses()
-                ->withCount("masters")
+                ->withCount('masters')
                 ->get()
-                ->sum("masters_count"),
-            "max_services" => $user
+                ->sum('masters_count'),
+            'max_services' => $user
                 ->businesses()
-                ->withCount("services")
+                ->withCount('services')
                 ->get()
-                ->sum("services_count"),
-            "max_clients" => $user
+                ->sum('services_count'),
+            'max_clients' => $user
                 ->businesses()
-                ->withCount("clients")
+                ->withCount('clients')
                 ->get()
-                ->sum("clients_count"),
-            "max_business_users" => $this->getBusinessUsersCount($user),
+                ->sum('clients_count'),
+            'max_business_users' => $this->getBusinessUsersCount($user),
             default => 0,
         };
     }
@@ -284,7 +284,7 @@ class SubscriptionService
     {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return null;
         }
 
@@ -300,29 +300,29 @@ class SubscriptionService
     ): array {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return array_fill_keys($featureKeys, [
-                "current" => 0,
-                "limit" => 0,
-                "percentage" => 0,
-                "warning" => false,
+                'current' => 0,
+                'limit' => 0,
+                'percentage' => 0,
+                'warning' => false,
             ]);
         }
 
         // Получаем все usage для месячных метрик одним запросом
         $monthlyKeys = array_filter(
             $featureKeys,
-            fn($key) => $this->isMonthlyMetric($key),
+            fn ($key) => $this->isMonthlyMetric($key),
         );
 
         $usageData = [];
-        if (!empty($monthlyKeys)) {
-            $usages = SubscriptionUsage::where("user_id", $user->id)
-                ->whereIn("feature_key", $monthlyKeys)
-                ->where("period_start", "<=", now())
-                ->where("period_end", ">=", now())
+        if (! empty($monthlyKeys)) {
+            $usages = SubscriptionUsage::where('user_id', $user->id)
+                ->whereIn('feature_key', $monthlyKeys)
+                ->where('period_start', '<=', now())
+                ->where('period_end', '>=', now())
                 ->get()
-                ->keyBy("feature_key");
+                ->keyBy('feature_key');
 
             foreach ($monthlyKeys as $key) {
                 $usageData[$key] = $usages->get($key)?->current_usage ?? 0;
@@ -331,7 +331,7 @@ class SubscriptionService
 
         // Для остальных метрик считаем напрямую
         foreach ($featureKeys as $key) {
-            if (!isset($usageData[$key])) {
+            if (! isset($usageData[$key])) {
                 $usageData[$key] = $this->getCurrentUsage($user, $key);
             }
         }
@@ -343,11 +343,10 @@ class SubscriptionService
             $limit = $subscription->getFeatureLimit($key);
 
             $result[$key] = [
-                "current" => $current,
-                "limit" => $limit,
-                "percentage" =>
-                    $limit > 0 ? round(($current / $limit) * 100, 1) : 0,
-                "warning" => $limit > 0 && $current / $limit > 0.8,
+                'current' => $current,
+                'limit' => $limit,
+                'percentage' => $limit > 0 ? round(($current / $limit) * 100, 1) : 0,
+                'warning' => $limit > 0 && $current / $limit > 0.8,
             ];
         }
 
@@ -364,7 +363,7 @@ class SubscriptionService
     ): void {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return;
         }
 
@@ -375,18 +374,18 @@ class SubscriptionService
 
             $usage = SubscriptionUsage::firstOrCreate(
                 [
-                    "subscription_id" => $subscription->id,
-                    "user_id" => $user->id,
-                    "feature_key" => $featureKey,
-                    "period_start" => $periodStart,
+                    'subscription_id' => $subscription->id,
+                    'user_id' => $user->id,
+                    'feature_key' => $featureKey,
+                    'period_start' => $periodStart,
                 ],
                 [
-                    "current_usage" => 0,
-                    "period_end" => $periodEnd,
+                    'current_usage' => 0,
+                    'period_end' => $periodEnd,
                 ],
             );
 
-            $usage->increment("current_usage", $amount);
+            $usage->increment('current_usage', $amount);
         }
     }
 
@@ -400,22 +399,22 @@ class SubscriptionService
     ): void {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return;
         }
 
         // Для месячных метрик обновляем usage
         if ($this->isMonthlyMetric($featureKey)) {
-            $usage = SubscriptionUsage::where("user_id", $user->id)
-                ->where("feature_key", $featureKey)
-                ->where("period_start", "<=", now())
-                ->where("period_end", ">=", now())
+            $usage = SubscriptionUsage::where('user_id', $user->id)
+                ->where('feature_key', $featureKey)
+                ->where('period_start', '<=', now())
+                ->where('period_end', '>=', now())
                 ->first();
 
             if ($usage) {
-                $usage->decrement("current_usage", $amount);
+                $usage->decrement('current_usage', $amount);
                 if ($usage->current_usage < 0) {
-                    $usage->update(["current_usage" => 0]);
+                    $usage->update(['current_usage' => 0]);
                 }
             }
         }
@@ -429,7 +428,7 @@ class SubscriptionService
     {
         $subscription = $user->activeSubscription();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return;
         }
 
@@ -437,13 +436,13 @@ class SubscriptionService
         $periodEnd = now()->endOfMonth();
 
         // Удаляем все старые записи месячных метрик (избегаем дубликата при обновлении)
-        SubscriptionUsage::where("user_id", $user->id)
-            ->where("period_end", "<", $periodStart)
+        SubscriptionUsage::where('user_id', $user->id)
+            ->where('period_end', '<', $periodStart)
             ->where(function ($query) {
                 $query
-                    ->where("feature_key", "max_appointments_per_month")
-                    ->orWhere("feature_key", "like", "%_per_month")
-                    ->orWhere("feature_key", "like", "%_monthly");
+                    ->where('feature_key', 'max_appointments_per_month')
+                    ->orWhere('feature_key', 'like', '%_per_month')
+                    ->orWhere('feature_key', 'like', '%_monthly');
             })
             ->delete();
 
@@ -451,19 +450,19 @@ class SubscriptionService
         $features = $subscription->plan->features()->with('metric')->get();
         foreach ($features as $feature) {
             $metric = $feature->metric;
-            if (!$metric || $metric->type !== 'integer' || !$this->isMonthlyMetric($metric->key)) {
+            if (! $metric || $metric->type !== 'integer' || ! $this->isMonthlyMetric($metric->key)) {
                 continue;
             }
             SubscriptionUsage::firstOrCreate(
                 [
-                    "subscription_id" => $subscription->id,
-                    "user_id" => $user->id,
-                    "feature_key" => $metric->key,
-                    "period_start" => $periodStart,
+                    'subscription_id' => $subscription->id,
+                    'user_id' => $user->id,
+                    'feature_key' => $metric->key,
+                    'period_start' => $periodStart,
                 ],
                 [
-                    "current_usage" => 0,
-                    "period_end" => $periodEnd,
+                    'current_usage' => 0,
+                    'period_end' => $periodEnd,
                 ],
             );
         }
@@ -474,7 +473,7 @@ class SubscriptionService
      */
     public function canCreateLocation(User $user): bool
     {
-        return $this->checkLimit($user, "max_locations");
+        return $this->checkLimit($user, 'max_locations');
     }
 
     /**
@@ -482,7 +481,7 @@ class SubscriptionService
      */
     public function canCreateMaster(User $user): bool
     {
-        return $this->checkLimit($user, "max_masters");
+        return $this->checkLimit($user, 'max_masters');
     }
 
     /**
@@ -490,7 +489,7 @@ class SubscriptionService
      */
     public function canCreateService(User $user): bool
     {
-        return $this->checkLimit($user, "max_services");
+        return $this->checkLimit($user, 'max_services');
     }
 
     /**
@@ -498,7 +497,7 @@ class SubscriptionService
      */
     public function canCreateClient(User $user): bool
     {
-        return $this->checkLimit($user, "max_clients");
+        return $this->checkLimit($user, 'max_clients');
     }
 
     /**
@@ -506,7 +505,7 @@ class SubscriptionService
      */
     public function canCreateAppointment(User $user): bool
     {
-        return $this->checkLimit($user, "max_appointments_per_month");
+        return $this->checkLimit($user, 'max_appointments_per_month');
     }
 
     /**
@@ -514,7 +513,7 @@ class SubscriptionService
      */
     public function canCreateBusinessUser(User $user): bool
     {
-        return $this->checkLimit($user, "max_business_users");
+        return $this->checkLimit($user, 'max_business_users');
     }
 
     /**
@@ -522,8 +521,8 @@ class SubscriptionService
      */
     protected function getBusinessUsersCount(User $user): int
     {
-        $ownerRole = \App\Models\BusinessRole::where("slug", "owner")->first();
-        if (!$ownerRole) {
+        $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
+        if (! $ownerRole) {
             return 0;
         }
 
@@ -531,7 +530,7 @@ class SubscriptionService
         foreach ($user->businesses as $business) {
             $usersCount = $business
                 ->users()
-                ->wherePivot("role_id", "!=", $ownerRole->id)
+                ->wherePivot('role_id', '!=', $ownerRole->id)
                 ->count();
             $totalUsers += $usersCount;
         }
@@ -544,8 +543,8 @@ class SubscriptionService
      */
     protected function isMonthlyMetric(string $featureKey): bool
     {
-        return str_contains($featureKey, "_per_month") ||
-            str_contains($featureKey, "_monthly");
+        return str_contains($featureKey, '_per_month') ||
+            str_contains($featureKey, '_monthly');
     }
 
     /**
@@ -560,12 +559,12 @@ class SubscriptionService
     {
         $subscription = $user->subscription;
 
-        if (!$subscription) {
-            return array_fill_keys($plans->pluck("id")->toArray(), false);
+        if (! $subscription) {
+            return array_fill_keys($plans->pluck('id')->toArray(), false);
         }
 
         $metadata = $subscription->metadata ?? [];
-        $usedTrials = $metadata["used_trials"] ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
 
         $result = [];
         foreach ($plans as $plan) {
@@ -595,13 +594,13 @@ class SubscriptionService
     {
         $subscription = $user->subscription;
 
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 
         // Проверяем metadata для истории использованных пробных периодов
         $metadata = $subscription->metadata ?? [];
-        $usedTrials = $metadata["used_trials"] ?? [];
+        $usedTrials = $metadata['used_trials'] ?? [];
 
         // Если plan_id уже в списке использованных пробных периодов
         if (in_array($plan->id, $usedTrials)) {
@@ -617,10 +616,10 @@ class SubscriptionService
             // Если пробный период уже закончился, значит он был использован
             if ($subscription->trial_ends_at->isPast()) {
                 // Обновляем metadata для будущих проверок
-                if (!in_array($plan->id, $usedTrials)) {
+                if (! in_array($plan->id, $usedTrials)) {
                     $usedTrials[] = $plan->id;
-                    $metadata["used_trials"] = $usedTrials;
-                    $subscription->update(["metadata" => $metadata]);
+                    $metadata['used_trials'] = $usedTrials;
+                    $subscription->update(['metadata' => $metadata]);
                 }
 
                 return true;
@@ -639,12 +638,12 @@ class SubscriptionService
         $subscription = $user->activeSubscription();
 
         // Проверяем наличие активной подписки
-        if (!$subscription) {
+        if (! $subscription) {
             return false;
         }
 
         // Проверяем, что тариф не бесплатный
-        if ($subscription->plan->slug === "free") {
+        if ($subscription->plan->slug === 'free') {
             return false;
         }
 
@@ -655,7 +654,7 @@ class SubscriptionService
 
         // Устанавливаем cancelled_at, статус остается active
         $subscription->update([
-            "cancelled_at" => now(),
+            'cancelled_at' => now(),
         ]);
 
         return true;

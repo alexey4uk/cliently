@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Collection;
+
 /**
  * Репозиторий для работы с локациями
  */

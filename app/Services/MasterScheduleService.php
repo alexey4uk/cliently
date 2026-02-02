@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Master;
-use App\Models\MasterBreak;
-use App\Models\MasterDayOverride;
 use App\Models\MasterSchedule;
 use Carbon\Carbon;
 
@@ -16,13 +14,13 @@ class MasterScheduleService
     public function saveScheduleForMaster(array $data, Master $master): void
     {
         // Регулярное расписание по дням
-        if (isset($data["schedules"])) {
-            $this->saveSchedules($data["schedules"], $master);
+        if (isset($data['schedules'])) {
+            $this->saveSchedules($data['schedules'], $master);
         }
 
         // Переопределения на даты
-        if (isset($data["overrides"])) {
-            $this->saveOverrides($data["overrides"], $master);
+        if (isset($data['overrides'])) {
+            $this->saveOverrides($data['overrides'], $master);
         }
     }
 
@@ -33,14 +31,14 @@ class MasterScheduleService
     {
         $schedules = $master
             ->schedules()
-            ->with("breaks")
+            ->with('breaks')
             ->get()
-            ->keyBy("day_of_week");
-        $overrides = $master->dayOverrides()->get()->keyBy("date");
+            ->keyBy('day_of_week');
+        $overrides = $master->dayOverrides()->get()->keyBy('date');
 
         return [
-            "schedules" => $schedules->toArray(),
-            "overrides" => $overrides->toArray(),
+            'schedules' => $schedules->toArray(),
+            'overrides' => $overrides->toArray(),
         ];
     }
 
@@ -54,13 +52,13 @@ class MasterScheduleService
     ): bool {
         $workingTime = $this->getWorkingTimeForDate($master, $date);
 
-        if (!$workingTime) {
+        if (! $workingTime) {
             return false;
         }
 
         $timeCarbon = Carbon::parse($time);
-        $from = Carbon::parse($workingTime["from"]);
-        $to = Carbon::parse($workingTime["to"]);
+        $from = Carbon::parse($workingTime['from']);
+        $to = Carbon::parse($workingTime['to']);
 
         // Проверить перерывы
         if ($this->isInBreak($master, $date, $timeCarbon)) {
@@ -78,15 +76,16 @@ class MasterScheduleService
         // Сначала проверить переопределения
         $override = $master
             ->dayOverrides()
-            ->where("date", $date->format("Y-m-d"))
+            ->where('date', $date->format('Y-m-d'))
             ->first();
         if ($override) {
-            if (!$override->is_working) {
+            if (! $override->is_working) {
                 return null;
             }
+
             return [
-                "from" => $override->start_time,
-                "to" => $override->end_time,
+                'from' => $override->start_time,
+                'to' => $override->end_time,
             ];
         }
 
@@ -94,16 +93,16 @@ class MasterScheduleService
         $dayOfWeek = $date->dayOfWeek; // 0 - воскресенье, 1 - понедельник, ...
         $schedule = $master
             ->schedules()
-            ->where("day_of_week", $dayOfWeek)
+            ->where('day_of_week', $dayOfWeek)
             ->first();
 
-        if (!$schedule || !$schedule->is_working) {
+        if (! $schedule || ! $schedule->is_working) {
             return null;
         }
 
         return [
-            "from" => $schedule->start_time,
-            "to" => $schedule->end_time,
+            'from' => $schedule->start_time,
+            'to' => $schedule->end_time,
         ];
     }
 
@@ -115,10 +114,10 @@ class MasterScheduleService
         $dayOfWeek = $date->dayOfWeek;
         $schedule = $master
             ->schedules()
-            ->where("day_of_week", $dayOfWeek)
+            ->where('day_of_week', $dayOfWeek)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return false;
         }
 
@@ -148,14 +147,14 @@ class MasterScheduleService
 
         // Создаем записи только для рабочих дней
         foreach ($schedules as $day => $data) {
-            $isWorking = isset($data["is_working"]) && $data["is_working"] == 1;
+            $isWorking = isset($data['is_working']) && $data['is_working'] == 1;
 
             if ($isWorking) {
                 $master->schedules()->create([
-                    "day_of_week" => $day,
-                    "start_time" => $data["start_time"] ?? null,
-                    "end_time" => $data["end_time"] ?? null,
-                    "is_working" => true,
+                    'day_of_week' => $day,
+                    'start_time' => $data['start_time'] ?? null,
+                    'end_time' => $data['end_time'] ?? null,
+                    'is_working' => true,
                 ]);
             }
         }
@@ -180,11 +179,11 @@ class MasterScheduleService
     {
         foreach ($overrides as $date => $data) {
             $master->dayOverrides()->updateOrCreate(
-                ["date" => $date],
+                ['date' => $date],
                 [
-                    "is_working" => $data["is_working"] ?? true,
-                    "start_time" => $data["start_time"] ?? null,
-                    "end_time" => $data["end_time"] ?? null,
+                    'is_working' => $data['is_working'] ?? true,
+                    'start_time' => $data['start_time'] ?? null,
+                    'end_time' => $data['end_time'] ?? null,
                 ],
             );
         }

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('currency_symbol', 10)->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->string('ioc', 3)->nullable();
-            
+
             $table->timestamps();
         });
     }

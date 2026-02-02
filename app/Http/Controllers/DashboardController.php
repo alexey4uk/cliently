@@ -6,7 +6,6 @@ use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Traits\HasOwnDataFiltering;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {

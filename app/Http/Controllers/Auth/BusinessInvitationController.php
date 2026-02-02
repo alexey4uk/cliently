@@ -25,18 +25,18 @@ class BusinessInvitationController extends Controller
      */
     public function accept(string $token): View
     {
-        $invitation = BusinessUserInvitation::where("token", $token)
-            ->whereNull("accepted_at")
-            ->where("expires_at", ">", now())
-            ->with(["business", "creator", "businessRole"])
+        $invitation = BusinessUserInvitation::where('token', $token)
+            ->whereNull('accepted_at')
+            ->where('expires_at', '>', now())
+            ->with(['business', 'creator', 'businessRole'])
             ->firstOrFail();
 
         // Проверяем, существует ли пользователь с таким email
-        $userExists = User::where("email", $invitation->email)->exists();
+        $userExists = User::where('email', $invitation->email)->exists();
 
-        return view("auth.accept-invitation", [
-            "invitation" => $invitation,
-            "userExists" => $userExists,
+        return view('auth.accept-invitation', [
+            'invitation' => $invitation,
+            'userExists' => $userExists,
         ]);
     }
 
@@ -45,49 +45,48 @@ class BusinessInvitationController extends Controller
      */
     public function activate(Request $request, string $token)
     {
-        $invitation = BusinessUserInvitation::where("token", $token)
-            ->whereNull("accepted_at")
-            ->where("expires_at", ">", now())
+        $invitation = BusinessUserInvitation::where('token', $token)
+            ->whereNull('accepted_at')
+            ->where('expires_at', '>', now())
             ->firstOrFail();
 
         // Проверяем, что пользователь еще не существует
-        if (User::where("email", $invitation->email)->exists()) {
+        if (User::where('email', $invitation->email)->exists()) {
             return redirect()
-                ->route("invite.accept", ["token" => $token])
+                ->route('invite.accept', ['token' => $token])
                 ->with(
-                    "error",
-                    "Пользователь с таким email уже существует. Пожалуйста, войдите в систему.",
+                    'error',
+                    'Пользователь с таким email уже существует. Пожалуйста, войдите в систему.',
                 );
         }
 
         $request->validate(
             [
-                "password" => ["required", "confirmed", Password::defaults()],
+                'password' => ['required', 'confirmed', Password::defaults()],
             ],
             [
-                "password.required" =>
-                    "Поле пароль обязательно для заполнения.",
-                "password.confirmed" => "Пароли не совпадают.",
+                'password.required' => 'Поле пароль обязательно для заполнения.',
+                'password.confirmed' => 'Пароли не совпадают.',
             ],
         );
 
         // Создаем пользователя
         $user = User::create([
-            "name" => $invitation->email, // Временное имя, пользователь может изменить позже
-            "email" => $invitation->email,
-            "password" => Hash::make($request->password),
+            'name' => $invitation->email, // Временное имя, пользователь может изменить позже
+            'email' => $invitation->email,
+            'password' => Hash::make($request->password),
         ]);
 
         // Назначаем роль user
-        $user->assignRole("user");
+        $user->assignRole('user');
 
         // Автоматически создаем подписку на бесплатный тариф по умолчанию
-        $defaultPlan = Plan::where("is_default", true)->first();
+        $defaultPlan = Plan::where('is_default', true)->first();
 
         // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
-        if (!$defaultPlan) {
-            $defaultPlan = Plan::where("slug", "free")
-                ->where("is_active", true)
+        if (! $defaultPlan) {
+            $defaultPlan = Plan::where('slug', 'free')
+                ->where('is_active', true)
                 ->first();
         }
 
@@ -98,12 +97,12 @@ class BusinessInvitationController extends Controller
 
         // Добавляем пользователя в бизнес
         $pivotData = [
-            "role_id" => $invitation->role_id,
+            'role_id' => $invitation->role_id,
         ];
 
         // Если роль "мастер" и master_id не указан, создаем нового мастера
         $role = $invitation->businessRole;
-        if ($role && $role->slug === "master" && !$invitation->master_id) {
+        if ($role && $role->slug === 'master' && ! $invitation->master_id) {
             $this->createMasterForUser(
                 $invitation->business,
                 $user,
@@ -115,7 +114,7 @@ class BusinessInvitationController extends Controller
 
         // Помечаем приглашение как принятое
         $invitation->update([
-            "accepted_at" => now(),
+            'accepted_at' => now(),
         ]);
 
         // Уведомляем владельцев/админов о присоединении пользователя
@@ -129,8 +128,8 @@ class BusinessInvitationController extends Controller
         Auth::login($user);
 
         return redirect($this->getRedirectAfterAuth($user))->with(
-            "success",
-            "Добро пожаловать! Вы успешно присоединились к бизнесу.",
+            'success',
+            'Добро пожаловать! Вы успешно присоединились к бизнесу.',
         );
     }
 
@@ -139,9 +138,9 @@ class BusinessInvitationController extends Controller
      */
     public function store(Request $request, string $token)
     {
-        $invitation = BusinessUserInvitation::where("token", $token)
-            ->whereNull("accepted_at")
-            ->where("expires_at", ">", now())
+        $invitation = BusinessUserInvitation::where('token', $token)
+            ->whereNull('accepted_at')
+            ->where('expires_at', '>', now())
             ->firstOrFail();
 
         $user = Auth::user();
@@ -149,10 +148,10 @@ class BusinessInvitationController extends Controller
         // Проверяем, что email совпадает
         if ($user->email !== $invitation->email) {
             return redirect()
-                ->route("invite.accept", ["token" => $token])
+                ->route('invite.accept', ['token' => $token])
                 ->with(
-                    "error",
-                    "Это приглашение предназначено для другого пользователя.",
+                    'error',
+                    'Это приглашение предназначено для другого пользователя.',
                 );
         }
 
@@ -160,25 +159,25 @@ class BusinessInvitationController extends Controller
         if (
             $invitation->business
                 ->users()
-                ->where("user_id", $user->id)
+                ->where('user_id', $user->id)
                 ->exists()
         ) {
-            $invitation->update(["accepted_at" => now()]);
+            $invitation->update(['accepted_at' => now()]);
 
             return redirect($this->getRedirectAfterAuth($user))->with(
-                "info",
-                "Вы уже являетесь участником этого бизнеса.",
+                'info',
+                'Вы уже являетесь участником этого бизнеса.',
             );
         }
 
         // Добавляем пользователя в бизнес
         $pivotData = [
-            "role_id" => $invitation->role_id,
+            'role_id' => $invitation->role_id,
         ];
 
         // Если роль "мастер" и master_id не указан, создаем нового мастера
         $role = $invitation->businessRole;
-        if ($role && $role->slug === "master" && !$invitation->master_id) {
+        if ($role && $role->slug === 'master' && ! $invitation->master_id) {
             $this->createMasterForUser(
                 $invitation->business,
                 $user,
@@ -190,7 +189,7 @@ class BusinessInvitationController extends Controller
 
         // Помечаем приглашение как принятое
         $invitation->update([
-            "accepted_at" => now(),
+            'accepted_at' => now(),
         ]);
 
         // Уведомляем владельцев/админов о присоединении пользователя
@@ -201,8 +200,8 @@ class BusinessInvitationController extends Controller
         );
 
         return redirect($this->getRedirectAfterAuth($user))->with(
-            "success",
-            "Вы успешно присоединились к бизнесу.",
+            'success',
+            'Вы успешно присоединились к бизнесу.',
         );
     }
 
@@ -216,10 +215,10 @@ class BusinessInvitationController extends Controller
     ): ?\App\Models\Master {
         // Проверяем, не существует ли уже мастер для этого пользователя в этом бизнесе
         $existingMaster = \App\Models\Master::where(
-            "business_id",
+            'business_id',
             $business->id,
         )
-            ->where("user_id", $user->id)
+            ->where('user_id', $user->id)
             ->first();
 
         if ($existingMaster) {
@@ -228,18 +227,18 @@ class BusinessInvitationController extends Controller
 
         // Создаем нового мастера
         return \App\Models\Master::create([
-            "business_id" => $business->id,
-            "user_id" => $user->id,
-            "first_name" => $user->name
-                ? explode(" ", $user->name)[0]
-                : "Мастер",
-            "last_name" => isset(explode(" ", $user->name)[1])
-                ? explode(" ", $user->name)[1]
+            'business_id' => $business->id,
+            'user_id' => $user->id,
+            'first_name' => $user->name
+                ? explode(' ', $user->name)[0]
+                : 'Мастер',
+            'last_name' => isset(explode(' ', $user->name)[1])
+                ? explode(' ', $user->name)[1]
                 : null,
-            "specialization" => "Мастер",
-            "phone" => $business->phone ?? "",
-            "email" => $user->email,
-            "is_active" => true,
+            'specialization' => 'Мастер',
+            'phone' => $business->phone ?? '',
+            'email' => $user->email,
+            'is_active' => true,
         ]);
     }
 }

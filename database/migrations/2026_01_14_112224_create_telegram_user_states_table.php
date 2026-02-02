@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('telegram_user_states', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('telegram_user_id'); 
+            $table->bigInteger('telegram_user_id');
             $table->string('step')->default('start');
             $table->json('data')->nullable();
             $table->unsignedBigInteger('last_message_id')->nullable();

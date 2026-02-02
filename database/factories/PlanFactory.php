@@ -20,15 +20,15 @@ class PlanFactory extends Factory
     public function definition(): array
     {
         return [
-            "name" => $this->faker->words(2, true),
-            "slug" => $this->faker->unique()->slug(),
-            "description" => $this->faker->sentence(),
-            "price" => $this->faker->randomFloat(2, 10, 100),
-            "interval" => $this->faker->randomElement(["monthly", "yearly"]),
-            "trial_days" => 0,
-            "is_active" => true,
-            "is_default" => false,
-            "sort_order" => $this->faker->numberBetween(1, 10),
+            'name' => $this->faker->words(2, true),
+            'slug' => $this->faker->unique()->slug(),
+            'description' => $this->faker->sentence(),
+            'price' => $this->faker->randomFloat(2, 10, 100),
+            'interval' => $this->faker->randomElement(['monthly', 'yearly']),
+            'trial_days' => 0,
+            'is_active' => true,
+            'is_default' => false,
+            'sort_order' => $this->faker->numberBetween(1, 10),
         ];
     }
 
@@ -53,8 +53,8 @@ class PlanFactory extends Factory
     public function withTrial(int $days = 7): static
     {
         return $this->state(
-            fn(array $attributes) => [
-                "trial_days" => $days,
+            fn (array $attributes) => [
+                'trial_days' => $days,
             ],
         );
     }
@@ -65,8 +65,8 @@ class PlanFactory extends Factory
     public function inactive(): static
     {
         return $this->state(
-            fn(array $attributes) => [
-                "is_active" => false,
+            fn (array $attributes) => [
+                'is_active' => false,
             ],
         );
     }
@@ -77,8 +77,8 @@ class PlanFactory extends Factory
     public function monthly(): static
     {
         return $this->state(
-            fn(array $attributes) => [
-                "interval" => "monthly",
+            fn (array $attributes) => [
+                'interval' => 'monthly',
             ],
         );
     }
@@ -89,8 +89,8 @@ class PlanFactory extends Factory
     public function yearly(): static
     {
         return $this->state(
-            fn(array $attributes) => [
-                "interval" => "yearly",
+            fn (array $attributes) => [
+                'interval' => 'yearly',
             ],
         );
     }

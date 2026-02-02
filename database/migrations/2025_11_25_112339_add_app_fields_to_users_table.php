@@ -34,7 +34,7 @@ return new class extends Migration
                 'oauth_id',
                 'avatar',
                 'telegram_chat_id',
-                'telegram_token'
+                'telegram_token',
             ]);
         });
     }

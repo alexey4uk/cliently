@@ -6,7 +6,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HasSubscriptionTest extends TestCase
@@ -19,16 +18,16 @@ class HasSubscriptionTest extends TestCase
         $plan = Plan::factory()->create();
 
         Subscription::factory()->create([
-            "user_id" => $user->id,
-            "plan_id" => $plan->id,
-            "status" => "active",
-            "ends_at" => now()->addMonth(),
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'ends_at' => now()->addMonth(),
         ]);
 
         $activeSubscription = $user->activeSubscription();
 
         $this->assertNotNull($activeSubscription);
-        $this->assertEquals("active", $activeSubscription->status);
+        $this->assertEquals('active', $activeSubscription->status);
     }
 
     public function test_active_subscription_returns_null_when_no_subscription()
@@ -48,8 +47,8 @@ class HasSubscriptionTest extends TestCase
         Subscription::factory()
             ->expired()
             ->create([
-                "user_id" => $user->id,
-                "plan_id" => $plan->id,
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
             ]);
 
         $activeSubscription = $user->activeSubscription();
@@ -65,14 +64,14 @@ class HasSubscriptionTest extends TestCase
         Subscription::factory()
             ->trial()
             ->create([
-                "user_id" => $user->id,
-                "plan_id" => $plan->id,
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
             ]);
 
         $activeSubscription = $user->activeSubscription();
 
         $this->assertNotNull($activeSubscription);
-        $this->assertEquals("trial", $activeSubscription->status);
+        $this->assertEquals('trial', $activeSubscription->status);
     }
 
     public function test_active_subscription_returns_null_when_trial_expired()
@@ -83,8 +82,8 @@ class HasSubscriptionTest extends TestCase
         Subscription::factory()
             ->expiredTrial()
             ->create([
-                "user_id" => $user->id,
-                "plan_id" => $plan->id,
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
             ]);
 
         $activeSubscription = $user->activeSubscription();
@@ -98,10 +97,10 @@ class HasSubscriptionTest extends TestCase
         $plan = Plan::factory()->create();
 
         Subscription::factory()->create([
-            "user_id" => $user->id,
-            "plan_id" => $plan->id,
-            "status" => "active",
-            "ends_at" => now()->addMonth(),
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'ends_at' => now()->addMonth(),
         ]);
 
         $this->assertTrue($user->hasActiveSubscription());
@@ -120,10 +119,10 @@ class HasSubscriptionTest extends TestCase
         $plan = Plan::factory()->create();
 
         Subscription::factory()->create([
-            "user_id" => $user->id,
-            "plan_id" => $plan->id,
-            "status" => "active",
-            "ends_at" => now()->addMonth(),
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'ends_at' => now()->addMonth(),
         ]);
 
         $currentPlan = $user->getCurrentPlan();

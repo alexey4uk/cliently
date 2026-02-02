@@ -173,7 +173,7 @@ class RolePermissionSeeder extends Seeder
         // Создание роли Админ
         // Админ имеет все права админ-панели (panel.*), без доступа к клиентской части (client.*)
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $adminPermissions = array_filter(array_keys($permissions), fn(string $name) => ! str_starts_with($name, 'client.'));
+        $adminPermissions = array_filter(array_keys($permissions), fn (string $name) => ! str_starts_with($name, 'client.'));
         $adminRole->syncPermissions($adminPermissions);
 
         // Создание роли Менеджер

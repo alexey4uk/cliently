@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\BusinessRole;
 use App\Models\BusinessRolePermission;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 
 class DefaultBusinessRolePermissionsSeeder extends Seeder
