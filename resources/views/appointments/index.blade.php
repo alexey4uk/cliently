@@ -42,6 +42,12 @@
     $hasAnyAppointmentAction = $hasBusinessPermission('client.appointments.view') || 
                                $hasBusinessPermission('client.appointments.update') || 
                                $hasBusinessPermission('client.appointments.delete');
+
+    $canCreateAppointment = false;
+    if ($hasBusinessPermission('client.appointments.create')) {
+        $subscriptionService = app(\App\Services\SubscriptionService::class);
+        $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
+    }
 @endphp
 
 @php
@@ -54,10 +60,12 @@
     phoneDisplay: '',
     client: '',
     showFilters: {{ $hasActiveFilters ? 'true' : 'false' }},
-    openPhoneModal(phone, phoneDisplay, client) {
-        this.phone = phone;
-        this.phoneDisplay = phoneDisplay;
-        this.client = client;
+    openPhoneModal(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        this.phone = btn.dataset.phone || '';
+        this.phoneDisplay = btn.dataset.phoneDisplay || btn.dataset.phone || '';
+        this.client = btn.dataset.clientName || '';
         this.showPhoneModal = true;
     },
     closePhoneModal() {
@@ -88,13 +96,6 @@
                         <span>Экспорт</span>
                     </a>
                 @endif
-                @php
-                    $canCreateAppointment = false;
-                    if ($hasBusinessPermission('client.appointments.create')) {
-                        $subscriptionService = app(\App\Services\SubscriptionService::class);
-                        $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
-                    }
-                @endphp
                 @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
                     <a href="{{ route('appointments.create') }}"
                         class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
@@ -234,7 +235,7 @@
                             <select name="service_id" onchange="this.form.submit()"
                                 class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
                                 <option value="">Все услуги</option>
-                                @foreach(\App\Models\Service::where('business_id', $business->id)->orderBy('name')->get() as $service)
+                                @foreach($services as $service)
                                     <option value="{{ $service->id }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>
                                         {{ $service->name }}
                                     </option>
@@ -254,7 +255,7 @@
                             <select name="master_id" onchange="this.form.submit()"
                                 class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
                                 <option value="">Все мастера</option>
-                                @foreach(\App\Models\Master::where('business_id', $business->id)->orderBy('first_name')->get() as $master)
+                                @foreach($masters as $master)
                                     <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>
                                         {{ $master->name }}
                                     </option>
@@ -365,7 +366,7 @@
                             <select id="service-filter" name="service_id" onchange="this.form.submit()"
                                 class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
                                 <option value="">Все услуги</option>
-                                @foreach(\App\Models\Service::where('business_id', $business->id)->orderBy('name')->get() as $service)
+                                @foreach($services as $service)
                                     <option value="{{ $service->id }}" {{ request('service_id') == $service->id ? 'selected' : '' }}>
                                         {{ $service->name }}
                                     </option>
@@ -388,7 +389,7 @@
                             <select id="master-filter" name="master_id" onchange="this.form.submit()"
                                 class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
                                 <option value="">Все мастера</option>
-                                @foreach(\App\Models\Master::where('business_id', $business->id)->orderBy('first_name')->get() as $master)
+                                @foreach($masters as $master)
                                     <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>
                                         {{ $master->name }}
                                     </option>
@@ -419,7 +420,7 @@
     @if ($appointments->count() > 0)
         <!-- Таблица для больших экранов -->
         <div class="hidden md:block">
-            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-visible">
                 <table class="w-full">
                     <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                         <tr>
@@ -470,8 +471,11 @@
                                                 {{ $appointment->client->full_name }}
                                             </div>
                                             @if($appointment->client->phone)
-                                                <button
-                                                    @click="openPhoneModal('{{ $appointment->client->phone }}', '{{ $appointment->client->phone }}', '{{ addslashes($appointment->client->full_name) }}')"
+                                                <button type="button"
+                                                    data-phone="{{ $appointment->client->phone }}"
+                                                    data-phone-display="{{ $appointment->client->phone }}"
+                                                    data-client-name="{{ $appointment->client->full_name }}"
+                                                    @click="openPhoneModal($event)"
                                                     class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
                                                     {{ $appointment->client->phone }}
                                                 </button>
@@ -524,53 +528,77 @@
                                 </td>
                                 @if($hasAnyAppointmentAction)
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-2">
-                                            @if($hasBusinessPermission('client.appointments.view'))
-                                                <a href="{{ route('appointments.show', $appointment) }}"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                    title="Просмотр">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                    </svg>
-                                                </a>
-                                            @endif
-
-                                            @if($hasBusinessPermission('client.appointments.update'))
-                                                <a href="{{ route('appointments.edit', $appointment) }}"
-                                                    class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                    title="Редактировать">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
-                                                </a>
-
-                                                @if($appointment->status === 'confirmed')
-                                                    <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="inline">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit"
-                                                            class="p-1.5 text-emerald-400 dark:text-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
-                                                            title="Завершить"
-                                                            onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
-                                                            <i class="fa-solid fa-check text-sm"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-
-                                                @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
-                                                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit"
-                                                            class="p-1.5 text-rose-400 dark:text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-                                                            title="Отменить"
-                                                            onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
-                                                            <i class="fa-solid fa-xmark text-sm"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                            @endif
+                                        <div class="relative" x-data="{ openActions: false }"
+                                             @click.outside="openActions = false"
+                                             @keydown.escape.window="openActions = false">
+                                            <button type="button" @click="openActions = !openActions"
+                                                    class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                                            </button>
+                                            
+                                            <div x-show="openActions"
+                                                 x-transition:enter="transition ease-out duration-100"
+                                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-75"
+                                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                                 class="absolute right-0 z-10 mt-2 min-w-[11rem] origin-top-right rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg focus:outline-none py-1"
+                                                 style="display: none;">
+                                                    {{-- Просмотр и редактирование — для всех статусов --}}
+                                                    @if($hasBusinessPermission('client.appointments.view'))
+                                                    <a href="{{ route('appointments.show', $appointment) }}"
+                                                       class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
+                                                        <span class="w-5 text-center text-slate-400 dark:text-slate-500"><i class="fa-regular fa-eye text-xs"></i></span>
+                                                        <span>Просмотр</span>
+                                                    </a>
+                                                    @endif
+                                                    @if($hasBusinessPermission('client.appointments.update'))
+                                                    <a href="{{ route('appointments.edit', $appointment) }}"
+                                                       class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
+                                                        <span class="w-5 text-center text-slate-400 dark:text-slate-500"><i class="fa-regular fa-pen-to-square text-xs"></i></span>
+                                                        <span>Редактировать</span>
+                                                    </a>
+                                                    {{-- Действия по статусу: ожидает → подтвердить/отменить; подтверждена → завершить/отменить --}}
+                                                    @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
+                                                    <div class="border-t border-slate-100 dark:border-slate-700/80 mt-1 pt-1">
+                                                        @if($appointment->status === 'pending')
+                                                        <form method="POST" action="{{ route('appointments.confirm', $appointment) }}">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit"
+                                                                    class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
+                                                                <span class="w-5 text-center"><i class="fa-solid fa-check-circle text-xs"></i></span>
+                                                                <span>Подтвердить</span>
+                                                            </button>
+                                                        </form>
+                                                        @endif
+                                                        @if($appointment->status === 'confirmed')
+                                                        <form method="POST" action="{{ route('appointments.complete', $appointment) }}">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit"
+                                                                    class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
+                                                                    onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
+                                                                <span class="w-5 text-center"><i class="fa-solid fa-check text-xs"></i></span>
+                                                                <span>Завершить</span>
+                                                            </button>
+                                                        </form>
+                                                        @endif
+                                                        <form method="POST" action="{{ route('appointments.cancel', $appointment) }}">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit"
+                                                                    class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                                                                    onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
+                                                                <span class="w-5 text-center"><i class="fa-solid fa-xmark-circle text-xs"></i></span>
+                                                                <span>Отменить</span>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    @endif
+                                                    @endif
+                                            </div>
                                         </div>
                                     </td>
                                 @endif
@@ -636,8 +664,11 @@
                                         {{ $appointment->client->full_name }}
                                     </p>
                                     @if($appointment->client->phone)
-                                        <button
-                                            @click="openPhoneModal('{{ $appointment->client->phone }}', '{{ $appointment->client->phone }}', '{{ addslashes($appointment->client->full_name) }}')"
+                                        <button type="button"
+                                            data-phone="{{ $appointment->client->phone }}"
+                                            data-phone-display="{{ $appointment->client->phone }}"
+                                            data-client-name="{{ $appointment->client->full_name }}"
+                                            @click="openPhoneModal($event)"
                                             class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
                                             {{ $appointment->client->phone }}
                                         </button>
@@ -670,41 +701,52 @@
                         @endif
                     </div>
 
-                    <!-- Действия -->
+                    <!-- Действия: просмотр и редактирование всегда; по статусу — подтвердить/завершить/отменить -->
                     <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700">
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
+                            @if($hasBusinessPermission('client.appointments.view'))
                             <a href="{{ route('appointments.show', $appointment) }}"
-                                class="flex-1 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center">
+                                class="flex-1 min-w-0 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center rounded-lg">
                                 Просмотр
                             </a>
-
+                            @endif
                             @if($hasBusinessPermission('client.appointments.update'))
-                                <a href="{{ route('appointments.edit', $appointment) }}"
-                                    class="flex-1 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center">
-                                    Изменить
-                                </a>
-                                @if($appointment->status === 'confirmed')
-                                    <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="flex-shrink-0">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit"
-                                            class="px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 hover:bg-emerald-200 dark:hover:bg-emerald-500/30 rounded-lg transition-colors"
-                                            onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
-                                            <i class="fa-solid fa-check"></i>
-                                        </button>
-                                    </form>
-                                @endif
-                                @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
-                                    <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="flex-shrink-0">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit"
-                                            class="px-3 py-2 text-sm font-medium text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/20 hover:bg-rose-200 dark:hover:bg-rose-500/30 rounded-lg transition-colors"
-                                            onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                    </form>
-                                @endif
+                            <a href="{{ route('appointments.edit', $appointment) }}"
+                                class="flex-1 min-w-0 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors text-center rounded-lg">
+                                Изменить
+                            </a>
+                            @if($appointment->status === 'pending')
+                            <form method="POST" action="{{ route('appointments.confirm', $appointment) }}" class="flex-shrink-0">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30 rounded-lg transition-colors">
+                                    <i class="fa-solid fa-check-circle text-xs mr-1"></i>Подтвердить
+                                </button>
+                            </form>
+                            @endif
+                            @if($appointment->status === 'confirmed')
+                            <form method="POST" action="{{ route('appointments.complete', $appointment) }}" class="flex-shrink-0">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 hover:bg-emerald-200 dark:hover:bg-emerald-500/30 rounded-lg transition-colors"
+                                    onclick="return confirm('Вы уверены, что хотите завершить эту запись?')">
+                                    <i class="fa-solid fa-check text-xs mr-1"></i>Завершить
+                                </button>
+                            </form>
+                            @endif
+                            @if($appointment->status !== 'completed' && $appointment->status !== 'cancelled')
+                            <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="flex-shrink-0">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="px-3 py-2 text-sm font-medium text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/20 hover:bg-rose-200 dark:hover:bg-rose-500/30 rounded-lg transition-colors"
+                                    onclick="return confirm('Вы уверены, что хотите отменить эту запись?')">
+                                    <i class="fa-solid fa-xmark-circle text-xs mr-1"></i>Отменить
+                                </button>
+                            </form>
+                            @endif
                             @endif
                         </div>
                     </div>
@@ -843,13 +885,6 @@
                             <span>Очистить фильтры</span>
                         </a>
                     @endif
-                    @php
-                        $canCreateAppointment = false;
-                        if ($hasBusinessPermission('client.appointments.create')) {
-                            $subscriptionService = app(\App\Services\SubscriptionService::class);
-                            $canCreateAppointment = $subscriptionService->canCreateAppointment(Auth::user());
-                        }
-                    @endphp
                     @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
                         <a href="{{ route('appointments.create') }}"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">

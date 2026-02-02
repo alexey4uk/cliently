@@ -131,6 +131,9 @@ class AppointmentsController extends Controller
             $appointmentsByDate = collect();
         }
 
+        $services = $this->serviceRepository->getActiveByBusiness($business->id);
+        $masters = $this->masterRepository->getActiveByBusiness($business->id);
+
         return view('appointments.index', [
             'business' => $business,
             'appointments' => $appointments,
@@ -146,6 +149,8 @@ class AppointmentsController extends Controller
             'sort' => $sort,
             'direction' => $direction,
             'perPage' => $perPage,
+            'services' => $services,
+            'masters' => $masters,
         ]);
     }
 
