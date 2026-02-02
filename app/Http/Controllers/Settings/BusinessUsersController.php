@@ -42,27 +42,63 @@ class BusinessUsersController extends Controller
 
         $this->authorizeBusinessPermission("client.business.users.view");
 
-        $users = $business
-            ->users()
-            ->withPivot("role_id", "first_name", "last_name")
-            ->orderBy("business_user.created_at", "desc")
-            ->get();
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canCreateUsers = $role && $permissionService->hasPermission($role->id, "client.business.users.create");
+        $canUpdateUsers = $role && $permissionService->hasPermission($role->id, "client.business.users.update");
+        $canDeleteUsers = $role && $permissionService->hasPermission($role->id, "client.business.users.delete");
+        $hasAnyUserAction = $canUpdateUsers || $canDeleteUsers;
+        $ownerId = $this->getBusinessOwnerId($business);
+        $owner = $ownerId ? User::find($ownerId) : null;
+        $canAddUser = $canCreateUsers && $owner && app(SubscriptionService::class)->canCreateBusinessUser($owner);
 
-        $invitations = BusinessUserInvitation::where(
-            "business_id",
-            $business->id,
-        )
+        $userQuery = $business
+            ->users()
+            ->withPivot("role_id", "first_name", "last_name");
+
+        $search = request("search", "");
+        if ($search !== "") {
+            $userQuery->where(function ($q) use ($search) {
+                $q->where("users.name", "like", "%{$search}%")
+                    ->orWhere("users.email", "like", "%{$search}%");
+            });
+        }
+
+        $roleId = request("role_id", "");
+        if ($roleId !== "") {
+            $userQuery->wherePivot("role_id", $roleId);
+        }
+
+        $users = $userQuery->orderBy("business_user.created_at", "desc")->get();
+
+        $invitationsQuery = BusinessUserInvitation::where("business_id", $business->id)
             ->whereNull("accepted_at")
             ->where("expires_at", ">", now())
-            ->with(["creator", "businessRole"])
-            ->orderBy("created_at", "desc")
-            ->get();
+            ->with(["creator", "businessRole"]);
+
+        if ($search !== "") {
+            $invitationsQuery->where("email", "like", "%{$search}%");
+        }
+        if ($roleId !== "") {
+            $invitationsQuery->where("role_id", $roleId);
+        }
+
+        $invitations = $invitationsQuery->orderBy("created_at", "desc")->get();
+
+        $rolesById = BusinessRole::all()->keyBy("id");
 
         return view("settings.users.index", [
             "business" => $business,
             "users" => $users,
             "invitations" => $invitations,
-            "rolesById" => BusinessRole::all()->keyBy("id"),
+            "rolesById" => $rolesById,
+            "search" => $search,
+            "roleId" => $roleId,
+            "canCreateUsers" => $canCreateUsers,
+            "canUpdateUsers" => $canUpdateUsers,
+            "canDeleteUsers" => $canDeleteUsers,
+            "canAddUser" => $canAddUser,
+            "hasAnyUserAction" => $hasAnyUserAction,
         ]);
     }
 

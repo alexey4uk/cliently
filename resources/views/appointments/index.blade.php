@@ -234,6 +234,18 @@
                 </div>
             </div>
 
+            @if($canCreateAppointments && !$canCreateAppointment)
+            <div x-data="{ showLimitNotice: true }" x-show="showLimitNotice"
+                 class="flex items-center gap-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+                <i class="fa-solid fa-info-circle shrink-0 text-amber-600 dark:text-amber-400"></i>
+                <span>Достигнут месячный лимит записей для вашего тарифа. Создание новых записей недоступно.</span>
+                <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Обновить тариф</a>
+                <button type="button" @click="showLimitNotice = false" class="ml-auto p-1 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200" aria-label="Закрыть">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            @endif
+
             <!-- Панель дополнительных фильтров -->
             <div x-show="showFilters" x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0 transform -translate-y-4 scale-98"

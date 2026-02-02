@@ -360,9 +360,13 @@ class AppointmentsController extends Controller
 
         $appointment->load(['client', 'service', 'master', 'location']);
 
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
+
         return view('appointments.show', [
             'business' => $business,
             'appointment' => $appointment,
+            'canUpdateAppointments' => $canUpdateAppointments,
         ]);
     }
 

@@ -10,39 +10,6 @@
 
 @section('content')
 
-@php
-    // Получаем бизнес и роль для проверки прав доступа
-    $user = Auth::user();
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role_id ? \App\Models\BusinessRole::find($pivot->pivot->role_id)?->slug : null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-    
-    // Проверяем, есть ли хотя бы одно действие для локаций
-    $hasAnyLocationAction = $hasBusinessPermission('client.locations.update') || 
-                            $hasBusinessPermission('client.locations.delete');
-@endphp
-
 <div x-data="{
     showDeleteModal: false,
     locationToDelete: null,
@@ -66,36 +33,60 @@
         }
     }
 }">
-    <!-- Заголовок страницы -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Локации</h1>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Управление адресами и рабочими часами ваших локаций</p>
-            </div>
-            @php
-                $canCreateLocation = false;
-                if ($hasBusinessPermission('client.locations.create')) {
-                    $subscriptionService = app(\App\Services\SubscriptionService::class);
-                    $canCreateLocation = $subscriptionService->canCreateLocation(Auth::user());
-                }
-            @endphp
-            @if($hasBusinessPermission('client.locations.create') && $canCreateLocation)
-                <a href="{{ route('settings.locations.create') }}"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    <span>Добавить локацию</span>
-                </a>
-            @elseif($hasBusinessPermission('client.locations.create') && !$canCreateLocation)
-                <button disabled
-                    class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
-                    title="Достигнут лимит локаций для вашего тарифа. Обновите тариф для добавления большего количества локаций.">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    <span>Добавить локацию</span>
-                </button>
+    <!-- Строка: заголовок + действие -->
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <h1 class="text-lg font-semibold text-slate-900 dark:text-white">Локации</h1>
+        <div class="flex items-center gap-2 shrink-0">
+            @if($canCreateLocations && $canCreateLocation)
+            <a href="{{ route('settings.locations.create') }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Добавить локацию</span>
+            </a>
+            @elseif($canCreateLocations && !$canCreateLocation)
+            <button type="button" disabled
+                class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                title="Достигнут лимит локаций для вашего тарифа.">
+                <i class="fa-solid fa-plus text-sm"></i>
+                <span>Добавить локацию</span>
+            </button>
             @endif
         </div>
     </div>
+
+    @if($canCreateLocations && !$canCreateLocation)
+    <div x-data="{ showLimitNotice: true }" x-show="showLimitNotice"
+         class="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+        <i class="fa-solid fa-info-circle shrink-0 text-amber-600 dark:text-amber-400"></i>
+        <span>Достигнут лимит локаций для вашего тарифа. Добавление новых локаций недоступно.</span>
+        <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Обновить тариф</a>
+        <button type="button" @click="showLimitNotice = false" class="ml-auto p-1 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200" aria-label="Закрыть">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    @endif
+
+    <!-- Поиск -->
+    <form method="GET" action="{{ route('settings.locations') }}" class="mb-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 min-w-0">
+                <label for="locations-search" class="sr-only">Поиск</label>
+                <input type="text" id="locations-search" name="search" value="{{ request('search', '') }}"
+                    placeholder="Поиск по названию, адресу, описанию..."
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-search mr-1.5"></i>Найти
+                </button>
+                @if(request('search'))
+                <a href="{{ route('settings.locations') }}" class="px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    Сбросить
+                </a>
+                @endif
+            </div>
+        </div>
+    </form>
 
     <!-- Список локаций -->
     @if ($locations->count() > 0)
@@ -169,7 +160,7 @@
                                 @if($hasAnyLocationAction)
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex items-center justify-end gap-2">
-                                            @if($hasBusinessPermission('client.locations.update'))
+                                            @if($canUpdateLocations)
                                                 <a href="{{ route('settings.locations.edit', $location) }}" 
                                                     class="p-1.5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" 
                                                     title="Редактировать">
@@ -178,7 +169,7 @@
                                                     </svg>
                                                 </a>
                                             @endif
-                                            @if($hasBusinessPermission('client.locations.delete'))
+                                            @if($canDeleteLocations)
                                                 <form method="POST" action="{{ route('settings.locations.destroy', $location) }}"
                                                     id="delete-form-{{ $location->id }}" class="inline">
                                                     @csrf
@@ -285,7 +276,7 @@
                     <!-- Действия -->
                     <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30">
                         <div class="flex items-center justify-end gap-3">
-                            @if($hasBusinessPermission('client.locations.update'))
+                            @if($canUpdateLocations)
                                 <a href="{{ route('settings.locations.edit', $location) }}"
                                     class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                                     <i class="fa-solid fa-pencil text-xs"></i>
@@ -293,7 +284,7 @@
                                 </a>
                             @endif
 
-                            @if($hasBusinessPermission('client.locations.delete'))
+                            @if($canDeleteLocations)
                                 <form method="POST" action="{{ route('settings.locations.destroy', $location) }}"
                                     id="delete-form-{{ $location->id }}" class="inline">
                                     @csrf
@@ -313,6 +304,14 @@
             @endforeach
         </div>
     @else
+        @if(request('search'))
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-8 text-center">
+            <p class="text-slate-600 dark:text-slate-400 mb-4">По вашему запросу ничего не найдено.</p>
+            <a href="{{ route('settings.locations') }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors">
+                Сбросить фильтры
+            </a>
+        </div>
+        @else
         <!-- Пустое состояние -->
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-12 text-center">
             <div class="max-w-sm mx-auto">
@@ -325,15 +324,23 @@
                 <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
                     Начните работу с системой, добавив первую локацию с адресом и рабочими часами.
                 </p>
-                @if($hasBusinessPermission('client.locations.create'))
-                    <a href="{{ route('settings.locations.create') }}"
-                        class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>Добавить локацию</span>
-                    </a>
+                @if($canCreateLocations && $canCreateLocation)
+                <a href="{{ route('settings.locations.create') }}"
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить локацию</span>
+                </a>
+                @elseif($canCreateLocations && !$canCreateLocation)
+                <button type="button" disabled
+                    class="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-not-allowed"
+                    title="Достигнут лимит локаций для вашего тарифа.">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>Добавить локацию</span>
+                </button>
                 @endif
             </div>
         </div>
+        @endif
     @endif
 
     <!-- Модальное окно подтверждения удаления -->

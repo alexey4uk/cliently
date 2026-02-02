@@ -7,6 +7,7 @@ use App\Http\Requests\TicketRequest;
 use App\Models\Ticket;
 use App\Models\TicketAttachment;
 use App\Models\TicketComment;
+use App\Services\BusinessRolePermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -75,6 +76,11 @@ class TicketController extends Controller
         $tickets = $query->paginate($perPage)->withQueryString();
         $categories = \App\Models\TicketCategory::where('is_active', true)->orderBy('sort_order')->get();
 
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canViewTickets = $role && $permissionService->hasPermission($role->id, 'client.tickets.view');
+        $canCreateTickets = $role && $permissionService->hasPermission($role->id, 'client.tickets.create');
+
         return view('tickets.index', [
             'business' => $business,
             'tickets' => $tickets,
@@ -85,6 +91,8 @@ class TicketController extends Controller
             'sort' => $sort,
             'direction' => $direction,
             'perPage' => $perPage,
+            'canViewTickets' => $canViewTickets,
+            'canCreateTickets' => $canCreateTickets,
         ]);
     }
 

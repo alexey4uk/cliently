@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\SubscriptionMetric;
 use App\Services\BepaidService;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -253,11 +254,15 @@ class SubscriptionController extends Controller
         // Загружаем инвойсы для подписки
         $subscription->load('invoices');
 
+        $role = $this->getCurrentBusinessRole();
+        $canManageSubscription = $role && app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.subscription.manage');
+
         return view('subscription.current', [
             'user' => $user,
             'subscription' => $subscription,
             'plan' => $plan,
             'usage' => $usage,
+            'canManageSubscription' => $canManageSubscription,
         ]);
     }
 

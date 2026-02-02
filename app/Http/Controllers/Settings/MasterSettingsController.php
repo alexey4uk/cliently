@@ -7,8 +7,10 @@ use App\Http\Requests\MasterRequest;
 use App\Models\Country;
 use App\Models\Master;
 use App\Repositories\MasterRepositoryInterface;
+use App\Services\BusinessRolePermissionService;
 use App\Services\MasterScheduleService;
 use App\Services\SubscriptionService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MasterSettingsController extends Controller
@@ -23,7 +25,7 @@ class MasterSettingsController extends Controller
     /**
      * Список мастеров
      */
-    public function index()
+    public function index(Request $request)
     {
         $business = $this->getCurrentBusiness();
 
@@ -36,11 +38,37 @@ class MasterSettingsController extends Controller
                 );
         }
 
-        $business->load("masters.locations", "masters.services");
+        $query = $business->masters()->with(["locations", "services"]);
+
+        $search = $request->get("search", "");
+        if ($search !== "") {
+            $query->where(function ($q) use ($search) {
+                $q->where("first_name", "like", "%{$search}%")
+                    ->orWhere("last_name", "like", "%{$search}%")
+                    ->orWhere("email", "like", "%{$search}%")
+                    ->orWhere("specialization", "like", "%{$search}%");
+            });
+        }
+
+        $masters = $query->orderBy("first_name")->orderBy("last_name")->get();
+
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canCreateMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.create');
+        $canUpdateMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.update');
+        $canDeleteMasters = $role && $permissionService->hasPermission($role->id, 'client.masters.delete');
+        $hasAnyMasterAction = $canUpdateMasters || $canDeleteMasters;
+        $canCreateMaster = $canCreateMasters && app(SubscriptionService::class)->canCreateMaster(Auth::user());
 
         return view("settings.masters.index", [
             "business" => $business,
-            "masters" => $business->masters,
+            "masters" => $masters,
+            "search" => $search,
+            "canCreateMasters" => $canCreateMasters,
+            "canUpdateMasters" => $canUpdateMasters,
+            "canDeleteMasters" => $canDeleteMasters,
+            "canCreateMaster" => $canCreateMaster,
+            "hasAnyMasterAction" => $hasAnyMasterAction,
         ]);
     }
 

@@ -10,34 +10,6 @@
 
 @section('content')
 
-@php
-    // Получаем бизнес и роль для проверки прав доступа
-    $currentBusiness = null;
-    $currentBusinessRole = null;
-    $currentBusinessRoleId = null;
-    $permissionService = null;
-    if ($user) {
-        $user->load('businesses');
-        $currentBusiness = $user->businesses->first();
-        if ($currentBusiness) {
-            $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-            $currentBusinessRole = $pivot?->pivot->role_id ? \App\Models\BusinessRole::find($pivot->pivot->role_id)?->slug : null;
-            $currentBusinessRoleId = $pivot?->pivot->role_id;
-            if ($currentBusinessRoleId) {
-                $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-            }
-        }
-    }
-
-    // Функция для проверки бизнес-прав
-    $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-        if (!$currentBusinessRoleId || !$permissionService) {
-            return false;
-        }
-        return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-    };
-@endphp
-
 <div class="max-w-6xl mx-auto">
     <!-- Информация о текущем тарифе -->
     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden mb-6 sm:mb-8">
@@ -140,7 +112,7 @@
 
             <!-- Действия -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                @if($hasBusinessPermission('client.subscription.manage') && $plan->price && $plan->price > 0)
+                @if($canManageSubscription && $plan->price && $plan->price > 0)
                     <form action="{{ route('subscription.renew') }}" method="POST" class="flex-1 sm:flex-initial">
                         @csrf
                         <button type="submit" 
@@ -157,7 +129,7 @@
                     <span>Изменить тариф</span>
                 </a>
 
-                @if($hasBusinessPermission('client.subscription.manage') && !$subscription->isCancelled() && $plan->slug !== 'free')
+                @if($canManageSubscription && !$subscription->isCancelled() && $plan->slug !== 'free')
                     <form action="{{ route('subscription.cancel') }}" method="POST" class="flex-1 sm:flex-initial">
                         @csrf
                         <button type="submit" onclick="return confirm(&quot;Вы уверены, что хотите отменить подписку? Она будет активна до окончания текущего периода ({{ $subscription->ends_at ? $subscription->ends_at->format('d.m.Y') : 'даты окончания' }}).&quot;)" 

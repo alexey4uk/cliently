@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ServiceRequest;
 use App\Models\Service;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
@@ -20,7 +22,7 @@ class ServiceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $business = $this->getCurrentBusiness();
 
@@ -29,11 +31,45 @@ class ServiceController extends Controller
                 ->with('info', 'Сначала создайте бизнес или примите приглашение.');
         }
 
-        $business->load('services');
+        $query = $business->services();
+
+        $search = $request->get('search', '');
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
+
+        $status = $request->get('status', '');
+        if ($status === '1' || $status === 'active') {
+            $query->where('is_active', true);
+        } elseif ($status === '0' || $status === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        $services = $query->orderBy('name')->get();
+
+        $role = $this->getCurrentBusinessRole();
+        $permissionService = app(BusinessRolePermissionService::class);
+        $canViewServices = $role && $permissionService->hasPermission($role->id, 'client.services.view');
+        $canCreateServices = $role && $permissionService->hasPermission($role->id, 'client.services.create');
+        $canUpdateServices = $role && $permissionService->hasPermission($role->id, 'client.services.update');
+        $canDeleteServices = $role && $permissionService->hasPermission($role->id, 'client.services.delete');
+        $hasAnyServiceAction = $canUpdateServices || $canDeleteServices;
+        $canCreateService = $canCreateServices && app(SubscriptionService::class)->canCreateService(Auth::user());
 
         return view('services.index', [
             'business' => $business,
-            'services' => $business->services,
+            'services' => $services,
+            'search' => $search,
+            'status' => $status,
+            'canViewServices' => $canViewServices,
+            'canCreateServices' => $canCreateServices,
+            'canUpdateServices' => $canUpdateServices,
+            'canDeleteServices' => $canDeleteServices,
+            'canCreateService' => $canCreateService,
+            'hasAnyServiceAction' => $hasAnyServiceAction,
         ]);
     }
 
