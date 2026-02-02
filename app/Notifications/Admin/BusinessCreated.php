@@ -24,7 +24,7 @@ class BusinessCreated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ["mail"];
+        return ['mail'];
     }
 
     /**
@@ -33,25 +33,25 @@ class BusinessCreated extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $business = $this->business;
-        $ownerRoleId = \App\Models\BusinessRole::where("slug", "owner")->value(
-            "id",
+        $ownerRoleId = \App\Models\BusinessRole::where('slug', 'owner')->value(
+            'id',
         );
         $owner = $business
             ->users()
-            ->wherePivotIn("role_id", [$ownerRoleId])
+            ->wherePivotIn('role_id', [$ownerRoleId])
             ->first();
 
-        return new MailMessage()
-            ->subject("Новый бизнес зарегистрирован: " . $business->name)
-            ->line("В системе зарегистрирован новый бизнес.")
-            ->line("Название: " . $business->name)
-            ->line("Владелец: " . ($owner ? $owner->name : "Не указан"))
-            ->line("Email владельца: " . ($owner ? $owner->email : "Не указан"))
+        return (new MailMessage)
+            ->subject('Новый бизнес зарегистрирован: '.$business->name)
+            ->line('В системе зарегистрирован новый бизнес.')
+            ->line('Название: '.$business->name)
+            ->line('Владелец: '.($owner ? $owner->name : 'Не указан'))
+            ->line('Email владельца: '.($owner ? $owner->email : 'Не указан'))
             ->action(
-                "Просмотреть бизнес",
-                route("panel.businesses.show", $business),
+                'Просмотреть бизнес',
+                route('panel.businesses.show', $business),
             )
-            ->line("Спасибо за использование нашей системы!");
+            ->line('Спасибо за использование нашей системы!');
     }
 
     /**
@@ -62,9 +62,9 @@ class BusinessCreated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            "business_id" => $this->business->id,
-            "title" => "Новый бизнес зарегистрирован",
-            "message" => 'Бизнес "' . $this->business->name . '" создан',
+            'business_id' => $this->business->id,
+            'title' => 'Новый бизнес зарегистрирован',
+            'message' => 'Бизнес "'.$this->business->name.'" создан',
         ];
     }
 }
