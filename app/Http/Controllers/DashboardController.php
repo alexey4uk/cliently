@@ -60,13 +60,9 @@ class DashboardController extends Controller
 
         $dashboardData = $this->getDashboardData($business, $role, $permissionService);
 
-        // Извлекаем данные из кэша
         $stats = $dashboardData['stats'];
         $appointments = $dashboardData['appointments'];
         $clients = $dashboardData['clients'];
-        $financialStats = $dashboardData['financialStats'];
-        $topServices = $dashboardData['topServices'];
-        $topMasters = $dashboardData['topMasters'];
         $subscriptionStatus = $dashboardData['subscriptionStatus'];
 
         return view('dashboard', [
@@ -74,9 +70,6 @@ class DashboardController extends Controller
             'stats' => $stats,
             'appointments' => $appointments,
             'clients' => $clients,
-            'financialStats' => $financialStats,
-            'topServices' => $topServices,
-            'topMasters' => $topMasters,
             'subscriptionStatus' => $subscriptionStatus,
         ]);
     }
@@ -95,40 +88,6 @@ class DashboardController extends Controller
         $appointments = $this->getAppointments($business, $role);
         $clients = $this->getRecentClients($business, $role, 5);
 
-        // Финансовые метрики (если есть доступ)
-        $financialStats = null;
-        if ($role && $permissionService->hasPermission($role->id, 'client.analytics.view')) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $financialStats = $this->getFinancialStats($business, $role);
-            }
-        }
-
-        // Топ услуги (если есть доступ)
-        $topServices = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.services.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topServices = $this->getTopServices($business);
-            }
-        }
-
-        // Топ мастера (если есть доступ)
-        $topMasters = null;
-        if (
-            $role && $permissionService->hasPermission($role->id, 'client.analytics.view')
-            && $permissionService->hasPermission($role->id, 'client.masters.view')
-        ) {
-            $accessService = app(\App\Services\SubscriptionAccessService::class);
-            if ($accessService->hasAccess($business, 'analytics_enabled', 'client.analytics.view')) {
-                $topMasters = $this->getTopMasters($business);
-            }
-        }
-
-        // Статус подписки (если есть доступ)
         $subscriptionStatus = null;
         if ($role && $permissionService->hasPermission($role->id, 'client.subscription.view')) {
             $subscriptionStatus = $this->getSubscriptionStatus($business);
@@ -138,9 +97,6 @@ class DashboardController extends Controller
             'stats' => $stats,
             'appointments' => $appointments,
             'clients' => $clients,
-            'financialStats' => $financialStats,
-            'topServices' => $topServices,
-            'topMasters' => $topMasters,
             'subscriptionStatus' => $subscriptionStatus,
         ];
     }
