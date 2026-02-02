@@ -129,8 +129,7 @@ class AnalyticsController extends Controller
                     "appointments.business_id",
                 )
                 ->where("appointments.created_at", ">=", $monthAgo)
-                ->distinct("businesses.id")
-                ->count("businesses.id");
+                ->count(DB::raw("DISTINCT businesses.id"));
 
             // ОПТИМИЗИРОВАНО: Активные пользователи через JOIN
             $activeUsers = DB::table("users")
@@ -147,8 +146,7 @@ class AnalyticsController extends Controller
                     "appointments.business_id",
                 )
                 ->where("appointments.created_at", ">=", $monthAgo)
-                ->distinct("users.id")
-                ->count("users.id");
+                ->count(DB::raw("DISTINCT users.id"));
 
             // Выручка от подписок
             $revenueTotal = Invoice::where("status", "paid")->sum("amount");
@@ -305,118 +303,118 @@ class AnalyticsController extends Controller
 
         $invoices = $query->get();
 
-            // Общие метрики выручки
-            $now = Carbon::now();
-            $today = $now->copy()->startOfDay();
-            $weekAgo = $now->copy()->subWeek();
-            $monthAgo = $now->copy()->subMonth();
+        // Общие метрики выручки
+        $now = Carbon::now();
+        $today = $now->copy()->startOfDay();
+        $weekAgo = $now->copy()->subWeek();
+        $monthAgo = $now->copy()->subMonth();
 
-            $totalRevenue = Invoice::where("status", "paid")->sum("amount");
+        $totalRevenue = Invoice::where("status", "paid")->sum("amount");
 
-            $revenueToday = Invoice::where("status", "paid")
-                ->whereBetween("paid_at", [$today, $now])
-                ->sum("amount");
+        $revenueToday = Invoice::where("status", "paid")
+            ->whereBetween("paid_at", [$today, $now])
+            ->sum("amount");
 
-            $revenueWeek = Invoice::where("status", "paid")
-                ->where("paid_at", ">=", $weekAgo)
-                ->sum("amount");
+        $revenueWeek = Invoice::where("status", "paid")
+            ->where("paid_at", ">=", $weekAgo)
+            ->sum("amount");
 
-            $revenueMonth = Invoice::where("status", "paid")
-                ->where("paid_at", ">=", $monthAgo)
-                ->sum("amount");
+        $revenueMonth = Invoice::where("status", "paid")
+            ->where("paid_at", ">=", $monthAgo)
+            ->sum("amount");
 
-            // Средний чек - используем один запрос вместо загрузки всех записей
-            $avgCheckData = Invoice::where("status", "paid")
-                ->selectRaw("SUM(amount) as total, COUNT(*) as count")
-                ->first();
+        // Средний чек - используем один запрос вместо загрузки всех записей
+        $avgCheckData = Invoice::where("status", "paid")
+            ->selectRaw("SUM(amount) as total, COUNT(*) as count")
+            ->first();
 
-            $averageCheck =
-                $avgCheckData && $avgCheckData->count > 0
-                    ? round($avgCheckData->total / $avgCheckData->count, 2)
-                    : 0;
+        $averageCheck =
+            $avgCheckData && $avgCheckData->count > 0
+                ? round($avgCheckData->total / $avgCheckData->count, 2)
+                : 0;
 
-            $revenueMetrics = [
-                "total" => $totalRevenue,
-                "today" => $revenueToday,
-                "week" => $revenueWeek,
-                "month" => $revenueMonth,
-                "average" => $averageCheck,
-            ];
+        $revenueMetrics = [
+            "total" => $totalRevenue,
+            "today" => $revenueToday,
+            "week" => $revenueWeek,
+            "month" => $revenueMonth,
+            "average" => $averageCheck,
+        ];
 
-            $totalRevenue = $revenueMetrics["total"];
-            $revenuePeriod = $invoices->where("status", "paid")->sum("amount");
-            $revenueToday = $revenueMetrics["today"];
-            $revenueWeek = $revenueMetrics["week"];
-            $revenueMonth = $revenueMetrics["month"];
-            $averageCheck = $revenueMetrics["average"];
+        $totalRevenue = $revenueMetrics["total"];
+        $revenuePeriod = $invoices->where("status", "paid")->sum("amount");
+        $revenueToday = $revenueMetrics["today"];
+        $revenueWeek = $revenueMetrics["week"];
+        $revenueMonth = $revenueMetrics["month"];
+        $averageCheck = $revenueMetrics["average"];
 
-            // Выручка по тарифам
-            $revenueByPlan = Invoice::where("status", "paid")
-                ->select(
-                    "plan_id",
-                    DB::raw("SUM(amount) as revenue"),
-                    DB::raw("COUNT(*) as count"),
-                )
-                ->groupBy("plan_id")
-                ->with("plan")
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        "plan_id" => $item->plan_id,
-                        "plan_name" => $item->plan
-                            ? $item->plan->name
-                            : "Неизвестный тариф",
-                        "revenue" => $item->revenue,
-                        "count" => $item->count,
-                    ];
-                })
-                ->sortByDesc("revenue")
-                ->values();
+        // Выручка по тарифам
+        $revenueByPlan = Invoice::where("status", "paid")
+            ->select(
+                "plan_id",
+                DB::raw("SUM(amount) as revenue"),
+                DB::raw("COUNT(*) as count"),
+            )
+            ->groupBy("plan_id")
+            ->with("plan")
+            ->get()
+            ->map(function ($item) {
+                return [
+                    "plan_id" => $item->plan_id,
+                    "plan_name" => $item->plan
+                        ? $item->plan->name
+                        : "Неизвестный тариф",
+                    "revenue" => $item->revenue,
+                    "count" => $item->count,
+                ];
+            })
+            ->sortByDesc("revenue")
+            ->values();
 
-            // Статистика по статусам (используем уже загруженные данные для периода, общие - кешируем)
-            $statusStatsPeriod = [
-                "paid" => $invoices->where("status", "paid")->count(),
-                "pending" => $invoices->where("status", "pending")->count(),
-                "failed" => $invoices->where("status", "failed")->count(),
-                "cancelled" => $invoices->where("status", "cancelled")->count(),
-                "refunded" => $invoices->where("status", "refunded")->count(),
-            ];
+        // Статистика по статусам (используем уже загруженные данные для периода, общие - кешируем)
+        $statusStatsPeriod = [
+            "paid" => $invoices->where("status", "paid")->count(),
+            "pending" => $invoices->where("status", "pending")->count(),
+            "failed" => $invoices->where("status", "failed")->count(),
+            "cancelled" => $invoices->where("status", "cancelled")->count(),
+            "refunded" => $invoices->where("status", "refunded")->count(),
+        ];
 
-            // Общая статистика по статусам
-            $statusStats = [
-                "paid" => Invoice::where("status", "paid")->count(),
-                "pending" => Invoice::where("status", "pending")->count(),
-                "failed" => Invoice::where("status", "failed")->count(),
-                "cancelled" => Invoice::where("status", "cancelled")->count(),
-                "refunded" => Invoice::where("status", "refunded")->count(),
-            ];
+        // Общая статистика по статусам
+        $statusStats = [
+            "paid" => Invoice::where("status", "paid")->count(),
+            "pending" => Invoice::where("status", "pending")->count(),
+            "failed" => Invoice::where("status", "failed")->count(),
+            "cancelled" => Invoice::where("status", "cancelled")->count(),
+            "refunded" => Invoice::where("status", "refunded")->count(),
+        ];
 
-            // Динамика выручки
-            $revenueByPeriod = $this->getRevenueByPeriod(
-                $startDate,
-                $endDate,
-                $filters,
-            );
+        // Динамика выручки
+        $revenueByPeriod = $this->getRevenueByPeriod(
+            $startDate,
+            $endDate,
+            $filters,
+        );
 
-            // Последние платежи
-            $recentPayments = Invoice::where("status", "paid")
-                ->with(["user", "plan"])
-                ->orderBy("paid_at", "desc")
-                ->limit(10)
-                ->get();
+        // Последние платежи
+        $recentPayments = Invoice::where("status", "paid")
+            ->with(["user", "plan"])
+            ->orderBy("paid_at", "desc")
+            ->limit(10)
+            ->get();
 
-            return [
-                "total_revenue" => $totalRevenue,
-                "revenue_period" => $revenuePeriod,
-                "revenue_today" => $revenueToday,
-                "revenue_week" => $revenueWeek,
-                "revenue_month" => $revenueMonth,
-                "average_check" => $averageCheck,
-                "revenue_by_plan" => $revenueByPlan,
-                "status_stats" => $statusStats,
-                "revenue_by_period" => $revenueByPeriod,
-                "recent_payments" => $recentPayments,
-            ];
+        return [
+            "total_revenue" => $totalRevenue,
+            "revenue_period" => $revenuePeriod,
+            "revenue_today" => $revenueToday,
+            "revenue_week" => $revenueWeek,
+            "revenue_month" => $revenueMonth,
+            "average_check" => $averageCheck,
+            "revenue_by_plan" => $revenueByPlan,
+            "status_stats" => $statusStats,
+            "revenue_by_period" => $revenueByPeriod,
+            "recent_payments" => $recentPayments,
+        ];
     }
 
     /**

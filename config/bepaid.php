@@ -18,6 +18,8 @@ return [
 
     'currency' => env('BEPAID_CURRENCY', 'BYN'),
 
+    'default_payment_method' => env('BEPAID_DEFAULT_PAYMENT_METHOD', 'redirect'),
+
     'webhook' => [
         'url' => env('BEPAID_WEBHOOK_URL', '/webhooks/bepaid'),
         'verify_signature' => (bool) env('BEPAID_VERIFY_WEBHOOK_SIGNATURE', true),

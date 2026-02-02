@@ -151,16 +151,16 @@ class AppointmentSlotController extends Controller
 
                     // Если мастер не работает в этот день, возвращаем понятную ошибку
                     if ($isDayOff) {
-                        return response()->json(
-                            [
-                                "success" => false,
-                                "message" =>
-                                "Мастер не работает в выбранный день.",
-                                "error_type" => "master_day_off",
-                                "debug" => $debugInfo,
-                            ],
-                            400,
-                        );
+                        $payload = [
+                            "success" => false,
+                            "message" =>
+                            "Мастер не работает в выбранный день.",
+                            "error_type" => "master_day_off",
+                        ];
+                        if (config('app.debug')) {
+                            $payload["debug"] = $debugInfo;
+                        }
+                        return response()->json($payload, 400);
                     }
                 }
             }
@@ -185,12 +185,15 @@ class AppointmentSlotController extends Controller
                 ? $service->preparation_time ?? null
                 : null;
 
-            return response()->json([
+            $payload = [
                 "success" => true,
                 "slots" => $slots,
                 "preparation_time" => $preparationTime, // Время подготовки для показа уведомления
-                "debug" => $debugInfo,
-            ]);
+            ];
+            if (config('app.debug')) {
+                $payload["debug"] = $debugInfo;
+            }
+            return response()->json($payload);
         } catch (\Exception $e) {
             \Log::error("Ошибка при получении слотов", [
                 "error" => $e->getMessage(),
