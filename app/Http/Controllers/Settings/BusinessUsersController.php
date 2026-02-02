@@ -52,9 +52,15 @@ class BusinessUsersController extends Controller
         $owner = $ownerId ? User::find($ownerId) : null;
         $canAddUser = $canCreateUsers && $owner && app(SubscriptionService::class)->canCreateBusinessUser($owner);
 
+        $ownerRole = BusinessRole::where("slug", "owner")->first();
         $userQuery = $business
             ->users()
             ->withPivot("role_id", "first_name", "last_name");
+
+        // Владелец не показывается в списке — его нельзя редактировать отсюда
+        if ($ownerRole) {
+            $userQuery->wherePivot("role_id", "!=", $ownerRole->id);
+        }
 
         $search = request("search", "");
         if ($search !== "") {
@@ -515,6 +521,13 @@ class BusinessUsersController extends Controller
             ? BusinessRole::find($currentRoleId)
             : null;
 
+        // Редактирование владельца через этот раздел недоступно
+        if ($currentRole?->slug === "owner") {
+            return redirect()
+                ->route("settings.users.index")
+                ->with("error", "Редактирование владельца через этот раздел недоступно.");
+        }
+
         return view("settings.users.edit", [
             "business" => $business,
             "user" => $user,
@@ -546,6 +559,19 @@ class BusinessUsersController extends Controller
             abort(404);
         }
 
+        $pivot = $business->users()->where("user_id", $user->id)->first();
+        $currentRoleId = $pivot->pivot->role_id;
+        $currentRole = $currentRoleId
+            ? BusinessRole::find($currentRoleId)
+            : null;
+
+        // Редактирование владельца через этот раздел недоступно
+        if ($currentRole?->slug === "owner") {
+            return redirect()
+                ->route("settings.users.index")
+                ->with("error", "Редактирование владельца через этот раздел недоступно.");
+        }
+
         $request->validate(
             [
                 "role_id" => ["required", "exists:business_roles,id"],
@@ -556,11 +582,6 @@ class BusinessUsersController extends Controller
             ],
         );
 
-        $pivot = $business->users()->where("user_id", $user->id)->first();
-        $currentRoleId = $pivot->pivot->role_id;
-        $currentRole = $currentRoleId
-            ? BusinessRole::find($currentRoleId)
-            : null;
         $nextRole = BusinessRole::findOrFail($request->role_id);
 
         // Нельзя изменить роль owner на другую (только через специальный процесс)
@@ -629,25 +650,11 @@ class BusinessUsersController extends Controller
         $roleId = $pivot->pivot->role_id;
         $role = $roleId ? BusinessRole::find($roleId) : null;
 
-        // Нельзя удалить последнего owner из бизнеса
+        // Удаление владельца через этот раздел недоступно
         if ($role?->slug === "owner") {
-            $ownerRoleId = \App\Models\BusinessRole::where(
-                "slug",
-                "owner",
-            )->value("id");
-            $ownersCount = $business
-                ->users()
-                ->wherePivotIn("role_id", [$ownerRoleId])
-                ->count();
-
-            if ($ownersCount <= 1) {
-                return redirect()
-                    ->back()
-                    ->with(
-                        "error",
-                        "Нельзя удалить последнего владельца бизнеса.",
-                    );
-            }
+            return redirect()
+                ->route("settings.users.index")
+                ->with("error", "Удаление владельца через этот раздел недоступно.");
         }
 
         // Уведомляем об удалении пользователя
