@@ -7,7 +7,6 @@ use App\Http\Requests\TicketRequest;
 use App\Models\Ticket;
 use App\Models\TicketAttachment;
 use App\Models\TicketComment;
-use App\Models\TicketSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -28,9 +27,9 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getGlobal();
+        $settings = config('tickets');
 
-        if (! $settings->enabled) {
+        if (! $settings['enabled']) {
             return redirect()->route('dashboard')
                 ->with('info', 'Система тикетов отключена.');
         }
@@ -103,9 +102,9 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getGlobal();
+        $settings = config('tickets');
 
-        if (! $settings->enabled) {
+        if (! $settings['enabled']) {
             return redirect()->route('tickets.index')
                 ->with('info', 'Система тикетов отключена.');
         }
@@ -134,9 +133,9 @@ class TicketController extends Controller
 
         $user = Auth::user();
 
-        $settings = TicketSettings::getGlobal();
+        $settings = config('tickets');
 
-        if (! $settings->enabled) {
+        if (! $settings['enabled']) {
             return redirect()->route('tickets.index')
                 ->with('error', 'Система тикетов отключена.');
         }

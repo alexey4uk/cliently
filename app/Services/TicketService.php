@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Ticket;
-use App\Models\TicketSettings;
 
 class TicketService
 {
@@ -12,11 +11,11 @@ class TicketService
      */
     public function createTicket(array $data, int $businessId): Ticket
     {
-        $settings = TicketSettings::getGlobal();
+        $settings = config('tickets');
 
         // Автоматическое назначение, если включено
-        if ($settings->auto_assign_enabled && $settings->auto_assign_to_user_id) {
-            $data['assigned_to'] = $settings->auto_assign_to_user_id;
+        if ($settings['auto_assign']['enabled'] && $settings['auto_assign']['user_id']) {
+            $data['assigned_to'] = $settings['auto_assign']['user_id'];
             $data['status'] = 'in_progress';
         }
 

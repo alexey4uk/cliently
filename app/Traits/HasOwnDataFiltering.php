@@ -70,7 +70,7 @@ trait HasOwnDataFiltering
         if ($permissionService->hasOwnDataPermission($roleId, $permission)) {
             $masterId = $this->getCurrentUserMasterId($business);
             \Log::info("APPOINTMENTS_FILTER: role_id={$roleId}, permission={$permission}, hasOwnDataPermission=true, masterId={$masterId}");
-            
+
             if ($masterId) {
                 $query->where('master_id', $masterId);
                 \Log::info("APPOINTMENTS_FILTER: Applied filter WHERE master_id={$masterId}");

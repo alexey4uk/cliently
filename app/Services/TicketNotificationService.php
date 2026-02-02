@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\BusinessRole;
 use App\Models\Ticket;
 use App\Models\TicketComment;
-use App\Models\TicketSettings;
 use App\Models\User;
 use App\Notifications\TicketAssigned;
 use App\Notifications\TicketCommentAdded;
@@ -74,8 +73,6 @@ class TicketNotificationService
      */
     public function notifyTicketCreated(Ticket $ticket): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
 
@@ -144,8 +141,6 @@ class TicketNotificationService
      */
     public function notifyCommentAdded(Ticket $ticket, TicketComment $comment): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
         $comment->loadMissing('user');
@@ -366,8 +361,6 @@ class TicketNotificationService
      */
     public function notifyStatusChanged(Ticket $ticket, string $oldStatus, string $newStatus): void
     {
-        $settings = TicketSettings::getGlobal();
-
         // Загружаем необходимые связи для избежания N+1 запросов
         $ticket->loadMissing('assignedUser');
 

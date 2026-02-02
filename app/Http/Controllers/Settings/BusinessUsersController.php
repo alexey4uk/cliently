@@ -317,9 +317,9 @@ class BusinessUsersController extends Controller
             // Если пользователь существует, проверяем, не добавлен ли уже в этот бизнес
             if (
                 $business
-                    ->users()
-                    ->where("user_id", $existingUser->id)
-                    ->exists()
+                ->users()
+                ->where("user_id", $existingUser->id)
+                ->exists()
             ) {
                 return redirect()
                     ->back()

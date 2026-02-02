@@ -21,12 +21,17 @@ return new class extends Migration
             $table->text('description');
             $table->enum('status', ['new', 'open', 'pending', 'resolved', 'closed'])->default('new');
             $table->enum('priority', ['low', 'medium', 'high', 'critical'])->default('medium');
+            $table->string('token')->nullable();
+            $table->string('created_by_type')->default('user');
+            $table->unsignedBigInteger('created_by_id');
             $table->timestamp('resolved_at')->nullable();
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
 
             $table->index(['business_id', 'status']);
             $table->index('assigned_to');
+            $table->index(['created_by_type', 'created_by_id']);
+            $table->index('token');
         });
     }
 

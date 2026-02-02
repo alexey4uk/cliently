@@ -1208,19 +1208,6 @@ Route::middleware(["auth", "verified.or.oauth"])->group(function () {
                 ])->name("broadcasts.store");
             });
 
-            // Настройки тикетов (админ) - должно быть ПЕРЕД resource роутом тикетов
-            Route::middleware([
-                "check.permission:panel.tickets.settings",
-            ])->group(function () {
-                Route::get("/tickets/settings", [
-                    \App\Http\Controllers\Settings\TicketSettingsController::class,
-                    "index",
-                ])->name("tickets.settings");
-                Route::patch("/tickets/settings", [
-                    \App\Http\Controllers\Settings\TicketSettingsController::class,
-                    "update",
-                ])->name("tickets.settings.update");
-            });
 
             // Тикеты (доступ для всех с panel.access, но видимость зависит от прав)
             // Пользователи с panel.tickets.view видят все тикеты

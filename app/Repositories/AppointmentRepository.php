@@ -128,14 +128,14 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
                 $q->where('status', $filters['status']);
             }
 
-if (! empty($filters['service_id'])) {
-            $q->where('service_id', $filters['service_id']);
-        }
+            if (! empty($filters['service_id'])) {
+                $q->where('service_id', $filters['service_id']);
+            }
 
-        // Фильтр по мастеру
-        if (! empty($filters['master_id'])) {
-            $q->where('master_id', $filters['master_id']);
-        }
+            // Фильтр по мастеру
+            if (! empty($filters['master_id'])) {
+                $q->where('master_id', $filters['master_id']);
+            }
 
             return $q;
         };
@@ -190,8 +190,8 @@ if (! empty($filters['service_id'])) {
      */
     public function getForCalendar(int $businessId, string $month, array $filters = [])
     {
-        $startOfMonth = Carbon::parse($month.'-01')->startOfMonth();
-        $endOfMonth = Carbon::parse($month.'-01')->endOfMonth();
+        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
+        $endOfMonth = Carbon::parse($month . '-01')->endOfMonth();
 
         $query = $this->model->where('business_id', $businessId)
             ->whereBetween('date', [$startOfMonth, $endOfMonth])
@@ -245,7 +245,7 @@ if (! empty($filters['service_id'])) {
             $query->whereHas('client', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"));
+                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "%{$search}%"));
             })->orWhereHas('service', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%");
             });
@@ -253,8 +253,8 @@ if (! empty($filters['service_id'])) {
 
         // Для календаря - сортировка по дате и времени
         if (isset($filters['view']) && $filters['view'] === 'calendar' && isset($filters['month'])) {
-            $startOfMonth = Carbon::parse($filters['month'].'-01')->startOfMonth();
-            $endOfMonth = Carbon::parse($filters['month'].'-01')->endOfMonth();
+            $startOfMonth = Carbon::parse($filters['month'] . '-01')->startOfMonth();
+            $endOfMonth = Carbon::parse($filters['month'] . '-01')->endOfMonth();
             $query->whereBetween('date', [$startOfMonth, $endOfMonth])
                 ->orderBy('date', 'asc')
                 ->orderBy('time', 'asc');
