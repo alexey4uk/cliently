@@ -95,7 +95,7 @@
                             </a>
                         @endif
 
-                        @if($hasBusinessPermission('client.clients.update'))
+                        @if($canUpdateClients)
                             <a href="{{ route('clients.edit', $client) }}"
                                 class="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
                                 <i class="fa-solid fa-pencil text-sm"></i>
