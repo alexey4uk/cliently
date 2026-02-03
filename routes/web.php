@@ -398,6 +398,10 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 \App\Http\Controllers\AppointmentsController::class,
                 'complete',
             ])->name('appointments.complete');
+            Route::post('/appointments/{appointment}/send-telegram-confirmation', [
+                \App\Http\Controllers\AppointmentsController::class,
+                'sendTelegramConfirmation',
+            ])->name('appointments.send-telegram-confirmation');
         });
 
         Route::middleware([

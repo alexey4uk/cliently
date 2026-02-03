@@ -874,6 +874,49 @@ class Handler extends WebhookHandler
             return;
         }
 
+        // Подтверждение/отмена записи после создания (без состояния — запись уже создана)
+        if (str_starts_with($action, 'apt_confirm_') || str_starts_with($action, 'apt_cancel_')) {
+            $appointmentId = (int) str_replace(['apt_confirm_', 'apt_cancel_'], '', $action);
+            $isConfirm = str_starts_with($action, 'apt_confirm_');
+
+            $appointment = Appointment::with('client')->find($appointmentId);
+            if (! $appointment || $appointment->source !== 'telegram') {
+                return;
+            }
+            $client = $appointment->client;
+            if ((string) $client->telegram_user_id !== (string) $userId) {
+                return;
+            }
+
+            $oldStatus = $appointment->status;
+            $appointment->update([
+                'status' => $isConfirm ? 'confirmed' : 'cancelled',
+            ]);
+
+            \App\Services\AppointmentNotificationService::notifyStatusChanged(
+                $appointment,
+                $oldStatus,
+            );
+
+            $resultText = $isConfirm
+                ? TelegramMessages::MSG_APPOINTMENT_CONFIRMED_BY_YOU
+                : TelegramMessages::MSG_APPOINTMENT_CANCELLED_BY_YOU;
+
+            if ($messageId) {
+                try {
+                    $this->chat->edit($messageId)->message($resultText)->send();
+                    $this->chat->replaceKeyboard($messageId, Keyboard::make())->send();
+                } catch (\Throwable $e) {
+                    Log::warning('Failed to edit appointment confirm message', [
+                        'message_id' => $messageId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return;
+        }
+
         // Обработка выбора бизнеса из каталога (может быть без состояния)
         if (str_starts_with($action, 'business_')) {
             $businessId = str_replace('business_', '', $action);

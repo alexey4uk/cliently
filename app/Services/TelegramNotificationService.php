@@ -7,7 +7,10 @@ use App\Models\Business;
 use App\Models\Ticket;
 use App\Models\TicketComment;
 use App\Models\User;
+use App\Telegram\TelegramKeyboards;
+use App\Telegram\TelegramMessages;
 use DefStudio\Telegraph\Models\TelegraphChat;
+use DefStudio\Telegraph\Keyboard\Keyboard;
 use Illuminate\Support\Facades\Log;
 
 class TelegramNotificationService
@@ -82,6 +85,31 @@ class TelegramNotificationService
         self::sendMessageForClient(
             $appointment->client->telegram_user_id,
             $message,
+        );
+    }
+
+    /**
+     * Отправить клиенту в Telegram запрос на подтверждение записи (кнопки «Подтвердить» / «Отменить»).
+     * Вызывается мастером вручную. Работает, если запись создана через ТГ или у клиента известен telegram_user_id.
+     *
+     * @return bool true если сообщение отправлено, false если некуда отправлять или ошибка
+     */
+    public static function sendAppointmentConfirmationRequest(Appointment $appointment): bool
+    {
+        if (! $appointment->client->telegram_user_id) {
+            return false;
+        }
+
+        $message = self::formatAppointmentMessage($appointment, 'подтверждение записи')
+            . "\n\n"
+            . TelegramMessages::MSG_CONFIRM_APPOINTMENT_QUESTION;
+
+        $keyboard = TelegramKeyboards::appointmentConfirmCancel($appointment->id);
+
+        return self::sendMessageForClientWithKeyboard(
+            (string) $appointment->client->telegram_user_id,
+            $message,
+            $keyboard,
         );
     }
 
@@ -182,28 +210,46 @@ class TelegramNotificationService
         }
     }
 
-    private static function sendMessageForClient(int $id, string $message)
+    private static function sendMessageForClient(string $chatId, string $message): void
     {
+        self::sendMessageForClientWithKeyboard($chatId, $message, Keyboard::make());
+    }
+
+    /**
+     * Отправить сообщение клиенту в Telegram с опциональной inline-клавиатурой.
+     */
+    private static function sendMessageForClientWithKeyboard(
+        string $chatId,
+        string $message,
+        Keyboard $keyboard,
+    ): bool {
         try {
             $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
             if (! $bot) {
-                return;
+                return false;
             }
 
-            $chat = TelegraphChat::where('chat_id', $id)->first();
+            $chat = TelegraphChat::where('chat_id', $chatId)->first();
 
             if (! $chat) {
                 $chat = $bot->chats()->create([
-                    'chat_id' => $id,
+                    'chat_id' => $chatId,
                     'name' => 'Business Notifications',
                 ]);
             }
 
-            $chat->message($message)->send();
+            $payload = $chat->message($message);
+            if ($keyboard->isFilled()) {
+                $payload = $payload->keyboard($keyboard);
+            }
+            $payload->send();
+
+            return true;
         } catch (\Exception $e) {
-            // Логируем ошибку, но не прерываем выполнение
             Log::error('Telegram notification failed: ' . $e->getMessage());
+
+            return false;
         }
     }
 

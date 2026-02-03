@@ -343,6 +343,17 @@ class TelegramKeyboards
             ]);
     }
 
+    /**
+     * Клавиатура «Подтвердить запись» / «Отменить запись» после создания (по appointment_id)
+     */
+    public static function appointmentConfirmCancel(int $appointmentId): Keyboard
+    {
+        return Keyboard::make()->row([
+            Button::make(TelegramMessages::BTN_CONFIRM)->action("apt_confirm_{$appointmentId}"),
+            Button::make(TelegramMessages::BTN_CANCEL)->action("apt_cancel_{$appointmentId}"),
+        ]);
+    }
+
     // ==================== КАТАЛОГ БИЗНЕСОВ ====================
 
     /**

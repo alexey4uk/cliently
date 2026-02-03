@@ -237,6 +237,17 @@
                                     <span>Подтвердить</span>
                                 </button>
                             </form>
+                            @if($appointment->client->telegram_user_id ?? null)
+                                <form method="POST" action="{{ route('appointments.send-telegram-confirmation', $appointment) }}" class="inline">
+                                    @csrf
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                            title="Отправить клиенту в Telegram сообщение с кнопками «Подтвердить» / «Отменить»">
+                                        <i class="fa-brands fa-telegram text-sm"></i>
+                                        <span>Подтверждение в Telegram</span>
+                                    </button>
+                                </form>
+                            @endif
                         @endif
 
                         <form method="POST" action="{{ route('appointments.cancel', $appointment) }}" class="inline"

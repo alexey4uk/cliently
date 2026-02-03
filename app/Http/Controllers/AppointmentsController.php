@@ -696,6 +696,46 @@ class AppointmentsController extends Controller
     }
 
     /**
+     * Отправить клиенту в Telegram запрос на подтверждение записи (кнопки «Подтвердить» / «Отменить»).
+     * Доступно, если запись создана через ТГ или у клиента известен telegram_user_id.
+     */
+    public function sendTelegramConfirmation(Appointment $appointment)
+    {
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
+        }
+
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
+
+        if (! $appointment->client->telegram_user_id) {
+            return redirect()->back()
+                ->with('error', 'У клиента не привязан Telegram. Отправить подтверждение нельзя.');
+        }
+
+        if ($appointment->status !== 'pending') {
+            return redirect()->back()
+                ->with('error', 'Запрос на подтверждение можно отправить только для записи в статусе «Ожидает подтверждения».');
+        }
+
+        $sent = TelegramNotificationService::sendAppointmentConfirmationRequest($appointment);
+
+        if ($sent) {
+            return redirect()->back()
+                ->with('success', 'Клиенту отправлено сообщение в Telegram.');
+        }
+
+        return redirect()->back()
+            ->with('error', 'Не удалось отправить сообщение в Telegram. Попробуйте позже.');
+    }
+
+    /**
      * Export appointments to CSV.
      */
     public function export(Request $request)
