@@ -45,11 +45,11 @@ return [
         ],
 
         'broadcasts' => [
-            'driver' => 'database',
-            'connection' => env('DB_QUEUE_CONNECTION'),
-            'table' => env('DB_QUEUE_TABLE', 'jobs'),
-            'queue' => env('DB_QUEUE', 'default'),
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => 'broadcasts',
             'retry_after' => (int) env('BROADCASTS_QUEUE_RETRY_AFTER', 3600),
+            'block_for' => null,
             'after_commit' => false,
         ],
 

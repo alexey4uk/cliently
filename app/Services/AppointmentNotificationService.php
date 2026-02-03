@@ -150,9 +150,11 @@ class AppointmentNotificationService
     }
 
     /**
-     * Отправить уведомление о создании записи
+     * Отправить уведомление о создании записи.
+     *
+     * @param  User|null  $createdBy  Кто создал запись — этому пользователю уведомление не отправляется.
      */
-    public static function notifyCreated(Appointment $appointment): void
+    public static function notifyCreated(Appointment $appointment, ?User $createdBy = null): void
     {
         // Загружаем необходимые связи для избежания N+1 запросов
         $appointment->loadMissing(['business.users', 'client', 'service']);
@@ -164,6 +166,11 @@ class AppointmentNotificationService
         $users = $business->users;
 
         foreach ($users as $user) {
+            // Не отправляем уведомление тому, кто создал запись
+            if ($createdBy && $user->id === $createdBy->id) {
+                continue;
+            }
+
             // Получаем роль пользователя в бизнесе
             $pivotData = DB::table('business_user')
                 ->where('user_id', $user->id)

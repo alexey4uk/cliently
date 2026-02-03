@@ -140,9 +140,8 @@ class AppointmentsController extends Controller
         $canViewAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.view');
         $canExportAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.export');
         $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
-        $canDeleteAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.delete');
         $canCreateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.create');
-        $hasAnyAppointmentAction = $canViewAppointments || $canUpdateAppointments || $canDeleteAppointments;
+        $hasAnyAppointmentAction = $canViewAppointments || $canUpdateAppointments;
         $canCreateAppointment = $canCreateAppointments && app(SubscriptionService::class)->canCreateAppointment(Auth::user());
 
         return view('appointments.index', [
@@ -165,7 +164,6 @@ class AppointmentsController extends Controller
             'canViewAppointments' => $canViewAppointments,
             'canExportAppointments' => $canExportAppointments,
             'canUpdateAppointments' => $canUpdateAppointments,
-            'canDeleteAppointments' => $canDeleteAppointments,
             'canCreateAppointments' => $canCreateAppointments,
             'canCreateAppointment' => $canCreateAppointment,
             'hasAnyAppointmentAction' => $hasAnyAppointmentAction,
@@ -335,8 +333,8 @@ class AppointmentsController extends Controller
         // Увеличиваем usage для месячной метрики
         $subscriptionService->incrementUsage($user, 'max_appointments_per_month');
 
-        // Отправить системное уведомление (включая Telegram для каждого пользователя)
-        AppointmentNotificationService::notifyCreated($appointment);
+        // Отправить системное уведомление (включая Telegram); создателю не отправляем
+        AppointmentNotificationService::notifyCreated($appointment, $user);
 
         return redirect()->route('appointments.index')->with('success', 'Запись создана');
     }
@@ -571,38 +569,6 @@ class AppointmentsController extends Controller
         }
 
         return redirect()->route('appointments.index')->with('success', 'Мастер назначен.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Appointment $appointment)
-    {
-        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
-        if ($redirect) {
-            return $redirect;
-        }
-
-        $business = $this->getCurrentBusiness();
-        $role = $this->getCurrentBusinessRole();
-
-        // Проверяем право на просмотр этой конкретной записи
-        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
-            return redirect()->route('appointments.index')
-                ->with('error', 'У вас нет доступа к этой записи.');
-        }
-
-        $user = Auth::user();
-
-        // Уменьшаем usage для месячной метрики только если запись была создана в текущем месяце
-        if ($appointment->created_at->isCurrentMonth()) {
-            $subscriptionService = app(SubscriptionService::class);
-            $subscriptionService->decrementUsage($user, 'max_appointments_per_month');
-        }
-
-        $appointment->delete();
-
-        return redirect()->route('appointments.index')->with('success', 'Запись удалена');
     }
 
     /**

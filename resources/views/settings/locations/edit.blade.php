@@ -208,7 +208,6 @@
                                :required="!is24Hours"
                                class="w-24 sm:w-28 px-3 py-2 border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
                     </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">00:00 — 00:00 считается круглосуточной работой</p>
                 </div>
                 @error('working_hours.from')
                     <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>

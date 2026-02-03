@@ -405,15 +405,6 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         });
 
         Route::middleware([
-            'check.business.permission:client.appointments.delete',
-        ])->group(function () {
-            Route::delete('/appointments/{appointment}', [
-                \App\Http\Controllers\AppointmentsController::class,
-                'destroy',
-            ])->name('appointments.destroy');
-        });
-
-        Route::middleware([
             'check.business.permission:client.appointments.export',
         ])->group(function () {
             Route::get('/appointments-export', [
@@ -1003,15 +994,6 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                     \App\Http\Controllers\Panel\AppointmentController::class,
                     'update',
                 ])->name('appointments.update');
-            });
-
-            Route::middleware([
-                'check.permission:panel.appointments.delete',
-            ])->group(function () {
-                Route::delete('/appointments/{appointment}', [
-                    \App\Http\Controllers\Panel\AppointmentController::class,
-                    'destroy',
-                ])->name('appointments.destroy');
             });
 
             // Клиенты (админ и менеджер): /clients/create перед /clients/{client}

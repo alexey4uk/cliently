@@ -11,12 +11,12 @@ class BroadcastNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public $queue = 'broadcasts';
-
     public function __construct(
         public string $title,
         public string $message
-    ) {}
+    ) {
+        $this->onQueue('broadcasts');
+    }
 
     /**
      * @return array<int, string>
