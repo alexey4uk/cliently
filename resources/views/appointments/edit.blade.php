@@ -45,10 +45,11 @@
         </div>
     </div>
 
-    <!-- Form -->
-    <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="space-y-6">
+    <!-- Form (не вкладывать вторую form внутрь — иначе браузер закрывает первую и «Сохранить» отправляет удаление) -->
+    <form id="appointment-edit-form" method="POST" action="{{ route('appointments.update', $appointment) }}" class="space-y-6">
         @csrf
         @method('PATCH')
+        <input type="hidden" name="client_id" value="{{ old('client_id', $appointment->client_id) }}">
 
         <!-- Client Info (Read Only) -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
@@ -626,30 +627,30 @@
                 </div>
             </div>
         </div>
-
-        <!-- Actions -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-            <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" 
-                  onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"
-                  class="inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="px-6 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors">
-                    Удалить запись
-                </button>
-            </form>
-            <div class="flex items-center gap-4">
-                <a href="{{ route('appointments.index') }}" 
-                   class="px-6 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                    Отмена
-                </a>
-                <button type="submit" 
-                        class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                    Сохранить изменения
-                </button>
-            </div>
-        </div>
     </form>
+
+    <!-- Actions: форма удаления отдельно (вложенные form в HTML недопустимы — из‑за этого «Сохранить» отправлял удаление) -->
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-6">
+        <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" 
+              onsubmit="return confirm('Вы уверены, что хотите удалить эту запись?');"
+              class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="px-6 py-2.5 text-sm font-medium text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors">
+                Удалить запись
+            </button>
+        </form>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('appointments.index') }}" 
+               class="px-6 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Отмена
+            </a>
+            <button type="submit" form="appointment-edit-form" 
+                    class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
+                Сохранить изменения
+            </button>
+        </div>
+    </div>
 </div>
 
 @push('scripts')

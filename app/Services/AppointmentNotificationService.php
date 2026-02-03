@@ -16,6 +16,37 @@ use Illuminate\Support\Facades\Log;
 class AppointmentNotificationService
 {
     /**
+     * Статусы, при смене на которые отправляются уведомления (клиенту и сотрудникам).
+     * Подтверждена, отменена, завершена — колокольчик, email и Telegram не спамят на любой чих.
+     */
+    public const NOTIFY_STATUSES = ['confirmed', 'cancelled', 'completed'];
+
+    /**
+     * Нужно ли отправить клиенту уведомление об изменении записи.
+     */
+    public static function shouldNotifyClientOnStatusChange(?string $oldStatus, string $newStatus): bool
+    {
+        if ($oldStatus === $newStatus) {
+            return false;
+        }
+
+        return in_array($newStatus, self::NOTIFY_STATUSES, true);
+    }
+
+    /**
+     * Нужно ли отправить сотрудникам уведомление (колокольчик, email, Telegram).
+     * Только при смене на важный статус — иначе история в колокольчике и почта забиваются.
+     */
+    public static function shouldNotifyStaffOnStatusChange(?string $oldStatus, string $newStatus): bool
+    {
+        if ($oldStatus === $newStatus) {
+            return false;
+        }
+
+        return in_array($newStatus, self::NOTIFY_STATUSES, true);
+    }
+
+    /**
      * Получить правильный маршрут для просмотра записи в зависимости от прав пользователя
      */
     protected static function getAppointmentRoute(User $user, Appointment $appointment): string
@@ -220,7 +251,11 @@ class AppointmentNotificationService
     }
 
     /**
-     * Отправить уведомление об изменении статуса записи
+     * Отправить уведомление об изменении статуса записи сотрудникам (in-app, email, Telegram).
+     *
+     * Вызывать только при реальной смене статуса. Проверку выполняет вызывающий код через
+     * shouldNotifyStaffOnStatusChange(). Клиенту уведомление шлётся отдельно только при
+     * переходах в confirmed/cancelled/completed (shouldNotifyClientOnStatusChange).
      */
     public static function notifyStatusChanged(Appointment $appointment, ?string $oldStatus = null): void
     {

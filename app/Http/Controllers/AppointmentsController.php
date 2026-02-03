@@ -482,11 +482,14 @@ class AppointmentsController extends Controller
             'price' => $validated['price'] ?? null,
         ]);
 
-        // Отправить уведомление в Telegram, если статус изменился
+        // Уведомления только при смене статуса и только при «важных» переходах (не на любой чих)
         if ($appointment->status !== $oldStatus) {
-            TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
-            // Отправить системное уведомление
-            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+            if (AppointmentNotificationService::shouldNotifyClientOnStatusChange($oldStatus, $appointment->status)) {
+                TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+            }
+            if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, $appointment->status)) {
+                AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+            }
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись обновлена');
@@ -624,11 +627,12 @@ class AppointmentsController extends Controller
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'confirmed']);
 
-        // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
-
-        // Отправить системное уведомление
-        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        if (AppointmentNotificationService::shouldNotifyClientOnStatusChange($oldStatus, 'confirmed')) {
+            TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+        }
+        if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'confirmed')) {
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        }
 
         return redirect()->route('appointments.index')->with('success', 'Запись подтверждена');
     }
@@ -655,11 +659,12 @@ class AppointmentsController extends Controller
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'cancelled']);
 
-        // Отправить уведомление в Telegram (клиенту; сотрудникам — через notifyStatusChanged ниже)
-        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
-
-        // Отправить системное уведомление (в т.ч. Telegram сотрудникам)
-        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        if (AppointmentNotificationService::shouldNotifyClientOnStatusChange($oldStatus, 'cancelled')) {
+            TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+        }
+        if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'cancelled')) {
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        }
 
         return redirect()->route('appointments.index')->with('success', 'Запись отменена');
     }
@@ -686,11 +691,12 @@ class AppointmentsController extends Controller
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'completed']);
 
-        // Отправить уведомление в Telegram
-        TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment);
-
-        // Отправить системное уведомление
-        AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        if (AppointmentNotificationService::shouldNotifyClientOnStatusChange($oldStatus, 'completed')) {
+            TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
+        }
+        if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'completed')) {
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+        }
 
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
     }

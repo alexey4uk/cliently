@@ -70,17 +70,23 @@ class TelegramNotificationService
             return;
         }
 
-        $statusText = match ($appointment->status) {
-            'confirmed' => 'подтверждена',
-            'cancelled' => 'отменена',
-            'completed' => 'завершена',
-            default => 'обновлена',
-        };
-
-        $message = self::formatAppointmentMessage(
-            $appointment,
-            "запись {$statusText}",
-        );
+        if ($appointment->status === 'completed') {
+            $businessName = $appointment->business?->name ?? 'нас';
+            $message = TelegramMessages::format(
+                TelegramMessages::MSG_APPOINTMENT_COMPLETED_FOR_CLIENT,
+                ['business_name' => $businessName],
+            );
+        } else {
+            $statusText = match ($appointment->status) {
+                'confirmed' => 'подтверждена',
+                'cancelled' => 'отменена',
+                default => 'обновлена',
+            };
+            $message = self::formatAppointmentMessage(
+                $appointment,
+                "запись {$statusText}",
+            );
+        }
 
         self::sendMessageForClient(
             $appointment->client->telegram_user_id,

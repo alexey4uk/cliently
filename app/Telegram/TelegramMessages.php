@@ -70,11 +70,17 @@ class TelegramMessages
     public const MSG_APPOINTMENT_CREATED = "✅ Запись создана!\n\nДата: {date}\nВремя: {time}\nУслуга: {service}\nМастер: {master}\nЛокация: {location}\n\nСвяжемся для подтверждения.";
 
     /** Вопрос после создания записи: подтвердить сразу или отменить */
-    public const MSG_CONFIRM_APPOINTMENT_QUESTION = "Подтвердите запись?\n\n✅ Подтвердить — запись будет подтверждена.\n❌ Отменить — запись будет отменена.";
+    public const MSG_CONFIRM_APPOINTMENT_QUESTION = "Подтверждаете запись?";
 
     public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = '✅ Запись подтверждена.';
 
     public const MSG_APPOINTMENT_CANCELLED_BY_YOU = 'Запись отменена.';
+
+    /**
+     * Сообщение клиенту при завершении записи (благодарность).
+     * Плейсхолдер: {business_name}. Варианты: «Спасибо, что выбрали {business_name}!» или «Благодарим за визит в {business_name}!»
+     */
+    public const MSG_APPOINTMENT_COMPLETED_FOR_CLIENT = "✅ Запись завершена.\n\nСпасибо, что выбрали {business_name}! Будем рады видеть вас снова.";
 
     // ==================== СТАТУСЫ ВВОДА (краткий итог перед следующим полем) ====================
     public const MSG_STATUS_NAME = '👤 Имя: {name}';
