@@ -1,8 +1,8 @@
 <section class="py-16 sm:py-20 md:py-24 bg-indigo-600 dark:bg-indigo-700">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">Готовы организовать свой бизнес?</h2>
+        <h2 class="landing-heading landing-section-title text-2xl sm:text-3xl md:text-4xl font-bold text-white">Готовы организовать запись и клиентов?</h2>
         <p class="text-base sm:text-lg text-indigo-100 mb-8">
-            Присоединяйтесь к мастерам, которые уже работают эффективнее с Cliently
+            Онлайн-запись и Telegram-бот — без лишних звонков. Начните бесплатно.
         </p>
         @auth
             <a href="{{ route('dashboard') }}" class="inline-flex items-center px-6 py-3.5 bg-white text-indigo-600 hover:bg-indigo-50 font-semibold rounded-lg transition-colors">

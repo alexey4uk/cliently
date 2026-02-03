@@ -1,8 +1,8 @@
 <section id="faq" class="py-16 sm:py-20 md:py-24 bg-gray-50 dark:bg-gray-900/50">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10 md:mb-12">
-            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">Частые вопросы</h2>
-            <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400">Ответы на самые популярные вопросы о Cliently</p>
+            <h2 class="landing-heading landing-section-title text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Частые вопросы</h2>
+            <p class="landing-section-lead text-base sm:text-lg text-gray-600 dark:text-gray-400 mx-auto">Ответы на самые популярные вопросы о Cliently</p>
         </div>
 
         <div class="space-y-3">
@@ -25,7 +25,7 @@
                 </button>
                 <div class="landing-faq-answer">
                     <div class="px-4 sm:px-5 sm:pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                        Нет! Все функции доступны абсолютно бесплатно. Вы можете добавлять неограниченное количество клиентов, использовать онлайн-запись, напоминания и аналитику без каких-либо ограничений.
+                        Бесплатный тариф даёт всё для старта: один мастер, одна локация, онлайн-запись и бот в Telegram, базовая аналитика. На платных — больше мастеров и локаций, расширенная аналитика и команда. Подробности в разделе <a href="#pricing" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Тарифы</a>.
                     </div>
                 </div>
             </div>

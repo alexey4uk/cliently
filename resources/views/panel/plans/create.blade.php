@@ -98,7 +98,7 @@
                                 name="slug"
                                 value="{{ old('slug') }}"
                                 autocomplete="off"
-                                pattern="[a-z0-9-]+"
+                                pattern="[a-z0-9\-]+"
                                 aria-describedby="slug-help"
                                 class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 transition-all text-sm sm:text-base"
                                 placeholder="bazovyj-tarif"

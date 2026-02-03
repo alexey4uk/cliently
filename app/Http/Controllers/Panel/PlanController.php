@@ -202,7 +202,7 @@ class PlanController extends Controller
      */
     public function edit(Plan $plan)
     {
-        $plan->load('features');
+        $plan->load('features.metric')->loadCount('subscriptions');
 
         $availableFeatures = [
             'integer' => SubscriptionMetric::where('type', 'integer')

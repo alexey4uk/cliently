@@ -10,7 +10,7 @@
 
 @section('content')
 
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8" x-data="{ showCancelModal: false, showRenewModal: false }">
     <!-- Информация о текущем тарифе -->
     <div class="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden mb-6 sm:mb-8">
         <!-- Заголовок карточки -->
@@ -122,9 +122,9 @@
             <!-- Действия -->
             <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
                 @if($canManageSubscription && $subscription->plan->price && $subscription->plan->price > 0)
-                    <form action="{{ route('subscription.renew') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
+                    <form id="subscription-renew-form" action="{{ route('subscription.renew') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
                         @csrf
-                        <button type="submit"
+                        <button type="button" @click="showRenewModal = true"
                             class="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg">
                             <i class="fa-solid fa-rotate shrink-0"></i>
                             <span>Продлить подписку</span>
@@ -138,9 +138,9 @@
                 </a>
                 {{-- Кнопка «Отменить подписку» только если в БД реально платный тариф (не период после перехода на бесплатный) --}}
                 @if($canManageSubscription && !$subscription->isCancelled() && $subscription->plan->slug !== 'free')
-                    <form action="{{ route('subscription.cancel') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
+                    <form id="subscription-cancel-form" action="{{ route('subscription.cancel') }}" method="POST" class="w-full sm:w-auto sm:flex-initial">
                         @csrf
-                        <button type="submit" onclick="return confirm('Вы уверены, что хотите отменить подписку? Она будет активна до окончания текущего периода ({{ $subscription->ends_at ? $subscription->ends_at->format('d.m.Y') : 'даты окончания' }}).');"
+                        <button type="button" @click="showCancelModal = true"
                             class="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-red-600 hover:dark:bg-red-600 text-slate-800 dark:text-slate-200 hover:text-white rounded-xl font-semibold transition-all duration-200">
                             <i class="fa-solid fa-times-circle shrink-0"></i>
                             <span>Отменить подписку</span>
@@ -269,6 +269,108 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Модальное окно подтверждения отмены подписки (внутри x-data) --}}
+    @if($canManageSubscription && !$subscription->isCancelled() && $subscription->plan->slug !== 'free')
+        <div x-show="showCancelModal"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+             @keydown.escape.window="showCancelModal = false"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="cancel-modal-title">
+            <div x-show="showCancelModal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md w-full overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-exclamation-triangle text-orange-600 dark:text-orange-400 text-xl"></i>
+                        </div>
+                        <h2 id="cancel-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Отменить подписку?</h2>
+                    </div>
+                </div>
+                <div class="px-6 py-5">
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
+                        Подписка останется активной до окончания оплаченного периода ({{ $subscription->ends_at ? $subscription->ends_at->format('d.m.Y') : 'даты окончания' }}). После этой даты доступ к платным функциям будет ограничен.
+                    </p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center justify-end gap-3">
+                    <button type="button" @click="showCancelModal = false"
+                        class="px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        Нет, оставить
+                    </button>
+                    <button type="button" @click="document.getElementById('subscription-cancel-form').submit(); showCancelModal = false"
+                        class="px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                        Да, отменить подписку
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Модальное окно подтверждения продления подписки --}}
+    @if($canManageSubscription && $subscription->plan->price && $subscription->plan->price > 0)
+        <div x-show="showRenewModal"
+             x-cloak
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+             @keydown.escape.window="showRenewModal = false"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="renew-modal-title">
+            <div x-show="showRenewModal"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md w-full overflow-hidden">
+                <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-rotate text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <h2 id="renew-modal-title" class="text-lg font-bold text-slate-900 dark:text-white">Продлить подписку?</h2>
+                    </div>
+                </div>
+                <div class="px-6 py-5">
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
+                        Будет создан счёт на оплату тарифа «{{ $plan->name }}» — {{ number_format($plan->price, 0, ',', ' ') }} BYN ({{ $plan->interval === 'monthly' ? 'в месяц' : 'в год' }}). После оплаты подписка будет продлена.
+                    </p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center justify-end gap-3">
+                    <button type="button" @click="showRenewModal = false"
+                        class="px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        Отмена
+                    </button>
+                    <button type="button" @click="document.getElementById('subscription-renew-form').submit(); showRenewModal = false"
+                        class="px-4 py-2.5 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+                        Да, продлить подписку
+                    </button>
                 </div>
             </div>
         </div>

@@ -63,27 +63,25 @@
         }
     }">
 
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {{-- Hero --}}
-        <div class="text-center mb-8 sm:mb-12 lg:mb-16">
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
-                Выберите тариф
-            </h1>
-            <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto px-2">
-                Все необходимые инструменты для эффективного управления салоном или студией
-            </p>
-        </div>
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8">
+        {{-- Заголовок в одну строку, без лишнего блока --}}
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
+            Выберите тариф
+        </h1>
 
-        {{-- Plan cards: 1 план — центр, 2 — две колонки, 3+ — три колонки --}}
+        {{-- План карточек: сетка под 1, 2, 3, 4, 5+ тарифов --}}
         @php
             $planCount = $plans->count();
-            $gridClass = match (true) {
-                $planCount === 1 => 'grid grid-cols-1 max-w-md mx-auto',
-                $planCount === 2 => 'grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto',
-                default => 'grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6',
+            $gridClass = match ($planCount) {
+                1 => 'grid grid-cols-1 max-w-md gap-3 sm:gap-4',
+                2 => 'grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 max-w-4xl mx-auto',
+                3 => 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto',
+                4 => 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4',
+                5 => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-6xl mx-auto',
+                default => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4',
             };
         @endphp
-        <div id="plans-grid" class="{{ $gridClass }} mb-8 sm:mb-12">
+        <div id="plans-grid" class="{{ $gridClass }}">
             @foreach($plans as $plan)
                 @php
                     $isCurrent = $currentPlan && $currentPlan->id === $plan->id;
@@ -99,112 +97,6 @@
                     :has-active-paid-subscription="$hasActivePaidSubscription ?? false"
                 />
             @endforeach
-        </div>
-
-        {{-- Comparison table --}}
-        <div class="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
-            <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">Сравнение тарифов</h2>
-                <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Детальное сравнение всех возможностей</p>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-50 dark:bg-slate-800/50 border-b-2 border-slate-200 dark:border-slate-700">
-                            <th class="px-4 sm:px-6 py-4 text-left text-sm font-bold text-slate-900 dark:text-white sticky left-0 bg-slate-50 dark:bg-slate-800/50 z-10">
-                                Функция
-                            </th>
-                            @foreach($plans as $plan)
-                                <th class="px-4 sm:px-6 py-4 text-center text-sm font-bold text-slate-900 dark:text-white min-w-[120px]">
-                                    {{ $plan->name }}
-                                </th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
-                        <tr class="bg-slate-100/50 dark:bg-slate-800/30">
-                            <td colspan="{{ count($plans) + 1 }}" class="px-4 sm:px-6 py-3">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-list-check text-slate-500 dark:text-slate-400"></i>
-                                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Лимиты и квоты</span>
-                                </div>
-                            </td>
-                        </tr>
-                        @foreach($integerMetricsList as $metric)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                                <td class="px-4 sm:px-6 py-3 text-sm text-slate-900 dark:text-white font-semibold sticky left-0 bg-white dark:bg-slate-900 z-10">
-                                    <div class="flex items-center gap-2">
-                                        @if($metric->icon)
-                                            <i class="{{ $metric->icon }} text-slate-500 dark:text-slate-400"></i>
-                                        @endif
-                                        <span>{{ $metric->label }}</span>
-                                    </div>
-                                </td>
-                                @foreach($plans as $plan)
-                                    @php
-                                        $value = $plan->getFeatureValue($metric->key);
-                                        $isPopularPlan = $plan->slug === 'basic';
-                                        $isCurrentPlan = $currentPlan && $currentPlan->id === $plan->id;
-                                        $displayValue = $value === null ? '<span class="text-slate-400">—</span>' : match(true) {
-                                            $value === -1 => '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">Безлимит</span>',
-                                            $value === true => '<i class="fa-solid fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>',
-                                            $value === false => '<i class="fa-solid fa-times-circle text-slate-300 dark:text-slate-600 text-lg"></i>',
-                                            is_numeric($value) => '<span class="text-sm font-bold text-slate-900 dark:text-white">' . number_format((int) $value, 0, ',', ' ') . '</span>',
-                                            default => '<span class="text-slate-400">—</span>'
-                                        };
-                                        $cellBg = '';
-                                        if ($isPopularPlan) $cellBg = 'bg-indigo-50/30 dark:bg-indigo-900/10';
-                                        if ($isCurrentPlan) $cellBg = 'bg-indigo-50/30 dark:bg-indigo-900/10';
-                                    @endphp
-                                    <td class="px-4 sm:px-6 py-3 text-center {{ $cellBg }}">
-                                        {!! $displayValue !!}
-                                    </td>
-                                @endforeach
-                            </tr>
-                        @endforeach
-                        @if($booleanMetricsList->count() > 0)
-                            <tr class="bg-slate-100/50 dark:bg-slate-800/30">
-                                <td colspan="{{ count($plans) + 1 }}" class="px-4 sm:px-6 py-3">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-star text-slate-500 dark:text-slate-400"></i>
-                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Дополнительные возможности</span>
-                                    </div>
-                                </td>
-                            </tr>
-                            @foreach($booleanMetricsList as $metric)
-                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
-                                    <td class="px-4 sm:px-6 py-3 text-sm text-slate-900 dark:text-white font-semibold sticky left-0 bg-white dark:bg-slate-900 z-10">
-                                        <div class="flex items-center gap-2">
-                                            @if($metric->icon)
-                                                <i class="{{ $metric->icon }} text-slate-500 dark:text-slate-400"></i>
-                                            @endif
-                                            <span>{{ $metric->label }}</span>
-                                        </div>
-                                    </td>
-                                    @foreach($plans as $plan)
-                                        @php
-                                            $value = $plan->getFeatureValue($metric->key);
-                                            $isPopularPlan = $plan->slug === 'basic';
-                                            $isCurrentPlan = $currentPlan && $currentPlan->id === $plan->id;
-                                            $displayValue = $value === null
-                                                ? '<span class="text-slate-400">—</span>'
-                                                : ($value === true
-                                                    ? '<i class="fa-solid fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>'
-                                                    : '<i class="fa-solid fa-times-circle text-slate-300 dark:text-slate-600 text-lg"></i>');
-                                            $cellBg = '';
-                                            if ($isPopularPlan) $cellBg = 'bg-indigo-50/30 dark:bg-indigo-900/10';
-                                            if ($isCurrentPlan) $cellBg = 'bg-indigo-50/30 dark:bg-indigo-900/10';
-                                        @endphp
-                                        <td class="px-4 sm:px-6 py-3 text-center {{ $cellBg }}">
-                                            {!! $displayValue !!}
-                                        </td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        @endif
-                    </tbody>
-                </table>
-            </div>
         </div>
 
         {{-- Confirm modal (paid with trial only) --}}
