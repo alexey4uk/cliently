@@ -94,7 +94,7 @@ class MasterSettingsController extends Controller
             'business' => $business,
             'locations' => $business->locations,
             'services' => $business->services,
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 
@@ -198,7 +198,7 @@ class MasterSettingsController extends Controller
             'master' => $master,
             'locations' => $business->locations,
             'services' => $business->services,
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 

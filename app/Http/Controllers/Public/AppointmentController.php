@@ -318,7 +318,10 @@ class AppointmentController extends Controller
                 'email' => $validated['email'] ?? null,
             ]);
 
-            $countryId = isset($validated['phone_country_id']) ? (int) $validated['phone_country_id'] : \App\Models\Country::where('code', 'BY')->value('id');
+            $country = isset($validated['phone_country_id'])
+                ? \App\Models\Country::find($validated['phone_country_id'])
+                : \App\Models\Country::findByPhonePrefix($validated['phone']);
+            $countryId = $country?->id ?? \App\Models\Country::where('code', 'BY')->value('id');
             if ($countryId) {
                 $client->phones()->create([
                     'country_id' => $countryId,

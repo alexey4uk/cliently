@@ -126,7 +126,7 @@ class MasterController extends Controller
                 ->get();
         }
 
-        $countries = Country::getCached();
+        $countries = Country::getForPhoneSelect();
 
         return view(
             'panel.masters.edit',

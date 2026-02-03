@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('currency', 10)->nullable();
             $table->string('currency_symbol', 10)->nullable();
             $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_for_phone_select')->default(false)->index();
             $table->string('ioc', 3)->nullable();
 
             $table->timestamps();

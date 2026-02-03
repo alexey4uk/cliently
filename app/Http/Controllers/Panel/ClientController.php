@@ -92,7 +92,7 @@ class ClientController extends Controller
     public function create()
     {
         $businesses = $this->businessRepository->getAllForFilter();
-        $countries = Country::getCached();
+        $countries = Country::getForPhoneSelect();
 
         return view('panel.clients.create', compact('businesses', 'countries'));
     }
@@ -131,7 +131,7 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         $businesses = $this->businessRepository->getAllForFilter();
-        $countries = Country::getCached();
+        $countries = Country::getForPhoneSelect();
 
         return view('panel.clients.edit', compact('client', 'businesses', 'countries'));
     }

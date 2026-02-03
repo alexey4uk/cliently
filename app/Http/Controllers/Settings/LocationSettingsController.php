@@ -83,7 +83,7 @@ class LocationSettingsController extends Controller
 
         return view('settings.locations.create', [
             'business' => $business,
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 
@@ -151,7 +151,7 @@ class LocationSettingsController extends Controller
         return view('settings.locations.edit', [
             'business' => $business,
             'location' => $location,
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 
