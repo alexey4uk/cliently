@@ -24,6 +24,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
             $table->string('source')->nullable();
             $table->text('notes')->nullable();
+            $table->timestamp('reminder_sent_at')->nullable();
             $table->integer('duration')->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->timestamps();

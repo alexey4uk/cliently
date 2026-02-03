@@ -16,3 +16,6 @@ Schedule::command('subscription:reset-monthly')->monthlyOn(1, '00:00');
 Schedule::command('business:notify-inactive')->daily();
 Schedule::command('ticket:notify-critical')->daily();
 Schedule::command('notifications:clean')->dailyAt('03:00');
+Schedule::command('appointment:notify-reminder')->hourly();
+Schedule::command('appointment:notify-reengagement')->weeklyOn(1, '09:00');
+Schedule::command('appointment:cancel-expired-pending')->hourly();

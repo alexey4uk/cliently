@@ -120,6 +120,58 @@ class TelegramNotificationService
     }
 
     /**
+     * Отправить клиенту напоминание о предстоящей записи (за N часов до визита).
+     *
+     * @return bool true если отправлено
+     */
+    public static function sendAppointmentReminderToClient(Appointment $appointment): bool
+    {
+        if (! $appointment->client->telegram_user_id) {
+            return false;
+        }
+
+        $appointment->loadMissing(['business', 'service', 'master']);
+        $business = $appointment->business;
+        $masterName = $appointment->master
+            ? $appointment->master->first_name.' '.$appointment->master->last_name
+            : 'Мастер не назначен';
+
+        $message = TelegramMessages::format(TelegramMessages::MSG_APPOINTMENT_REMINDER, [
+            'business_name' => $business?->name ?? 'Салон',
+            'date' => $appointment->date->format('d.m.Y'),
+            'time' => \Carbon\Carbon::parse($appointment->time)->format('H:i'),
+            'service' => $appointment->service?->name ?? 'Услуга',
+            'master' => $masterName,
+        ]);
+
+        self::sendMessageForClient((string) $appointment->client->telegram_user_id, $message);
+
+        return true;
+    }
+
+    /**
+     * Отправить клиенту приглашение записаться снова (повторная запись).
+     *
+     * @return bool true если отправлено
+     */
+    public static function sendReengagementToClient(\App\Models\Client $client, \App\Models\Business $business): bool
+    {
+        if (! $client->telegram_user_id) {
+            return false;
+        }
+
+        $bookingUrl = config('app.url').'/book/'.$business->slug;
+        $message = TelegramMessages::format(TelegramMessages::MSG_REENGAGEMENT, [
+            'business_name' => $business->name,
+            'booking_url' => $bookingUrl,
+        ]);
+
+        self::sendMessageForClient((string) $client->telegram_user_id, $message);
+
+        return true;
+    }
+
+    /**
      * Форматировать сообщение о назначении
      */
     private static function formatAppointmentMessage(

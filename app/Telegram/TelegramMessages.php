@@ -82,6 +82,12 @@ class TelegramMessages
      */
     public const MSG_APPOINTMENT_COMPLETED_FOR_CLIENT = "✅ Запись завершена.\n\nСпасибо, что выбрали {business_name}! Будем рады видеть вас снова.";
 
+    /** Напоминание о предстоящей записи (клиенту). Плейсхолдеры: business_name, date, time, service, master */
+    public const MSG_APPOINTMENT_REMINDER = "⏰ Напоминание от {business_name}\n\nВаша запись:\n📅 {date}\n🕐 {time}\n✂️ {service}\n👤 {master}\n\nЖдём вас!";
+
+    /** Приглашение записаться снова. Плейсхолдеры: business_name, booking_url */
+    public const MSG_REENGAGEMENT = "👋 {business_name}\n\nСкучаем! Давно не виделись — будем рады снова вас видеть.\n\nЗаписаться: {booking_url}";
+
     // ==================== СТАТУСЫ ВВОДА (краткий итог перед следующим полем) ====================
     public const MSG_STATUS_NAME = '👤 Имя: {name}';
 

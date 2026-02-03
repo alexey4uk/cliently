@@ -123,6 +123,25 @@ return [
         'chunk_size' => (int) env('NOTIFICATION_CLEANUP_CHUNK_SIZE', 2000),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Напоминание о записи (клиенту за N часов до визита)
+    |--------------------------------------------------------------------------
+    */
+    'reminder_hours_before' => (int) env('APPOINTMENT_REMINDER_HOURS_BEFORE', 24),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Повторная запись (приглашение вернуться)
+    |--------------------------------------------------------------------------
+    | days_since_last: напоминать клиентам, у которых последняя завершённая запись была N дней назад.
+    | cooldown_days: не слать одному клиенту чаще чем раз в N дней.
+    */
+    'reengagement' => [
+        'days_since_last' => (int) env('REENGAGEMENT_DAYS_SINCE_LAST', 30),
+        'cooldown_days' => (int) env('REENGAGEMENT_COOLDOWN_DAYS', 30),
+    ],
+
     'admin_type_permissions' => [
         'admin.business.created' => 'panel.businesses.view',
         'admin.business.deleted' => 'panel.businesses.view',

@@ -28,6 +28,7 @@ return new class extends Migration
             $table->text('comment')->nullable();
 
             $table->string('telegram_user_id')->nullable();
+            $table->timestamp('last_reengagement_sent_at')->nullable();
             $table->timestamps();
 
             $table->index(['business_id', 'last_name', 'first_name'], 'idx_clients_search');

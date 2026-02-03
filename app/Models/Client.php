@@ -21,6 +21,11 @@ class Client extends Model
         'phone_country_code',
         'email',
         'telegram_user_id',
+        'last_reengagement_sent_at',
+    ];
+
+    protected $casts = [
+        'last_reengagement_sent_at' => 'datetime',
     ];
 
     public function business(): BelongsTo

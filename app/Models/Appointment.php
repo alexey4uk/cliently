@@ -26,10 +26,12 @@ class Appointment extends Model
         'duration',
         'price',
         'token',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'reminder_sent_at' => 'datetime',
     ];
 
     protected static function boot()
