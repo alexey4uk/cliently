@@ -242,7 +242,7 @@ class SubscriptionController extends Controller
 
         // Используем subscription, а не activeSubscription, чтобы показывать даже истекшие подписки
         // Это нужно для возможности продления истекших подписок
-        $subscription = $user->subscription;
+        $subscription = $user->subscription()->with(['plan', 'invoices'])->first();
 
         if (! $subscription) {
             return redirect()->route('subscription.index')
@@ -269,9 +269,6 @@ class SubscriptionController extends Controller
                 ];
             })
             ->all();
-
-        // Загружаем инвойсы для подписки
-        $subscription->load('invoices');
 
         $role = $this->getCurrentBusinessRole();
         $canManageSubscription = $role && app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.subscription.manage');

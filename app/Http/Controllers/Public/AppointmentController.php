@@ -96,6 +96,7 @@ class AppointmentController extends Controller
         // 1. Работают в выбранной локации
         // 2. Предоставляют выбранную услугу
         $masters = $location->masters()
+            ->with('services')
             ->where('is_active', true)
             ->whereHas('services', function ($q) use ($serviceId) {
                 $q->where('services.id', $serviceId);
@@ -106,6 +107,7 @@ class AppointmentController extends Controller
         // Если нет мастеров с услугой в локации, показываем всех мастеров локации
         if ($masters->isEmpty()) {
             $masters = $location->masters()
+                ->with('services')
                 ->where('is_active', true)
                 ->orderBy('first_name')
                 ->get();
@@ -114,6 +116,7 @@ class AppointmentController extends Controller
         // Если все еще нет мастеров, показываем всех мастеров бизнеса, которые предоставляют услугу
         if ($masters->isEmpty()) {
             $masters = $business->masters()
+                ->with('services')
                 ->where('is_active', true)
                 ->whereHas('services', function ($q) use ($serviceId) {
                     $q->where('services.id', $serviceId);
