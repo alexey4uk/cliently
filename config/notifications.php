@@ -37,7 +37,6 @@ return [
             'appointment.created' => 'Новая запись',
             'appointment.status_changed' => 'Изменение статуса записи',
             'appointment.upcoming' => 'Приближающаяся запись',
-            'appointment.cancelled' => 'Отмена записи',
             'client.new' => 'Новый клиент',
         ],
         'tickets' => [
