@@ -149,10 +149,20 @@
                         </div>
 
                         <div class="space-y-1" id="masters-container">
+                            <label class="flex items-center justify-between p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors master-option master-option-any hidden" data-master-id="any">
+                                <div class="flex items-center gap-3 flex-1 min-w-0">
+                                    <input type="radio" name="master_id" value="" required class="mt-0 mr-0 master-radio flex-shrink-0" {{ !old('master_id') ? 'checked' : '' }}>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-slate-900 dark:text-white text-sm">Любой мастер</div>
+                                        <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Вам назначат свободного мастера</div>
+                                    </div>
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-slate-400 text-sm flex-shrink-0 ml-3"></i>
+                            </label>
                             @foreach($masters as $master)
                                 <label class="flex items-center justify-between p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors master-option hidden" data-master-id="{{ $master->id }}" data-master-services="{{ $master->services->pluck('id')->implode(',') }}">
                                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <input type="radio" name="master_id" value="{{ $master->id }}" required class="mt-0 mr-0 master-radio flex-shrink-0" {{ old('master_id') == $master->id ? 'checked' : '' }}>
+                                        <input type="radio" name="master_id" value="{{ $master->id }}" class="mt-0 mr-0 master-radio flex-shrink-0" {{ old('master_id') == $master->id ? 'checked' : '' }}>
                                         <div class="flex-1 min-w-0">
                                             <div class="font-semibold text-slate-900 dark:text-white text-sm break-words">{{ $master->first_name }} {{ $master->last_name }}</div>
                                             @if($master->specialization)
@@ -202,7 +212,7 @@
                                 <select id="time" name="time" required
                                         class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('time') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
                                         disabled>
-                                    <option value="">Сначала выберите услугу, мастера и дату</option>
+                                    <option value="">Сначала выберите услугу, мастера (или «Любой мастер») и дату</option>
                                 </select>
                                 <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400"></div>
                                 @error('time')
@@ -359,11 +369,12 @@
                         const masterId = document.querySelector('input[name="master_id"]:checked')?.value;
                         const date = document.getElementById('date').value;
                         
-                        if (serviceId && locationId && masterId && date) {
+                        const masterChecked = document.querySelector('input[name="master_id"]:checked');
+                        if (serviceId && locationId && masterChecked && date) {
                             loadAvailableSlots();
                         } else {
                             console.log('Не все поля выбраны для загрузки слотов:', {
-                                serviceId, locationId, masterId, date
+                                serviceId, locationId, masterId: masterChecked?.value, date
                             });
                         }
                     }, 100);
@@ -375,18 +386,22 @@
                 const serviceId = document.querySelector('input[name="service_id"]:checked')?.value;
                 
                 if (!serviceId) {
-                    // Hide all masters
                     document.querySelectorAll('.master-option[data-master-id]').forEach(option => {
+                        option.classList.add('hidden');
+                    });
+                    document.querySelectorAll('.master-option-any').forEach(option => {
                         option.classList.add('hidden');
                     });
                     return;
                 }
 
-                let visibleMastersCount = 0;
+                // «Любой мастер» показываем всегда при выбранной услуге
+                document.querySelectorAll('.master-option-any').forEach(option => {
+                    option.classList.remove('hidden');
+                });
 
-                // Show masters that provide this service
-                // Используем data-атрибут для быстрой проверки
-                document.querySelectorAll('.master-option[data-master-id]').forEach(option => {
+                let visibleMastersCount = 0;
+                document.querySelectorAll('.master-option[data-master-id]:not(.master-option-any)').forEach(option => {
                     const masterServices = option.getAttribute('data-master-services');
                     const serviceIds = masterServices ? masterServices.split(',').map(id => parseInt(id.trim())) : [];
                     
@@ -395,7 +410,6 @@
                         visibleMastersCount++;
                     } else {
                         option.classList.add('hidden');
-                        // Снимаем выбор, если мастер был выбран, но не предоставляет услугу
                         const radio = option.querySelector('.master-radio');
                         if (radio && radio.checked) {
                             radio.checked = false;
@@ -426,11 +440,11 @@
                     return;
                 }
 
-                // Мастер и локация обязательны
-                if (!masterId) {
+                const masterSelected = document.querySelector('input[name="master_id"]:checked');
+                if (!masterSelected) {
                     timeSelect.innerHTML = '<option value="">Сначала выберите мастера</option>';
                     timeSelect.disabled = true;
-                    timeError.textContent = 'Пожалуйста, выберите мастера для продолжения.';
+                    timeError.textContent = 'Пожалуйста, выберите мастера или «Любой мастер».';
                     timeError.classList.remove('hidden');
                     return;
                 }
@@ -576,8 +590,8 @@
                 }
                 if (step === 3) {
                     const masterSelected = document.querySelector('input[name="master_id"]:checked');
-                    if (!masterSelected || !masterSelected.value) {
-                        alert('Пожалуйста, выберите мастера');
+                    if (!masterSelected) {
+                        alert('Пожалуйста, выберите мастера или «Любой мастер»');
                         return false;
                     }
                 }
@@ -616,9 +630,10 @@
                 radio.addEventListener('change', () => {
                     if (currentStep >= 3) {
                         loadMastersForService();
-                        // Сбрасываем выбор мастера при смене услуги
+                        // Сбрасываем выбор мастера при смене услуги, по умолчанию «Любой мастер»
+                        const anyMasterRadio = document.querySelector('.master-option-any .master-radio');
                         document.querySelectorAll('.master-radio').forEach(masterRadio => {
-                            masterRadio.checked = false;
+                            masterRadio.checked = masterRadio === anyMasterRadio;
                         });
                     }
                 });

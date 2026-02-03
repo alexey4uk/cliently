@@ -7,15 +7,16 @@
     <div class="flex-1 overflow-x-hidden">
         <div class="max-w-3xl lg:max-w-3xl mx-auto sm:px-0">
 
-            <x-breadcrumbs-public-book :business="$business" currentStep="time" :location="$location" :service="$service"
-                :master="$master" />
+            <x-breadcrumbs-public-book :business="$business" currentStep="time" :location="$location" :service="$service" />
 
             <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" id="appointment-form"
                 class="space-y-6">
                 @csrf
                 <input type="hidden" name="location_id" value="{{ $location->id }}">
                 <input type="hidden" name="service_id" value="{{ $service->id }}">
+                @if(isset($master) && $master)
                 <input type="hidden" name="master_id" value="{{ $master->id }}">
+                @endif
                 <input type="hidden" name="date" value="{{ $date }}" id="selected-date-input">
                 <input type="hidden" name="time" value="" id="selected-time-input">
 

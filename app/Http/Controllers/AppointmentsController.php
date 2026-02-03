@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AppointmentRequest;
 use App\Models\Appointment;
+use App\Models\Master;
 use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
 use App\Services\AppointmentNotificationService;
+use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
 use App\Services\TelegramNotificationService;
 use App\Traits\HasOwnDataFiltering;
@@ -363,10 +365,53 @@ class AppointmentsController extends Controller
         $permissionService = app(BusinessRolePermissionService::class);
         $canUpdateAppointments = $role && $permissionService->hasPermission($role->id, 'client.appointments.update');
 
+        // Мастера с свободным слотом на дату и время записи (для быстрого назначения)
+        $mastersForAssign = collect();
+        if ($canUpdateAppointments && ! $appointment->master_id && ! in_array($appointment->status, ['cancelled', 'completed'], true)) {
+            $candidates = $business->masters()
+                ->where('is_active', true)
+                ->whereHas('services', fn ($q) => $q->where('services.id', $appointment->service_id))
+                ->orderBy('first_name')
+                ->get();
+            $dateStr = $appointment->date->format('Y-m-d');
+            $date = Carbon::parse($dateStr);
+            $timeStr = Carbon::parse($appointment->time)->format('H:i');
+            $duration = (int) $appointment->final_duration;
+
+            $mastersForAssign = $candidates->filter(function (Master $master) use ($appointment, $date, $timeStr, $duration) {
+                if ($master->isDayOff($date)) {
+                    return false;
+                }
+                $workingTime = $master->getWorkingTimeForDate($date);
+                if (! $workingTime) {
+                    return false;
+                }
+                $startTime = Carbon::parse($timeStr);
+                $endTime = $startTime->copy()->addMinutes($duration);
+                $workStart = Carbon::parse($workingTime['from']);
+                $workEnd = Carbon::parse($workingTime['to']);
+                if ($startTime->lt($workStart) || $endTime->gt($workEnd)) {
+                    return false;
+                }
+                if (Appointment::hasConflictForMaster(
+                    (int) $master->id,
+                    $date,
+                    $timeStr,
+                    $duration,
+                    (int) $appointment->id
+                )) {
+                    return false;
+                }
+
+                return true;
+            })->values();
+        }
+
         return view('appointments.show', [
             'business' => $business,
             'appointment' => $appointment,
             'canUpdateAppointments' => $canUpdateAppointments,
+            'mastersForAssign' => $mastersForAssign,
         ]);
     }
 
@@ -445,6 +490,84 @@ class AppointmentsController extends Controller
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись обновлена');
+    }
+
+    /**
+     * Быстрое назначение мастера для записи (без мастера).
+     */
+    public function assignMaster(Request $request, Appointment $appointment)
+    {
+        $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+        if ($redirect) {
+            return $redirect;
+        }
+
+        $business = $this->getCurrentBusiness();
+        $role = $this->getCurrentBusinessRole();
+
+        if (! $role || ! app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.appointments.update')) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет прав на редактирование записей.');
+        }
+
+        if ($role && ! $this->canViewAppointment($business, $role->id, 'client.appointments.view', $appointment->id)) {
+            return redirect()->route('appointments.index')
+                ->with('error', 'У вас нет доступа к этой записи.');
+        }
+
+        $validated = $request->validate([
+            'master_id' => ['required', 'exists:masters,id'],
+        ]);
+
+        $master = Master::where('id', $validated['master_id'])
+            ->where('business_id', $business->id)
+            ->first();
+
+        if (! $master) {
+            return redirect()->back()->withInput()->withErrors(['master_id' => 'Мастер не найден.']);
+        }
+
+        if (! $master->services()->where('services.id', $appointment->service_id)->exists()) {
+            return redirect()->back()->withInput()->withErrors(['master_id' => 'Выбранный мастер не предоставляет эту услугу.']);
+        }
+
+        // Проверяем расписание мастера: рабочий день и время записи в пределах смены
+        $appointmentDate = Carbon::parse($appointment->date);
+        if ($master->isDayOff($appointmentDate)) {
+            return redirect()->back()->withInput()->withErrors(['master_id' => 'В выбранную дату мастер не работает.']);
+        }
+
+        $workingTime = $master->getWorkingTimeForDate($appointmentDate);
+        if ($workingTime) {
+            $startTime = Carbon::parse($appointment->time);
+            $endTime = $startTime->copy()->addMinutes($appointment->final_duration);
+            $workStart = Carbon::parse($workingTime['from']);
+            $workEnd = Carbon::parse($workingTime['to']);
+
+            if ($startTime->lt($workStart) || $endTime->gt($workEnd)) {
+                return redirect()->back()->withInput()->withErrors(['master_id' => 'Время записи выходит за рамки рабочего времени мастера.']);
+            }
+        }
+
+        if (Appointment::hasConflictForMaster(
+            (int) $master->id,
+            $appointment->date,
+            $appointment->time,
+            $appointment->final_duration,
+            $appointment->id
+        )) {
+            return redirect()->back()->withInput()->withErrors(['master_id' => 'У мастера в это время уже есть запись.']);
+        }
+
+        $appointment->update(['master_id' => $master->id]);
+
+        $fromShow = $request->get('from') === 'show';
+
+        if ($fromShow) {
+            return redirect()->route('appointments.show', $appointment)->with('success', 'Мастер назначен.');
+        }
+
+        return redirect()->route('appointments.index')->with('success', 'Мастер назначен.');
     }
 
     /**

@@ -132,9 +132,13 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
                 $q->where('service_id', $filters['service_id']);
             }
 
-            // Фильтр по мастеру
-            if (! empty($filters['master_id'])) {
-                $q->where('master_id', $filters['master_id']);
+            // Фильтр по мастеру (значение 'unassigned' — записи без мастера)
+            if (isset($filters['master_id'])) {
+                if ($filters['master_id'] === 'unassigned') {
+                    $q->whereNull('master_id');
+                } elseif ($filters['master_id'] !== '' && $filters['master_id'] !== null) {
+                    $q->where('master_id', $filters['master_id']);
+                }
             }
 
             return $q;
@@ -204,9 +208,13 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             ->orderBy('date', 'asc')
             ->orderBy('time', 'asc');
 
-        // Фильтр по мастеру - если передан в параметрах
-        if (! empty($filters['master_id'])) {
-            $query->where('master_id', $filters['master_id']);
+        // Фильтр по мастеру ('unassigned' — без мастера)
+        if (isset($filters['master_id'])) {
+            if ($filters['master_id'] === 'unassigned') {
+                $query->whereNull('master_id');
+            } elseif ($filters['master_id'] !== '' && $filters['master_id'] !== null) {
+                $query->where('master_id', $filters['master_id']);
+            }
         }
 
         return $query->get();
@@ -239,9 +247,13 @@ class AppointmentRepository extends BaseRepository implements AppointmentReposit
             $query->where('service_id', $filters['service_id']);
         }
 
-        // Фильтр по мастеру
-        if (isset($filters['master_id']) && $filters['master_id']) {
-            $query->where('master_id', $filters['master_id']);
+        // Фильтр по мастеру ('unassigned' — без мастера)
+        if (isset($filters['master_id'])) {
+            if ($filters['master_id'] === 'unassigned') {
+                $query->whereNull('master_id');
+            } elseif ($filters['master_id'] !== '' && $filters['master_id'] !== null) {
+                $query->where('master_id', $filters['master_id']);
+            }
         }
 
         // Поиск

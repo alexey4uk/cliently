@@ -35,12 +35,14 @@
             </div>
             @endif
             
-            @if(isset($appointment->master))
             <div>
                 <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Мастер</span>
+                @if(isset($appointment->master) && $appointment->master)
                 <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</p>
+                @else
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-600 dark:text-slate-400">Будет назначен</p>
+                @endif
             </div>
-            @endif
             
             @if(isset($appointment->location))
             <div>

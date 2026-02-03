@@ -214,6 +214,60 @@ class AppointmentController extends Controller
     }
 
     /**
+     * Шаг 4 (альт.): Выбор даты и времени — любой мастер
+     */
+    public function selectTimeAny(string $slug, $locationId, $serviceId)
+    {
+        $business = $this->businessRepository->findBySlug($slug);
+        if (! $business) {
+            abort(404);
+        }
+
+        if ($business->online_booking_enabled === false) {
+            return view('appointments.public.disabled', compact('business'));
+        }
+
+        $location = $business->locations()->findOrFail($locationId);
+        $service = $business->services()->findOrFail($serviceId);
+
+        $date = request()->get('date', Carbon::today()->format('Y-m-d'));
+        $selectedDate = Carbon::parse($date);
+
+        if ($selectedDate->isPast() && ! $selectedDate->isToday()) {
+            return redirect()->route('public.appointments.select-time-any', [
+                'slug' => $slug,
+                'locationId' => $locationId,
+                'serviceId' => $serviceId,
+                'date' => Carbon::today()->format('Y-m-d'),
+            ]);
+        }
+
+        $endOfNextMonth = Carbon::today()->endOfMonth()->addMonth()->endOfMonth();
+        $result = $this->slotService->getAvailableSlotsWithCalendarForAnyMaster(
+            $service,
+            (int) $locationId,
+            $selectedDate,
+            Carbon::today(),
+            $endOfNextMonth,
+        );
+
+        $availableSlots = $result['slots'];
+        $datesWithSlots = $result['calendar'];
+        $master = null;
+
+        return view('appointments.public.select-time', compact(
+            'business',
+            'location',
+            'service',
+            'master',
+            'selectedDate',
+            'availableSlots',
+            'date',
+            'datesWithSlots'
+        ))->with('currentStep', 4);
+    }
+
+    /**
      * Найти ближайшую дату со слотами
      *
      * @param  int  $serviceId  ID услуги
@@ -340,12 +394,12 @@ class AppointmentController extends Controller
             ]);
         }
 
-        // Создаем запись
+        // Создаем запись (master_id может быть null при записи «к любому мастеру»)
         $appointment = Appointment::create([
             'business_id' => $business->id,
             'client_id' => $client->id,
             'service_id' => $validated['service_id'],
-            'master_id' => $validated['master_id'],
+            'master_id' => $validated['master_id'] ?? null,
             'location_id' => $validated['location_id'],
             'date' => $validated['date'],
             'time' => $validated['time'],

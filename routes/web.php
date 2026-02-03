@@ -69,7 +69,7 @@ Route::prefix('book/{slug}')
             'selectService',
         ])->name('select-service');
 
-        // Шаг 4: Выбор даты и времени
+        // Шаг 4: Выбор даты и времени (конкретный мастер)
         Route::get(
             '/location/{locationId}/service/{serviceId}/master/{masterId}',
             [
@@ -77,6 +77,15 @@ Route::prefix('book/{slug}')
                 'selectTime',
             ],
         )->name('select-time');
+
+        // Шаг 4 (альт.): Выбор даты и времени — любой мастер
+        Route::get(
+            '/location/{locationId}/service/{serviceId}/any',
+            [
+                \App\Http\Controllers\Public\AppointmentController::class,
+                'selectTimeAny',
+            ],
+        )->name('select-time-any');
 
         // Сохранение записи
         Route::post('/store', [
@@ -365,6 +374,10 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         Route::middleware([
             'check.business.permission:client.appointments.update',
         ])->group(function () {
+            Route::patch('/appointments/{appointment}/assign-master', [
+                \App\Http\Controllers\AppointmentsController::class,
+                'assignMaster',
+            ])->name('appointments.assign-master');
             Route::get('/appointments/{appointment}/edit', [
                 \App\Http\Controllers\AppointmentsController::class,
                 'edit',

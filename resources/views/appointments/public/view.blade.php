@@ -66,20 +66,21 @@
                     </div>
 
                     <!-- Мастер -->
-                    @if ($appointment->master)
-                        <div class="flex items-start gap-4">
-                            <div
-                                class="w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                <i class="fa-solid fa-user-check text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Специалист
-                                </p>
-                                <h4 class="text-base font-bold text-slate-900 dark:text-white">
-                                    {{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</h4>
-                            </div>
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            <i class="fa-solid fa-user-check text-xl"></i>
                         </div>
-                    @endif
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Специалист</p>
+                            @if ($appointment->master)
+                            <h4 class="text-base font-bold text-slate-900 dark:text-white">
+                                {{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</h4>
+                            @else
+                            <h4 class="text-base font-medium text-slate-500 dark:text-slate-400">Будет назначен</h4>
+                            @endif
+                        </div>
+                    </div>
 
                     <!-- Локация -->
                     @if ($appointment->location)

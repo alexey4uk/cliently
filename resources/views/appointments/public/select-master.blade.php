@@ -8,6 +8,28 @@
         <x-breadcrumbs-public-book :business="$business" currentStep="master" :location="$location" :service="$service" />
 
         @if ($masters->count() > 0)
+            <!-- Любой мастер -->
+            <div class="mb-6">
+                <a href="{{ route('public.appointments.select-time-any', ['slug' => $business->slug, 'locationId' => $location->id, 'serviceId' => $service->id]) }}"
+                    class="block bg-white dark:bg-slate-900 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-800 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                    <div class="p-5 sm:p-6">
+                        <div class="flex items-center gap-5">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                <i class="fa-solid fa-users text-2xl text-indigo-600 dark:text-indigo-400"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <h2 class="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    Любой мастер
+                                </h2>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Вам назначат свободного мастера</p>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 group-hover:bg-indigo-600 flex items-center justify-center transition-all shrink-0">
+                                <i class="fa-solid fa-chevron-right text-slate-400 group-hover:text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
             <!-- Список мастеров -->
             <div class="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 @foreach ($masters as $master)

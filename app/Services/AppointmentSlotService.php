@@ -577,6 +577,46 @@ class AppointmentSlotService
     }
 
     /**
+     * Слоты и календарь для записи «к любому мастеру» (без выбора мастера)
+     *
+     * @param  Service  $service  Услуга
+     * @param  int  $locationId  Локация
+     * @param  Carbon  $selectedDate  Выбранная дата
+     * @param  Carbon  $calendarStart  Начало периода календаря
+     * @param  Carbon  $calendarEnd  Конец периода календаря
+     * @return array ['slots' => array, 'calendar' => array]
+     */
+    public function getAvailableSlotsWithCalendarForAnyMaster(
+        \App\Models\Service $service,
+        int $locationId,
+        Carbon $selectedDate,
+        Carbon $calendarStart,
+        Carbon $calendarEnd,
+    ): array {
+        $slots = $this->getAvailableSlots(
+            $service->id,
+            $selectedDate->format('Y-m-d'),
+            null,
+            $locationId,
+        );
+        sort($slots);
+
+        $calendar = [];
+        $checkDate = $calendarStart->copy();
+        while ($checkDate->lte($calendarEnd)) {
+            $dateString = $checkDate->format('Y-m-d');
+            $daySlots = $this->getAvailableSlots($service->id, $dateString, null, $locationId);
+            $calendar[$dateString] = ! empty($daySlots);
+            $checkDate->addDay();
+        }
+
+        return [
+            'slots' => $slots,
+            'calendar' => $calendar,
+        ];
+    }
+
+    /**
      * Получить даты со слотами для периода (оптимизированная версия)
      * Выполняет один запрос к БД для всех дат вместо цикла запросов
      *

@@ -174,6 +174,7 @@
                         <select name="master_id" onchange="this.form.submit()"
                             class="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer">
                             <option value="">Все мастера</option>
+                            <option value="unassigned" {{ request('master_id') === 'unassigned' ? 'selected' : '' }}>Без мастера</option>
                             @foreach($masters as $master)
                                 <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>{{ $master->name }}</option>
                             @endforeach
@@ -330,6 +331,7 @@
                             <select id="master-filter" name="master_id" onchange="this.form.submit()"
                                 class="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white appearance-none cursor-pointer">
                                 <option value="">Все мастера</option>
+                                <option value="unassigned" {{ request('master_id') === 'unassigned' ? 'selected' : '' }}>Без мастера</option>
                                 @foreach($masters as $master)
                                     <option value="{{ $master->id }}" {{ request('master_id') == $master->id ? 'selected' : '' }}>
                                         {{ $master->name }}
@@ -386,7 +388,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
                         @foreach ($appointments as $appointment)
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors {{ !$appointment->master_id ? 'bg-amber-50/70 dark:bg-amber-900/10 border-l-4 border-l-amber-400 dark:border-l-amber-500' : '' }}">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
@@ -553,7 +555,7 @@
         <!-- Карточки для мобильных -->
         <div class="md:hidden grid grid-cols-1 gap-4">
             @foreach ($appointments as $appointment)
-                <article class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <article class="rounded-xl border shadow-sm overflow-hidden {{ !$appointment->master_id ? 'bg-amber-50/80 dark:bg-amber-900/15 border-amber-200 dark:border-amber-800' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800' }}">
                     {{-- Шапка: дата, время, статус --}}
                     <header class="px-4 py-3 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                         <div class="flex items-center gap-3 min-w-0">

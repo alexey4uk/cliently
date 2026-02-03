@@ -103,17 +103,47 @@
                     </div>
 
                     <!-- Мастер -->
-                    @if($appointment->master)
                     <div class="flex items-start">
-                        <div class="flex-shrink-0 w-10 h-10 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                            <i class="fa-solid fa-user-tie text-emerald-600 dark:text-emerald-400"></i>
+                        <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
+                            {{ $appointment->master ? 'bg-emerald-100 dark:bg-emerald-500/20' : 'bg-amber-100 dark:bg-amber-500/20' }}">
+                            <i class="fa-solid fa-user-tie {{ $appointment->master ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}"></i>
                         </div>
-                        <div class="ml-4">
+                        <div class="ml-4 flex-1 min-w-0">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Мастер</p>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
+                            @if($appointment->master)
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
+                            @else
+                                <p class="text-sm font-medium text-amber-700 dark:text-amber-300">Не назначен</p>
+                                @if(isset($canUpdateAppointments) && $canUpdateAppointments && $appointment->status !== 'cancelled' && $appointment->status !== 'completed')
+                                    @if(isset($mastersForAssign) && $mastersForAssign->isNotEmpty())
+                                        <form id="assign-master" method="POST" action="{{ route('appointments.assign-master', ['appointment' => $appointment, 'from' => 'show']) }}" class="mt-2 flex flex-wrap items-center gap-2">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select name="master_id" required class="rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm py-1.5 px-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                                <option value="">— Выберите мастера —</option>
+                                                @foreach($mastersForAssign as $m)
+                                                    <option value="{{ $m->id }}" {{ old('master_id') == $m->id ? 'selected' : '' }}>{{ $m->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                                                <i class="fa-solid fa-check"></i>
+                                                Назначить
+                                            </button>
+                                        </form>
+                                        @error('master_id')
+                                            <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                                        @enderror
+                                    @else
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Нет мастеров со свободным слотом на это время.</p>
+                                        <a href="{{ route('appointments.edit', $appointment) }}?assign=1" class="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                                            <i class="fa-solid fa-user-plus"></i>
+                                            Назначить мастера в форме редактирования
+                                        </a>
+                                    @endif
+                                @endif
+                            @endif
                         </div>
                     </div>
-                    @endif
 
                     <!-- Локация -->
                     @if($appointment->location)

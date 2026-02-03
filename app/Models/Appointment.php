@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Master;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -151,7 +152,7 @@ class Appointment extends Model
      */
     public function getFinalDurationAttribute(): int
     {
-        return $this->duration ?? $this->service->duration;
+        return (int) ($this->duration ?? $this->service?->duration ?? 0);
     }
 
     /**
@@ -210,11 +211,14 @@ class Appointment extends Model
      */
     public static function hasConflictForMaster(int $masterId, Carbon $date, string $time, int $duration, ?int $excludeAppointmentId = null): bool
     {
-        $startTime = Carbon::parse($date->format('Y-m-d').' '.$time);
+        // Нормализуем время до H:i (из БД может прийти 14:30:00)
+        $timeNormalized = Carbon::parse($time)->format('H:i');
+        $startTime = Carbon::parse($date->format('Y-m-d').' '.$timeNormalized);
+        $dateStr = $date->format('Y-m-d');
 
         $appointments = self::where('master_id', $masterId)
-            ->where('date', $date->format('Y-m-d'))
-            ->where('status', '!=', 'cancelled')
+            ->where('date', $dateStr)
+            ->whereNotIn('status', ['cancelled'])
             ->with('service')
             ->get();
 
@@ -222,6 +226,47 @@ class Appointment extends Model
             if ($appointment->overlapsWith($startTime, $duration, $excludeAppointmentId)) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Проверить, свободен ли слот хотя бы у одного мастера (для записи «к любому мастеру»)
+     */
+    public static function isSlotFreeForAnyMaster(
+        int $businessId,
+        int $locationId,
+        int $serviceId,
+        Carbon $date,
+        string $time,
+        int $duration,
+    ): bool {
+        $masters = Master::where('business_id', $businessId)
+            ->where('is_active', true)
+            ->whereHas('services', fn ($q) => $q->where('services.id', $serviceId))
+            ->whereHas('locations', fn ($q) => $q->where('locations.id', $locationId))
+            ->get();
+
+        $scheduleService = app(\App\Services\MasterScheduleService::class);
+
+        foreach ($masters as $master) {
+            $workingTime = $scheduleService->getWorkingTimeForDate($master, $date);
+            if (! $workingTime) {
+                continue;
+            }
+            $startTime = Carbon::parse($time);
+            $endTime = $startTime->copy()->addMinutes($duration);
+            $workStart = Carbon::parse($workingTime['from']);
+            $workEnd = Carbon::parse($workingTime['to']);
+            if ($startTime->lt($workStart) || $endTime->gt($workEnd)) {
+                continue;
+            }
+            if (self::hasConflictForMaster($master->id, $date, $time, $duration)) {
+                continue;
+            }
+
+            return true;
         }
 
         return false;
