@@ -29,7 +29,7 @@
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Регулярное расписание</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Укажите рабочие дни и время для каждого дня недели</p>
 
-            <div class="space-y-4">
+            <div class="space-y-3">
                 @php
                 $days = [
                     1 => 'Понедельник',
@@ -46,13 +46,14 @@
                 @php
                 $schedule = $schedules[$dayNum] ?? null;
                 $isWorking = isset($schedule['is_working']) ? (bool) $schedule['is_working'] : false;
-                $startTime = $schedule['start_time'] ?? '09:00';
-                $endTime = $schedule['end_time'] ?? '18:00';
+                $startTime = isset($schedule['start_time']) ? \Carbon\Carbon::parse($schedule['start_time'])->format('H:i') : '09:00';
+                $endTime = isset($schedule['end_time']) ? \Carbon\Carbon::parse($schedule['end_time'])->format('H:i') : '18:00';
                 @endphp
-                <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg"
-                     x-data="{ isWorking: {!! json_encode($isWorking) !!} }">
+                <div class="schedule-row flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 w-full transition-colors"
+                     x-data="{ isWorking: {!! json_encode($isWorking) !!} }"
+                     :class="isWorking ? 'border-l-4 border-l-green-500 dark:border-l-green-600 bg-green-50/50 dark:bg-green-900/10' : 'border-l-4 border-l-slate-300 dark:border-l-slate-600 bg-slate-50/50 dark:bg-slate-800/50'">
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 shrink-0 w-full sm:w-40">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox"
                                    name="schedules[{{ $dayNum }}][is_working]"
@@ -63,27 +64,21 @@
                         </label>
                     </div>
 
-                    <div class="flex-1 flex flex-wrap items-center gap-2 sm:gap-4" x-show="isWorking" x-transition>
-                        <div class="flex items-center gap-1">
-                            <label for="start_{{ $dayNum }}" class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">С</label>
-                            <input type="time"
-                                   name="schedules[{{ $dayNum }}][start_time]"
-                                   id="start_{{ $dayNum }}"
-                                   value="{{ old("schedules.{$dayNum}.start_time", $startTime) }}"
-                                   class="w-24 sm:w-28 px-2 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
-                        </div>
+                    <div class="flex items-center gap-2 w-full sm:flex-1 min-w-0" x-show="isWorking" x-transition>
+                        <input type="time"
+                               name="schedules[{{ $dayNum }}][start_time]"
+                               id="start_{{ $dayNum }}"
+                               value="{{ old("schedules.{$dayNum}.start_time", $startTime) }}"
+                               class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
                         <span class="text-slate-400 text-xs">—</span>
-                        <div class="flex items-center gap-1">
-                            <label for="end_{{ $dayNum }}" class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">До</label>
-                            <input type="time"
-                                   name="schedules[{{ $dayNum }}][end_time]"
-                                   id="end_{{ $dayNum }}"
-                                   value="{{ old("schedules.{$dayNum}.end_time", $endTime) }}"
-                                   class="w-24 sm:w-28 px-2 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
-                        </div>
+                        <input type="time"
+                               name="schedules[{{ $dayNum }}][end_time]"
+                               id="end_{{ $dayNum }}"
+                               value="{{ old("schedules.{$dayNum}.end_time", $endTime) }}"
+                               class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
                     </div>
 
-                    <div class="text-sm text-slate-500 dark:text-slate-400" x-show="!isWorking" x-transition>
+                    <div class="text-sm text-slate-500 dark:text-slate-400 shrink-0" x-show="!isWorking" x-transition>
                         Выходной
                     </div>
 
@@ -99,40 +94,51 @@
             <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Укажите исключения из регулярного расписания (праздники, отпуска, изменённые смены)</p>
 
             <div id="overrides-container" class="space-y-3">
-                <!-- Здесь будут добавляться переопределения -->
                 @if(count($overrides) > 0)
                     @foreach($overrides as $date => $override)
-                    <div class="flex items-center gap-4 p-4 border border-slate-200 dark:border-slate-700 rounded-lg override-row">
+                    @php
+                        $isWorkingOverride = ($override['is_working'] ?? true);
+                        $dateYmd = \Carbon\Carbon::parse($date)->format('Y-m-d');
+                        $overrideStartTime = isset($override['start_time']) ? \Carbon\Carbon::parse($override['start_time'])->format('H:i') : '';
+                        $overrideEndTime = isset($override['end_time']) ? \Carbon\Carbon::parse($override['end_time'])->format('H:i') : '';
+                    @endphp
+                    <div class="override-row flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-green-500 dark:border-l-green-600 bg-green-50/50 dark:bg-green-900/10 w-full"
+                         x-data="{ isDayOff: {{ !$isWorkingOverride ? 'true' : 'false' }} }">
                         <input type="date"
-                               name="overrides[{{ $date }}][date]"
-                               value="{{ $date }}"
-                               class="w-full sm:w-40 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
+                               name="overrides[{{ $dateYmd }}][date]"
+                               value="{{ $dateYmd }}"
+                               class="w-full sm:flex-1 min-w-0 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
 
-                        <label class="flex items-center gap-2">
+                        <label class="flex items-center gap-2 shrink-0">
                             <input type="checkbox"
-                                   name="overrides[{{ $date }}][is_working]"
+                                   name="overrides[{{ $dateYmd }}][is_working]"
                                    value="0"
+                                   {{ !$isWorkingOverride ? 'checked' : '' }}
+                                   x-model="isDayOff"
                                    class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
                             <span class="text-sm text-slate-600 dark:text-slate-400">Выходной</span>
                         </label>
 
-                        <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                        <div class="flex items-center gap-2 w-full sm:flex-1 min-w-0 overflow-x-auto"
+                             x-show="!isDayOff"
+                             x-transition>
                             <input type="time"
-                                   name="overrides[{{ $date }}][start_time]"
-                                   value="{{ $override['start_time'] ?? '' }}"
-                                   class="w-24 sm:w-28 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                                   name="overrides[{{ $dateYmd }}][start_time]"
+                                   value="{{ $overrideStartTime }}"
+                                   class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                                    placeholder="С">
                             <span class="text-slate-400 text-xs">—</span>
                             <input type="time"
-                                   name="overrides[{{ $date }}][end_time]"
-                                   value="{{ $override['end_time'] ?? '' }}"
-                                   class="w-24 sm:w-28 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                                   name="overrides[{{ $dateYmd }}][end_time]"
+                                   value="{{ $overrideEndTime }}"
+                                   class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                                    placeholder="До">
                         </div>
 
                         <button type="button"
-                                class="text-rose-500 hover:text-rose-600 transition-colors"
-                                onclick="this.closest('.override-row').remove()">
+                                class="shrink-0 text-rose-500 hover:text-rose-600 transition-colors"
+                                onclick="this.closest('.override-row').remove()"
+                                title="Удалить переопределение">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -174,38 +180,40 @@ document.addEventListener('DOMContentLoaded', function() {
         overrideCounter++;
 
         const html = `
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 border border-slate-200 dark:border-slate-700 rounded-lg override-row">
+            <div class="override-row flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-amber-400 dark:border-l-amber-600 bg-amber-50/50 dark:bg-amber-900/10 w-full" title="Черновик — сохраните расписание" x-data="{ isDayOff: false }">
                 <input type="date"
                        name="overrides[new_${overrideCounter}][date]"
                        value="${today}"
                        min="${today}"
-                       class="w-full sm:w-40 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
+                       class="w-full sm:flex-1 min-w-0 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs">
 
-                <label class="flex items-center gap-2">
+                <label class="flex items-center gap-2 shrink-0">
                     <input type="checkbox"
                            name="overrides[new_${overrideCounter}][is_working]"
                            value="0"
+                           x-model="isDayOff"
                            class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
                     <span class="text-sm text-slate-600 dark:text-slate-400">Выходной</span>
                 </label>
 
-                <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+                <div class="flex items-center gap-2 w-full sm:flex-1 min-w-0 overflow-x-auto" x-show="!isDayOff" x-transition>
                     <input type="time"
                            name="overrides[new_${overrideCounter}][start_time]"
                            value="09:00"
-                           class="w-24 sm:w-28 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                           class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                            placeholder="С">
                     <span class="text-slate-400 text-xs">—</span>
                     <input type="time"
                            name="overrides[new_${overrideCounter}][end_time]"
                            value="18:00"
-                           class="w-24 sm:w-28 px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                           class="w-24 sm:w-28 px-2 py-1.5 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                            placeholder="До">
                 </div>
 
                 <button type="button"
-                        class="self-end sm:self-auto text-rose-500 hover:text-rose-600 transition-colors"
-                        onclick="this.closest('.override-row').remove()">
+                        class="shrink-0 text-rose-500 hover:text-rose-600 transition-colors"
+                        onclick="this.closest('.override-row').remove()"
+                        title="Удалить переопределение">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
