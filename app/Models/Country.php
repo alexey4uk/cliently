@@ -60,6 +60,35 @@ class Country extends Model
     }
 
     /**
+     * Find country by phone number prefix (calling code).
+     * Phone may be in format "+375 29 123-45-67" or "375291234567".
+     *
+     * @param  string  $phone  Full phone number with or without + and spaces
+     * @return \App\Models\Country|null
+     */
+    public static function findByPhonePrefix(string $phone): ?self
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+        if ($digits === '') {
+            return null;
+        }
+
+        $countries = static::where('is_active', true)->get();
+        $best = null;
+        $bestPrefixLength = 0;
+
+        foreach ($countries as $country) {
+            $prefix = preg_replace('/\D/', '', $country->calling_code ?? '');
+            if ($prefix !== '' && str_starts_with($digits, $prefix) && strlen($prefix) > $bestPrefixLength) {
+                $best = $country;
+                $bestPrefixLength = strlen($prefix);
+            }
+        }
+
+        return $best;
+    }
+
+    /**
      * Find country by code.
      *
      * @param  string  $code  Country code
