@@ -48,7 +48,8 @@ class ClientController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->whereFullText(['first_name', 'last_name'], $search)
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "{$search}%"))
+                    ->orWhere('phone', 'like', "{$search}%")
+                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "{$search}%"))
                     ->orWhere('email', 'like', "{$search}%");
             });
         }
@@ -176,20 +177,16 @@ class ClientController extends Controller
         }
 
         $validated = $request->validated();
-        $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
+        $phoneCountryCode = Country::find($validated['phone_country_id'])?->code;
 
         $client = $this->clientRepository->create([
             'business_id' => $business->id,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
             'email' => $validated['email'] ?? null,
-        ]);
-
-        $client->phones()->create([
-            'country_id' => $phoneCountryId,
             'phone' => $phoneE164,
-            'type' => 'primary',
+            'phone_country_code' => $phoneCountryCode,
         ]);
 
         return redirect()->route('clients.index')->with('success', 'Клиент добавлен');
@@ -317,25 +314,16 @@ class ClientController extends Controller
         }
 
         $validated = $request->validated();
-        $phoneCountryId = (int) $validated['phone_country_id'];
         $phoneE164 = $validated['phone'];
+        $phoneCountryCode = Country::find($validated['phone_country_id'])?->code;
 
         $client->update([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,
             'email' => $validated['email'] ?? null,
+            'phone' => $phoneE164,
+            'phone_country_code' => $phoneCountryCode,
         ]);
-
-        $primary = $client->primaryPhone;
-        if ($primary) {
-            $primary->update(['country_id' => $phoneCountryId, 'phone' => $phoneE164]);
-        } else {
-            $client->phones()->create([
-                'country_id' => $phoneCountryId,
-                'phone' => $phoneE164,
-                'type' => 'primary',
-            ]);
-        }
 
         return redirect()->route('clients.index')->with('success', 'Клиент обновлен');
     }
@@ -391,7 +379,8 @@ class ClientController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "%{$search}%"))
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -436,9 +425,9 @@ class ClientController extends Controller
             $query->orderBy($sort, $direction);
         }
 
-        $clients = $query->with('primaryPhone')->get();
+        $clients = $query->get();
 
-        $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
+        $filename = 'clients_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         $headers = [
             'Content-type' => 'text/csv',

@@ -33,14 +33,15 @@ class ClientController extends Controller
         // Добавили подзапросы для COUNT вместо withCount
         $query = Client::query()
             ->with(['business'])
-            ->selectRaw('clients.*, 
+            ->selectRaw(
+                'clients.*, 
                 (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id) as appointments_count,
                 (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id AND CONCAT(date, " ", time) > ?) as upcoming_appointments_count',
                 [now()->toDateTimeString()]
             );
 
         if ($search) {
-            $searchTerm = $search.'*';
+            $searchTerm = $search . '*';
             $query->where(function ($q) use ($search, $searchTerm) {
                 $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     ->orWhereIn('id', function ($subquery) use ($search) {
@@ -107,19 +108,21 @@ class ClientController extends Controller
             'last_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:clients,email',
             'phone_country_id' => ['required', 'exists:countries,id'],
-            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/', Rule::unique('phones', 'phone')->where('phoneable_type', Client::class)],
+            'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/', Rule::unique('clients', 'phone')],
             'business_id' => 'required|exists:businesses,id',
         ], [
             'phone.regex' => 'Телефон в формате E.164 (например, +375291234567).',
             'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        $client = Client::create($request->only(['first_name', 'last_name', 'email', 'business_id']));
-
-        $client->phones()->create([
-            'country_id' => (int) $request->phone_country_id,
+        $phoneCountryCode = Country::find($request->phone_country_id)?->code;
+        $client = Client::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'business_id' => $request->business_id,
             'phone' => $request->phone,
-            'type' => 'primary',
+            'phone_country_code' => $phoneCountryCode,
         ]);
 
         return redirect()->route('panel.clients')->with('success', 'Клиент создан успешно');
@@ -144,13 +147,13 @@ class ClientController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:clients,email,'.$client->id,
+            'email' => 'nullable|email|unique:clients,email,' . $client->id,
             'phone_country_id' => ['required', 'exists:countries,id'],
             'phone' => [
                 'required',
                 'string',
                 'regex:/^\+[0-9]{10,15}$/',
-                Rule::unique('phones', 'phone')->where('phoneable_type', Client::class)->ignore($client->primaryPhone?->id),
+                Rule::unique('clients', 'phone')->ignore($client->id),
             ],
             'business_id' => 'required|exists:businesses,id',
         ], [
@@ -158,21 +161,15 @@ class ClientController extends Controller
             'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        $client->update($request->only(['first_name', 'last_name', 'email', 'business_id']));
-
-        $primary = $client->primaryPhone;
-        if ($primary) {
-            $primary->update([
-                'country_id' => (int) $request->phone_country_id,
-                'phone' => $request->phone,
-            ]);
-        } else {
-            $client->phones()->create([
-                'country_id' => (int) $request->phone_country_id,
-                'phone' => $request->phone,
-                'type' => 'primary',
-            ]);
-        }
+        $phoneCountryCode = Country::find($request->phone_country_id)?->code;
+        $client->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'business_id' => $request->business_id,
+            'phone' => $request->phone,
+            'phone_country_code' => $phoneCountryCode,
+        ]);
 
         return redirect()->route('panel.clients')->with('success', 'Клиент обновлен успешно');
     }

@@ -17,6 +17,8 @@ class Client extends Model
         'business_id',
         'first_name',
         'last_name',
+        'phone',
+        'phone_country_code',
         'email',
         'telegram_user_id',
     ];
@@ -46,8 +48,29 @@ class Client extends Model
         return $this->morphOne(Phone::class, 'phoneable')->where('type', 'primary');
     }
 
+    /**
+     * Страна по ISO коду (опционально из справочника; для клиентов храним только код).
+     */
+    public function getPhoneCountryAttribute(): ?Country
+    {
+        $code = $this->phone_country_code;
+        if (! $code) {
+            return null;
+        }
+
+        return Country::where('code', strtoupper($code))->first();
+    }
+
+    /**
+     * Телефон: приоритет у колонки clients.phone, иначе — из morph (обратная совместимость).
+     */
     public function getPhoneAttribute(): ?string
     {
+        $value = $this->attributes['phone'] ?? null;
+        if ($value !== null && $value !== '') {
+            return $value;
+        }
+
         return $this->primaryPhone?->phone;
     }
 
@@ -56,7 +79,7 @@ class Client extends Model
      */
     public function getFullNameAttribute(): string
     {
-        return trim($this->first_name.' '.($this->last_name ?? ''));
+        return trim($this->first_name . ' ' . ($this->last_name ?? ''));
     }
 
     /**
@@ -67,6 +90,6 @@ class Client extends Model
         $first = mb_substr($this->first_name, 0, 1, 'UTF-8');
         $last = $this->last_name ? mb_substr($this->last_name, 0, 1, 'UTF-8') : '';
 
-        return mb_strtoupper($first.$last, 'UTF-8');
+        return mb_strtoupper($first . $last, 'UTF-8');
     }
 }

@@ -19,7 +19,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
 
     /**
      * Найти или создать клиента по телефону и бизнесу.
-     * Телефон хранится в phones (phoneable); при создании передаются country_id и phone в $attributes.
+     * Телефон хранится в clients.phone и clients.phone_country_code (ISO).
      */
     public function firstOrCreateByPhone(int $businessId, string $phone, array $attributes = []): Client
     {
@@ -29,28 +29,34 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
             return $client;
         }
 
-        $payload = array_merge($attributes, ['business_id' => $businessId]);
-        unset($payload['phone'], $payload['phone_country_id']);
-
-        $client = $this->model->create($payload);
-
-        $countryId = (int) ($attributes['phone_country_id'] ?? \App\Models\Country::where('code', 'BY')->value('id'));
-        $client->phones()->create([
-            'country_id' => $countryId,
+        $phoneCountryCode = $attributes['phone_country_code'] ?? null;
+        if (! $phoneCountryCode && ! empty($attributes['phone_country_id'])) {
+            $phoneCountryCode = \App\Models\Country::find($attributes['phone_country_id'])?->code;
+        }
+        $phoneCountryCode = $phoneCountryCode ? strtoupper(substr($phoneCountryCode, 0, 2)) : (\App\Models\Country::where('code', 'BY')->value('code') ?? 'BY');
+        unset($attributes['phone_country_id'], $attributes['phone_country_code']);
+        $payload = array_merge($attributes, [
+            'business_id' => $businessId,
             'phone' => $phone,
-            'type' => 'primary',
+            'phone_country_code' => $phoneCountryCode,
         ]);
+        $client = $this->model->create($payload);
 
         return $client;
     }
 
     /**
-     * Найти клиента по телефону (E.164) и бизнесу
+     * Найти клиента по телефону (E.164) и бизнесу: сначала по колонке clients.phone, затем по morph phones.
      */
     public function findByPhone(int $businessId, string $phone): ?Client
     {
+        $client = $this->model->where('business_id', $businessId)->where('phone', $phone)->first();
+        if ($client) {
+            return $client;
+        }
+
         return $this->model->where('business_id', $businessId)
-            ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
+            ->whereHas('phones', fn($q) => $q->where('phone', $phone))
             ->first();
     }
 

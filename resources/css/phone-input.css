@@ -18,25 +18,39 @@
 }
 
 .phone-input-wrapper .iti .iti__country-container {
-    padding: 0 0.5rem 0 0.5rem;
-    border-right: 1px solid rgb(226 232 240);
     border-radius: 0.75rem 0 0 0.75rem;
-    background-color: rgb(248 250 252);
+    background-color: transparent;
+    padding-left: 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .phone-input-wrapper .iti .iti__selected-country {
-    padding: 0;
     min-height: 2.625rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
-.phone-input-wrapper .iti .iti__selected-country-primary {
-    padding: 0;
-    gap: 0;
+/* Режим «флаг + код»: флаг и код в одну линию слева от номера */
+[data-international-format="0"]
+    .phone-input-wrapper
+    .iti
+    .iti__selected-country-primary {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
 }
 
 .phone-input-wrapper .iti .iti__arrow {
     border-top-color: rgb(100 116 139);
-    margin-left: 0;
+}
+
+.phone-input-wrapper .iti .iti__dial-code,
+.phone-input-wrapper .iti .iti__selected-dial-code {
+    font-size: 0.875rem !important;
 }
 
 .phone-input-wrapper .iti input.iti__tel-input {
@@ -44,11 +58,41 @@
     padding-top: 0.5rem;
     padding-right: 1.25rem;
     padding-bottom: 0.5rem;
-    /* padding-left задаётся в JS (библиотека + наш учёт padding контейнера) */
     font-size: 0.875rem;
     border: 0;
     background: transparent;
     color: rgb(15 23 42);
+}
+
+/* Режим «только флаг»: отступ слева, зазор до ввода, выравнивание флага и текста по одной линии */
+[data-international-format="1"]
+    .phone-input-wrapper
+    .iti
+    .iti__country-container {
+    padding-left: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+[data-international-format="1"]
+    .phone-input-wrapper
+    .iti
+    .iti__selected-country,
+[data-international-format="1"]
+    .phone-input-wrapper
+    .iti
+    .iti__selected-country-primary {
+    padding: 0;
+    gap: 0;
+}
+[data-international-format="1"] .phone-input-wrapper .iti .iti__arrow {
+    margin-left: 0;
+}
+[data-international-format="1"] .phone-input-wrapper .iti input.iti__tel-input {
+    padding-left: 2.5rem !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    line-height: 1.625rem;
+    min-height: 2.625rem;
 }
 
 .phone-input-wrapper .iti input.iti__tel-input::placeholder {
@@ -62,8 +106,7 @@
 
 /* Тёмная тема: сам инпут и блок выбора страны */
 .dark .phone-input-wrapper .iti .iti__country-container {
-    border-right-color: rgb(51 65 85);
-    background-color: rgb(30 41 59);
+    background-color: transparent;
 }
 
 .dark .phone-input-wrapper .iti .iti__arrow {
@@ -86,7 +129,8 @@
 .phone-input-wrapper .iti.iti--inline-dropdown .iti__dropdown-content {
     border-radius: 0.75rem;
     border: 1px solid rgb(226 232 240);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1);
     margin-top: 0.25rem;
 }
 

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('last_name')->nullable();
 
             $table->string('phone', 20)->nullable()->index();
+            $table->string('phone_country_code', 2)->nullable();
             $table->string('email')->nullable();
 
             $table->date('birthday')->nullable();

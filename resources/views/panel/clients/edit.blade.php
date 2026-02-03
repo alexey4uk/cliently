@@ -71,11 +71,11 @@
                     </div>
 
                     @php
-                        $phoneCountry = $client->primaryPhone?->country ?? $countries->first();
+                        $phoneCountry = $client->phoneCountry ?? $countries->first();
                         $phoneNational = '';
-                        if ($client->primaryPhone && $phoneCountry) {
+                        if ($client->phone && $phoneCountry) {
                             $codeDig = preg_replace('/\D/', '', $phoneCountry->calling_code);
-                            $phoneDig = preg_replace('/\D/', '', $client->primaryPhone->phone);
+                            $phoneDig = preg_replace('/\D/', '', $client->phone);
                             $phoneNational = $codeDig && str_starts_with($phoneDig, $codeDig) ? substr($phoneDig, strlen($codeDig)) : $phoneDig;
                         }
                     @endphp
@@ -83,7 +83,7 @@
                         :countries="$countries"
                         block-id="panelClientEditPhoneBlock"
                         :old-phone="old('phone', $client->phone)"
-                        :old-country-id="old('phone_country_id', $client->primaryPhone?->country_id)"
+                        :old-country-id="old('phone_country_id', $client->phone_country_code ? \App\Models\Country::where('code', $client->phone_country_code)->value('id') : null)"
                         :old-national="old('phone_national', $phoneNational)"
                         :required="true"
                         helper-text=""

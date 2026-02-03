@@ -140,10 +140,16 @@
                             @enderror
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Телефон *</label>
-                            <input type="tel" name="phone" id="phone" inputmode="tel" required
-                                value="{{ old('phone') }}"
-                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('phone') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white text-lg font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                            <x-phone-input
+                                block-id="publicBookingPhone"
+                                :old-phone="old('phone')"
+                                :old-country-id="old('phone_country_id')"
+                                :old-national="''"
+                                :required="true"
+                                helper-text=""
+                                :all-countries-from-library="true"
+                                :international-format="true"
+                            />
                             @error('phone')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
@@ -218,18 +224,7 @@
                 });
             });
 
-            // 2. Телефон: один инпут → нормализация в E.164 при отправке
-            if (form) {
-                form.addEventListener('submit', function() {
-                    const phoneEl = document.getElementById('phone');
-                    if (phoneEl && phoneEl.value) {
-                        const digits = phoneEl.value.replace(/\D/g, '');
-                        if (digits.length >= 10) {
-                            phoneEl.value = '+' + digits.slice(0, 15);
-                        }
-                    }
-                });
-            }
+            // 2. Телефон: виджет intl-tel-input сам заполняет phone (E.164) и phone_country_id при отправке
 
             // 3. Календарь
             const calendarGrid = document.getElementById('calendar-grid');

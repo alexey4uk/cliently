@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap");
 @import "tailwindcss";
 @plugin "@tailwindcss/forms";
 @import "./phone-input.css";
 /* @custom-variant dark (&:where(.dark, .dark *)); */
 
 @theme {
-  --font-sans: 'Onest', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Poppins', 'sans-serif';
+    --font-sans: "Onest", "Inter", system-ui, -apple-system, sans-serif;
+    --font-display: "Poppins", "sans-serif";
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -56,33 +56,35 @@ select {
 
 /* Для вебкит-браузеров (Chrome, Safari, Edge) */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+    background: #f1f1f1;
+    border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+    background: #888;
+    border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #555;
+    background: #555;
 }
 
 /* Для Firefox */
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
 }
 
 @layer base {
-  input, textarea, select {
-    @apply text-base;
-  }
+    input,
+    textarea,
+    select {
+        @apply text-base;
+    }
 }
 
 /* Кастомный scrollbar для WebKit браузеров (Chrome, Safari, Edge) */
@@ -133,7 +135,7 @@ select {
     body {
         overflow-x: hidden;
     }
-    
+
     /* Убеждаемся, что длинные URL не вызывают горизонтальную прокрутку */
     .break-all,
     .break-words {
@@ -224,7 +226,6 @@ textarea:focus-visible {
         transform: translateY(-10px);
     }
 }
-
 
 /* Hover эффект для карточек статистики */
 .card-hover {

@@ -29,7 +29,7 @@ class PublicAppointmentRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
-            'phone_country_id' => ['nullable', 'exists:countries,id'],
+            'phone_country_code' => ['nullable', 'string', 'size:2'], // ISO из виджета, в БД пишем как есть
             'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'service_id' => ['required', 'exists:services,id'],
@@ -50,7 +50,6 @@ class PublicAppointmentRequest extends FormRequest
     {
         return [
             'first_name.required' => 'Имя обязательно для заполнения.',
-            'phone_country_id.exists' => 'Выбранная страна не найдена.',
             'phone.required' => 'Телефон обязателен для заполнения.',
             'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
             'service_id.required' => 'Услуга обязательна для заполнения.',

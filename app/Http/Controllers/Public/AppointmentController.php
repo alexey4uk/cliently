@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PublicAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Client;
+use App\Models\Country;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentNotificationService;
 use App\Services\AppointmentSlotService;
@@ -198,10 +199,6 @@ class AppointmentController extends Controller
         $availableSlots = $result['slots'];
         $datesWithSlots = $result['calendar'];
 
-        // ОПТИМИЗАЦИЯ: Календарь уже содержит всю информацию о датах со слотами
-        // Пользователь может сам выбрать нужную дату в календаре
-        // Больше не нужно искать следующую доступную дату и делать дополнительные запросы
-
         return view('appointments.public.select-time', compact(
             'business',
             'location',
@@ -295,9 +292,21 @@ class AppointmentController extends Controller
                 ->with('error', 'Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.');
         }
 
+        $phone = $validated['phone'];
         $client = Client::where('business_id', $business->id)
-            ->whereHas('phones', fn ($q) => $q->where('phone', $validated['phone']))
+            ->where('phone', $phone)
             ->first();
+
+        if (! $client) {
+            $client = Client::where('business_id', $business->id)
+                ->whereHas('phones', fn($q) => $q->where('phone', $phone))
+                ->first();
+        }
+
+        // ISO код страны — передаёт компонент, в БД пишем как есть (таблица countries не участвует)
+        $phoneCountryCode = ! empty($validated['phone_country_code'])
+            ? strtoupper(substr($validated['phone_country_code'], 0, 2))
+            : null;
 
         if (! $client) {
             if (! $subscriptionService->canCreateClient($user)) {
@@ -305,7 +314,7 @@ class AppointmentController extends Controller
 
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
             }
 
             $client = Client::create([
@@ -313,19 +322,9 @@ class AppointmentController extends Controller
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'] ?? null,
                 'email' => $validated['email'] ?? null,
+                'phone' => $phone,
+                'phone_country_code' => $phoneCountryCode,
             ]);
-
-            $country = isset($validated['phone_country_id'])
-                ? \App\Models\Country::find($validated['phone_country_id'])
-                : \App\Models\Country::findByPhonePrefix($validated['phone']);
-            $countryId = $country?->id ?? \App\Models\Country::where('code', 'BY')->value('id');
-            if ($countryId) {
-                $client->phones()->create([
-                    'country_id' => $countryId,
-                    'phone' => $validated['phone'],
-                    'type' => 'primary',
-                ]);
-            }
 
             $isNewClient = true;
         } else {
@@ -334,6 +333,8 @@ class AppointmentController extends Controller
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'] ?? $client->last_name,
                 'email' => $validated['email'] ?? $client->email,
+                'phone' => $phone,
+                'phone_country_code' => $phoneCountryCode,
             ]);
         }
 
