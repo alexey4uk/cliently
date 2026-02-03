@@ -810,8 +810,44 @@ document.addEventListener('DOMContentLoaded', function() {
         locationSelect.addEventListener('change', loadAvailableSlots);
     }
 
-    if (serviceSelect && serviceSelect.value && dateInput && dateInput.value) {
-        loadAvailableSlots();
+    // Скрытые поля service_id, location_id, master_id заполняются Alpine после init.
+    // Пробуем загрузить слоты: сразу, с задержкой и по появлению значения в service_id.
+    var initialLoadDone = false;
+    function tryLoadSlotsWhenReady() {
+        if (initialLoadDone) return;
+        if (serviceSelect.value && dateInput.value) {
+            initialLoadDone = true;
+            loadAvailableSlots();
+            return true;
+        }
+        return false;
+    }
+    if (tryLoadSlotsWhenReady()) {
+        return;
+    }
+    setTimeout(function() {
+        if (tryLoadSlotsWhenReady()) return;
+        setTimeout(function() {
+            tryLoadSlotsWhenReady();
+        }, 250);
+    }, 100);
+    // На случай, если Alpine обновит hidden позже: следим за появлением value у service_id
+    if (serviceSelect && dateInput && dateInput.value) {
+        var observer = new MutationObserver(function() {
+            if (tryLoadSlotsWhenReady() && observer) {
+                observer.disconnect();
+            }
+        });
+        observer.observe(serviceSelect, { attributes: true, attributeFilter: ['value'] });
+        // Alpine может менять .value без смены атрибута — проверяем периодически первые 2 сек
+        var checkCount = 0;
+        var intervalId = setInterval(function() {
+            checkCount++;
+            if (tryLoadSlotsWhenReady() || checkCount > 20) {
+                clearInterval(intervalId);
+                if (observer) observer.disconnect();
+            }
+        }, 100);
     }
 });
 </script>
