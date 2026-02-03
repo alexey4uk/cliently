@@ -83,9 +83,7 @@ class SubscriptionService
         if ($preserveEndsAt && $oldPlan) {
             $metadata['previous_plan_id'] = $oldPlan->id;
             $metadata['previous_plan_name'] = $oldPlan->name;
-            $metadata[
-                'preserved_ends_at'
-            ] = $subscription->ends_at->toIso8601String();
+            $metadata['preserved_ends_at'] = $subscription->ends_at->toIso8601String();
         } else {
             // Если не сохраняем ends_at, очищаем информацию о предыдущем тарифе
             unset($metadata['previous_plan_id']);
@@ -332,7 +330,7 @@ class SubscriptionService
         // Получаем все usage для месячных метрик одним запросом
         $monthlyKeys = array_filter(
             $featureKeys,
-            fn ($key) => $this->isMonthlyMetric($key),
+            fn($key) => $this->isMonthlyMetric($key),
         );
 
         $usageData = [];
@@ -366,7 +364,8 @@ class SubscriptionService
                 'current' => $current,
                 'limit' => $limit,
                 'percentage' => $limit > 0 ? round(($current / $limit) * 100, 1) : 0,
-                'warning' => $limit > 0 && $current / $limit > 0.8,
+                // «Приближается к лимиту» только когда >= 80% и ещё не достигнут (не включая 100%)
+                'warning' => $limit > 0 && $current < $limit && $current / $limit >= 0.8,
             ];
         }
 

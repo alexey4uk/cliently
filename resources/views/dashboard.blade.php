@@ -379,21 +379,25 @@
                     $current = (int) ($data['current'] ?? 0);
                     $hasLimit = $limit !== null && $limit !== -1 && $limit > 0;
                     $limitLabel = ($limit === -1 || $limit === null) ? '∞' : (int) $limit;
+                    $limitInt = $hasLimit ? (int) $limit : 0;
                     $percentage = $hasLimit ? min((float) ($data['percentage'] ?? 0), 100) : 0;
+                    $limitReached = $hasLimit && $current >= $limitInt;
                     $warning = !empty($data['warning']);
                 @endphp
                 <div class="bg-white/60 dark:bg-slate-800/40 rounded-xl p-4 border border-teal-100/50 dark:border-teal-800/30">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-medium text-slate-600 dark:text-slate-400">{{ $metricLabels[$metric] ?? $metric }}</span>
-                        <span class="text-xs font-semibold {{ $warning ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300' }}">
+                        <span class="text-xs font-semibold {{ $limitReached ? 'text-amber-600 dark:text-amber-400' : ($warning ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300') }}">
                             {{ $current }} / {{ $limitLabel }}
                         </span>
                     </div>
                     @if($hasLimit)
                     <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                        <div class="h-1.5 rounded-full {{ $warning ? 'bg-amber-500' : 'bg-teal-500' }}" style="width: {{ $percentage }}%"></div>
+                        <div class="h-1.5 rounded-full {{ $limitReached ? 'bg-amber-500' : ($warning ? 'bg-amber-500' : 'bg-teal-500') }}" style="width: {{ $percentage }}%"></div>
                     </div>
-                    @if($warning)
+                    @if($limitReached)
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Лимит достигнут</p>
+                    @elseif($warning)
                     <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Близко к лимиту</p>
                     @endif
                     @else
