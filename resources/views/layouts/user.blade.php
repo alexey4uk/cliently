@@ -108,7 +108,9 @@
         </div>
     </div>
     @include('alerts')
-    
+
+    <x-phone-modal />
+
     <!-- Мобильное меню (вынесено за пределы header для корректного отображения) -->
     @include('mobile-menu-portal')
 

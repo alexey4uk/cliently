@@ -15,21 +15,17 @@
 @endphp
 
 <div x-data="{
-    showPhoneModal: false,
-    phone: '',
-    phoneDisplay: '',
-    client: '',
     showFilters: {{ $hasActiveFilters ? 'true' : 'false' }},
     openPhoneModal(e) {
         const btn = e.target.closest('button');
         if (!btn) return;
-        this.phone = btn.dataset.phone || '';
-        this.phoneDisplay = btn.dataset.phoneDisplay || btn.dataset.phone || '';
-        this.client = btn.dataset.clientName || '';
-        this.showPhoneModal = true;
-    },
-    closePhoneModal() {
-        this.showPhoneModal = false;
+        window.dispatchEvent(new CustomEvent('phone-modal-open', {
+            detail: {
+                phone: btn.dataset.phone || '',
+                phoneDisplay: btn.dataset.phoneDisplay || btn.dataset.phone || '',
+                client: btn.dataset.clientName || ''
+            }
+        }));
     },
     toggleFilters() {
         this.showFilters = !this.showFilters;
@@ -866,51 +862,6 @@
         </div>
     @endif
 
-    <!-- Модальное окно для номера телефона -->
-    <div x-show="showPhoneModal" @click.away="closePhoneModal()" @keydown.escape.window="closePhoneModal()"
-        x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        style="display: none;">
-        <div @click.stop x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="transform opacity-0 scale-95"
-            x-transition:enter-end="transform opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-150"
-            x-transition:leave-start="transform opacity-100 scale-100"
-            x-transition:leave-end="transform opacity-0 scale-95"
-            class="bg-white dark:bg-slate-900 rounded-lg shadow-lg border border-slate-200 dark:border-slate-800 max-w-sm w-full overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-                <h3 class="text-base font-semibold text-slate-900 dark:text-white">Контактная информация</h3>
-                <button @click="closePhoneModal()"
-                    class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                    <i class="fa-solid fa-xmark text-sm"></i>
-                </button>
-            </div>
-            <div class="px-4 py-4">
-                <div class="mb-4">
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Клиент</p>
-                    <p class="text-base font-semibold text-slate-900 dark:text-white" x-text="client"></p>
-                </div>
-                <div class="mb-4">
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">Телефон</p>
-                    <p class="text-xl font-semibold text-slate-900 dark:text-white" x-text="phoneDisplay"></p>
-                </div>
-                <div class="space-y-2">
-                    <a :href="`tel:${phone}`"
-                        class="md:hidden w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors">
-                        <i class="fa-solid fa-phone text-sm"></i>
-                        <span>Позвонить</span>
-                    </a>
-                    <button @click="navigator.clipboard.writeText(phone); closePhoneModal();"
-                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                        <i class="fa-regular fa-copy text-sm"></i>
-                        <span>Копировать номер</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 
 </div>

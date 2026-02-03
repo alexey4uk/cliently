@@ -26,23 +26,10 @@
 
 <div class="max-w-[1800px] mx-auto">
     <div class="flex flex-col gap-3 sm:gap-4" x-data="{
-    showPhoneModal: false,
-    phone: '',
-    phoneDisplay: '',
-    client: '',
     showFilters: {{ $hasActiveFilters ? 'true' : 'false' }},
     showDayModal: false,
     selectedDate: '',
     selectedDateAppointments: [],
-    openPhoneModal(phone, phoneDisplay, client) {
-        this.phone = phone;
-        this.phoneDisplay = phoneDisplay;
-        this.client = client;
-        this.showPhoneModal = true;
-    },
-    closePhoneModal() {
-        this.showPhoneModal = false;
-    },
     toggleFilters() {
         this.showFilters = !this.showFilters;
     },
@@ -500,33 +487,6 @@
                     <span>Создать запись</span>
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно телефона (если используется) -->
-    <div x-show="showPhoneModal" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-         @click.self="closePhoneModal()"
-         style="display: none;">
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">Телефон клиента</h3>
-                <button @click="closePhoneModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Клиент: <span class="font-medium" x-text="client"></span></p>
-            <p class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mb-4" x-text="phoneDisplay"></p>
-            <a :href="'tel:' + phone" class="block w-full text-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">
-                <i class="fa-solid fa-phone mr-2"></i>
-                Позвонить
-            </a>
         </div>
     </div>
     </div>
