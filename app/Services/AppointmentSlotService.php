@@ -411,21 +411,21 @@ class AppointmentSlotService
         $existingAppointments = $query->with('service')->get();
 
         $availableSlots = [];
+        $dateStr = $date->format('Y-m-d');
 
         foreach ($slots as $slot) {
-            $slotTime = Carbon::parse($slot);
+            $slotTime = Carbon::parse($dateStr.' '.$slot);
             $slotEndTime = $slotTime->copy()->addMinutes($duration);
 
             $isAvailable = true;
 
             foreach ($existingAppointments as $appointment) {
-                // Если мастер не указан при поиске слотов, но у записи есть мастер,
-                // то эта запись не блокирует слот (так как слот может быть для другого мастера)
+
                 if (! $masterId && $appointment->master_id) {
                     continue;
                 }
 
-                $appointmentTime = Carbon::parse($appointment->time);
+                $appointmentTime = Carbon::parse($date->format('Y-m-d').' '.$appointment->time);
                 $appointmentDuration =
                     $appointment->final_duration ?? $duration; // Используем длительность услуги если final_duration не задан
                 $appointmentEndTime = $appointmentTime
@@ -555,6 +555,7 @@ class AppointmentSlotService
                 $dateAppointments,
                 $duration,
                 $masterId,
+                $checkDate,
             );
 
             $hasSlots = ! empty($availableSlots);
@@ -714,11 +715,13 @@ class AppointmentSlotService
         Collection $appointments,
         int $duration,
         ?int $masterId = null,
+        ?Carbon $date = null,
     ): array {
         $availableSlots = [];
+        $dateStr = $date ? $date->format('Y-m-d') : null;
 
         foreach ($slots as $slot) {
-            $slotTime = Carbon::parse($slot);
+            $slotTime = $dateStr ? Carbon::parse($dateStr.' '.$slot) : Carbon::parse($slot);
             $slotEndTime = $slotTime->copy()->addMinutes($duration);
 
             $isAvailable = true;
@@ -730,7 +733,10 @@ class AppointmentSlotService
                     continue;
                 }
 
-                $appointmentTime = Carbon::parse($appointment->time);
+                $appointmentDate = $appointment->date ? $appointment->date->format('Y-m-d') : $dateStr;
+                $appointmentTime = $appointmentDate
+                    ? Carbon::parse($appointmentDate.' '.$appointment->time)
+                    : Carbon::parse($appointment->time);
                 // Используем accessor final_duration, который теперь не вызовет N+1 благодаря with('service')
                 $appointmentDuration =
                     $appointment->final_duration ?? $duration;

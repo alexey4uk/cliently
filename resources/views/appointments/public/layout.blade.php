@@ -200,22 +200,16 @@
                 <!-- Разделитель-точка -->
                 <div class="w-8 h-[1px] bg-slate-200 dark:bg-slate-800"></div>
 
-                <!-- Компактный копирайт и платформа -->
-                <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                        &copy; 2026 {{ $business->name }}
-                    </p>
-
-                    <a href="https://cliently.by" target="_blank" rel="noopener" class="flex items-center gap-2 group">
-                        <span
-                            class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest transition-colors group-hover:text-slate-400">Powered
-                            by</span>
-                        <span
-                            class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] group-hover:text-indigo-500 transition-colors">
-                            CLIENTLY
-                        </span>
-                    </a>
-                </div>
+                <!-- Платформа -->
+                <a href="https://cliently.by" target="_blank" rel="noopener" class="flex items-center gap-2 group">
+                    <span
+                        class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest transition-colors group-hover:text-slate-400">Powered
+                        by</span>
+                    <span
+                        class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] group-hover:text-indigo-500 transition-colors">
+                        CLIENTLY
+                    </span>
+                </a>
             </div>
         </div>
     </footer>

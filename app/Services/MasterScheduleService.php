@@ -83,10 +83,7 @@ class MasterScheduleService
                 return null;
             }
 
-            return [
-                'from' => $override->start_time,
-                'to' => $override->end_time,
-            ];
+            return $this->normalizeWorkingWindow($override->start_time, $override->end_time);
         }
 
         // Иначе регулярное расписание
@@ -100,9 +97,39 @@ class MasterScheduleService
             return null;
         }
 
+        return $this->normalizeWorkingWindow($schedule->start_time, $schedule->end_time);
+    }
+
+    /**
+     * Нормализовать окно работы.
+     * 00:00–00:00 трактуется как круглосуточно (весь день 00:00–24:00).
+     * Начало >= конца в остальных случаях — выходной (null).
+     */
+    private function normalizeWorkingWindow($from, $to): ?array
+    {
+        $fromTime = $from ? Carbon::parse($from) : null;
+        $toTime = $to ? Carbon::parse($to) : null;
+
+        if (! $fromTime || ! $toTime) {
+            return null;
+        }
+
+        // 00:00–00:00 = круглосуточно (весь день); конец 24:00 чтобы слот 23:00+1ч помещался
+        if ($fromTime->format('H:i') === '00:00' && $toTime->format('H:i') === '00:00') {
+            return [
+                'from' => '00:00',
+                'to' => '24:00',
+            ];
+        }
+
+        // Начало >= конца в остальных случаях — выходной
+        if ($fromTime->gte($toTime)) {
+            return null;
+        }
+
         return [
-            'from' => $schedule->start_time,
-            'to' => $schedule->end_time,
+            'from' => $fromTime->format('H:i'),
+            'to' => $toTime->format('H:i'),
         ];
     }
 
