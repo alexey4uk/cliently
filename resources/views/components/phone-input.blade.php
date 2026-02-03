@@ -5,7 +5,7 @@
     'oldCountryId' => '',
     'oldNational' => '',
     'required' => true,
-    'placeholder' => '29 123 45 67',
+    'placeholder' => '',
     'helperText' => 'Код страны и номер без ведущих нулей',
 ])
 

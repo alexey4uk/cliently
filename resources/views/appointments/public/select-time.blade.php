@@ -143,7 +143,6 @@
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Телефон *</label>
                             <input type="tel" name="phone" id="phone" inputmode="tel" required
                                 value="{{ old('phone') }}"
-                                placeholder="+375 29 123 45 67"
                                 class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('phone') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white text-lg font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                             @error('phone')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>

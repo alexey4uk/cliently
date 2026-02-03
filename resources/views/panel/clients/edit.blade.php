@@ -86,7 +86,6 @@
                         :old-country-id="old('phone_country_id', $client->primaryPhone?->country_id)"
                         :old-national="old('phone_national', $phoneNational)"
                         :required="true"
-                        placeholder="29 123 45 67"
                         helper-text=""
                     />
 

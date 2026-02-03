@@ -151,7 +151,6 @@
                         :old-country-id="old('phone_country_id', $location->primaryPhone?->country_id)"
                         :old-national="old('phone_national', $locPhoneNational)"
                         :required="false"
-                        placeholder="29 123 45 67"
                         helper-text=""
                     />
 

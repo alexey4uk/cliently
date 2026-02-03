@@ -269,7 +269,7 @@
                             </label>
                             <input type="tel" id="phone" name="phone" required
                                    class="w-full px-2.5 md:px-3 py-2 md:py-2.5 text-base md:text-sm rounded-md border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                                   value="{{ old('phone') }}" placeholder="+375 (XX) XXX-XX-XX">
+                                   value="{{ old('phone') }}">
                             @error('phone')
                             <p class="mt-2 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror

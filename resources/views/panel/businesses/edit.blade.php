@@ -58,8 +58,7 @@
                                id="phone"
                                name="phone"
                                value="{{ old('phone', $business->phone) }}"
-                               class="w-full px-4 py-2.5 rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors"
-                               placeholder="+375291234567">
+                               class="w-full px-4 py-2.5 rounded-lg border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent transition-colors">
                         @error('phone')
                             <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                         @enderror
