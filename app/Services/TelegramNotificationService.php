@@ -98,27 +98,27 @@ class TelegramNotificationService
         $location = $appointment->location;
 
         $message = "📅 {$action}\n\n";
-        $message .= "👤 Клиент: {$client->first_name} {$client->last_name}\n";
-        $message .= "📱 Телефон: {$client->phone}\n";
-        $message .= "💼 Услуга: {$service->name}\n";
+        $message .= "Клиент: {$client->first_name} {$client->last_name}\n";
+        $message .= "Телефон: {$client->phone}\n";
+        $message .= "Услуга: {$service->name}\n";
 
         if ($master) {
-            $message .= "👨‍💼 Мастер: {$master->first_name} {$master->last_name}\n";
+            $message .= "Мастер: {$master->first_name} {$master->last_name}\n";
         }
 
         if ($location) {
-            $message .= "📍 Локация: {$location->name}\n";
+            $message .= "Локация: {$location->name}\n";
         }
 
-        $message .= "📆 Дата: {$appointment->date->format('d.m.Y')}\n";
-        $message .= "🕐 Время: {$appointment->time}\n";
+        $message .= "Дата: {$appointment->date->format('d.m.Y')}\n";
+        $message .= "Время: {$appointment->time}\n";
 
         if ($appointment->price) {
-            $message .= "💰 Цена: {$appointment->price} BYN\n";
+            $message .= "Цена: {$appointment->price} BYN\n";
         }
 
         if ($appointment->notes) {
-            $message .= "📝 Заметки: {$appointment->notes}\n";
+            $message .= "Заметки: {$appointment->notes}\n";
         }
 
         return $message;
