@@ -88,6 +88,12 @@ class TelegramMessages
     /** Приглашение записаться снова. Плейсхолдеры: business_name, booking_url */
     public const MSG_REENGAGEMENT = "👋 {business_name}\n\nСкучаем! Давно не виделись — будем рады снова вас видеть.\n\nЗаписаться: {booking_url}";
 
+    /** Новый клиент (сотрудникам). Краткое сообщение. */
+    public const MSG_CLIENT_NEW = "👤 Новый клиент записался\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
+
+    /** Приближающаяся запись (сотрудникам). */
+    public const MSG_APPOINTMENT_UPCOMING = "⏰ Приближается запись\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
+
     // ==================== СТАТУСЫ ВВОДА (краткий итог перед следующим полем) ====================
     public const MSG_STATUS_NAME = '👤 Имя: {name}';
 

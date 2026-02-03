@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Appointment;
+use App\Services\AppointmentNotificationService;
 use App\Services\TelegramNotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -51,6 +52,7 @@ class NotifyAppointmentReminder extends Command
                 $sent++;
             } elseif (TelegramNotificationService::sendAppointmentReminderToClient($appointment)) {
                 $appointment->update(['reminder_sent_at' => Carbon::now()]);
+                AppointmentNotificationService::notifyUpcoming($appointment);
                 $sent++;
             }
         }

@@ -172,6 +172,44 @@ class TelegramNotificationService
     }
 
     /**
+     * Отправить сотруднику уведомление «Новый клиент записался» (Telegram).
+     */
+    public static function sendClientNew(Appointment $appointment, User $user): void
+    {
+        if (! $user->telegram_chat_id) {
+            return;
+        }
+        $appointment->loadMissing(['client', 'service']);
+        $client = $appointment->client;
+        $message = TelegramMessages::format(TelegramMessages::MSG_CLIENT_NEW, [
+            'client_name' => trim(($client->first_name ?? '').' '.($client->last_name ?? '')) ?: 'Клиент',
+            'service' => $appointment->service?->name ?? 'Услуга',
+            'date' => $appointment->date->format('d.m.Y'),
+            'time' => \Carbon\Carbon::parse($appointment->time)->format('H:i'),
+        ]);
+        self::sendMessageToUser($user, $message);
+    }
+
+    /**
+     * Отправить сотруднику уведомление «Приближающаяся запись» (Telegram).
+     */
+    public static function sendAppointmentUpcoming(Appointment $appointment, User $user): void
+    {
+        if (! $user->telegram_chat_id) {
+            return;
+        }
+        $appointment->loadMissing(['client', 'service']);
+        $client = $appointment->client;
+        $message = TelegramMessages::format(TelegramMessages::MSG_APPOINTMENT_UPCOMING, [
+            'client_name' => trim(($client->first_name ?? '').' '.($client->last_name ?? '')) ?: 'Клиент',
+            'service' => $appointment->service?->name ?? 'Услуга',
+            'date' => $appointment->date->format('d.m.Y'),
+            'time' => \Carbon\Carbon::parse($appointment->time)->format('H:i'),
+        ]);
+        self::sendMessageToUser($user, $message);
+    }
+
+    /**
      * Форматировать сообщение о назначении
      */
     private static function formatAppointmentMessage(

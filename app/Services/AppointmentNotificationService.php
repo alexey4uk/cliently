@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\AppointmentCreated as AppointmentCreatedNotification;
 use App\Notifications\AppointmentStatusChanged as AppointmentStatusChangedNotification;
 use App\Notifications\AppointmentUpcoming as AppointmentUpcomingNotification;
+use App\Notifications\ClientNew as ClientNewNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -449,6 +450,19 @@ class AppointmentNotificationService
                     ]);
                 }
             }
+
+            // Telegram (если включено в настройках)
+            if (NotificationSettingsService::shouldSendTelegram($user, 'appointment.upcoming')) {
+                try {
+                    TelegramNotificationService::sendAppointmentUpcoming($appointment, $user);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for appointment.upcoming', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
     }
 
@@ -674,12 +688,36 @@ class AppointmentNotificationService
                     $appointment->client->first_name ?? 'Клиент',
                     $appointment->service->name ?? 'услугу'
                 ),
-                'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
+                'required_permission' => null,
                 'data' => [
                     'client_id' => $appointment->client->id,
                     'url' => self::getClientRoute($user, $appointment->client),
                 ],
             ]);
+
+            if (! empty($user->email) && NotificationSettingsService::shouldSendEmail($user, 'client.new')) {
+                try {
+                    $user->notify(new ClientNewNotification($appointment));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send email notification for client.new', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            if (NotificationSettingsService::shouldSendTelegram($user, 'client.new')) {
+                try {
+                    TelegramNotificationService::sendClientNew($appointment, $user);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send telegram notification for client.new', [
+                        'user_id' => $user->id,
+                        'appointment_id' => $appointment->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
     }
 }
