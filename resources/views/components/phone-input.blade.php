@@ -14,7 +14,7 @@
 {{-- Виджет intl-tel-input. allCountriesFromLibrary: true = полный список стран как у библиотеки (без onlyCountries), country по номеру определится на бэкенде. --}}
 
 @php
-    $hasError = $errors->has('phone_country_id') || $errors->has('phone');
+    $hasError = $errors->has('phone_country_id') || $errors->has('phone_country_code') || $errors->has('phone');
     $inputId = $blockId . '_tel';
     if ($allCountriesFromLibrary) {
         $onlyCountries = [];
@@ -58,11 +58,12 @@
             autocomplete="tel">
         <input type="hidden" name="phone" value="{{ e($oldPhone) }}">
         <input type="hidden" name="phone_country_id" value="{{ e($oldCountryId) }}">
-        @if($allCountriesFromLibrary)
         <input type="hidden" name="phone_country_code" value="">
-        @endif
     </div>
     @error('phone_country_id')
+        <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+    @enderror
+    @error('phone_country_code')
         <p class="mt-1.5 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
     @enderror
     @error('phone')

@@ -11,7 +11,4 @@
     <div data-address-suggestions
          class="hidden absolute left-0 right-0 top-full z-20 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg"
          role="listbox"></div>
-    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-        Подсказки по адресам РФ и Беларуси (Nominatim). Выберите вариант — поля ниже заполнятся автоматически.
-    </p>
 </div>

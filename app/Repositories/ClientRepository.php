@@ -29,11 +29,9 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
             return $client;
         }
 
-        $phoneCountryCode = $attributes['phone_country_code'] ?? null;
-        if (! $phoneCountryCode && ! empty($attributes['phone_country_id'])) {
-            $phoneCountryCode = \App\Models\Country::find($attributes['phone_country_id'])?->code;
-        }
-        $phoneCountryCode = $phoneCountryCode ? strtoupper(substr($phoneCountryCode, 0, 2)) : (\App\Models\Country::where('code', 'BY')->value('code') ?? 'BY');
+        $phoneCountryCode = isset($attributes['phone_country_code']) && $attributes['phone_country_code'] !== ''
+            ? strtoupper(substr($attributes['phone_country_code'], 0, 2))
+            : (\App\Models\Country::where('code', 'BY')->value('code') ?? 'BY');
         unset($attributes['phone_country_id'], $attributes['phone_country_code']);
         $payload = array_merge($attributes, [
             'business_id' => $businessId,

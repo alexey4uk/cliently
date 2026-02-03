@@ -25,7 +25,7 @@ class ClientController extends Controller
     {
         $search = request('search', '');
         $sort = request('sort', 'created_at');
-        $direction = request('direction', 'desc');
+        $direction = strtolower((string) request('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
         $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
@@ -103,11 +103,16 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'phone_country_code' => $request->filled('phone_country_code')
+                ? strtoupper(substr($request->phone_country_code, 0, 2))
+                : null,
+        ]);
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:clients,email',
-            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone_country_code' => ['required', 'string', 'size:2', Rule::exists('countries', 'code')],
             'phone' => ['required', 'string', 'regex:/^\+[0-9]{10,15}$/', Rule::unique('clients', 'phone')],
             'business_id' => 'required|exists:businesses,id',
         ], [
@@ -115,7 +120,7 @@ class ClientController extends Controller
             'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        $phoneCountryCode = Country::find($request->phone_country_id)?->code;
+        $phoneCountryCode = $request->phone_country_code;
         $client = Client::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -144,11 +149,16 @@ class ClientController extends Controller
      */
     public function update(Request $request, Client $client)
     {
+        $request->merge([
+            'phone_country_code' => $request->filled('phone_country_code')
+                ? strtoupper(substr($request->phone_country_code, 0, 2))
+                : null,
+        ]);
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:clients,email,'.$client->id,
-            'phone_country_id' => ['required', 'exists:countries,id'],
+            'phone_country_code' => ['required', 'string', 'size:2', Rule::exists('countries', 'code')],
             'phone' => [
                 'required',
                 'string',
@@ -161,7 +171,7 @@ class ClientController extends Controller
             'phone.unique' => 'Этот телефон уже используется.',
         ]);
 
-        $phoneCountryCode = Country::find($request->phone_country_id)?->code;
+        $phoneCountryCode = $request->phone_country_code;
         $client->update([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,

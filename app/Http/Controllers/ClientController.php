@@ -178,7 +178,7 @@ class ClientController extends Controller
 
         $validated = $request->validated();
         $phoneE164 = $validated['phone'];
-        $phoneCountryCode = Country::find($validated['phone_country_id'])?->code;
+        $phoneCountryCode = strtoupper(substr($validated['phone_country_code'], 0, 2));
 
         $client = $this->clientRepository->create([
             'business_id' => $business->id,
@@ -315,7 +315,7 @@ class ClientController extends Controller
 
         $validated = $request->validated();
         $phoneE164 = $validated['phone'];
-        $phoneCountryCode = Country::find($validated['phone_country_id'])?->code;
+        $phoneCountryCode = strtoupper(substr($validated['phone_country_code'], 0, 2));
 
         $client->update([
             'first_name' => $validated['first_name'],

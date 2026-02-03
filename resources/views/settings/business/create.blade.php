@@ -45,13 +45,13 @@
                             Адрес страницы онлайн-записи <span class="text-rose-500">*</span>
                         </label>
                         <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                            По этой ссылке клиенты будут записываться к вам. Придумайте короткий адрес латиницей (буквы, цифры, дефис).
+                            
                         </p>
                         <div class="relative">
                             <input type="text" id="slug" name="slug" required
                                 value="{{ old('slug') }}"
                                 class="w-full px-4 py-2.5 border {{ $errors->has('slug') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono transition-colors"
-                                placeholder="например: salon-krasoty или ip-ivanov"
+                                placeholder="ip-ivanov"
                                 autocomplete="off">
                             <div id="slugChecking" class="hidden absolute right-3 top-1/2 -translate-y-1/2">
                                 <div class="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
@@ -66,7 +66,7 @@
                         <div class="mt-2 flex flex-wrap items-baseline gap-1 text-xs text-slate-500 dark:text-slate-400">
                             <span>Ссылка для клиентов:</span>
                             <span class="font-mono text-indigo-600 dark:text-indigo-400 break-all">
-                                {{ rtrim(config('app.url'), '/') }}/book/<span id="slugPreviewValue">{{ old('slug', 'ваш-адрес') }}</span>
+                                {{ rtrim(config('app.url'), '/') }}/book/<span id="slugPreviewValue">{{ old('slug', 'ivanov') }}</span>
                             </span>
                         </div>
                         @error('slug')

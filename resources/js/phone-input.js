@@ -81,13 +81,11 @@ function initPhoneInputs() {
             if (fullNumber) {
                 hiddenPhone.value = fullNumber;
                 hiddenCountryId.value = countryId;
-                if (sendCountryCode && hiddenCountryCode)
-                    hiddenCountryCode.value = iso2;
+                if (hiddenCountryCode) hiddenCountryCode.value = iso2;
             } else {
                 hiddenPhone.value = "";
                 hiddenCountryId.value = "";
-                if (sendCountryCode && hiddenCountryCode)
-                    hiddenCountryCode.value = "";
+                if (hiddenCountryCode) hiddenCountryCode.value = "";
             }
         }
 

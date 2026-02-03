@@ -38,6 +38,16 @@ class ClientRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation (код страны из виджета приходит в нижнем регистре).
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone_country_code') && is_string($this->phone_country_code)) {
+            $this->merge(['phone_country_code' => strtoupper(substr($this->phone_country_code, 0, 2))]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -58,7 +68,7 @@ class ClientRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
-            'phone_country_id' => ['required', 'exists:countries,id'], // в форме — id из справочника, в БД сохраняем код
+            'phone_country_code' => ['required', 'string', 'size:2', Rule::exists('countries', 'code')],
             'phone' => $phoneRule,
         ];
     }
@@ -76,8 +86,9 @@ class ClientRequest extends FormRequest
             'last_name.max' => 'Фамилия не должна превышать 255 символов.',
             'email.email' => 'Введите корректный email адрес.',
             'email.max' => 'Email не должен превышать 255 символов.',
-            'phone_country_id.required' => 'Выберите страну.',
-            'phone_country_id.exists' => 'Выбранная страна не найдена.',
+            'phone_country_code.required' => 'Выберите страну.',
+            'phone_country_code.size' => 'Код страны должен быть 2 символа.',
+            'phone_country_code.exists' => 'Выбранная страна не найдена.',
             'phone.required' => 'Телефон обязателен для заполнения.',
             'phone.regex' => 'Телефон должен быть в формате E.164 (например, +375291234567).',
         ];
