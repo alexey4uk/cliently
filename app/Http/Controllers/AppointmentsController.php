@@ -655,11 +655,10 @@ class AppointmentsController extends Controller
         $oldStatus = $appointment->status;
         $appointment->update(['status' => 'cancelled']);
 
-        // Отправить уведомление в Telegram
+        // Отправить уведомление в Telegram (клиенту; сотрудникам — через notifyStatusChanged ниже)
         TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
-        TelegramNotificationService::sendAppointmentStatusChanged($appointment, $oldStatus);
 
-        // Отправить системное уведомление
+        // Отправить системное уведомление (в т.ч. Telegram сотрудникам)
         AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
 
         return redirect()->route('appointments.index')->with('success', 'Запись отменена');

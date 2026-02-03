@@ -173,7 +173,7 @@ class TelegramNotificationService
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
             Log::error(
-                'Telegram notification failed for user: '.$e->getMessage(),
+                'Telegram notification failed for user: ' . $e->getMessage(),
                 [
                     'user_id' => $user->id,
                     'chat_id' => $user->telegram_chat_id,
@@ -203,7 +203,7 @@ class TelegramNotificationService
             $chat->message($message)->send();
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем выполнение
-            Log::error('Telegram notification failed: '.$e->getMessage());
+            Log::error('Telegram notification failed: ' . $e->getMessage());
         }
     }
 
@@ -236,8 +236,8 @@ class TelegramNotificationService
         $message = "💬 Новый комментарий к тикету #{$ticket->id}\n\n";
         $message .= "📋 Тикет: {$ticket->title}\n";
         $message .=
-            '👤 Автор: '.($commentAuthor->name ?? 'Пользователь')."\n";
-        $message .= '💬 Комментарий: '.substr($comment->content, 0, 200);
+            '👤 Автор: ' . ($commentAuthor->name ?? 'Пользователь') . "\n";
+        $message .= '💬 Комментарий: ' . substr($comment->content, 0, 200);
         if (strlen($comment->content) > 200) {
             $message .= '...';
         }
@@ -282,7 +282,7 @@ class TelegramNotificationService
         $message = "👤 Вам назначен тикет #{$ticket->id}\n\n";
         $message .= "📋 {$ticket->title}\n";
         if ($ticket->description) {
-            $message .= '📝 '.substr($ticket->description, 0, 200);
+            $message .= '📝 ' . substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
                 $message .= '...';
             }
@@ -303,7 +303,7 @@ class TelegramNotificationService
         $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
 
         if ($ticket->description) {
-            $message .= '📝 '.substr($ticket->description, 0, 200);
+            $message .= '📝 ' . substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
                 $message .= '...';
             }
@@ -315,7 +315,7 @@ class TelegramNotificationService
             'open' => '🔄 В работе',
             'completed' => '✅ Выполнен',
             'cancelled' => '❌ Отменен',
-            default => '📌 '.ucfirst($ticket->status),
+            default => '📌 ' . ucfirst($ticket->status),
         };
         $message .= "📊 Статус: {$statusText}\n";
 
@@ -347,9 +347,9 @@ class TelegramNotificationService
         $message = "🏢 Новый бизнес зарегистрирован\n\n";
         $message .= "📋 Название: {$business->name}\n";
         $message .=
-            '👤 Владелец: '.($owner ? $owner->name : 'Не указан')."\n";
+            '👤 Владелец: ' . ($owner ? $owner->name : 'Не указан') . "\n";
         $message .=
-            '📧 Email: '.($owner ? $owner->email : 'Не указан')."\n";
+            '📧 Email: ' . ($owner ? $owner->email : 'Не указан') . "\n";
 
         self::sendMessageToUser($admin, $message);
     }
@@ -370,11 +370,11 @@ class TelegramNotificationService
 
         $message = "🎫 Новый тикет от пользователя\n\n";
         $message .= "📋 Тикет #{$ticket->id}: {$ticket->title}\n";
-        $message .= '🏢 Бизнес: '.($business->name ?? 'Не указан')."\n";
+        $message .= '🏢 Бизнес: ' . ($business->name ?? 'Не указан') . "\n";
         $message .=
-            '👤 Создатель: '.($creator ? $creator->name : 'Не указан')."\n";
+            '👤 Создатель: ' . ($creator ? $creator->name : 'Не указан') . "\n";
         if ($ticket->description) {
-            $message .= '📝 '.substr($ticket->description, 0, 200);
+            $message .= '📝 ' . substr($ticket->description, 0, 200);
             if (strlen($ticket->description) > 200) {
                 $message .= '...';
             }
