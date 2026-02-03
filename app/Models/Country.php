@@ -62,6 +62,7 @@ class Country extends Model
     /**
      * Find country by phone number prefix (calling code).
      * Phone may be in format "+375 29 123-45-67" or "375291234567".
+     * Uses all countries with calling_code (not only is_active) so that UA, RU, etc. are detected.
      *
      * @param  string  $phone  Full phone number with or without + and spaces
      */
@@ -72,7 +73,7 @@ class Country extends Model
             return null;
         }
 
-        $countries = static::where('is_active', true)->get();
+        $countries = static::whereNotNull('calling_code')->where('calling_code', '!=', '')->get();
         $best = null;
         $bestPrefixLength = 0;
 

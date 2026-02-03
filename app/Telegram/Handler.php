@@ -1392,7 +1392,8 @@ class Handler extends WebhookHandler
                     ->first();
             }
 
-            $countryBy = \App\Models\Country::getCached()->firstWhere('code', 'BY');
+            // Определяем страну по префиксу номера для phone_country_code (SMS и др.)
+            $countryBy = \App\Models\Country::findByPhonePrefix($phone);
 
             if (! $client) {
                 if (! $subscriptionService->canCreateClient($user)) {
