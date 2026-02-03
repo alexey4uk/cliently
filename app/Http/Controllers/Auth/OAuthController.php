@@ -24,6 +24,8 @@ class OAuthController extends Controller
         try {
             return $this->oauthService->getRedirectUrl($provider);
         } catch (\Exception $e) {
+            report($e);
+
             return redirect()->route('login')
                 ->with('error', 'Ошибка авторизации: '.$e->getMessage());
         }
@@ -57,6 +59,8 @@ class OAuthController extends Controller
                 ->with('success', 'Вы успешно авторизовались через '.
                     config("oauth.providers.{$provider}.name"));
         } catch (\Exception $e) {
+            report($e);
+
             return redirect()->route('login')
                 ->with('error', 'Ошибка авторизации: '.$e->getMessage());
         }
