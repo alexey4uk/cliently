@@ -29,7 +29,7 @@ class TelegramKeyboards
     public static function restartAndCancel(): Keyboard
     {
         return Keyboard::make()->row([
-            Button::make('🔄 Начать заново')->action('restart'),
+            Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
             Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
         ]);
     }
@@ -59,7 +59,7 @@ class TelegramKeyboards
             ->row($buttons)
             ->chunk($chunkSize)
             ->row([
-                Button::make('🔄 Начать заново')->action('restart'),
+                Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ]);
     }
@@ -191,14 +191,14 @@ class TelegramKeyboards
         $navButtons = [];
 
         if ($hasPrevMonth) {
-            $navButtons[] = Button::make('⬅️')->action("calendar_prev_{$month}");
+            $navButtons[] = Button::make(TelegramMessages::BTN_BACK)->action("calendar_prev_{$month}");
         }
 
-        $navButtons[] = Button::make('➡️')->action("calendar_next_{$month}");
+        $navButtons[] = Button::make('Далее')->action("calendar_next_{$month}");
 
         // Если нет предыдущего месяца, добавляем пустую кнопку для выравнивания
         if (! $hasPrevMonth) {
-            $navButtons = [Button::make('➖')->action('disabled_empty'), ...$navButtons];
+            $navButtons = [Button::make('—')->action('disabled_empty'), ...$navButtons];
         }
 
         $keyboard = $keyboard->row($navButtons);
@@ -206,7 +206,7 @@ class TelegramKeyboards
         // Кнопки навигации
         return $keyboard
             ->row([
-                Button::make('🔄 Начать заново')->action('restart'),
+                Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ]);
     }
@@ -306,7 +306,7 @@ class TelegramKeyboards
     public static function timesEmpty(): Keyboard
     {
         return Keyboard::make()->row([
-            Button::make('🔄 Начать заново')->action('restart'),
+            Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
             Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
         ]);
     }
@@ -324,7 +324,7 @@ class TelegramKeyboards
                 Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
             ])
             ->row([
-                Button::make('🔄 Начать заново')->action('restart'),
+                Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
             ]);
     }
 
@@ -389,19 +389,19 @@ class TelegramKeyboards
 
         // Кнопка "Назад" (предыдущая страница)
         if ($currentPage > 1) {
-            $navButtons[] = Button::make('⬅️ Назад')->action("page_{$currentPage}_prev");
+            $navButtons[] = Button::make(TelegramMessages::BTN_BACK)->action("page_{$currentPage}_prev");
         } else {
-            $navButtons[] = Button::make('⬅️')->action('disabled_prev');
+            $navButtons[] = Button::make(TelegramMessages::BTN_BACK)->action('disabled_prev');
         }
 
         // Информация о странице
-        $navButtons[] = Button::make("📄 {$currentPage}/{$totalPages}")->action('disabled_page');
+        $navButtons[] = Button::make("{$currentPage}/{$totalPages}")->action('disabled_page');
 
         // Кнопка "Вперед" (следующая страница)
         if ($currentPage < $totalPages) {
-            $navButtons[] = Button::make('Вперед ➡️')->action("page_{$currentPage}_next");
+            $navButtons[] = Button::make('Далее')->action("page_{$currentPage}_next");
         } else {
-            $navButtons[] = Button::make('➡️')->action('disabled_next');
+            $navButtons[] = Button::make('Далее')->action('disabled_next');
         }
 
         return $keyboard->row($navButtons);

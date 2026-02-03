@@ -320,7 +320,7 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $message = "🏢 Выберите бизнес для записи:\n\n";
+        $message = TelegramMessages::MSG_SELECT_BUSINESS_CATALOG."\n\n";
         $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
             'current' => $page,
             'total' => $totalPages,
@@ -634,43 +634,36 @@ class Handler extends WebhookHandler
         $message = TelegramMessages::MSG_CONFIRMATION_HEADER;
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '📍',
                 'label' => 'Локация',
                 'value' => $location->name,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '💇‍♀️',
                 'label' => 'Услуга',
                 'value' => $service->name,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '👨‍💼',
                 'label' => 'Мастер',
                 'value' => $master->first_name.' '.$master->last_name,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '📅',
                 'label' => 'Дата',
                 'value' => $date,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '⏰',
                 'label' => 'Время',
                 'value' => $time,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '👤',
                 'label' => 'Клиент',
                 'value' => $data['client_data']['first_name'],
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
-                'emoji' => '📱',
                 'label' => 'Телефон',
                 'value' => $data['client_data']['phone'],
             ])."\n";
@@ -683,7 +676,6 @@ class Handler extends WebhookHandler
                 TelegramMessages::format(
                     TelegramMessages::MSG_CONFIRMATION_LINE,
                     [
-                        'emoji' => '📝',
                         'label' => 'Примечание',
                         'value' => $data['client_data']['notes'],
                     ],
@@ -764,16 +756,8 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $location = $this->botService->findLocation($locationId);
-        $message = TelegramMessages::format(
-            TelegramMessages::MSG_SELECT_SERVICE,
-            [
-                'location' => $location->name,
-            ],
-        );
-
         $this->replyWithMessage(
-            $message,
+            TelegramMessages::MSG_SELECT_SERVICE,
             TelegramKeyboards::services($services),
         );
 
@@ -840,14 +824,10 @@ class Handler extends WebhookHandler
             return;
         }
 
-        $message = TelegramMessages::format(
+        $this->replyWithMessage(
             TelegramMessages::MSG_SELECT_MASTER,
-            [
-                'service' => $service->name,
-            ],
+            TelegramKeyboards::masters($masters),
         );
-
-        $this->replyWithMessage($message, TelegramKeyboards::masters($masters));
 
         $userId =
             $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
