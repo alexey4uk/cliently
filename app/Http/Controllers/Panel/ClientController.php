@@ -41,7 +41,7 @@ class ClientController extends Controller
             );
 
         if ($search) {
-            $searchTerm = $search . '*';
+            $searchTerm = $search.'*';
             $query->where(function ($q) use ($search, $searchTerm) {
                 $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
                     ->orWhereIn('id', function ($subquery) use ($search) {
@@ -147,7 +147,7 @@ class ClientController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:clients,email,' . $client->id,
+            'email' => 'nullable|email|unique:clients,email,'.$client->id,
             'phone_country_id' => ['required', 'exists:countries,id'],
             'phone' => [
                 'required',

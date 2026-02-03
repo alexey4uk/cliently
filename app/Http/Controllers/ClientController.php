@@ -49,7 +49,7 @@ class ClientController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->whereFullText(['first_name', 'last_name'], $search)
                     ->orWhere('phone', 'like', "{$search}%")
-                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "{$search}%"))
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "{$search}%"))
                     ->orWhere('email', 'like', "{$search}%");
             });
         }
@@ -380,7 +380,7 @@ class ClientController extends Controller
                 $q->where('first_name', 'like', "%{$search}%")
                     ->orWhere('last_name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhereHas('phones', fn($p) => $p->where('phone', 'like', "%{$search}%"))
+                    ->orWhereHas('phones', fn ($p) => $p->where('phone', 'like', "%{$search}%"))
                     ->orWhere('email', 'like', "%{$search}%");
             });
         }
@@ -427,7 +427,7 @@ class ClientController extends Controller
 
         $clients = $query->get();
 
-        $filename = 'clients_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'clients_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-type' => 'text/csv',

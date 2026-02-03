@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PublicAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Client;
-use App\Models\Country;
 use App\Repositories\BusinessRepositoryInterface;
 use App\Services\AppointmentNotificationService;
 use App\Services\AppointmentSlotService;
@@ -299,7 +298,7 @@ class AppointmentController extends Controller
 
         if (! $client) {
             $client = Client::where('business_id', $business->id)
-                ->whereHas('phones', fn($q) => $q->where('phone', $phone))
+                ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
                 ->first();
         }
 
@@ -314,7 +313,7 @@ class AppointmentController extends Controller
 
                 return redirect()->back()
                     ->withInput()
-                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: ' . $business->phone);
+                    ->with('error', 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи по телефону: '.$business->phone);
             }
 
             $client = Client::create([

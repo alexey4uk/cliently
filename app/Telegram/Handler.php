@@ -379,7 +379,7 @@ class Handler extends WebhookHandler
         $message =
             TelegramMessages::format(TelegramMessages::MSG_SEARCH_RESULTS, [
                 'query' => $query,
-            ]) . "\n\n";
+            ])."\n\n";
         $message .= TelegramMessages::format(TelegramMessages::MSG_PAGE_INFO, [
             'current' => $page,
             'total' => $totalPages,
@@ -430,13 +430,13 @@ class Handler extends WebhookHandler
                 // На этих шагах нужно использовать кнопки
                 // Показываем сообщение об ошибке отдельно, не редактируя интерфейс записи
                 Log::warning(
-                    'Text input on step that requires buttons: ' . $state->step,
+                    'Text input on step that requires buttons: '.$state->step,
                 );
                 $this->chat->message(TelegramMessages::MSG_USE_BUTTONS)->send();
                 break;
             default:
                 Log::warning(
-                    'Unknown step in handleTextMessage: ' . $state->step,
+                    'Unknown step in handleTextMessage: '.$state->step,
                 );
                 $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
         }
@@ -511,8 +511,8 @@ class Handler extends WebhookHandler
         $message =
             TelegramMessages::format(TelegramMessages::MSG_STATUS_NAME, [
                 'name' => $name,
-            ]) .
-            "\n\n" .
+            ]).
+            "\n\n".
             TelegramMessages::MSG_ENTER_PHONE;
 
         $this->replyWithMessage(
@@ -550,12 +550,12 @@ class Handler extends WebhookHandler
         $message =
             TelegramMessages::format(TelegramMessages::MSG_STATUS_NAME, [
                 'name' => $data['client_data']['first_name'],
-            ]) .
-            "\n" .
+            ]).
+            "\n".
             TelegramMessages::format(TelegramMessages::MSG_STATUS_PHONE, [
                 'phone' => $cleaned,
-            ]) .
-            "\n\n" .
+            ]).
+            "\n\n".
             TelegramMessages::MSG_ENTER_NOTES;
 
         $this->replyWithMessage($message, TelegramKeyboards::skipAndCancel());
@@ -626,7 +626,7 @@ class Handler extends WebhookHandler
         $date = Carbon::parse($data['date'])->format('d.m.Y');
         $time = $data['time'];
         if (is_string($time) && ! str_contains($time, ':')) {
-            $time = $time . ':00';
+            $time = $time.':00';
         }
         $time = Carbon::parse($time)->format('H:i');
 
@@ -637,43 +637,43 @@ class Handler extends WebhookHandler
                 'emoji' => '📍',
                 'label' => 'Локация',
                 'value' => $location->name,
-            ]) . "\n";
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '💇‍♀️',
                 'label' => 'Услуга',
                 'value' => $service->name,
-            ]) . "\n";
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '👨‍💼',
                 'label' => 'Мастер',
-                'value' => $master->first_name . ' ' . $master->last_name,
-            ]) . "\n";
+                'value' => $master->first_name.' '.$master->last_name,
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '📅',
                 'label' => 'Дата',
                 'value' => $date,
-            ]) . "\n";
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '⏰',
                 'label' => 'Время',
                 'value' => $time,
-            ]) . "\n";
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '👤',
                 'label' => 'Клиент',
                 'value' => $data['client_data']['first_name'],
-            ]) . "\n";
+            ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'emoji' => '📱',
                 'label' => 'Телефон',
                 'value' => $data['client_data']['phone'],
-            ]) . "\n";
+            ])."\n";
 
         if (
             isset($data['client_data']['notes']) &&
@@ -687,7 +687,7 @@ class Handler extends WebhookHandler
                         'label' => 'Примечание',
                         'value' => $data['client_data']['notes'],
                     ],
-                ) . "\n";
+                )."\n";
         }
 
         $this->replyWithMessage($message, TelegramKeyboards::confirmation());
@@ -960,7 +960,7 @@ class Handler extends WebhookHandler
             } elseif ($direction === 'next') {
                 $newPage = $currentPage + 1;
             } else {
-                Log::warning('Unknown page action: ' . $action);
+                Log::warning('Unknown page action: '.$action);
                 $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
 
                 return;
@@ -996,7 +996,7 @@ class Handler extends WebhookHandler
         $states = TelegramUserState::where('telegram_user_id', $userId)->get();
 
         if ($states->isEmpty()) {
-            Log::warning('No states found for user: ' . $userId);
+            Log::warning('No states found for user: '.$userId);
             $this->replyWithMessage('❌ Сессия не найдена.');
 
             return;
@@ -1063,7 +1063,7 @@ class Handler extends WebhookHandler
 
                 if ($locationId && $serviceId && $masterId) {
                     $monthDate = $currentMonth
-                        ? Carbon::parse($currentMonth . '-01')
+                        ? Carbon::parse($currentMonth.'-01')
                         : Carbon::today();
                     $nextMonth = $monthDate->addMonth()->format('Y-m');
                     $this->showTimeSelection(
@@ -1081,7 +1081,7 @@ class Handler extends WebhookHandler
             $this->showTimeSlots($business, $date, $state);
         } elseif (str_starts_with($action, 'calendar_prev_')) {
             $month = str_replace('calendar_prev_', '', $action);
-            $monthDate = Carbon::parse($month . '-01');
+            $monthDate = Carbon::parse($month.'-01');
             $prevMonth = $monthDate->subMonth()->format('Y-m');
 
             $locationId = $state?->data['location_id'] ?? null;
@@ -1099,7 +1099,7 @@ class Handler extends WebhookHandler
             }
         } elseif (str_starts_with($action, 'calendar_next_')) {
             $month = str_replace('calendar_next_', '', $action);
-            $monthDate = Carbon::parse($month . '-01');
+            $monthDate = Carbon::parse($month.'-01');
             $nextMonth = $monthDate->addMonth()->format('Y-m');
 
             $locationId = $state?->data['location_id'] ?? null;
@@ -1159,7 +1159,7 @@ class Handler extends WebhookHandler
                 $this->replyWithMessage(TelegramMessages::MSG_START);
             }
         } else {
-            Log::warning('Unknown action: ' . $action);
+            Log::warning('Unknown action: '.$action);
             $this->replyWithMessage(TelegramMessages::MSG_UNKNOWN_COMMAND);
         }
     }
@@ -1201,12 +1201,12 @@ class Handler extends WebhookHandler
         // Формируем сообщение
         $message =
             TelegramMessages::format(TelegramMessages::MSG_SELECT_DATE, [
-                'master' => $master->first_name . ' ' . $master->last_name,
-            ]) .
-            "\n\n📅 " .
-            Carbon::parse($month . '-01')
-            ->locale('ru')
-            ->isoFormat('MMMM YYYY');
+                'master' => $master->first_name.' '.$master->last_name,
+            ]).
+            "\n\n📅 ".
+            Carbon::parse($month.'-01')
+                ->locale('ru')
+                ->isoFormat('MMMM YYYY');
 
         // Проверяем возможность перехода к предыдущему месяцу
         $hasPrevMonth = TelegramKeyboards::hasPrevMonth($month);
@@ -1322,7 +1322,7 @@ class Handler extends WebhookHandler
             $time = trim($time);
 
             if (! str_contains($time, ':')) {
-                $time = $time . ':00';
+                $time = $time.':00';
             }
 
             try {
@@ -1330,9 +1330,9 @@ class Handler extends WebhookHandler
                 $time = $carbonTime->format('H:i');
             } catch (\Exception $e) {
                 Log::error(
-                    'Error parsing time: ' .
-                        $e->getMessage() .
-                        ', time: ' .
+                    'Error parsing time: '.
+                        $e->getMessage().
+                        ', time: '.
                         $time,
                 );
                 $time = '12:00';
@@ -1401,7 +1401,7 @@ class Handler extends WebhookHandler
             $client = Client::where('business_id', $business->id)->where('phone', $phone)->first();
             if (! $client) {
                 $client = Client::where('business_id', $business->id)
-                    ->whereHas('phones', fn($q) => $q->where('phone', $phone))
+                    ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
                     ->first();
             }
 
@@ -1443,7 +1443,7 @@ class Handler extends WebhookHandler
             // Форматируем время
             $time = $data['time'];
             if (is_string($time) && ! str_contains($time, ':')) {
-                $time = $time . ':00';
+                $time = $time.':00';
             }
             $time = Carbon::parse($time)->format('H:i');
 
@@ -1494,8 +1494,8 @@ class Handler extends WebhookHandler
                     'date' => $formattedDate,
                     'time' => $formattedTime,
                     'service' => $appointment->service->name,
-                    'master' => $appointment->master->first_name .
-                        ' ' .
+                    'master' => $appointment->master->first_name.
+                        ' '.
                         $appointment->master->last_name,
                     'location' => $appointment->location->name,
                 ],
@@ -1506,7 +1506,7 @@ class Handler extends WebhookHandler
             // Очищаем ID после отправки финального сообщения
             $this->lastMessageId = null;
         } catch (\Exception $e) {
-            Log::error('Error creating appointment: ' . $e->getMessage());
+            Log::error('Error creating appointment: '.$e->getMessage());
             $this->replyWithMessage(TelegramMessages::MSG_ERROR);
         }
     }
@@ -1521,7 +1521,7 @@ class Handler extends WebhookHandler
             // Нужно использовать deleteMessage() и вызвать send()
             $this->chat->deleteMessage($messageId)->send();
         } catch (\Exception $e) {
-            Log::error('✗ Failed to delete user message: ' . $e->getMessage());
+            Log::error('✗ Failed to delete user message: '.$e->getMessage());
         }
     }
 
@@ -1537,7 +1537,7 @@ class Handler extends WebhookHandler
         try {
             $this->chat->deleteMessage($messageId)->send();
         } catch (\Exception $e) {
-            Log::warning('✗ Failed to delete bot message: ' . $e->getMessage());
+            Log::warning('✗ Failed to delete bot message: '.$e->getMessage());
         }
     }
 

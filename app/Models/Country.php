@@ -64,7 +64,6 @@ class Country extends Model
      * Phone may be in format "+375 29 123-45-67" or "375291234567".
      *
      * @param  string  $phone  Full phone number with or without + and spaces
-     * @return \App\Models\Country|null
      */
     public static function findByPhonePrefix(string $phone): ?self
     {

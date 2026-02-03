@@ -56,7 +56,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
         }
 
         return $this->model->where('business_id', $businessId)
-            ->whereHas('phones', fn($q) => $q->where('phone', $phone))
+            ->whereHas('phones', fn ($q) => $q->where('phone', $phone))
             ->first();
     }
 
