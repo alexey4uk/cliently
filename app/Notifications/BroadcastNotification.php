@@ -15,6 +15,7 @@ class BroadcastNotification extends Notification implements ShouldQueue
         public string $title,
         public string $message
     ) {
+        $this->onConnection('broadcasts');
         $this->onQueue('broadcasts');
     }
 
