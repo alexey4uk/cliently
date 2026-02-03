@@ -7,6 +7,10 @@
         )) 
         ? 'true' : 'false' 
     }},
+    appointmentsMenuOpen: {{ 
+        (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar'))
+        ? 'true' : 'false' 
+    }},
     clientCatalogOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
             Request::routeIs('services.*') ||
@@ -132,6 +136,7 @@
         // Если sidebar свернут, автоматически открываем подменю для показа иконок
         if (this.collapsed) {
             this.clientWorkOpen = true;
+            this.appointmentsMenuOpen = true;
             this.clientCatalogOpen = true;
             this.clientOnlineOpen = true;
             this.clientTeamOpen = true;
@@ -161,6 +166,7 @@
                 // При сворачивании автоматически открываем подменю
                 if (this.collapsed) {
                     this.clientWorkOpen = true;
+                    this.appointmentsMenuOpen = true;
                     this.clientCatalogOpen = true;
                     this.clientOnlineOpen = true;
                     this.clientTeamOpen = true;

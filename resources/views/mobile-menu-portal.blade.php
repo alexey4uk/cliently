@@ -3,6 +3,7 @@
     open: false,
     collapsed: false,
     clientWorkOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('appointments.*') || Request::routeIs('clients.*'))) ? 'true' : 'false' }},
+    appointmentsMenuOpen: {{ (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')) ? 'true' : 'false' }},
     clientCatalogOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*'))) ? 'true' : 'false' }},
     clientOnlineOpen: {{ (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('settings.online-booking*')) ? 'true' : 'false' }},
     clientTeamOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('settings.users*') || Request::routeIs('settings.roles*'))) ? 'true' : 'false' }},

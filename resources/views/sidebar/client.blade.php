@@ -31,31 +31,125 @@
                         $hasDailyAccess = $hasBusinessPermission('client.appointments.view') || $hasBusinessPermission('client.clients.view');
                     @endphp
                     @if($hasDailyAccess)
-                    <!-- Быстрый доступ: записи, календарь, клиенты без группы -->
+                    <!-- Быстрый доступ: записи (выпадающее), календарь, клиенты без группы -->
                     <div class="space-y-1">
                             @if($hasBusinessPermission('client.appointments.view'))
-                                <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index') }}"
-                                    class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar')
-                                        ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-100 dark:ring-indigo-500/20'
-                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                                    :class="collapsed ? 'justify-center mx-2' : 'px-3'"
-                                    :title="collapsed ? 'Записи' : ''"
-                                    x-data="{ tooltip: false }"
-                                    @mouseenter="if (collapsed) tooltip = true"
-                                    @mouseleave="tooltip = false">
-                                    <div class="flex items-center justify-center flex-shrink-0"
-                                        :class="collapsed ? 'mx-auto w-7 h-7' : 'w-5 h-5 mr-3'">
-                                        <i class="fa-solid fa-calendar-check transition-transform duration-200 {{ Request::routeIs('appointments.*') && !Request::routeIs('appointments.calendar') ? 'scale-110' : 'group-hover:scale-110' }}"
-                                            :class="collapsed ? 'text-lg' : 'text-base'"></i>
-                                    </div>
-                                    <span x-show="!collapsed" x-cloak
-                                        class="sidebar-text whitespace-nowrap font-medium">Записи</span>
-                                    <div x-show="tooltip && collapsed"
-                                         x-transition
-                                         class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
-                                        Записи
-                                    </div>
-                                </a>
+                                <!-- Записи: выпадающее меню -->
+                                <div>
+                                    <button @click="appointmentsMenuOpen = !appointmentsMenuOpen" x-show="!collapsed" x-cloak
+                                        class="sidebar-section-title w-full flex items-center justify-between py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative text-slate-700 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100"
+                                        :class="collapsed ? 'justify-center mx-2' : 'px-3'">
+                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            <div class="flex items-center justify-center flex-shrink-0 w-5 h-5">
+                                                <i class="fa-solid fa-calendar-check text-base"></i>
+                                            </div>
+                                            <span class="sidebar-text whitespace-nowrap font-medium">Записи</span>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300 flex-shrink-0"
+                                            :class="{ 'rotate-180': appointmentsMenuOpen }"></i>
+                                    </button>
+                                    <nav x-show="appointmentsMenuOpen || collapsed"
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 -translate-y-1"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         x-transition:leave="transition ease-in duration-150"
+                                         x-transition:leave-start="opacity-100 translate-y-0"
+                                         x-transition:leave-end="opacity-0 -translate-y-1"
+                                         class="space-y-1 overflow-hidden mt-0.5">
+                                        @if($hasBusinessPermission('client.appointments.create'))
+                                            <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.create') }}"
+                                                class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.create')
+                                                    ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                                :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                                :title="collapsed ? 'Создать' : ''"
+                                                x-data="{ tooltip: false }"
+                                                @mouseenter="if (collapsed) tooltip = true"
+                                                @mouseleave="tooltip = false">
+                                                <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                    <i class="fa-solid fa-plus text-xs"></i>
+                                                </div>
+                                                <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Создать</span>
+                                                <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Создать</div>
+                                            </a>
+                                        @endif
+                                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index') }}"
+                                            class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.index') && !request('status')
+                                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                            :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                            :title="collapsed ? 'Все записи' : ''"
+                                            x-data="{ tooltip: false }"
+                                            @mouseenter="if (collapsed) tooltip = true"
+                                            @mouseleave="tooltip = false">
+                                            <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                <i class="fa-solid fa-list text-xs"></i>
+                                            </div>
+                                            <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Все записи</span>
+                                            <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Все записи</div>
+                                        </a>
+                                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index', ['status' => 'pending']) }}"
+                                            class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ request('status') === 'pending'
+                                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                            :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                            :title="collapsed ? 'Ожидающие' : ''"
+                                            x-data="{ tooltip: false }"
+                                            @mouseenter="if (collapsed) tooltip = true"
+                                            @mouseleave="tooltip = false">
+                                            <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                <i class="fa-solid fa-clock text-xs text-amber-500"></i>
+                                            </div>
+                                            <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Ожидающие</span>
+                                            <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Ожидающие</div>
+                                        </a>
+                                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index', ['status' => 'confirmed']) }}"
+                                            class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ request('status') === 'confirmed'
+                                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                            :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                            :title="collapsed ? 'Подтвержденные' : ''"
+                                            x-data="{ tooltip: false }"
+                                            @mouseenter="if (collapsed) tooltip = true"
+                                            @mouseleave="tooltip = false">
+                                            <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                <i class="fa-solid fa-circle-check text-xs text-blue-500"></i>
+                                            </div>
+                                            <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Подтвержденные</span>
+                                            <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Подтвержденные</div>
+                                        </a>
+                                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index', ['status' => 'completed']) }}"
+                                            class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ request('status') === 'completed'
+                                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                            :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                            :title="collapsed ? 'Завершенные' : ''"
+                                            x-data="{ tooltip: false }"
+                                            @mouseenter="if (collapsed) tooltip = true"
+                                            @mouseleave="tooltip = false">
+                                            <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                <i class="fa-solid fa-check text-xs text-emerald-500"></i>
+                                            </div>
+                                            <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Завершенные</span>
+                                            <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Завершенные</div>
+                                        </a>
+                                        <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.index', ['status' => 'cancelled']) }}"
+                                            class="group flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200 relative {{ request('status') === 'cancelled'
+                                                ? 'bg-gradient-to-r from-indigo-50 to-indigo-50/50 dark:from-indigo-500/20 dark:to-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                                            :class="collapsed ? 'justify-center mx-2' : 'pl-8 pr-3'"
+                                            :title="collapsed ? 'Отмененные' : ''"
+                                            x-data="{ tooltip: false }"
+                                            @mouseenter="if (collapsed) tooltip = true"
+                                            @mouseleave="tooltip = false">
+                                            <div class="flex items-center justify-center flex-shrink-0" :class="collapsed ? 'mx-auto w-6 h-6' : 'w-4 h-4 mr-2.5'">
+                                                <i class="fa-solid fa-xmark text-xs text-rose-500"></i>
+                                            </div>
+                                            <span x-show="!collapsed" x-cloak class="sidebar-text whitespace-nowrap">Отмененные</span>
+                                            <div x-show="tooltip && collapsed" x-transition class="absolute left-full ml-2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">Отмененные</div>
+                                        </a>
+                                    </nav>
+                                </div>
 
                                 <a @if($isMobile) @click="closeMenu()" @endif href="{{ route('appointments.calendar') }}"
                                     class="group flex items-center py-2.5 text-sm font-medium rounded-lg transition-all duration-200 relative {{ Request::routeIs('appointments.calendar')
