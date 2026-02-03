@@ -3,14 +3,16 @@
 @section('title', 'Выбор времени')
 
 @section('content')
-    <!-- Контейнер без лишних внешних отступов -->
-    <div class="flex-1 overflow-x-hidden">
-        <div class="max-w-3xl lg:max-w-3xl mx-auto sm:px-0">
+    <div class="w-full">
+        <x-breadcrumbs-public-book :business="$business" currentStep="time" :location="$location" :service="$service" />
 
-            <x-breadcrumbs-public-book :business="$business" currentStep="time" :location="$location" :service="$service" />
+        <div class="mb-4">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Выберите время</h2>
+        </div>
 
-            <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" id="appointment-form"
-                class="space-y-6">
+        <script type="application/json" id="public-booking-select-time-config">@json(['datesWithSlots' => $datesWithSlots, 'date' => $date, 'currentDateHasSlots' => count($availableSlots) > 0])</script>
+        <form method="POST" action="{{ route('public.appointments.store', $business->slug) }}" id="appointment-form"
+            class="space-y-6">
                 @csrf
                 <input type="hidden" name="location_id" value="{{ $location->id }}">
                 <input type="hidden" name="service_id" value="{{ $service->id }}">
@@ -22,21 +24,21 @@
 
                 <!-- ВЫБОР ДАТЫ -->
                 <div
-                    class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
-                    <div class="flex items-center gap-3 mb-5">
+                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+                    <div class="flex items-center gap-3 mb-4">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-                            <i class="fa-solid fa-calendar-day text-indigo-600 dark:text-indigo-400"></i>
+                            class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                            <i class="fa-solid fa-calendar-day text-base sm:text-sm"></i>
                         </div>
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Дата визита</h2>
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Дата визита</h2>
                     </div>
 
                     @php $selectedDateCarbon = \Carbon\Carbon::parse($date); @endphp
                     <button type="button" id="toggle-date-selector-btn"
-                        class="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-2xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 group outline-none">
-                        <div class="flex items-center gap-4 text-left">
+                        class="w-full flex items-center justify-between p-3 sm:p-4 min-h-[56px] sm:min-h-0 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 group outline-none touch-manipulation">
+                        <div class="flex items-center gap-3 sm:gap-4 text-left">
                             <div
-                                class="flex flex-col items-center justify-center w-12 h-12 bg-white dark:bg-slate-950 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 group-hover:border-indigo-500 transition-colors">
+                                class="flex flex-col items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 group-hover:border-indigo-500 transition-colors">
                                 <span
                                     class="text-[10px] uppercase font-black text-indigo-600 dark:text-indigo-400 leading-none mb-1">{{ $selectedDateCarbon->locale('ru')->isoFormat('MMM') }}</span>
                                 <span
@@ -55,19 +57,19 @@
                     </button>
 
                     <!-- Календарь -->
-                    <div id="calendar-container" class="hidden mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex items-center justify-between mb-4 px-2">
+                    <div id="calendar-container" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-3 px-1">
                             <button type="button" id="prev-month"
-                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"><i
-                                    class="fa-solid fa-chevron-left"></i></button>
+                                class="min-w-[44px] min-h-[44px] w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 touch-manipulation"><i
+                                    class="fa-solid fa-chevron-left text-sm"></i></button>
                             <h3 id="current-month-year"
-                                class="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white"></h3>
+                                class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white"></h3>
                             <button type="button" id="next-month"
-                                class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"><i
-                                    class="fa-solid fa-chevron-right"></i></button>
+                                class="min-w-[44px] min-h-[44px] w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 touch-manipulation"><i
+                                    class="fa-solid fa-chevron-right text-sm"></i></button>
                         </div>
                         <div
-                            class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">
+                            class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-1.5">
                             <div>Пн</div>
                             <div>Вт</div>
                             <div>Ср</div>
@@ -82,30 +84,36 @@
 
                 <!-- ВЫБОР ВРЕМЕНИ -->
                 <div
-                    class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
-                    <div class="flex items-center gap-3 mb-6 px-1">
+                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+                    <div class="flex items-center gap-3 mb-4 px-0">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                            <i class="fa-solid fa-clock text-amber-600 dark:text-amber-400"></i>
+                            class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                            <i class="fa-solid fa-clock text-base sm:text-sm"></i>
                         </div>
-                        <h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">Доступное время</h2>
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Доступное время</h2>
                     </div>
 
                     <div id="time-slots-container">
                         @if (isset($availableSlots) && count($availableSlots) > 0)
                             <div
-                                class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
+                                class="grid grid-cols-4 gap-2 sm:gap-3 w-full">
                                 @foreach ($availableSlots as $slot)
                                     <button type="button" data-time="{{ $slot }}"
-                                        class="time-slot-btn w-full flex items-center justify-center py-3.5 bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all active:scale-95 shadow-sm">
+                                        class="time-slot-btn w-full min-h-[48px] flex items-center justify-center py-3 sm:py-3.5 bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all active:scale-95 touch-manipulation">
                                         {{ $slot }}
                                     </button>
                                 @endforeach
                             </div>
                         @else
                             <div
-                                class="text-center w-full py-10 bg-slate-50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500">
-                                На этот день свободных окон нет
+                                class="text-center w-full py-8 sm:py-10 bg-slate-50 dark:bg-slate-800/20 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500">
+                                <p class="text-sm font-medium">На этот день свободных окон нет</p>
+                                <p class="mt-1 text-xs text-slate-400 dark:text-slate-500">Откройте календарь выше и выберите другую дату</p>
+                                <button type="button" id="scroll-to-calendar-btn"
+                                    class="mt-4 inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors touch-manipulation">
+                                    <i class="fa-solid fa-calendar-day text-sm"></i>
+                                    Выбрать другую дату
+                                </button>
                             </div>
                         @endif
                     </div>
@@ -113,13 +121,13 @@
 
                 <!-- ДАННЫЕ -->
                 <div id="appointment-details"
-                    class="hidden bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-2xl shadow-indigo-500/10">
-                    <div class="flex items-center gap-3 mb-6">
+                    class="hidden bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+                    <div class="flex items-center gap-3 mb-4">
                         <div
-                            class="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-                            <i class="fa-solid fa-address-card text-emerald-600 dark:text-emerald-400"></i>
+                            class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                            <i class="fa-solid fa-address-card text-base sm:text-sm"></i>
                         </div>
-                        <h2 class="text-lg text-slate-900 dark:text-white">Ваши данные</h2>
+                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Ваши данные</h2>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -127,7 +135,7 @@
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Имя *</label>
                             <input type="text" name="first_name" required
                                 value="{{ old('first_name') }}"
-                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('first_name') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('first_name') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                             @error('first_name')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
@@ -135,7 +143,7 @@
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Фамилия</label>
                             <input type="text" name="last_name" value="{{ old('last_name') }}"
-                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('last_name') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('last_name') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                             @error('last_name')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
@@ -158,211 +166,22 @@
                     </div>
 
                     <div
-                        class="mt-8 p-5 bg-indigo-600 dark:bg-indigo-500 rounded-2xl flex items-center justify-between text-white shadow-lg">
+                        class="mt-6 p-4 sm:p-5 bg-indigo-600 dark:bg-indigo-500 rounded-xl flex items-center justify-between text-white">
                         <div class="min-w-0 pr-4">
                             <div class="text-2xl font-black leading-none" id="summary-time">--:--</div>
                             <div class="text-[10px] font-bold uppercase opacity-90 mt-1.5" id="summary-date">Время не
                                 выбрано</div>
                         </div>
                         <button type="submit" id="submit-btn"
-                            class="shrink-0 px-8 py-3.5 bg-white text-indigo-600 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-50 active:scale-95 transition-all">
+                            class="shrink-0 min-h-[44px] px-8 py-3.5 bg-white text-indigo-600 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-50 active:scale-95 transition-all touch-manipulation">
                             Записаться
                         </button>
                     </div>
                 </div>
-            </form>
-        </div>
+        </form>
     </div>
 
-    <style>
-        .time-slot-btn.selected {
-            @apply bg-indigo-600 border-indigo-600 text-white shadow-md !important;
-        }
-
-        .dark .time-slot-btn.selected {
-            @apply bg-indigo-500 border-indigo-500 !important;
-        }
-
-        #calendar-grid button.selected-day {
-            @apply bg-indigo-600 text-white font-black rounded-xl !important;
-        }
-    </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const timeSlots = document.querySelectorAll('.time-slot-btn');
-            const detailsBlock = document.getElementById('appointment-details');
-            const timeInput = document.getElementById('selected-time-input');
-            const timeDisplay = document.getElementById('summary-time');
-            const dateText = document.getElementById('summary-date');
-            const dateInput = document.getElementById('selected-date-input');
-            const form = document.getElementById('appointment-form');
-
-            // Даты со слотами с сегодня до конца месяца
-            const datesWithSlots = @json($datesWithSlots);
-
-            // 1. Выбор времени
-            timeSlots.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    timeSlots.forEach(b => b.classList.remove('selected'));
-                    this.classList.add('selected');
-
-                    const time = this.dataset.time;
-                    timeInput.value = time;
-                    timeDisplay.innerText = time;
-
-                    const d = new Date(dateInput.value);
-                    dateText.innerText = d.toLocaleDateString('ru-RU', {
-                        day: 'numeric',
-                        month: 'long'
-                    });
-
-                    detailsBlock.classList.remove('hidden');
-                    setTimeout(() => detailsBlock.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    }), 100);
-                });
-            });
-
-            // 2. Телефон: виджет intl-tel-input сам заполняет phone (E.164) и phone_country_id при отправке
-
-            // 3. Календарь
-            const calendarGrid = document.getElementById('calendar-grid');
-            const monthLabel = document.getElementById('current-month-year');
-            const toggleBtn = document.getElementById('toggle-date-selector-btn');
-            const container = document.getElementById('calendar-container');
-
-            // Дата текущей страницы
-            const currentPageDate = new Date('{{ $date }}');
-            currentPageDate.setHours(0, 0, 0, 0);
-
-            // Есть ли слоты на текущую дату
-            const currentDateHasSlots = {{ count($availableSlots) > 0 ? 'true' : 'false' }};
-
-            let calendarDate = new Date(currentPageDate);
-
-            function updateCalendar() {
-                const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь',
-                    'Октябрь', 'Ноябрь', 'Декабрь'
-                ];
-                monthLabel.textContent = `${months[calendarDate.getMonth()]} ${calendarDate.getFullYear()}`;
-                calendarGrid.innerHTML = '';
-
-                const firstDayOfMonth = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
-                const dayOfWeek = firstDayOfMonth.getDay();
-                const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-                const cellDate = new Date(firstDayOfMonth);
-                cellDate.setDate(firstDayOfMonth.getDate() - daysToSubtract);
-                cellDate.setHours(0, 0, 0, 0);
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                for (let i = 0; i < 42; i++) {
-                    const year = cellDate.getFullYear();
-                    const month = String(cellDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(cellDate.getDate()).padStart(2, '0');
-                    const cellDateString = `${year}-${month}-${day}`;
-
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-
-                    // Обертка для текста, чтобы добавить точку под числом у "сегодня"
-                    btn.innerHTML = `<span class="relative z-10">${cellDate.getDate()}</span>`;
-
-                    const isCurrentMonth = cellDate.getMonth() === calendarDate.getMonth();
-                    const isPast = cellDate < today;
-                    const isToday = cellDate.getTime() === today.getTime();
-                    const isSelected = cellDate.getTime() === currentPageDate.getTime();
-                    const hasSlots = datesWithSlots[cellDateString] || false;
-
-                    let classList = ['relative', 'py-3', 'text-sm', 'rounded-xl', 'transition-all', 'flex',
-                        'flex-col', 'items-center', 'justify-center', 'font-bold', 'w-full', 'h-full',
-                        'border-2'
-                    ];
-
-                    // 1. Стилизация выбранного дня (Рамка)
-                    if (isSelected) {
-                        classList.push('border-indigo-500', 'bg-indigo-50/50', 'dark:bg-indigo-900/30');
-                    } else {
-                        classList.push('border-transparent');
-                    }
-
-                    // 2. Стилизация сегодня (Цвет и точка)
-                    if (isToday) {
-                        classList.push('text-indigo-600', 'dark:text-indigo-400');
-                        // Добавляем точку под числом
-                        const dot = document.createElement('div');
-                        dot.className = 'absolute bottom-1 w-1 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-full';
-                        btn.appendChild(dot);
-                    }
-
-                    // 3. Основная логика доступности
-                    if (!isCurrentMonth) {
-                        classList.push('text-slate-300', 'dark:text-slate-700', 'opacity-40', 'cursor-default');
-                        btn.disabled = true;
-                    } else if (isPast && !isToday) {
-                        classList.push('text-slate-400', 'dark:text-slate-600', 'opacity-40', 'cursor-not-allowed');
-                        btn.disabled = true;
-                    } else if (!hasSlots) {
-                        classList.push('text-slate-400', 'dark:text-slate-500', 'opacity-60', 'cursor-not-allowed');
-                        btn.disabled = true;
-                    } else {
-                        // Доступный для клика день
-                        if (!isToday) classList.push('text-slate-700', 'dark:text-slate-200');
-                        classList.push('hover:bg-indigo-100', 'dark:hover:bg-indigo-800/40', 'cursor-pointer');
-
-                        btn.onclick = () => {
-                            const url = new URL(window.location.href);
-                            url.searchParams.set('date', cellDateString);
-                            window.location.href = url.toString();
-                        };
-                    }
-
-                    btn.className = classList.join(' ');
-                    calendarGrid.appendChild(btn);
-                    cellDate.setDate(cellDate.getDate() + 1);
-                }
-            }
-
-
-
-            toggleBtn?.addEventListener('click', () => {
-                container.classList.toggle('hidden');
-                document.getElementById('date-selector-icon').classList.toggle('rotate-180');
-                if (!container.classList.contains('hidden')) {
-                    updateCalendar();
-                }
-            });
-
-            document.getElementById('prev-month')?.addEventListener('click', () => {
-                calendarDate.setMonth(calendarDate.getMonth() - 1);
-                updateCalendar();
-            });
-
-            document.getElementById('next-month')?.addEventListener('click', () => {
-                calendarDate.setMonth(calendarDate.getMonth() + 1);
-                updateCalendar();
-            });
-
-            // 4. Валидация и Отправка
-            form.onsubmit = function(e) {
-                if (!timeInput.value) {
-                    e.preventDefault();
-                    alert('Выберите время');
-                    return false;
-                }
-                const btn = document.getElementById('submit-btn');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                return true;
-            };
-
-            if (!container.classList.contains('hidden')) {
-                updateCalendar();
-            }
-        });
-    </script>
+    @push('scripts')
+        @vite('resources/js/public-booking-select-time.js')
+    @endpush
 @endsection

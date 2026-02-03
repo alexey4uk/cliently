@@ -59,7 +59,7 @@
                             <h4 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">
                                 {{ $appointment->service->name }}</h4>
                             <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                {{ number_format($appointment->final_price, 0, ',', ' ') }} Br •
+                                {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN •
                                 {{ $appointment->final_duration }} мин
                             </p>
                         </div>

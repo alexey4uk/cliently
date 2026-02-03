@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/landing.css',
                 'resources/js/welcome.js',
+                'resources/js/public-booking-select-time.js',
             ],
             refresh: true,
         }),

@@ -151,52 +151,52 @@
 
         <!-- Время работы -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Время работы</h2>
-            <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Время работы</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Укажите рабочее время локации</p>
+
+            <div class="space-y-3">
                 <!-- Круглосуточно -->
-                <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
-                    <input type="checkbox" 
-                           name="working_hours[24_hours]" 
-                           value="1"
-                           x-model="is24Hours"
-                           class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
-                    <div class="flex-1">
+                <label class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 w-full transition-colors cursor-pointer"
+                       :class="is24Hours ? 'border-l-4 border-l-green-500 dark:border-l-green-600 bg-green-50/50 dark:bg-green-900/10' : 'border-l-4 border-l-slate-300 dark:border-l-slate-600 bg-slate-50/50 dark:bg-slate-800/50'">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <input type="checkbox"
+                               name="working_hours[24_hours]"
+                               value="1"
+                               x-model="is24Hours"
+                               class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
                         <span class="text-sm font-medium text-slate-900 dark:text-white">Круглосуточно</span>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Работает 24 часа в сутки</p>
                     </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 sm:mt-0 mt-0.5 sm:ml-0">Работает 24 часа в сутки</p>
                 </label>
 
-                <!-- Время работы -->
-                <div x-show="!is24Hours" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="workingHoursFrom" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            С <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="time" 
-                               name="working_hours[from]" 
+                <!-- Рабочие часы (с — до) -->
+                <div x-show="!is24Hours"
+                     x-transition
+                     class="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-green-500 dark:border-l-green-600 bg-green-50/50 dark:bg-green-900/10 w-full">
+                    <span class="text-sm font-medium text-slate-900 dark:text-white shrink-0 w-full sm:w-32">Рабочие часы</span>
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <input type="time"
+                               name="working_hours[from]"
                                id="workingHoursFrom"
                                value="{{ old('working_hours.from', '09:00') }}"
                                :required="!is24Hours"
-                               class="w-full px-4 py-2.5 border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
-                        @error('working_hours.from')
-                            <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="workingHoursTo" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                            До <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="time" 
-                               name="working_hours[to]" 
+                               class="w-24 sm:w-28 px-3 py-2 border {{ $errors->has('working_hours.from') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
+                        <span class="text-slate-400 text-sm">—</span>
+                        <input type="time"
+                               name="working_hours[to]"
                                id="workingHoursTo"
                                value="{{ old('working_hours.to', '18:00') }}"
                                :required="!is24Hours"
-                               class="w-full px-4 py-2.5 border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
-                        @error('working_hours.to')
-                            <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                        @enderror
+                               class="w-24 sm:w-28 px-3 py-2 border {{ $errors->has('working_hours.to') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm">
                     </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">00:00 — 00:00 считается круглосуточной работой</p>
                 </div>
+                @error('working_hours.from')
+                    <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                @enderror
+                @error('working_hours.to')
+                    <p class="mt-1 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                @enderror
                 @error('working_hours')
                     <p class="text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p>
                 @enderror

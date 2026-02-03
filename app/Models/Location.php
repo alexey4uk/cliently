@@ -66,4 +66,36 @@ class Location extends Model
     {
         return $this->primaryPhone?->phone;
     }
+
+    /**
+     * Время работы для отображения: "09:00 – 18:00" или "Круглосуточно"
+     */
+    public function getWorkingHoursDisplayAttribute(): ?string
+    {
+        $data = is_string($this->working_hours)
+            ? json_decode($this->working_hours, true)
+            : $this->working_hours;
+
+        if (empty($data)) {
+            return null;
+        }
+
+        if (! empty($data['24_hours'])) {
+            return 'Круглосуточно';
+        }
+
+        $from = $data['from'] ?? null;
+        $to = $data['to'] ?? null;
+        if ($from && $to) {
+            $fromNorm = \Carbon\Carbon::parse($from)->format('H:i');
+            $toNorm = \Carbon\Carbon::parse($to)->format('H:i');
+            if ($fromNorm === '00:00' && $toNorm === '00:00') {
+                return 'Круглосуточно';
+            }
+
+            return $fromNorm.' – '.$toNorm;
+        }
+
+        return null;
+    }
 }

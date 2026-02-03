@@ -768,7 +768,7 @@ class AppointmentsController extends Controller
                     $appointment->service->name,
                     $appointment->master ? $appointment->master->first_name.' '.$appointment->master->last_name : 'Не назначен',
                     $statusLabels[$appointment->status] ?? $appointment->status,
-                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' Br' : '',
+                    $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' BYN' : '',
                 ]);
             }
 

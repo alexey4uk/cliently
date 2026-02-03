@@ -240,3 +240,27 @@ textarea:focus-visible {
 .dark .card-hover:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
+
+/* Публичная запись: выбор времени и календарь */
+.time-slot-btn.selected {
+    background-color: rgb(79 70 229) !important;
+    border-color: rgb(79 70 229) !important;
+    color: white !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.dark .time-slot-btn.selected {
+    background-color: rgb(99 102 241) !important;
+    border-color: rgb(99 102 241) !important;
+}
+
+#calendar-grid button.selected-day {
+    background-color: rgb(79 70 229) !important;
+    color: white !important;
+    font-weight: 800 !important;
+    border-radius: 0.75rem !important;
+}
+
+.dark #calendar-grid button.selected-day {
+    background-color: rgb(99 102 241) !important;
+}

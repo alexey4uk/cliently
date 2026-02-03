@@ -134,24 +134,41 @@
 
         <!-- Локации и услуги -->
         @if($locations->count() > 0 || $services->count() > 0)
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Связи</h2>
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6"
+             x-data="{
+                 locationCheckboxes: null,
+                 serviceCheckboxes: null,
+                 selectAllLocations() { (this.locationCheckboxes || document.querySelectorAll('input[name=\'location_ids[]\']')).forEach(c => c.checked = true); },
+                 clearAllLocations() { (this.locationCheckboxes || document.querySelectorAll('input[name=\'location_ids[]\']')).forEach(c => c.checked = false); },
+                 selectAllServices() { (this.serviceCheckboxes || document.querySelectorAll('input[name=\'service_ids[]\']')).forEach(c => c.checked = true); },
+                 clearAllServices() { (this.serviceCheckboxes || document.querySelectorAll('input[name=\'service_ids[]\']')).forEach(c => c.checked = false); }
+             }"
+             x-init="locationCheckboxes = document.querySelectorAll('input[name=\'location_ids[]\']'); serviceCheckboxes = document.querySelectorAll('input[name=\'service_ids[]\']');">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Связи</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Укажите, в каких локациях работает мастер и какие услуги оказывает</p>
 
-            <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 @if($locations->count() > 0)
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                        Локации
-                    </label>
-                    <div class="space-y-3">
+                <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-indigo-500 dark:border-l-indigo-600 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-location-dot text-indigo-500 dark:text-indigo-400 mr-1.5 text-xs"></i>Локации
+                        </label>
+                        <div class="flex gap-2 text-xs">
+                            <button type="button" @click="selectAllLocations()" class="text-indigo-600 dark:text-indigo-400 hover:underline">Всё</button>
+                            <span class="text-slate-400">·</span>
+                            <button type="button" @click="clearAllLocations()" class="text-slate-500 dark:text-slate-400 hover:underline">Снять</button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @foreach($locations as $location)
-                            <label class="flex items-center p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+                            <label class="flex items-center gap-2.5 py-2 px-2.5 rounded-md hover:bg-white dark:hover:bg-slate-800/80 cursor-pointer transition-colors">
                                 <input type="checkbox"
                                        name="location_ids[]"
                                        value="{{ $location->id }}"
                                        {{ in_array($location->id, old('location_ids', [])) ? 'checked' : '' }}
-                                       class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
-                                <span class="ml-3 text-sm font-medium text-slate-900 dark:text-white">{{ $location->name }}</span>
+                                       class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-2 focus:ring-indigo-500 shrink-0">
+                                <span class="text-sm text-slate-900 dark:text-white truncate">{{ $location->name }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -159,19 +176,26 @@
                 @endif
 
                 @if($services->count() > 0)
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                        Услуги
-                    </label>
-                    <div class="space-y-3">
+                <div class="p-4 rounded-lg border border-slate-200 dark:border-slate-700 border-l-4 border-l-emerald-500 dark:border-l-emerald-600 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <i class="fa-solid fa-scissors text-emerald-500 dark:text-emerald-400 mr-1.5 text-xs"></i>Услуги
+                        </label>
+                        <div class="flex gap-2 text-xs">
+                            <button type="button" @click="selectAllServices()" class="text-indigo-600 dark:text-indigo-400 hover:underline">Всё</button>
+                            <span class="text-slate-400">·</span>
+                            <button type="button" @click="clearAllServices()" class="text-slate-500 dark:text-slate-400 hover:underline">Снять</button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
                         @foreach($services as $service)
-                            <label class="flex items-center p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+                            <label class="flex items-center gap-2.5 py-2 px-2.5 rounded-md hover:bg-white dark:hover:bg-slate-800/80 cursor-pointer transition-colors">
                                 <input type="checkbox"
                                        name="service_ids[]"
                                        value="{{ $service->id }}"
                                        {{ in_array($service->id, old('service_ids', [])) ? 'checked' : '' }}
-                                       class="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-2 focus:ring-indigo-500">
-                                <span class="ml-3 text-sm font-medium text-slate-900 dark:text-white">{{ $service->name }}</span>
+                                       class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-2 focus:ring-indigo-500 shrink-0">
+                                <span class="text-sm text-slate-900 dark:text-white truncate">{{ $service->name }}</span>
                             </label>
                         @endforeach
                     </div>

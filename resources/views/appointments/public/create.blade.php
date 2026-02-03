@@ -120,7 +120,7 @@
                                         <div class="flex-1 min-w-0">
                                             <div class="font-semibold text-slate-900 dark:text-white text-sm break-words">{{ $service->name }}</div>
                                             <div class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                                                <span class="font-medium">{{ number_format($service->price, 0, ',', ' ') }} Br</span>
+                                                <span class="font-medium">{{ number_format($service->price, 0, ',', ' ') }} BYN</span>
                                                 <span class="mx-1.5">•</span>
                                                 <span>{{ $service->duration }} мин</span>
                                             </div>
