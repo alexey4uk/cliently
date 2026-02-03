@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
 class OnboardingSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Создание демо-бизнеса для пользователя a@a.ru (onboarding).
      */
     public function run(): void
     {

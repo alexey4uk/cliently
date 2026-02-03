@@ -8,7 +8,7 @@ use Illuminate\Database\Seeder;
 class CountrySeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Заполнение таблицы стран.
      */
     public function run(): void
     {

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Создание тестового пользователя и подписки по умолчанию.
      */
     public function run(): void
     {
@@ -37,11 +37,9 @@ class UserSeeder extends Seeder
 
         $user->assignRole('admin');
 
-        // Автоматически создаем подписку на тариф по умолчанию, если её еще нет
+        // Автоматически создаём подписку на тариф по умолчанию, если её ещё нет
         if (! $user->subscription()->exists()) {
             $defaultPlan = Plan::where('is_default', true)->first();
-
-            // Если тариф по умолчанию не найден, пытаемся найти бесплатный тариф
             if (! $defaultPlan) {
                 $defaultPlan = Plan::where('slug', 'free')->where('is_active', true)->first();
             }

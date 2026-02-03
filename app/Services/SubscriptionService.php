@@ -200,7 +200,7 @@ class SubscriptionService
     }
 
     /**
-     * Проверить лимит для метрики
+     * Проверить лимит для метрики (можно ли создавать новое)
      */
     public function checkLimit(User $user, string $featureKey): bool
     {
@@ -225,6 +225,26 @@ class SubscriptionService
         $currentUsage = $this->getCurrentUsage($user, $featureKey);
 
         return $currentUsage < $limit;
+    }
+
+    /**
+     * Проверить, превышен ли лимит по метрике (для показа предупреждений в UI).
+     * true только при активной подписке и когда текущее использование >= лимита (лимит не безлимит).
+     * Когда true — создание нового заблокировано, существующие данные доступны для просмотра/редактирования.
+     */
+    public function isOverLimit(User $user, string $featureKey): bool
+    {
+        $subscription = $user->activeSubscription();
+        if (! $subscription) {
+            return false;
+        }
+        $limit = $this->getLimit($user, $featureKey);
+        if ($limit === null || $limit === -1 || $limit === true) {
+            return false;
+        }
+        $currentUsage = $this->getCurrentUsage($user, $featureKey);
+
+        return $currentUsage >= $limit;
     }
 
     /**

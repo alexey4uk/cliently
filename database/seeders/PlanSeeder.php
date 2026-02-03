@@ -9,11 +9,11 @@ use Illuminate\Database\Seeder;
 class PlanSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Создание тарифов (free, basic, pro, business) и их фич.
      */
     public function run(): void
     {
-        // 1. Бесплатный тариф (Free) — попробовать сервис
+        // 1. Бесплатный тариф (free) — попробовать сервис
         $freePlan = Plan::firstOrCreate(
             ['slug' => 'free'],
             [
@@ -41,7 +41,7 @@ class PlanSeeder extends Seeder
             ['key' => 'advanced_analytics_enabled', 'value' => 'false', 'type' => 'boolean'],
         ]);
 
-        // 2. Стартовый (Basic) — для малого бизнеса
+        // 2. Стартовый (basic) — для малого бизнеса
         $basicPlan = Plan::firstOrCreate(
             ['slug' => 'basic'],
             [
@@ -73,7 +73,7 @@ class PlanSeeder extends Seeder
             ['key' => 'advanced_analytics_enabled', 'value' => 'false', 'type' => 'boolean'],
         ]);
 
-        // 3. Профессиональный (Pro) — для растущего бизнеса
+        // 3. Профессиональный (pro) — для растущего бизнеса
         $proPlan = Plan::firstOrCreate(
             ['slug' => 'pro'],
             [
@@ -105,7 +105,7 @@ class PlanSeeder extends Seeder
             ['key' => 'advanced_analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
         ]);
 
-        // 4. Бизнес (Business) — для сетей и крупных салонов
+        // 4. Бизнес (business) — для сетей и крупных салонов (пока выключен)
         $businessPlan = Plan::firstOrCreate(
             ['slug' => 'business'],
             [
@@ -114,7 +114,7 @@ class PlanSeeder extends Seeder
                 'price' => 149.00,
                 'interval' => 'monthly',
                 'trial_days' => 14,
-                'is_active' => true,
+                'is_active' => false,
                 'is_default' => false,
                 'sort_order' => 4,
             ]
@@ -123,6 +123,7 @@ class PlanSeeder extends Seeder
             'description' => 'Сети: много локаций и мастеров, до 25 в команде.',
             'price' => 149.00,
             'trial_days' => 14,
+            'is_active' => false,
         ]);
 
         $this->createPlanFeatures($businessPlan, [
@@ -139,23 +140,21 @@ class PlanSeeder extends Seeder
     }
 
     /**
-     * Создать метрики для тарифа
+     * Создать фичи (метрики) для тарифа.
      */
     protected function createPlanFeatures(Plan $plan, array $features): void
     {
         foreach ($features as $feature) {
-            // 1. Находим метрику по ключу (slug)
             $metric = \App\Models\SubscriptionMetric::where('key', $feature['key'])->first();
 
             if ($metric) {
-                // 2. Сохраняем в новую структуру
                 PlanFeature::updateOrCreate(
                     [
                         'plan_id' => $plan->id,
-                        'metric_id' => $metric->id, // Вместо feature_key
+                        'metric_id' => $metric->id,
                     ],
                     [
-                        'value' => $feature['value'], // Колонка теперь называется просто value
+                        'value' => $feature['value'],
                     ]
                 );
             }

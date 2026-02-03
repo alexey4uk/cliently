@@ -32,11 +32,11 @@ class ProductionTestSeeder extends Seeder
     private int $totalYearsBack;
 
     /**
-     * Run the database seeds.
+     * Массовое создание тестовых данных для нагрузочного тестирования.
      */
     public function run(): void
     {
-        // Читаем из переменных окружения или используем значения по умолчанию
+        // Параметры из переменных окружения или значения по умолчанию
         $this->usersCount = (int) (getenv('SEED_USERS_COUNT') ?: 100);
         $this->clientsPerBusiness = (int) (getenv('SEED_CLIENTS_PER_BUSINESS') ?: 50);
         $this->servicesPerBusiness = (int) (getenv('SEED_SERVICES_PER_BUSINESS') ?: 8);

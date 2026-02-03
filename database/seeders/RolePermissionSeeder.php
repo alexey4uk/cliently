@@ -9,11 +9,10 @@ use Spatie\Permission\Models\Role;
 class RolePermissionSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Создание прав доступа (Spatie) и ролей с описаниями.
      */
     public function run(): void
     {
-        // Создание прав доступа с описаниями
         $permissions = [
             // Пользователи
             'panel.users.view' => 'Просмотр списка пользователей',
@@ -149,8 +148,8 @@ class RolePermissionSeeder extends Seeder
 
             // Платежи (админ-панель)
             'panel.payments.settings' => 'Настройки bePaid (только админ)',
-            'panel.payments.view' => 'Просмотр платежей/инвойсов в админ панели',
-            'panel.payments.manage' => 'Управление платежами в админ панели (возвраты и т.д.)',
+            'panel.payments.view' => 'Просмотр платежей/инвойсов в админ-панели',
+            'panel.payments.manage' => 'Управление платежами в админ-панели (возвраты и т.д.)',
 
             // Управление базовыми правами ролей бизнеса (админ-панель)
             'panel.business.roles.manage' => 'Управление базовыми правами ролей бизнеса (админ-панель)',

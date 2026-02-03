@@ -8,16 +8,14 @@ use Illuminate\Database\Seeder;
 class SubscriptionMetricSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
-     *
-     * Примечание: Метрики теперь управляются через админ-панель.
-     * Этот сидер создает только базовые метрики для первоначальной настройки.
+     * Создание базовых метрик подписки (лимиты и флаги).
+     * Метрики далее управляются через админ-панель.
      */
     public function run(): void
     {
         $sortOrder = 0;
 
-        // Integer метрики: label — короткое для карточки, description — для админки/подсказки
+        // Целочисленные метрики: label — короткое для карточки, description — для админки/подсказки
         $integerMetrics = [
             [
                 'key' => 'max_locations',
@@ -71,7 +69,7 @@ class SubscriptionMetricSeeder extends Seeder
             );
         }
 
-        // Boolean метрики
+        // Булевы метрики
         $booleanMetrics = [
             [
                 'key' => 'telegram_bot_enabled',
