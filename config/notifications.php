@@ -107,6 +107,22 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cleanup (клинер уведомлений в колокольчике)
+    |--------------------------------------------------------------------------
+    |
+    | notification_records: прочитанные удаляются после read_after_days,
+    | любые записи старше any_after_days удаляются независимо от is_read.
+    |
+    */
+
+    'cleanup' => [
+        'read_after_days' => (int) env('NOTIFICATION_READ_RETENTION_DAYS', 30),
+        'any_after_days' => (int) env('NOTIFICATION_ANY_RETENTION_DAYS', 90),
+        'chunk_size' => (int) env('NOTIFICATION_CLEANUP_CHUNK_SIZE', 2000),
+    ],
+
     'admin_type_permissions' => [
         'admin.business.created' => 'panel.businesses.view',
         'admin.business.deleted' => 'panel.businesses.view',
