@@ -253,11 +253,9 @@ class AppointmentNotificationService
     /**
      * Отправить уведомление об изменении статуса записи сотрудникам (in-app, email, Telegram).
      *
-     * Вызывать только при реальной смене статуса. Проверку выполняет вызывающий код через
-     * shouldNotifyStaffOnStatusChange(). Клиенту уведомление шлётся отдельно только при
-     * переходах в confirmed/cancelled/completed (shouldNotifyClientOnStatusChange).
+     * @param  User|null  $actedBy  Кто сменил статус — этому пользователю уведомление не отправляется (не спамим себе).
      */
-    public static function notifyStatusChanged(Appointment $appointment, ?string $oldStatus = null): void
+    public static function notifyStatusChanged(Appointment $appointment, ?string $oldStatus = null, ?User $actedBy = null): void
     {
         // Загружаем необходимые связи для избежания N+1 запросов
         $appointment->loadMissing(['business.users', 'client', 'service']);
@@ -274,6 +272,11 @@ class AppointmentNotificationService
         };
 
         foreach ($users as $user) {
+            // Не уведомляем того, кто сам сменил статус
+            if ($actedBy && $user->id === $actedBy->id) {
+                continue;
+            }
+
             // Получаем роль пользователя в бизнесе
             $pivotData = DB::table('business_user')
                 ->where('user_id', $user->id)

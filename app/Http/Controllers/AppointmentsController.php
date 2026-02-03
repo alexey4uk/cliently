@@ -488,7 +488,7 @@ class AppointmentsController extends Controller
                 TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
             }
             if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, $appointment->status)) {
-                AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+                AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus, Auth::user());
             }
         }
 
@@ -631,7 +631,7 @@ class AppointmentsController extends Controller
             TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
         }
         if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'confirmed')) {
-            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus, Auth::user());
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись подтверждена');
@@ -663,7 +663,7 @@ class AppointmentsController extends Controller
             TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
         }
         if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'cancelled')) {
-            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus, Auth::user());
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись отменена');
@@ -695,7 +695,7 @@ class AppointmentsController extends Controller
             TelegramNotificationService::sendAppointmentStatusChangedForClient($appointment, $oldStatus);
         }
         if (AppointmentNotificationService::shouldNotifyStaffOnStatusChange($oldStatus, 'completed')) {
-            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus);
+            AppointmentNotificationService::notifyStatusChanged($appointment, $oldStatus, Auth::user());
         }
 
         return redirect()->route('appointments.index')->with('success', 'Запись завершена');
