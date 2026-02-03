@@ -202,8 +202,6 @@ class AppointmentController extends Controller
         // Пользователь может сам выбрать нужную дату в календаре
         // Больше не нужно искать следующую доступную дату и делать дополнительные запросы
 
-        $countries = \App\Models\Country::getCached();
-
         return view('appointments.public.select-time', compact(
             'business',
             'location',
@@ -212,8 +210,7 @@ class AppointmentController extends Controller
             'selectedDate',
             'availableSlots',
             'date',
-            'datesWithSlots',
-            'countries'
+            'datesWithSlots'
         ))->with('currentStep', 4);
     }
 

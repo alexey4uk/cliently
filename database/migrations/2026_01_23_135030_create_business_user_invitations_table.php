@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['email', 'business_id']);
+            $table->index(['business_id', 'expires_at'], 'bui_business_expires_index');
         });
     }
 

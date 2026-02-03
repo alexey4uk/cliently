@@ -92,6 +92,12 @@ class RolePermissionSeeder extends Seeder
             'panel.plans.update' => 'Редактирование тарифов',
             'panel.plans.delete' => 'Удаление тарифов',
 
+            // Страны (справочник)
+            'panel.countries.view' => 'Просмотр списка стран',
+            'panel.countries.create' => 'Создание стран',
+            'panel.countries.update' => 'Редактирование стран',
+            'panel.countries.delete' => 'Удаление стран',
+
             // Доступ к админке
             'panel.access' => 'Доступ к админ-панели',
 
@@ -207,6 +213,10 @@ class RolePermissionSeeder extends Seeder
             'panel.business.roles.manage',
             'panel.notifications.view',
             'panel.broadcasts.send',
+            'panel.countries.view',
+            'panel.countries.create',
+            'panel.countries.update',
+            'panel.countries.delete',
             'panel.access',
         ];
         $managerRole->syncPermissions($managerPermissions);
