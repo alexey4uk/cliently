@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Business;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,12 +10,10 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Заполнение базы данных приложения.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         $this->call([
             CountrySeeder::class,
             RolePermissionSeeder::class,
@@ -25,7 +21,5 @@ class DatabaseSeeder extends Seeder
             SubscriptionMetricSeeder::class,
             PlanSeeder::class,
         ]);
-
-        // Business::factory(20)->create();
     }
 }

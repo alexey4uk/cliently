@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['status', 'ends_at']);
+            $table->index(['user_id', 'status'], 'subscriptions_user_status_index');
         });
     }
 

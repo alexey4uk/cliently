@@ -63,27 +63,25 @@
         }
     }">
 
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {{-- Hero --}}
-        <div class="text-center mb-8 sm:mb-12 lg:mb-16">
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
-                Выберите тариф
-            </h1>
-            <p class="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto px-2">
-                Все необходимые инструменты для эффективного управления салоном или студией
-            </p>
-        </div>
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8">
+        {{-- Заголовок в одну строку, без лишнего блока --}}
+        <h1 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
+            Выберите тариф
+        </h1>
 
-        {{-- Plan cards: 1 план — центр, 2 — две колонки, 3+ — три колонки --}}
+        {{-- План карточек: сетка под 1, 2, 3, 4, 5+ тарифов --}}
         @php
             $planCount = $plans->count();
-            $gridClass = match (true) {
-                $planCount === 1 => 'grid grid-cols-1 max-w-md mx-auto',
-                $planCount === 2 => 'grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto',
-                default => 'grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6',
+            $gridClass = match ($planCount) {
+                1 => 'grid grid-cols-1 max-w-md gap-3 sm:gap-4',
+                2 => 'grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 max-w-4xl mx-auto',
+                3 => 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto',
+                4 => 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4',
+                5 => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-6xl mx-auto',
+                default => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4',
             };
         @endphp
-        <div id="plans-grid" class="{{ $gridClass }} mb-8 sm:mb-12">
+        <div id="plans-grid" class="{{ $gridClass }}">
             @foreach($plans as $plan)
                 @php
                     $isCurrent = $currentPlan && $currentPlan->id === $plan->id;
@@ -102,7 +100,7 @@
         </div>
 
         {{-- Comparison table --}}
-        <div class="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden mt-6 sm:mt-8">
             <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                 <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-1">Сравнение тарифов</h2>
                 <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Детальное сравнение всех возможностей</p>

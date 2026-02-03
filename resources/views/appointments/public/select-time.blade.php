@@ -139,27 +139,12 @@
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="sm:col-span-2" id="public-phone-block"
-                            data-old-country="{{ old('phone_country_id') }}"
-                            data-old-phone="{{ old('phone') }}">
+                        <div class="sm:col-span-2">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Телефон *</label>
-                            <div class="flex gap-2">
-                                <select id="phone_country_id" name="phone_country_id" required
-                                    class="w-48 shrink-0 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('phone_country_id') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                                    @foreach($countries as $c)
-                                        <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="flex-1 relative">
-                                    <span id="public-phone-prefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm font-medium pointer-events-none">{{ $countries->first()?->calling_code ?? '+375' }}</span>
-                                    <input type="tel" id="phone_national" inputmode="numeric" placeholder="291234567" required
-                                        class="w-full pl-14 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('phone') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white text-lg font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                                    <input type="hidden" name="phone" id="phone" value="{{ old('phone') }}">
-                                </div>
-                            </div>
-                            @error('phone_country_id')
-                                <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
-                            @enderror
+                            <input type="tel" name="phone" id="phone" inputmode="tel" required
+                                value="{{ old('phone') }}"
+                                placeholder="+375 29 123 45 67"
+                                class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('phone') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-2xl text-slate-900 dark:text-white text-lg font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
                             @error('phone')
                                 <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                             @enderror
@@ -234,55 +219,18 @@
                 });
             });
 
-            // 2. Телефон: страна + национальная часть → E.164
-            (function() {
-                const block = document.getElementById('public-phone-block');
-                if (!block) return;
-                const sel = document.getElementById('phone_country_id');
-                const prefixSpan = document.getElementById('public-phone-prefix');
-                const nationalInput = document.getElementById('phone_national');
-                const hidden = document.getElementById('phone');
-                const oldCountry = block.dataset.oldCountry || '';
-                const oldPhone = block.dataset.oldPhone || '';
-
-                function updatePrefix() {
-                    const opt = sel?.selectedOptions?.[0];
-                    const code = opt?.dataset?.code || '+375';
-                    if (prefixSpan) prefixSpan.textContent = code;
-                }
-
-                function buildE164() {
-                    const opt = sel?.selectedOptions?.[0];
-                    const code = opt?.dataset?.code || '';
-                    const digits = (code.replace(/\D/g, '') || '') + (nationalInput?.value?.replace(/\D/g, '') || '');
-                    if (digits.length < 10) return;
-                    if (hidden) hidden.value = '+' + digits;
-                }
-
-                if (sel) {
-                    sel.addEventListener('change', updatePrefix);
-                    sel.addEventListener('change', buildE164);
-                }
-                if (nationalInput) {
-                    nationalInput.addEventListener('input', function() {
-                        this.value = this.value.replace(/\D/g, '');
-                        buildE164();
-                    });
-                    nationalInput.addEventListener('blur', buildE164);
-                }
-
-                updatePrefix();
-                if (oldCountry && sel) {
-                    const opt = Array.from(sel.options).find(o => o.value === oldCountry);
-                    if (opt) { sel.value = oldCountry; updatePrefix(); }
-                }
-                if (oldPhone && oldPhone.startsWith('+')) {
-                    const code = sel?.selectedOptions?.[0]?.dataset?.code?.replace(/\D/g, '') || '375';
-                    const rest = oldPhone.replace(/\D/g, '').replace(new RegExp('^' + code), '') || '';
-                    if (nationalInput) nationalInput.value = rest;
-                    if (hidden) hidden.value = oldPhone;
-                }
-            })();
+            // 2. Телефон: один инпут → нормализация в E.164 при отправке
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const phoneEl = document.getElementById('phone');
+                    if (phoneEl && phoneEl.value) {
+                        const digits = phoneEl.value.replace(/\D/g, '');
+                        if (digits.length >= 10) {
+                            phoneEl.value = '+' + digits.slice(0, 15);
+                        }
+                    }
+                });
+            }
 
             // 3. Календарь
             const calendarGrid = document.getElementById('calendar-grid');

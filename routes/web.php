@@ -1440,6 +1440,51 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 },
             );
 
+            // Страны (справочник): /countries/create перед /countries/{country}
+            Route::middleware(['check.permission:panel.countries.create'])->group(
+                function () {
+                    Route::get('/countries/create', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'create',
+                    ])->name('countries.create');
+                    Route::post('/countries', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'store',
+                    ])->name('countries.store');
+                },
+            );
+
+            Route::middleware(['check.permission:panel.countries.view'])->group(
+                function () {
+                    Route::get('/countries', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'index',
+                    ])->name('countries.index');
+                },
+            );
+
+            Route::middleware(['check.permission:panel.countries.update'])->group(
+                function () {
+                    Route::get('/countries/{country}/edit', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'edit',
+                    ])->name('countries.edit');
+                    Route::patch('/countries/{country}', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'update',
+                    ])->name('countries.update');
+                },
+            );
+
+            Route::middleware(['check.permission:panel.countries.delete'])->group(
+                function () {
+                    Route::delete('/countries/{country}', [
+                        \App\Http\Controllers\Panel\CountryController::class,
+                        'destroy',
+                    ])->name('countries.destroy');
+                },
+            );
+
             // Управление базовыми правами ролей бизнеса
             Route::middleware([
                 'check.permission:panel.business.roles.manage',

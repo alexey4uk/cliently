@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Country extends Model
 {
@@ -19,6 +20,13 @@ class Country extends Model
         'currency',
         'currency_symbol',
         'ioc',
+        'is_active',
+        'is_for_phone_select',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_for_phone_select' => 'boolean',
     ];
 
     public function phones(): HasMany
@@ -33,7 +41,22 @@ class Country extends Model
      */
     public static function getCached()
     {
-        return static::orderBy('name')->get();
+        return Cache::remember('countries_list', 86400, function () {
+            return static::orderBy('name')->get();
+        });
+    }
+
+    /**
+     * Get countries for phone select (is_for_phone_select = true, управляется в админке стран).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getForPhoneSelect()
+    {
+        return static::where('is_active', true)
+            ->where('is_for_phone_select', true)
+            ->orderBy('name')
+            ->get();
     }
 
     /**
@@ -43,6 +66,34 @@ class Country extends Model
      */
     public static function findByCodeCached(string $code): ?self
     {
-        return static::where('code', $code)->first();
+        return Cache::remember("country_code_{$code}", 86400, function () use ($code) {
+            return static::where('code', $code)->first();
+        });
+    }
+
+    /**
+     * Clear countries cache.
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget('countries_list');
+    }
+
+    /**
+     * Boot method to clear cache on model changes.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($country) {
+            static::clearCache();
+            Cache::forget("country_code_{$country->code}");
+        });
+
+        static::deleted(function ($country) {
+            static::clearCache();
+            Cache::forget("country_code_{$country->code}");
+        });
     }
 }

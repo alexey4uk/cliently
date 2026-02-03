@@ -7,7 +7,7 @@
                     <span class="text-lg font-bold text-white uppercase font-display">CLIENTLY</span>
                 </div>
                 <p class="text-sm text-gray-400 mb-4">
-                    Простая CRM для самозанятых и мастеров. Организуйте клиентов и записи без сложностей.
+                    Онлайн-запись и CRM для салонов и мастеров. Запись через сайт и Telegram, напоминания, аналитика.
                 </p>
                 {{-- <div class="flex gap-4">
                     <a href="#" class="text-gray-400 hover:text-white transition-colors"
@@ -32,29 +32,20 @@
                 <h3 class="text-white font-semibold mb-4">Поддержка</h3>
                 <ul class="space-y-2 text-sm">
                     <li><a href="mailto:support@cliently.by" class="hover:text-white transition-colors">Помощь</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors">Инструкции</a></li>
-                    <li><a href="mailto:hello@cliently.by" class="hover:text-white transition-colors">Контакты</a></li>
+                    <li><a href="#faq" class="hover:text-white transition-colors">FAQ</a></li>
                 </ul>
             </div>
 
             <div>
                 <h3 class="text-white font-semibold mb-4">Контакты</h3>
                 <ul class="space-y-2 text-sm">
-                    {{-- <li class="flex items-start gap-2">
-                        <x-icon name="phone" variant="outline" size="sm" class="text-gray-400 flex-shrink-0 mt-0.5" />
-                        <span>+375291234567</span>
-                    </li> --}}
                     <li class="flex items-start gap-2">
-                        <x-icon name="envelope" variant="outline" size="sm"
-                            class="text-gray-400 shrink-0 mt-0.5" />
-                        <a href="mailto:hello@cliently.by"
-                            class="hover:text-white transition-colors break-all">info@cliently.by</a>
+                        <x-icon name="envelope" variant="outline" size="sm" class="text-gray-400 shrink-0 mt-0.5" />
+                        <a href="mailto:hello@cliently.by" class="hover:text-white transition-colors break-all">hello@cliently.by</a>
                     </li>
                     <li class="flex items-start gap-2">
-                        <x-icon name="envelope" variant="outline" size="sm"
-                            class="text-gray-400 shrink-0 mt-0.5" />
-                        <a href="mailto:support@cliently.by"
-                            class="hover:text-white transition-colors break-all">support@cliently.by</a>
+                        <x-icon name="envelope" variant="outline" size="sm" class="text-gray-400 shrink-0 mt-0.5" />
+                        <a href="mailto:support@cliently.by" class="hover:text-white transition-colors break-all">support@cliently.by</a>
                     </li>
                 </ul>
             </div>

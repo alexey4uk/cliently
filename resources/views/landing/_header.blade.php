@@ -5,7 +5,7 @@
                 <x-logo size="md" />
                 <div class="flex items-center gap-2">
                     <span class="text-xl font-bold text-gray-900 dark:text-white uppercase font-display">CLIENTLY</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline pl-2 border-l border-gray-300 dark:border-gray-600">CRM для мастеров</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline pl-2 border-l border-gray-300 dark:border-gray-600">Запись и CRM</span>
                 </div>
             </a>
 

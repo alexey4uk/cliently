@@ -1,5 +1,33 @@
 /* Landing-specific styles. Tailwind via app.css. */
 
+/* Типографика: основной текст — sans, заголовки — display */
+.landing-page {
+    font-family: var(--font-sans), system-ui, sans-serif;
+}
+.landing-page .landing-heading {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+/* Ритм секций: единые отступы заголовка и подзаголовка */
+.landing-page .landing-section-title {
+    margin-bottom: 0.75rem;
+}
+.landing-page .landing-section-lead {
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Hero — градиент и акцент заголовка */
+.landing-hero {
+    background: linear-gradient(180deg, rgb(249 250 251 / 1) 0%, rgb(255 255 255 / 1) 100%);
+}
+.dark .landing-hero {
+    background: linear-gradient(180deg, rgb(17 24 39 / 0.6) 0%, rgb(17 24 39 / 1) 100%);
+}
+
 /* Mobile menu */
 .landing-mobile-menu {
     transform: translateX(-100%);

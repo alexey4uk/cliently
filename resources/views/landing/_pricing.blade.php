@@ -1,19 +1,22 @@
 <section id="pricing" class="py-16 sm:py-20 md:py-24 bg-white dark:bg-gray-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-10 md:mb-12">
-            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">Тарифы</h2>
-            <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Выберите подходящий тариф для вашего бизнеса
+            <h2 class="landing-heading landing-section-title text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Тарифы</h2>
+            <p class="landing-section-lead text-base sm:text-lg text-gray-600 dark:text-gray-400 mx-auto">
+                Прозрачные тарифы — от бесплатного старта до полного набора возможностей
             </p>
         </div>
 
         @php
             $planCount = $plans->count();
+            // Сетка под любое количество тарифов: 1 — центр, 2 — две колонки, 3 — три, 4 — 2×2 или 4 в ряд на xl, 5+ — 2/3 колонки
             $containerClass = match ($planCount) {
                 1 => 'flex flex-col items-center max-w-2xl mx-auto',
                 2 => 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto',
-                4 => 'grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto',
-                default => 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8',
+                3 => 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto',
+                4 => 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8',
+                5 => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto',
+                default => 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8',
             };
         @endphp
         <div class="{{ $containerClass }}">
@@ -21,7 +24,7 @@
                 @php
                     $isPopular = $plan->slug === 'basic';
                 @endphp
-                <div class="relative flex flex-col {{ $planCount === 1 ? 'w-full' : '' }} {{ $isPopular ? 'lg:-mt-2 lg:mb-2 z-10' : '' }}">
+                <div class="relative flex flex-col {{ $planCount === 1 ? 'w-full max-w-md' : '' }} {{ $isPopular && $planCount > 1 ? 'lg:-mt-2 lg:mb-2 z-10' : '' }}">
                     @if($isPopular)
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-full shadow">

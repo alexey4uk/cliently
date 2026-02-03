@@ -10,20 +10,19 @@ use Spatie\Permission\Models\Permission;
 class DefaultBusinessRolePermissionsSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Назначение прав по умолчанию для ролей бизнеса (owner, admin, master).
      */
     public function run(): void
     {
-        // Get all permissions from Spatie Permission
         $allPermissions = Permission::pluck('name')->toArray();
 
-        // Keep only client.* permissions (panel.* are admin-only)
+        // Только права client.* (panel.* — только для админ-панели)
         $clientPermissions = array_filter($allPermissions, function ($permission) {
             return str_starts_with($permission, 'client.')
                 && $permission !== 'client.access';
         });
 
-        // Owner: all client-side permissions + wildcards and business management
+        // Владелец: все права client.* и управление бизнесом
         $ownerPermissions = array_merge(
             array_values($clientPermissions),
             [
@@ -45,10 +44,9 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
             ]
         );
 
-        // Убираем дубликаты
         $ownerPermissions = array_unique($ownerPermissions);
 
-        // Admin: limited access (no delete, no businesses.update, no analytics, no telegram, no business.users.*, no business.roles.manage)
+        // Админ: ограниченный доступ (без удаления, без analytics/telegram/business.users/business.roles)
         $adminPermissions = array_filter(array_values($clientPermissions), function ($permission) {
             return ! str_ends_with($permission, '.delete')
                 && $permission !== 'client.businesses.update'
@@ -58,13 +56,10 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
                 && $permission !== 'client.business.roles.manage';
         });
 
-        // Add subscription view permission for admin
         $adminPermissions[] = 'client.subscription.view';
-
-        // Remove duplicates
         $adminPermissions = array_unique(array_values($adminPermissions));
 
-        // Master: only view own data and create
+        // Мастер: только свои записи/клиенты и создание
         $masterPermissions = [
             'client.clients.view.own', // Только клиенты с записями у этого мастера
             'client.appointments.view.own', // Только записи этого мастера
@@ -88,12 +83,10 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
         );
 
         $seedPermissions = function (BusinessRole $role, array $permissions): void {
-            // Get current permissions for this role
             $currentPermissions = BusinessRolePermission::where('role_id', $role->id)
                 ->pluck('permission')
                 ->toArray();
 
-            // Remove permissions that are no longer in the list
             $permissionsToRemove = array_diff($currentPermissions, $permissions);
             if (! empty($permissionsToRemove)) {
                 BusinessRolePermission::where('role_id', $role->id)
@@ -101,7 +94,6 @@ class DefaultBusinessRolePermissionsSeeder extends Seeder
                     ->delete();
             }
 
-            // Add or update permissions
             foreach ($permissions as $permission) {
                 BusinessRolePermission::updateOrCreate(
                     [

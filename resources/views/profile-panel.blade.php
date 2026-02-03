@@ -204,44 +204,16 @@
                     $phoneNational = $codeDig && str_starts_with($phoneDig, $codeDig) ? substr($phoneDig, strlen($codeDig)) : $phoneDig;
                 }
             @endphp
-            <div id="profilePhoneBlock"
-                data-countries="{{ json_encode($countries->map(fn ($c) => ['id' => $c->id, 'code' => $c->calling_code, 'name' => $c->name])->values()) }}"
-                data-old-phone="{{ old('phone', $user->phone) }}"
-                data-old-country="{{ old('phone_country_id', $user->primaryPhone?->country_id) }}">
-                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
-                    <i class="fa-solid fa-phone mr-2 text-slate-400"></i>
-                    Телефон
-                </label>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="sm:w-48">
-                        <select id="phone_country_id" name="phone_country_id"
-                            class="w-full px-4 py-3 border {{ $errors->has('phone_country_id') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-xl focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all">
-                            <option value="">—</option>
-                            @foreach($countries as $c)
-                                <option value="{{ $c->id }}" data-code="{{ $c->calling_code }}" {{ old('phone_country_id', $user->primaryPhone?->country_id) == $c->id ? 'selected' : '' }}>{{ $c->name }} {{ $c->calling_code }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex-1 relative">
-                        <span id="profilePhonePrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm pointer-events-none"></span>
-                        <input type="tel" id="phone_national" inputmode="numeric" maxlength="15"
-                            value="{{ old('phone_national', $phoneNational) }}"
-                            class="w-full pl-14 pr-4 py-3 border {{ $errors->has('phone') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-xl focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-all"
-                            placeholder="291234567">
-                        <input type="hidden" name="phone" id="profilePhone" value="{{ old('phone', $user->phone) }}">
-                    </div>
-                </div>
-                @error('phone_country_id')
-                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-400 flex items-center"><i class="fa-solid fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                @enderror
-                @error('phone')
-                    <p class="mt-2 text-sm text-rose-600 dark:text-rose-400 flex items-center"><i class="fa-solid fa-exclamation-circle mr-1"></i>{{ $message }}</p>
-                @enderror
-                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center">
-                    <i class="fa-solid fa-info-circle mr-1.5"></i>
-                    Формат: код страны + номер. Необязательно.
-                </p>
-            </div>
+            <x-phone-input
+                :countries="$countries"
+                block-id="profilePhoneBlock"
+                :old-phone="old('phone', $user->phone)"
+                :old-country-id="old('phone_country_id', $user->primaryPhone?->country_id)"
+                :old-national="old('phone_national', $phoneNational)"
+                :required="false"
+                placeholder="29 123 45 67"
+                helper-text="Формат: код страны + номер. Необязательно."
+            />
 
             <!-- Кнопка сохранения -->
             <div class="flex justify-end pt-6 border-t border-slate-200 dark:border-slate-800">
@@ -629,32 +601,5 @@
         }));
     });
 
-    (function() {
-        const block = document.getElementById('profilePhoneBlock');
-        const sel = document.getElementById('phone_country_id');
-        const national = document.getElementById('phone_national');
-        const hidden = document.getElementById('profilePhone');
-        const prefix = document.getElementById('profilePhonePrefix');
-        function updatePhone() {
-            const opt = sel && sel.options[sel.selectedIndex];
-            const code = opt && opt.value ? (opt.dataset.code || '').replace(/\D/g, '') : '';
-            const digits = national && national.value ? national.value.replace(/\D/g, '') : '';
-            const full = code && digits ? '+' + code + digits : '';
-            if (hidden) hidden.value = full;
-            if (prefix) prefix.textContent = opt && opt.value ? opt.dataset.code || '' : '';
-        }
-        if (sel) sel.addEventListener('change', function() { updatePhone(); if (national) national.placeholder = (this.selectedIndex && this.options[this.selectedIndex].dataset.code === '+375') ? '291234567' : '9123456789'; });
-        if (national) national.addEventListener('input', function() { this.value = this.value.replace(/\D/g, '').slice(0, 15); updatePhone(); });
-        if (sel && sel.options.length) {
-            const opt = sel.options[sel.selectedIndex];
-            if (prefix) prefix.textContent = opt && opt.value ? opt.dataset.code || '' : '';
-            if (national) national.placeholder = (opt && opt.value && opt.dataset.code === '+375') ? '291234567' : '9123456789';
-            const op = block && block.dataset.oldPhone ? block.dataset.oldPhone : '', oc = block && block.dataset.oldCountry ? String(block.dataset.oldCountry) : '';
-            if (op && oc && sel.value === oc && opt) { const codeDigits = (opt.dataset.code || '').replace(/\D/g, ''), phoneDigits = op.replace(/\D/g, ''); if (phoneDigits.startsWith(codeDigits)) national.value = phoneDigits.slice(codeDigits.length); }
-            updatePhone();
-        }
-        const form = block && block.closest('form');
-        if (form) form.addEventListener('submit', updatePhone);
-    })();
 </script>
 @endpush

@@ -103,7 +103,7 @@ class LocationController extends Controller
     public function edit(Location $location)
     {
         $businesses = $this->businessRepository->getAllForFilter();
-        $countries = Country::getCached();
+        $countries = Country::getForPhoneSelect();
 
         return view('panel.locations.edit', compact('location', 'businesses', 'countries'));
     }

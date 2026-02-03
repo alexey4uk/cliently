@@ -29,7 +29,7 @@ class BusinessSettingsController extends Controller
         }
 
         return view('settings.business.create', [
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 
@@ -306,7 +306,7 @@ class BusinessSettingsController extends Controller
 
         return view('settings.business.edit', [
             'business' => $business,
-            'countries' => Country::getCached(),
+            'countries' => Country::getForPhoneSelect(),
         ]);
     }
 
