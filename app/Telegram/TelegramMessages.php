@@ -42,6 +42,10 @@ class TelegramMessages
 
     public const MSG_SELECT_DATE = 'Выберите дату для {master}:';
 
+    public const MSG_SELECT_DATE_ANY_MASTER = 'Выберите дату:';
+
+    public const MSG_ANY_MASTER = 'Любой мастер';
+
     public const MSG_SELECT_TIME = 'Выберите время на <b>{date}</b>:';
 
     public const MSG_SELECT_CONFIRM = 'Подтвердите запись:';

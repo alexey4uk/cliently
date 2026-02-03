@@ -101,18 +101,32 @@ class TelegramKeyboards
     }
 
     /**
-     * Клавиатура для выбора мастеров
+     * Клавиатура для выбора мастеров (с опцией «Любой мастер»)
      *
      * @param  \Illuminate\Database\Eloquent\Collection|\App\Models\Master[]  $masters
      */
     public static function masters($masters): Keyboard
     {
+        $keyboard = Keyboard::make();
+
+        // Первая строка — «Любой мастер»
+        $keyboard = $keyboard->row([
+            Button::make(TelegramMessages::MSG_ANY_MASTER)->action('master_any'),
+        ]);
+
         $buttons = [];
         foreach ($masters as $master) {
             $buttons[] = Button::make($master->first_name.' '.$master->last_name)->action("master_{$master->id}");
         }
 
-        return self::selectionGrid($buttons, 1);
+        foreach (array_chunk($buttons, 1) as $row) {
+            $keyboard = $keyboard->row($row);
+        }
+
+        return $keyboard->row([
+            Button::make(TelegramMessages::BTN_RESTART)->action('restart'),
+            Button::make(TelegramMessages::BTN_CANCEL)->action('cancel'),
+        ]);
     }
 
     /**
@@ -249,9 +263,10 @@ class TelegramKeyboards
      *
      * @param  \App\Services\AppointmentSlotService  $slotService
      * @param  string  $month  Год и месяц в формате 'Y-m'
+     * @param  int|null  $masterId  ID мастера или null для «любой мастер»
      * @return array Массив доступных дат (формат 'Y-m-d')
      */
-    public static function getAvailableDatesForMonth($slotService, int $serviceId, int $masterId, int $locationId, string $month): array
+    public static function getAvailableDatesForMonth($slotService, int $serviceId, ?int $masterId, int $locationId, string $month): array
     {
         $availableDates = [];
         $startDate = \Carbon\Carbon::parse($month.'-01');
@@ -267,7 +282,7 @@ class TelegramKeyboards
                 continue;
             }
 
-            // Проверяем наличие слотов
+            // Проверяем наличие слотов (masterId = null — слоты по любому мастеру)
             $debugInfo = [];
             $availableSlots = $slotService->getAvailableSlots(
                 $serviceId,

@@ -614,13 +614,17 @@ class Handler extends WebhookHandler
     ) {
         $location = $business->locations()->find($data['location_id'] ?? null);
         $service = $business->services()->find($data['service_id'] ?? null);
-        $master = $business->masters()->find($data['master_id'] ?? null);
+        $master = isset($data['master_id']) ? $business->masters()->find($data['master_id']) : null;
 
-        if (! $location || ! $service || ! $master) {
+        if (! $location || ! $service) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
         }
+
+        $masterName = $master
+            ? $master->first_name.' '.$master->last_name
+            : TelegramMessages::MSG_ANY_MASTER;
 
         // Форматируем дату и время
         $date = Carbon::parse($data['date'])->format('d.m.Y');
@@ -645,7 +649,7 @@ class Handler extends WebhookHandler
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
                 'label' => 'Мастер',
-                'value' => $master->first_name.' '.$master->last_name,
+                'value' => $masterName,
             ])."\n";
         $message .=
             TelegramMessages::format(TelegramMessages::MSG_CONFIRMATION_LINE, [
@@ -818,12 +822,7 @@ class Handler extends WebhookHandler
                 ->get();
         }
 
-        if ($masters->isEmpty()) {
-            $this->replyWithMessage(TelegramMessages::MSG_NO_MASTERS);
-
-            return;
-        }
-
+        // Показываем выбор: «Любой мастер» всегда доступен, плюс список мастеров (если есть)
         $this->replyWithMessage(
             TelegramMessages::MSG_SELECT_MASTER,
             TelegramKeyboards::masters($masters),
@@ -1012,7 +1011,8 @@ class Handler extends WebhookHandler
                 $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
             }
         } elseif (str_starts_with($action, 'master_')) {
-            $masterId = str_replace('master_', '', $action);
+            $masterIdRaw = str_replace('master_', '', $action);
+            $masterId = $masterIdRaw === 'any' ? null : (int) $masterIdRaw;
             $locationId = $state?->data['location_id'] ?? null;
             $serviceId = $state?->data['service_id'] ?? null;
             if ($locationId && $serviceId) {
@@ -1041,7 +1041,7 @@ class Handler extends WebhookHandler
                 $masterId = $state?->data['master_id'] ?? null;
                 $currentMonth = $state?->data['month'] ?? null;
 
-                if ($locationId && $serviceId && $masterId) {
+                if ($locationId && $serviceId) {
                     $monthDate = $currentMonth
                         ? Carbon::parse($currentMonth.'-01')
                         : Carbon::today();
@@ -1068,7 +1068,7 @@ class Handler extends WebhookHandler
             $serviceId = $state?->data['service_id'] ?? null;
             $masterId = $state?->data['master_id'] ?? null;
 
-            if ($locationId && $serviceId && $masterId) {
+            if ($locationId && $serviceId) {
                 $this->showTimeSelection(
                     $business,
                     $locationId,
@@ -1086,7 +1086,7 @@ class Handler extends WebhookHandler
             $serviceId = $state?->data['service_id'] ?? null;
             $masterId = $state?->data['master_id'] ?? null;
 
-            if ($locationId && $serviceId && $masterId) {
+            if ($locationId && $serviceId) {
                 $this->showTimeSelection(
                     $business,
                     $locationId,
@@ -1156,9 +1156,16 @@ class Handler extends WebhookHandler
     ) {
         $location = $business->locations()->find($locationId);
         $service = $business->services()->find($serviceId);
-        $master = $business->masters()->find($masterId);
+        $master = $masterId !== null ? $business->masters()->find($masterId) : null;
 
-        if (! $location || ! $service || ! $master) {
+        if (! $location || ! $service) {
+            $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
+
+            return;
+        }
+
+        // При выборе конкретного мастера проверяем, что он есть
+        if ($masterId !== null && ! $master) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
@@ -1169,7 +1176,7 @@ class Handler extends WebhookHandler
             $month = Carbon::today()->format('Y-m');
         }
 
-        // Получаем доступные даты для месяца
+        // Получаем доступные даты для месяца (masterId = null — «любой мастер»)
         $availableDates = TelegramKeyboards::getAvailableDatesForMonth(
             $this->slotService,
             $serviceId,
@@ -1179,14 +1186,14 @@ class Handler extends WebhookHandler
         );
 
         // Формируем сообщение
-        $message =
-            TelegramMessages::format(TelegramMessages::MSG_SELECT_DATE, [
+        $dateHeader = Carbon::parse($month.'-01')
+            ->locale('ru')
+            ->isoFormat('MMMM YYYY');
+        $message = $master
+            ? TelegramMessages::format(TelegramMessages::MSG_SELECT_DATE, [
                 'master' => $master->first_name.' '.$master->last_name,
-            ]).
-            "\n\n📅 ".
-            Carbon::parse($month.'-01')
-                ->locale('ru')
-                ->isoFormat('MMMM YYYY');
+            ])."\n\n".$dateHeader
+            : TelegramMessages::MSG_SELECT_DATE_ANY_MASTER."\n\n".$dateHeader;
 
         // Проверяем возможность перехода к предыдущему месяцу
         $hasPrevMonth = TelegramKeyboards::hasPrevMonth($month);
@@ -1228,7 +1235,7 @@ class Handler extends WebhookHandler
         $serviceId = $state?->data['service_id'] ?? null;
         $masterId = $state?->data['master_id'] ?? null;
 
-        if (! $locationId || ! $serviceId || ! $masterId) {
+        if (! $locationId || ! $serviceId) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
 
             return;
@@ -1431,7 +1438,7 @@ class Handler extends WebhookHandler
                 'business_id' => $business->id,
                 'client_id' => $client->id,
                 'service_id' => $data['service_id'],
-                'master_id' => $data['master_id'],
+                'master_id' => $data['master_id'] ?? null,
                 'location_id' => $data['location_id'],
                 'date' => $data['date'],
                 'time' => $time,
@@ -1468,15 +1475,17 @@ class Handler extends WebhookHandler
             // Сбрасываем lastMessageId чтобы отправить новое сообщение
             $this->lastMessageId = null;
 
+            $masterName = $appointment->master
+                ? $appointment->master->first_name.' '.$appointment->master->last_name
+                : TelegramMessages::MSG_ANY_MASTER;
+
             $message = TelegramMessages::format(
                 TelegramMessages::MSG_APPOINTMENT_CREATED,
                 [
                     'date' => $formattedDate,
                     'time' => $formattedTime,
                     'service' => $appointment->service->name,
-                    'master' => $appointment->master->first_name.
-                        ' '.
-                        $appointment->master->last_name,
+                    'master' => $masterName,
                     'location' => $appointment->location->name,
                 ],
             );
