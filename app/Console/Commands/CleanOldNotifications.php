@@ -67,8 +67,8 @@ class CleanOldNotifications extends Command
             );
         }
 
-        $this->info("Прочитанные старше {$readAfterDays} дн.: {$readCount} записей" . ($dryRun ? ' (бы бы удалено)' : ' удалено'));
-        $this->info("Любые старше {$anyAfterDays} дн.: {$anyCount} записей" . ($dryRun ? ' (бы бы удалено)' : ' удалено'));
+        $this->info("Прочитанные старше {$readAfterDays} дн.: {$readCount} записей".($dryRun ? ' (бы бы удалено)' : ' удалено'));
+        $this->info("Любые старше {$anyAfterDays} дн.: {$anyCount} записей".($dryRun ? ' (бы бы удалено)' : ' удалено'));
 
         $this->info('Клинер уведомлений завершён.');
 

@@ -70,7 +70,7 @@ class TelegramMessages
     public const MSG_APPOINTMENT_CREATED = "✅ Запись создана!\n\nДата: {date}\nВремя: {time}\nУслуга: {service}\nМастер: {master}\nЛокация: {location}\n\nСвяжемся для подтверждения.";
 
     /** Вопрос после создания записи: подтвердить сразу или отменить */
-    public const MSG_CONFIRM_APPOINTMENT_QUESTION = "Подтверждаете запись?";
+    public const MSG_CONFIRM_APPOINTMENT_QUESTION = 'Подтверждаете запись?';
 
     public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = '✅ Запись подтверждена.';
 
@@ -165,7 +165,7 @@ class TelegramMessages
     {
         $result = $template;
         foreach ($data as $key => $value) {
-            $result = str_replace('{' . $key . '}', $value, $result);
+            $result = str_replace('{'.$key.'}', $value, $result);
         }
 
         return $result;

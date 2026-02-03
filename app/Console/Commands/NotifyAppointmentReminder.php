@@ -34,6 +34,7 @@ class NotifyAppointmentReminder extends Command
             ->get()
             ->filter(function (Appointment $apt) use ($from, $to) {
                 $dt = $apt->dateTime;
+
                 return $dt->gte($from) && $dt->lte($to);
             });
 

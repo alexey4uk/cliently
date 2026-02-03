@@ -266,7 +266,7 @@ class BusinessSettingsController extends Controller
             if (! $bot || empty($business->slug)) {
                 abort(404);
             }
-            $url = 'https://t.me/' . $bot->name . '?start=' . $business->slug;
+            $url = 'https://t.me/'.$bot->name.'?start='.$business->slug;
         } else {
             abort(400);
         }
@@ -282,7 +282,7 @@ class BusinessSettingsController extends Controller
             $filename = $type === 'web'
                 ? "qr-zapisi-{$business->slug}.png"
                 : "qr-telegram-{$business->slug}.png";
-            $headers['Content-Disposition'] = 'attachment; filename="' . $filename . '"';
+            $headers['Content-Disposition'] = 'attachment; filename="'.$filename.'"';
         }
 
         return response($result->getString(), 200, $headers);

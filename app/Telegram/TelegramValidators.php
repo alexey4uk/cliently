@@ -52,11 +52,11 @@ class TelegramValidators
 
         // Автоформатирование
         if (str_starts_with($cleaned, '8')) {
-            $cleaned = '+7' . substr($cleaned, 1);
+            $cleaned = '+7'.substr($cleaned, 1);
         }
 
         if (! str_starts_with($cleaned, '+')) {
-            $cleaned = '+' . $cleaned;
+            $cleaned = '+'.$cleaned;
         }
 
         // Проверка формата
