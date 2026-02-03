@@ -124,76 +124,9 @@
         )) 
         ? 'true' : 'false' 
     }},
-    collapsed: (() => {
-        try {
-            return localStorage.getItem('sidebarCollapsed') === 'true';
-        } catch (e) {
-            return false;
-        }
-    })(),
-    transitionsEnabled: false,
-    init() {
-        // Если sidebar свернут, автоматически открываем подменю для показа иконок
-        if (this.collapsed) {
-            this.clientWorkOpen = true;
-            this.appointmentsMenuOpen = true;
-            this.clientCatalogOpen = true;
-            this.clientOnlineOpen = true;
-            this.clientTeamOpen = true;
-            this.clientIntegrationsOpen = true;
-            this.subscriptionOpen = true;
-            this.businessSettingsOpen = true;
-            this.analyticsOpen = true;
-            this.supportOpen = true;
-            this.panelOperationsOpen = true;
-            this.adminAccessOpen = true;
-            this.commsOpen = true;
-            this.platformOpen = true;
-            this.panelIntegrationsOpen = true;
-            this.contentOpen = true;
-        }
-
-        // Слушаем события переключения sidebar из layout
-        const handleToggle = (e) => {
-            if (e.detail && typeof e.detail.collapsed !== 'undefined') {
-                // Включаем transitions при первом переключении (если еще не включены)
-                if (!this.transitionsEnabled) {
-                    this.transitionsEnabled = true;
-                    this.$el.classList.add('transition-all', 'duration-300', 'ease-in-out');
-                }
-
-                this.collapsed = e.detail.collapsed;
-                // При сворачивании автоматически открываем подменю
-                if (this.collapsed) {
-                    this.clientWorkOpen = true;
-                    this.appointmentsMenuOpen = true;
-                    this.clientCatalogOpen = true;
-                    this.clientOnlineOpen = true;
-                    this.clientTeamOpen = true;
-                    this.clientIntegrationsOpen = true;
-                    this.subscriptionOpen = true;
-                    this.businessSettingsOpen = true;
-                    this.analyticsOpen = true;
-                    this.supportOpen = true;
-                    this.panelOperationsOpen = true;
-                    this.adminAccessOpen = true;
-                    this.commsOpen = true;
-                    this.platformOpen = true;
-                    this.panelIntegrationsOpen = true;
-                    this.contentOpen = true;
-                }
-            }
-        };
-
-        window.addEventListener('sidebar-toggle', handleToggle);
-
-        // Очистка при размонтировании компонента
-        this.$el.addEventListener('alpine:destroy', () => {
-            window.removeEventListener('sidebar-toggle', handleToggle);
-        });
-    }
+    collapsed: false
 }"
-    :class="collapsed ? 'w-16' : 'w-64'">
+    class="w-64">
     <div class="flex flex-col h-full w-full">
         <div
             class="flex flex-col flex-grow bg-white dark:bg-slate-900 pt-6 pb-6 overflow-y-auto overflow-x-hidden border-r border-slate-200 dark:border-slate-800 shadow-sm">

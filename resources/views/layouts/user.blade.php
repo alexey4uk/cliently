@@ -40,53 +40,12 @@
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 font-sans overflow-x-hidden">
-    <div x-data="{ 
-        sidebarCollapsed: (() => {
-            try {
-                return localStorage.getItem('sidebarCollapsed') === 'true';
-            } catch (e) {
-                return false;
-            }
-        })(),
-        transitionsEnabled: false,
-        toggleSidebar() {
-            // Включаем transitions при первом переключении
-            if (!this.transitionsEnabled) {
-                this.transitionsEnabled = true;
-                // Включаем transitions для sidebar
-                const sidebar = document.querySelector('.sidebar-container');
-                if (sidebar) {
-                    sidebar.classList.add('transition-all', 'duration-300', 'ease-in-out');
-                }
-                // Включаем transitions для main-content
-                const mainContent = document.querySelector('.main-content');
-                if (mainContent) {
-                    mainContent.style.transition = 'margin-left 300ms ease-in-out';
-                }
-            }
-            
-            this.sidebarCollapsed = !this.sidebarCollapsed;
-            localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
-            // Синхронизируем data-атрибут на html (явно конвертируем в строку)
-            document.documentElement.setAttribute('data-sidebar-collapsed', this.sidebarCollapsed ? 'true' : 'false');
-            // Отправляем событие для синхронизации sidebar
-            window.dispatchEvent(new CustomEvent('sidebar-toggle', { 
-                detail: { collapsed: this.sidebarCollapsed } 
-            }));
-        },
-        init() {
-            // Синхронизируем data-атрибут при инициализации (уже должен быть установлен из sidebar-init)
-            // Явно конвертируем в строку для консистентности
-            document.documentElement.setAttribute('data-sidebar-collapsed', this.sidebarCollapsed ? 'true' : 'false');
-        }
-    }" class="flex min-h-screen lg:h-screen overflow-x-hidden lg:overflow-hidden">
+    <div class="flex min-h-screen lg:h-screen overflow-x-hidden lg:overflow-hidden">
         <!-- Sidebar (скрыт на мобильных, виден на lg+) -->
         @include('sidebar')
 
         <!-- Основной контент -->
-        <div class="main-content flex flex-col flex-1 overflow-x-hidden lg:overflow-hidden"
-             :class="sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'"
-             :style="transitionsEnabled ? 'transition: margin-left 300ms ease-in-out;' : ''">
+        <div class="main-content flex flex-col flex-1 overflow-x-hidden lg:overflow-hidden lg:ml-64">
             <!-- Верхний header -->
             <x-header 
                 :pageTitle="__('cliently')"

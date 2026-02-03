@@ -8,16 +8,8 @@
 <header class="border-b border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm w-full sticky top-0 z-30">
     <div class="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-3.5">
         <div class="flex items-center justify-between gap-2 sm:gap-3 md:gap-4 min-w-0">
-            <!-- Левая часть: Кнопка sidebar -->
+            <!-- Левая часть -->
             <div class="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
-                <!-- Кнопка сворачивания sidebar (только десктоп) -->
-                <button @click.stop="toggleSidebar()" 
-                        class="hidden lg:flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group"
-                        aria-label="Свернуть/развернуть меню"
-                        type="button">
-                    <i class="fa-solid fa-bars-staggered text-base group-hover:scale-110 transition-transform duration-200"></i>
-                </button>
-                
                 <!-- Логотип (только мобильные) -->
                 <a href="{{ route(Str::startsWith(Request::path(), 'panel') ? 'panel.index' : 'dashboard') }}" 
                    class="lg:hidden flex items-center gap-2.5 shrink-0 hover:opacity-80 transition-opacity duration-200">
