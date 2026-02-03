@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('telegram_chat_id')->nullable()->after('avatar');
             $table->string('telegram_token', 64)->unique()->nullable()->after('telegram_chat_id');
 
+            $table->string('password')->nullable()->change();
+            
             $table->index(['first_name', 'last_name'], 'idx_users_full_name');
         });
     }
