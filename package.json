@@ -16,6 +16,7 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "intl-tel-input": "^25.15.1",
         "tailwindcss": "^4.1.18"
     }
 }

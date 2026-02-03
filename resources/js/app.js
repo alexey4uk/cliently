@@ -1,5 +1,6 @@
 import './bootstrap';
 import PlanFeaturesManager from './plan-features';
+import './phone-input';
 
 // Явно устанавливаем в window для использования в blade шаблонах
 // Делаем это синхронно при загрузке модуля

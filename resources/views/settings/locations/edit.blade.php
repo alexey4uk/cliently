@@ -25,6 +25,7 @@
               toggle24Hours() {
                   this.is24Hours = !this.is24Hours;
               },
+              updatePreview() {},
           }"
           @input="updatePreview()"
           x-init="updatePreview()">
