@@ -1,6 +1,7 @@
 import './bootstrap';
 import PlanFeaturesManager from './plan-features';
 import './phone-input';
+import './address-autocomplete';
 
 // Явно устанавливаем в window для использования в blade шаблонах
 // Делаем это синхронно при загрузке модуля

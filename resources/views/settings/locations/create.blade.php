@@ -18,12 +18,14 @@
     <form method="POST" action="{{ route('settings.locations.store') }}" 
           x-data="{
               is24Hours: {{ old('working_hours.24_hours') ? 'true' : 'false' }},
+              showAddressFields: false,
               toggle24Hours() {
                   this.is24Hours = !this.is24Hours;
               },
               updatePreview() {},
           }"
-          @input="updatePreview()">
+          @input="updatePreview()"
+          @address-selected="showAddressFields = true">
         @csrf
 
         <!-- Основная информация -->
@@ -54,79 +56,75 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 mb-6">
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Адрес</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Адрес -->
                 <div class="md:col-span-2">
-
-                    <div class="space-y-4">
-                        <!-- Первая строка: Город, Улица, Дом -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
+                    <x-address-autocomplete input-id="location-create-address-search" class="mb-3" />
+                    <button type="button"
+                            x-show="!showAddressFields"
+                            x-transition
+                            @click="showAddressFields = true"
+                            class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline mb-4">
+                        Или ввести адрес вручную
+                    </button>
+                    <div x-show="showAddressFields" x-transition x-cloak>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="relative">
                                 <label for="city" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
                                     Город <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" 
-                                       id="city" 
-                                       name="city" 
-                                       required 
+                                <input type="text"
+                                       id="city"
+                                       name="city"
+                                       data-address-field="city"
+                                       required
                                        value="{{ old('city') }}"
+                                       autocomplete="off"
                                        @input="updatePreview()"
                                        class="w-full px-4 py-2.5 text-sm border {{ $errors->has('city') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('city')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
+                            <div class="relative">
                                 <label for="street" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
                                     Улица <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" 
-                                       id="street" 
-                                       name="street" 
-                                       required 
+                                <input type="text"
+                                       id="street"
+                                       name="street"
+                                       data-address-field="street"
+                                       required
                                        value="{{ old('street') }}"
+                                       autocomplete="off"
                                        @input="updatePreview()"
                                        class="w-full px-4 py-2.5 text-sm border {{ $errors->has('street') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('street')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                            <div>
+                            <div class="relative">
                                 <label for="house" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
                                     Дом <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" 
-                                       id="house" 
-                                       name="house" 
-                                       required 
+                                <input type="text"
+                                       id="house"
+                                       name="house"
+                                       data-address-field="house"
+                                       required
                                        value="{{ old('house') }}"
+                                       autocomplete="off"
                                        @input="updatePreview()"
                                        class="w-full px-4 py-2.5 text-sm border {{ $errors->has('house') ? 'border-rose-500 focus:ring-rose-500' : 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500' }} rounded-lg focus:outline-none focus:ring-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
                                 @error('house')
                                     <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
                                 @enderror
                             </div>
-                        </div>
-
-                        <!-- Вторая строка: Корпус, Квартира/Офис -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="building" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
-                                    Корпус
-                                </label>
-                                <input type="text" 
-                                       id="building" 
-                                       name="building" 
-                                       value="{{ old('building') }}"
-                                       @input="updatePreview()"
-                                       class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
-                            </div>
-                            <div>
+                            <div class="relative">
                                 <label for="apartment" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
                                     Квартира/Офис
                                 </label>
-                                <input type="text" 
-                                       id="apartment" 
-                                       name="apartment" 
+                                <input type="text"
+                                       id="apartment"
+                                       name="apartment"
                                        value="{{ old('apartment') }}"
                                        @input="updatePreview()"
                                        class="w-full px-4 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors">
