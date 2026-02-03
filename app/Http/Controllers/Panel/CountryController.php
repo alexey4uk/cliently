@@ -111,8 +111,8 @@ class CountryController extends Controller
     public function update(Request $request, Country $country)
     {
         $validated = $request->validate([
-            'code' => 'required|string|size:2|unique:countries,code,' . $country->id,
-            'code_3' => 'nullable|string|size:3|unique:countries,code_3,' . $country->id,
+            'code' => 'required|string|size:2|unique:countries,code,'.$country->id,
+            'code_3' => 'nullable|string|size:3|unique:countries,code_3,'.$country->id,
             'name' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
             'calling_code' => 'required|string|max:10',

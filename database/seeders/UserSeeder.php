@@ -3,12 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
-use App\Models\Country;
-use App\Models\Plan;
-use App\Models\User;
-use App\Services\SubscriptionService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
