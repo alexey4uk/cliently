@@ -94,7 +94,7 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                 <i class="fa-solid fa-comments text-indigo-600 dark:text-indigo-400"></i>
-                Комментарии
+                Ответы
                 @if($ticket->comments->count() > 0)
                     <span class="text-sm font-normal text-slate-500 dark:text-slate-400">
                         ({{ $ticket->comments->count() }})
@@ -211,7 +211,7 @@
                             :disabled="submitting"
                             class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md">
                             <i class="fa-solid" :class="submitting ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-                            <span x-text="submitting ? 'Отправка...' : 'Отправить комментарий'"></span>
+                            <span x-text="submitting ? 'Отправка...' : 'Отправить'"></span>
                         </button>
                         <a href="{{ route('tickets.index') }}"
                             class="px-6 py-2.5 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors">

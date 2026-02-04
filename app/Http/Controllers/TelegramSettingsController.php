@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use App\Services\SubscriptionAccessService;
 
 class TelegramSettingsController extends Controller
@@ -34,23 +35,21 @@ class TelegramSettingsController extends Controller
         // Получить первого бота (предполагаем, что бот один)
         $bot = \DefStudio\Telegraph\Models\TelegraphBot::first();
 
-        // Определяем состояние бота
-        $botState = 'no-bot'; // бота нет в системе
-        if ($bot) {
-            // Генерируем токен, если отсутствует
-            if (empty($business->telegram_token)) {
-                $business->telegram_token = \Illuminate\Support\Str::random(32);
-                $business->save();
-            }
-
-            if (empty($business->telegram_chat_id)) {
-                $botState = 'disconnected'; // пользователь еще не подключил
-            } else {
-                $botState = 'connected'; // все настроено
-            }
+        // Данные для блока «Уведомления в Telegram» (привязка личного аккаунта)
+        $user = Auth::user();
+        if (empty($user->telegram_token)) {
+            $user->telegram_token = \Illuminate\Support\Str::random(32);
+            $user->save();
         }
+        $botUsername = $bot ? $bot->name : null;
+        $telegramLink = $botUsername && $user->telegram_token
+            ? "https://t.me/{$botUsername}?start=user_auth_{$user->telegram_token}"
+            : null;
 
-        return view('settings.telegram.index', compact('business', 'bot', 'botState'));
+        // Состояние бота (для обратной совместимости, если понадобится)
+        $botState = $bot ? (empty($business->telegram_chat_id) ? 'disconnected' : 'connected') : 'no-bot';
+
+        return view('settings.telegram.index', compact('business', 'bot', 'botState', 'user', 'telegramLink'));
     }
 
     public function disconnect()

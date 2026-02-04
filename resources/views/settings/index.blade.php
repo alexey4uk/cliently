@@ -40,8 +40,15 @@
                     Локации
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    <span class="font-semibold text-slate-900 dark:text-white">{{ $business->locations->count() }}</span>
-                    <span class="ml-1">{{ $business->locations->count() === 1 ? 'локация' : ($business->locations->count() < 5 ? 'локации' : 'локаций') }}</span>
+                    @if ($business->locations->count() > 0)
+                        <span class="font-semibold text-slate-900 dark:text-white">{{ $business->locations->count() }}</span>
+                        <span class="ml-1">{{ $business->locations->count() === 1 ? 'локация' : ($business->locations->count() < 5 ? 'локации' : 'локаций') }}</span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
+                            <i class="fa-solid fa-exclamation-circle text-xs"></i>
+                            Не настроено
+                        </span>
+                    @endif
                 </p>
                 <div class="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium">
                     <span>Управление</span>
@@ -59,8 +66,15 @@
                     Услуги
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    <span class="font-semibold text-slate-900 dark:text-white">{{ $business->services->count() }}</span>
-                    <span class="ml-1">{{ $business->services->count() === 1 ? 'услуга' : ($business->services->count() < 5 ? 'услуги' : 'услуг') }}</span>
+                    @if ($business->services->count() > 0)
+                        <span class="font-semibold text-slate-900 dark:text-white">{{ $business->services->count() }}</span>
+                        <span class="ml-1">{{ $business->services->count() === 1 ? 'услуга' : ($business->services->count() < 5 ? 'услуги' : 'услуг') }}</span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
+                            <i class="fa-solid fa-exclamation-circle text-xs"></i>
+                            Не настроено
+                        </span>
+                    @endif
                 </p>
                 <div class="flex items-center gap-2 text-sm text-purple-600 dark:text-purple-400 font-medium">
                     <span>Управление</span>
@@ -78,8 +92,15 @@
                     Мастера
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    <span class="font-semibold text-slate-900 dark:text-white">{{ $business->masters->count() }}</span>
-                    <span class="ml-1">{{ $business->masters->count() === 1 ? 'мастер' : ($business->masters->count() < 5 ? 'мастера' : 'мастеров') }}</span>
+                    @if ($business->masters->count() > 0)
+                        <span class="font-semibold text-slate-900 dark:text-white">{{ $business->masters->count() }}</span>
+                        <span class="ml-1">{{ $business->masters->count() === 1 ? 'мастер' : ($business->masters->count() < 5 ? 'мастера' : 'мастеров') }}</span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
+                            <i class="fa-solid fa-exclamation-circle text-xs"></i>
+                            Не настроено
+                        </span>
+                    @endif
                 </p>
                 <div class="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                     <span>Управление</span>
@@ -129,8 +150,6 @@
 
             <!-- Карточка: Telegram Бот -->
             @php
-                $telegramBotActive = $business->telegram_chat_id;
-                
                 // Проверяем доступ к Telegram боту согласно тарифу
                 $hasTelegramAccess = false;
                 $ownerRole = \App\Models\BusinessRole::where('slug', 'owner')->first();
@@ -148,6 +167,7 @@
                         }
                     }
                 }
+                $userTelegramConnected = Auth::user()->isTelegramConnected();
             @endphp
             @if($hasTelegramAccess)
             <a href="{{ route('settings.telegram') }}"
@@ -159,7 +179,7 @@
                     Telegram Бот
                 </h3>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    @if ($telegramBotActive)
+                    @if ($userTelegramConnected)
                         <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 rounded-full">
                             <i class="fa-solid fa-check-circle text-xs"></i>
                             Подключен
@@ -167,7 +187,7 @@
                     @else
                         <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
                             <i class="fa-solid fa-exclamation-circle text-xs"></i>
-                            Требуется настройка
+                            Не привязан
                         </span>
                     @endif
                 </p>
@@ -180,61 +200,78 @@
 
             <!-- Карточка: Тарифы и подписка -->
             @php
-                $user = Auth::user();
-                $currentSubscription = $user->activeSubscription();
+                $settingsUser = Auth::user();
+                $currentSubscription = $settingsUser->activeSubscription();
                 $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
-                
-                // Получаем бизнес и роль для проверки прав доступа
-                $currentBusiness = null;
-                $currentBusinessRoleId = null;
-                $permissionService = null;
-                if ($user) {
-                    $user->load('businesses');
-                    $currentBusiness = $user->businesses->first();
-                    if ($currentBusiness) {
-                        $pivot = $user->businesses()->where('business_id', $currentBusiness->id)->first();
-                        $currentBusinessRoleId = $pivot?->pivot->role_id;
-                        if ($currentBusinessRoleId) {
-                            $permissionService = app(\App\Services\BusinessRolePermissionService::class);
-                        }
-                    }
-                }
 
-                // Функция для проверки бизнес-прав
-                $hasBusinessPermission = function($permission) use ($currentBusinessRoleId, $permissionService) {
-                    if (!$currentBusinessRoleId || !$permissionService) {
-                        return false;
-                    }
-                    return $permissionService->hasPermission($currentBusinessRoleId, $permission);
-                };
-                
-                $hasSubscriptionAccess = $hasBusinessPermission('client.subscription.view');
+                // Права проверяем для текущего бизнеса страницы ($business), а не для первого в списке
+                $subscriptionRoleId = null;
+                $subscriptionPermissionService = null;
+                $subscriptionPivot = \Illuminate\Support\Facades\DB::table('business_user')
+                    ->where('business_id', $business->id)
+                    ->where('user_id', $settingsUser->id)
+                    ->first();
+                if ($subscriptionPivot && $subscriptionPivot->role_id) {
+                    $subscriptionRoleId = $subscriptionPivot->role_id;
+                    $subscriptionPermissionService = app(\App\Services\BusinessRolePermissionService::class);
+                }
+                $hasSubscriptionAccess = $subscriptionRoleId && $subscriptionPermissionService
+                    && $subscriptionPermissionService->hasPermission($subscriptionRoleId, 'client.subscription.view');
             @endphp
             @if($hasSubscriptionAccess)
+                @php
+                    $isPaidPlan = $currentPlan && (float) $currentPlan->price > 0;
+                @endphp
                 <a href="{{ route('subscription.index') }}"
-                    class="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 hover:shadow-md hover:border-indigo-400 dark:hover:border-indigo-600 transition-all">
-                    <div class="h-12 w-12 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-200 dark:group-hover:bg-amber-500/30 transition-colors">
-                        <i class="fa-solid fa-crown text-amber-600 dark:text-amber-400 text-lg"></i>
-                    </div>
-                    <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                        Тарифы и подписка
-                    </h3>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                        @if($currentPlan)
-                            <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-slate-700 bg-slate-100 dark:bg-slate-500/20 dark:text-slate-300 rounded-full">
+                    @class([
+                        'group rounded-xl border p-6 transition-all',
+                        'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-amber-400 dark:hover:border-amber-600' => !$isPaidPlan,
+                        'bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-700/50 shadow-md hover:shadow-lg hover:border-amber-400 dark:hover:border-amber-500' => $isPaidPlan,
+                    ])>
+                    @if($isPaidPlan)
+                        <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-crown text-white text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+                            Тарифы и подписка
+                        </h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-200/80 dark:bg-amber-500/30 dark:text-amber-100 rounded-full">
                                 {{ $currentPlan->name }}
                             </span>
-                        @else
-                            <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
-                                <i class="fa-solid fa-exclamation-circle text-xs"></i>
-                                Не выбран
-                            </span>
-                        @endif
-                    </p>
-                    <div class="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 font-medium">
-                        <span>Управление</span>
-                        <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
-                    </div>
+                        </p>
+                        <p class="text-xs text-amber-700/90 dark:text-amber-400/90 mb-3 font-medium">
+                            {{ number_format((float) $currentPlan->price, 0, ',', ' ') }} BYN
+                            <span class="text-slate-500 dark:text-slate-400 font-normal">/ {{ $currentPlan->interval === 'yearly' ? 'год' : 'мес' }}</span>
+                        </p>
+                        <div class="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400 font-medium">
+                            <span>Управление</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    @else
+                        <div class="h-12 w-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
+                            <i class="fa-solid fa-tag text-slate-500 dark:text-slate-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+                            Тарифы и подписка
+                        </h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            @if($currentPlan)
+                                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-slate-600 bg-slate-100 dark:bg-slate-700 dark:text-slate-300 rounded-full">
+                                    {{ $currentPlan->name }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-100 dark:bg-amber-500/20 dark:text-amber-300 rounded-full">
+                                    <i class="fa-solid fa-exclamation-circle text-xs"></i>
+                                    Не выбран
+                                </span>
+                            @endif
+                        </p>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
+                            <span>Управление</span>
+                            <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    @endif
                 </a>
             @endif
         </div>
