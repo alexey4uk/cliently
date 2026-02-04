@@ -135,8 +135,8 @@ class SubscriptionService
         // Инициализируем usage для всех метрик тарифа
         $this->initializeUsage($subscription);
 
-        // Проверяем изменение тарифа
-        if ($subscription && $oldPlan && $oldPlan->id !== $plan->id) {
+        // Проверяем изменение тарифа (при активации триала не шлём «тариф изменён» — отправим одно сообщение «начат пробный период»)
+        if ($subscription && $oldPlan && $oldPlan->id !== $plan->id && ! $isTrial) {
             \Illuminate\Support\Facades\Log::info('Subscription plan changed', [
                 'channel' => 'subscription',
                 'event' => 'subscription_plan_changed',
@@ -151,8 +151,9 @@ class SubscriptionService
             );
         }
 
-        // Проверяем начало пробного периода
+        // Проверяем начало пробного периода (одно сообщение в TG/email/in-app)
         if ($isTrial && $trialEndsAt !== null) {
+            $subscription->setRelation('plan', $plan);
             \App\Services\SubscriptionNotificationService::notifyTrialStarted(
                 $subscription,
             );

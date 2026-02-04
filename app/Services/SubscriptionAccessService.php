@@ -180,12 +180,14 @@ class SubscriptionAccessService
             $featureDisplayName = $featureName ?? 'Эта функция';
             $redirectTo = $redirectRoute ?? 'subscription.index';
 
-            // Получаем текущий план для мотивации
             $currentSubscription = $owner->activeSubscription();
-            $currentPlanName = $currentSubscription ? $currentSubscription->plan->name : 'текущего тарифа';
+            $currentPlanName = $currentSubscription?->plan?->name;
 
-            // Мотивационное сообщение с призывом к действию
-            $message = "🚀 {$featureDisplayName} недоступна для тарифа \"{$currentPlanName}\". Обновите тариф, чтобы получить доступ к этой функции!";
+            if ($currentPlanName) {
+                $message = "🚀 {$featureDisplayName} недоступна для тарифа «{$currentPlanName}». Обновите тариф, чтобы получить доступ к этой функции!";
+            } else {
+                $message = "🚀 {$featureDisplayName} не доступен. Оформите подписку для доступа к этой функции.";
+            }
 
             return redirect()->route($redirectTo)
                 ->with('warning', $message);
