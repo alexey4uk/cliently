@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cliently — онлайн-запись и CRM для салонов и мастеров. Запись через сайт и Telegram-бот, напоминания, аналитика. Начните бесплатно.">
-    <title>Cliently — запись клиентов и CRM для салонов и мастеров</title>
+    <title>Cliently — онлайн-запись и CRM для салонов и мастеров</title>
+    <meta name="description" content="Онлайн-запись через сайт и в Telegram — напоминания и подтверждения в чате, база клиентов, аналитика. Начните бесплатно, без карты.">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Cliently — запись и CRM для салонов и мастеров">
-    <meta property="og:description" content="Онлайн-запись через сайт и Telegram-бот. Напоминания, база клиентов, аналитика. Начните бесплатно.">
+    <meta property="og:title" content="Cliently — онлайн-запись и CRM для салонов и мастеров">
+    <meta property="og:description" content="Онлайн-запись через сайт и в Telegram — напоминания и подтверждения в чате, база клиентов, аналитика. Начните бесплатно, без карты.">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="ru_RU">
 
