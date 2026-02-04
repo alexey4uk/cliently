@@ -331,7 +331,7 @@ class SubscriptionService
         // Получаем все usage для месячных метрик одним запросом
         $monthlyKeys = array_filter(
             $featureKeys,
-            fn($key) => $this->isMonthlyMetric($key),
+            fn ($key) => $this->isMonthlyMetric($key),
         );
 
         $usageData = [];

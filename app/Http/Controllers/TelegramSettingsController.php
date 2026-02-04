@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
 use App\Services\SubscriptionAccessService;
+use Illuminate\Support\Facades\Auth;
 
 class TelegramSettingsController extends Controller
 {

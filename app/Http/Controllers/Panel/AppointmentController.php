@@ -191,5 +191,4 @@ class AppointmentController extends Controller
 
         return redirect()->route('panel.appointments')->with('success', 'Запись обновлена успешно');
     }
-
 }
