@@ -5,10 +5,8 @@
     'advanced' => false,  // for row: true = check/times + label only
 ])
 
+@if($value !== null)
 @php
-    if ($value === null) {
-        return;
-    }
     $displayValue = match (true) {
         $value === -1 => 'Безлимит',
         $value === 0 => '—',
@@ -62,4 +60,5 @@
         <span class="text-slate-700 dark:text-slate-300 pr-2">{{ $metric->label }}</span>
         <span class="font-semibold text-slate-900 dark:text-white shrink-0" @if($value === 0) aria-label="Не доступно" @endif>{{ $displayValue }}</span>
     </div>
+@endif
 @endif

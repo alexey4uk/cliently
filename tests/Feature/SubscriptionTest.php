@@ -99,6 +99,16 @@ class SubscriptionTest extends TestCase
     }
 
     /**
+     * Закрыть только «лишние» буферы вывода до уровня $level (устраняет предупреждение PHPUnit).
+     */
+    protected function closeOutputBuffers(int $level): void
+    {
+        while (ob_get_level() > $level) {
+            ob_end_clean();
+        }
+    }
+
+    /**
      * Цепочка с сессией текущего бизнеса (нужно для check.business.permission).
      */
     protected function withBusinessSession(array $data): static
@@ -115,6 +125,8 @@ class SubscriptionTest extends TestCase
 
     public function test_subscription_index_page_can_be_rendered()
     {
+        $obLevel = ob_get_level();
+
         [
             'user' => $user,
             'business' => $business,
@@ -161,10 +173,14 @@ class SubscriptionTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('subscription.index');
+
+        $this->closeOutputBuffers($obLevel);
     }
 
     public function test_subscription_index_shows_current_plan()
     {
+        $obLevel = ob_get_level();
+
         $data = $this->createUserWithBusiness();
         ['user' => $user] = $data;
 
@@ -181,6 +197,8 @@ class SubscriptionTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee($plan->name);
+
+        $this->closeOutputBuffers($obLevel);
     }
 
     public function test_subscription_show_page_can_be_rendered()
