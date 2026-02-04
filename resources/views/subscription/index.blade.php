@@ -1,8 +1,8 @@
 @extends('layouts.user')
 
 @section('title', 'Тарифы - Cliently')
-@section('page-title', 'Выбор тарифа')
-@section('page-description', 'Выберите подходящий тариф для вашего бизнеса')
+@section('page-title', 'Тарифы')
+@section('page-description', null)
 
 @push('breadcrumbs')
     <x-breadcrumbs :items="[['title' => 'Тарифы']]" />
@@ -19,8 +19,7 @@
 @php
     $currentPlanPriceForModal = $currentPlan && $currentPlan->price !== null ? (float) $currentPlan->price : 0;
 @endphp
-<div class="max-w-[1400px] mx-auto">
-    <div x-data="{
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8" x-data="{
         showConfirmModal: false,
         selectedPlan: null,
         selectedForm: null,
@@ -63,13 +62,6 @@
         }
     }">
 
-    <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8">
-        {{-- Заголовок в одну строку, без лишнего блока --}}
-        <h1 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">
-            Выберите тариф
-        </h1>
-
-        {{-- План карточек: сетка под 1, 2, 3, 4, 5+ тарифов --}}
         @php
             $planCount = $plans->count();
             $gridClass = match ($planCount) {
@@ -212,7 +204,6 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
 @push('scripts')
