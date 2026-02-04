@@ -8,8 +8,9 @@
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {{-- Telegram — запись в мессенджере --}}
-            <div class="p-5 sm:p-6 bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-sky-900/20 dark:to-indigo-900/20 border border-sky-200/60 dark:border-sky-700/50 rounded-2xl ring-2 ring-sky-500/10">
+            {{-- Telegram — запись в мессенджере (УТП) --}}
+            <div class="relative p-5 sm:p-6 bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-sky-900/20 dark:to-indigo-900/20 border border-sky-200/60 dark:border-sky-700/50 rounded-2xl ring-2 ring-sky-500/10">
+                <span class="absolute top-4 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-600 text-white">Удобно</span>
                 <div class="w-12 h-12 rounded-xl bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center mb-4">
                     <svg class="w-7 h-7 text-sky-600 dark:text-sky-400" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
@@ -17,7 +18,7 @@
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Запись в Telegram</h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Клиенты записываются и получают напоминания прямо в мессенджере. Без перехода на сайт — всё в привычном чате.
+                    Клиенты записываются и получают напоминания прямо в мессенджере. Всё в привычном чате, без перехода на сайт.
                 </p>
             </div>
 

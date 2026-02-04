@@ -9,7 +9,7 @@
                     Записи и клиенты <span class="text-indigo-600 dark:text-indigo-400">в одном месте</span>
                 </h1>
                 <p class="text-sm sm:text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-7 sm:mb-10 leading-relaxed max-w-xl">
-                    Онлайн-запись через сайт и <strong class="text-gray-800 dark:text-gray-200">Telegram-бот</strong>. Напоминания клиентам, база, аналитика — для салонов и мастеров.
+                    Онлайн-запись через сайт и <strong class="text-gray-800 dark:text-gray-200">Telegram-бот</strong> — клиенты записываются и получают напоминания прямо в мессенджере. База, аналитика, без лишних звонков.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10">
                     @auth

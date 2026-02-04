@@ -6,6 +6,12 @@
     <meta name="description" content="Cliently — онлайн-запись и CRM для салонов и мастеров. Запись через сайт и Telegram-бот, напоминания, аналитика. Начните бесплатно.">
     <title>Cliently — запись клиентов и CRM для салонов и мастеров</title>
 
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Cliently — запись и CRM для салонов и мастеров">
+    <meta property="og:description" content="Онлайн-запись через сайт и Telegram-бот. Напоминания, база клиентов, аналитика. Начните бесплатно.">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:locale" content="ru_RU">
+
     <link rel="icon" type="image/png" href="{{ asset('favicon/favicon-96x96.png') }}" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
     <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">

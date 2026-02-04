@@ -7,15 +7,11 @@
                     <span class="text-lg font-bold text-white uppercase font-display">CLIENTLY</span>
                 </div>
                 <p class="text-sm text-gray-400 mb-4">
-                    Онлайн-запись и CRM для салонов и мастеров. Запись через сайт и Telegram, напоминания, аналитика.
+                    Онлайн-запись и CRM для салонов и мастеров. Запись через сайт и Telegram-бот, напоминания, аналитика.
                 </p>
-                {{-- <div class="flex gap-4">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors"
-                        aria-label="Telegram">Telegram</a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors"
-                        aria-label="Instagram">Instagram</a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="VK">VK</a>
-                </div> --}}
+                <div class="flex gap-4">
+                    <a href="https://t.me/cliently_by" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors" aria-label="Мы в Telegram">Telegram</a>
+                </div>
             </div>
 
             <div>

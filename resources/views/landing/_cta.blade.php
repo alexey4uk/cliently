@@ -2,7 +2,7 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="landing-heading landing-section-title text-2xl sm:text-3xl md:text-4xl font-bold text-white">Готовы организовать запись и клиентов?</h2>
         <p class="text-base sm:text-lg text-indigo-100 mb-8">
-            Онлайн-запись и Telegram-бот — без лишних звонков. Начните бесплатно.
+            Онлайн-запись и Telegram-бот — без лишних звонков. Попробуйте бота бесплатно.
         </p>
         @auth
             <a href="{{ route('dashboard') }}" class="inline-flex items-center px-6 py-3.5 bg-white text-indigo-600 hover:bg-indigo-50 font-semibold rounded-lg transition-colors">

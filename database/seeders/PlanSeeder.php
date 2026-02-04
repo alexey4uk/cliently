@@ -18,7 +18,7 @@ class PlanSeeder extends Seeder
             ['slug' => 'free'],
             [
                 'name' => 'Бесплатный',
-                'description' => 'Один мастер, одна локация, бот и базовая аналитика.',
+                'description' => 'Один мастер, одна локация, до 10 услуг и 50 записей в месяц. Бот и базовая аналитика.',
                 'price' => 0,
                 'interval' => 'monthly',
                 'trial_days' => 0,
@@ -27,12 +27,12 @@ class PlanSeeder extends Seeder
                 'sort_order' => 1,
             ]
         );
-        $freePlan->update(['description' => 'Один мастер, одна локация, бот и базовая аналитика.']);
+        $freePlan->update(['description' => 'Один мастер, одна локация, до 10 услуг и 50 записей в месяц. Бот и базовая аналитика.']);
 
         $this->createPlanFeatures($freePlan, [
             ['key' => 'max_locations', 'value' => '1', 'type' => 'integer'],
             ['key' => 'max_masters', 'value' => '1', 'type' => 'integer'],
-            ['key' => 'max_services', 'value' => '5', 'type' => 'integer'],
+            ['key' => 'max_services', 'value' => '10', 'type' => 'integer'],
             ['key' => 'max_clients', 'value' => '100', 'type' => 'integer'],
             ['key' => 'max_appointments_per_month', 'value' => '50', 'type' => 'integer'],
             ['key' => 'max_business_users', 'value' => '0', 'type' => 'integer'],
