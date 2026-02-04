@@ -67,6 +67,7 @@
                                     if ($value === null) continue;
                                     $displayValue = match (true) {
                                         $value === -1 => 'Безлимит',
+                                        $value === 0 => '—',
                                         $value === true => '✓',
                                         $value === false => '✗',
                                         is_numeric($value) => number_format($value, 0, ',', ' '),
@@ -75,7 +76,7 @@
                                 @endphp
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-600 dark:text-gray-400 pr-2">{{ $metric->label }}</span>
-                                    <span class="font-semibold text-gray-900 dark:text-white shrink-0">{{ $displayValue }}</span>
+                                    <span class="font-semibold text-gray-900 dark:text-white shrink-0" @if($value === 0) aria-label="Не доступно" @endif>{{ $displayValue }}</span>
                                 </div>
                             @endforeach
 

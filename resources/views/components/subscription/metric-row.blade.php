@@ -11,6 +11,7 @@
     }
     $displayValue = match (true) {
         $value === -1 => 'Безлимит',
+        $value === 0 => '—',
         $value === true => '✓',
         $value === false => '✗',
         is_numeric($value) => number_format($value, 0, ',', ' '),
@@ -31,6 +32,8 @@
                 <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     @if($value === -1)
                         Безлимит
+                    @elseif($value === 0)
+                        <span class="text-slate-400 dark:text-slate-500" aria-label="Не доступно">—</span>
                     @elseif($value === true)
                         Включено
                     @elseif($value === false)
@@ -57,6 +60,6 @@
 @else
     <div class="flex items-center justify-between text-xs sm:text-sm">
         <span class="text-slate-700 dark:text-slate-300 pr-2">{{ $metric->label }}</span>
-        <span class="font-semibold text-slate-900 dark:text-white shrink-0">{{ $displayValue }}</span>
+        <span class="font-semibold text-slate-900 dark:text-white shrink-0" @if($value === 0) aria-label="Не доступно" @endif>{{ $displayValue }}</span>
     </div>
 @endif

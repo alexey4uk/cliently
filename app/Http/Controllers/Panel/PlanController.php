@@ -62,7 +62,7 @@ class PlanController extends Controller
             $query->orderBy('sort_order', 'asc');
         }
 
-        $plans = $query->with('features')->paginate($perPage)->withQueryString();
+        $plans = $query->with('features.metric')->paginate($perPage)->withQueryString();
 
         return view('panel.plans.index', compact(
             'plans',
@@ -87,7 +87,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn ($m) => [
+                ->map(fn($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -98,7 +98,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn ($m) => [
+                ->map(fn($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -210,7 +210,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn ($m) => [
+                ->map(fn($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -221,7 +221,7 @@ class PlanController extends Controller
                 ->ordered()
                 ->get()
                 ->keyBy('key')
-                ->map(fn ($m) => [
+                ->map(fn($m) => [
                     'label' => $m->label,
                     'description' => $m->description,
                     'icon' => $m->icon,
@@ -239,7 +239,7 @@ class PlanController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:plans,slug,'.$plan->id,
+            'slug' => 'nullable|string|max:255|unique:plans,slug,' . $plan->id,
             'description' => 'nullable|string',
             'price' => 'nullable|numeric|min:0',
             'interval' => 'required|in:monthly,yearly',

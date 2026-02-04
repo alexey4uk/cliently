@@ -303,19 +303,25 @@
                                     @if($plan->features->count() > 0)
                                         <div class="flex flex-wrap gap-1.5">
                                             @foreach($plan->features->take(3) as $feature)
+                                                @php
+                                                    $metric = $feature->metric;
+                                                    $ftype = $metric ? $metric->type : null;
+                                                    $fval = $feature->value;
+                                                    $fkey = $metric ? $metric->key : '';
+                                                @endphp
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md 
-                                                    {{ $feature->feature_type === 'boolean' 
-                                                        ? ($feature->feature_value === 'true' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400')
+                                                    {{ $ftype === 'boolean' 
+                                                        ? ($fval === 'true' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400')
                                                         : 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300'
                                                     }}">
-                                                    @if($feature->feature_type === 'boolean')
-                                                        <i class="fa-solid fa-{{ $feature->feature_value === 'true' ? 'check' : 'xmark' }} text-xs"></i>
+                                                    @if($ftype === 'boolean')
+                                                        <i class="fa-solid fa-{{ $fval === 'true' ? 'check' : 'xmark' }} text-xs"></i>
                                                     @else
                                                         <i class="fa-solid fa-hashtag text-xs"></i>
                                                     @endif
-                                                    {{ Str::limit($feature->feature_key, 15) }}
-                                                    @if($feature->feature_type === 'integer' && $feature->feature_value)
-                                                        <span class="font-semibold">{{ $feature->feature_value === '-1' ? '∞' : $feature->feature_value }}</span>
+                                                    {{ Str::limit($fkey, 15) }}
+                                                    @if($ftype === 'integer')
+                                                        <span class="font-semibold" @if($fval === '0') aria-label="Не доступно" @endif>{{ $fval === '-1' ? '∞' : ($fval === '0' ? '—' : $fval) }}</span>
                                                     @endif
                                                 </span>
                                             @endforeach
