@@ -95,7 +95,11 @@
                         <div class="min-w-0 flex-1">
                             <p class="text-sm font-semibold text-orange-900 dark:text-orange-300 mb-1">Подписка отменена</p>
                             <p class="text-xs sm:text-sm text-orange-700 dark:text-orange-400 break-words">
-                                Подписка будет активна до {{ $subscription->ends_at->format('d.m.Y') }}. После этой даты доступ к платным функциям будет ограничен.
+                                @if($subscription->ends_at)
+                                    Подписка будет активна до {{ $subscription->ends_at->format('d.m.Y') }}. После этой даты доступ к платным функциям будет ограничен.
+                                @else
+                                    Подписка отменена. Доступ к платным функциям будет ограничен после окончания текущего периода.
+                                @endif
                             </p>
                         </div>
                     </div>
@@ -242,7 +246,7 @@
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-900 dark:text-white">Инвойс #{{ $invoice->id }}</p>
-                                    <p class="text-xs text-slate-600 dark:text-slate-400">{{ $invoice->created_at->format('d.m.Y H:i') }}</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-400">{{ $invoice->created_at ? $invoice->created_at->format('d.m.Y H:i') : '—' }}</p>
                                 </div>
                             </div>
                             <div class="shrink-0 text-left sm:text-right">

@@ -20,82 +20,47 @@
 <div class="max-w-6xl 2xl:max-w-[1400px] mx-auto">
     <!-- Page Header -->
     <div class="mb-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Финансовая аналитика</h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Выручка и финансовые показатели</p>
             </div>
-            <a href="{{ route('analytics.index') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                <span>Назад</span>
-            </a>
+            <div class="flex items-center gap-2">
+                @if($business && !empty($hasAdvancedAnalytics))
+                <a href="{{ route('analytics.financial.export', $filters) }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>Экспорт CSV</span>
+                </a>
+                @endif
+                <a href="{{ route('analytics.index') }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Назад</span>
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <form method="GET" action="{{ route('analytics.financial') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата начала</label>
-                <input type="date" name="date_from" value="{{ $filters['date_from'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата конца</label>
-                <input type="date" name="date_to" value="{{ $filters['date_to'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Услуга</label>
-                <select name="service_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все услуги</option>
-                    @foreach($business->services as $service)
-                        <option value="{{ $service->id }}" {{ $filters['service_id'] == $service->id ? 'selected' : '' }}>
-                            {{ $service->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Мастер</label>
-                <select name="master_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все мастера</option>
-                    @foreach($business->masters as $master)
-                        <option value="{{ $master->id }}" {{ $filters['master_id'] == $master->id ? 'selected' : '' }}>
-                            {{ $master->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Локация</label>
-                <select name="location_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все локации</option>
-                    @foreach($business->locations as $location)
-                        <option value="{{ $location->id }}" {{ $filters['location_id'] == $location->id ? 'selected' : '' }}>
-                            {{ $location->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-5 flex gap-2">
-                <button type="submit" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                    <i class="fa-solid fa-filter mr-2"></i>
-                    Применить фильтры
-                </button>
-                <a href="{{ route('analytics.financial') }}" 
-                   class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <i class="fa-solid fa-xmark mr-2"></i>
-                    Сбросить
-                </a>
-            </div>
-        </form>
+    <div class="mb-6">
+        <x-analytics-filters
+            route-name="analytics.financial"
+            :filters="$filters"
+            :filter-presets="$filterPresets ?? []"
+            :business="$business"
+        />
     </div>
+
+    @if($business && !$hasAdvancedAnalytics)
+    <div class="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200">
+        <p class="text-sm flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-amber-600 dark:text-amber-400"></i>
+            <span>Сравнение с предыдущим периодом (изменение выручки, записей, среднего чека в %) доступно на тарифах с <strong>расширенной аналитикой</strong>.</span>
+            <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Сменить тариф</a>
+        </p>
+    </div>
+    @endif
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
@@ -202,6 +167,29 @@
         </div>
     </div>
 
+    <!-- Итог по периоду (только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics))
+    <div class="mb-6 p-4 rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+        <p class="text-sm text-slate-700 dark:text-slate-300">
+            @if(isset($comparison) && $comparison)
+                @if(isset($comparison['revenue_change_percent']))
+                    @if($comparison['revenue_change_percent'] > 0)
+                        <span class="font-medium text-green-600 dark:text-green-400">Выручка выросла на {{ $comparison['revenue_change_percent'] }}%</span>
+                    @elseif($comparison['revenue_change_percent'] < 0)
+                        <span class="font-medium text-red-600 dark:text-red-400">Выручка снизилась на {{ abs($comparison['revenue_change_percent']) }}%</span>
+                    @else
+                        <span class="font-medium text-slate-600 dark:text-slate-400">Выручка без изменений</span>
+                    @endif
+                    к предыдущему периоду.
+                @endif
+                Завершённых записей: {{ number_format($data['completed_count'], 0, ',', ' ') }}, средний чек {{ number_format($data['average_check'], 0, ',', ' ') }} BYN.
+            @else
+                <strong>За период:</strong> выручка {{ number_format($data['total_revenue'], 0, ',', ' ') }} BYN, {{ number_format($data['completed_count'], 0, ',', ' ') }} завершённых записей, средний чек {{ number_format($data['average_check'], 0, ',', ' ') }} BYN.
+            @endif
+        </p>
+    </div>
+    @endif
+
     <!-- Revenue Chart -->
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
         <div class="flex items-center justify-between mb-4">
@@ -220,98 +208,152 @@
         </div>
     </div>
 
-    <!-- Revenue and Count Combined Chart -->
+    <!-- Revenue and Count Combined Chart (только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics))
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выручка и количество записей</h2>
         <div class="h-80">
             <canvas id="revenueCountChart"></canvas>
         </div>
     </div>
+    @endif
 
-    <!-- Revenue by Service -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выручка по услугам</h2>
-        @if(count($data['revenue_by_service']) > 0)
-            <div class="mb-6 h-64">
-                <canvas id="revenueByServiceChart"></canvas>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-slate-800">
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Услуга</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($data['revenue_by_service'] as $item)
-                            <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                                <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['service_name'] }}</td>
-                                <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                                <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
+    @if(empty($hasAdvancedAnalytics) && $business)
+    <div class="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200">
+        <p class="text-sm flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-chart-bar text-amber-600 dark:text-amber-400"></i>
+            <span>Разбивка по услугам, мастерам и локациям, выручка по дням недели и экспорт в CSV доступны в тарифе с <strong>расширенной аналитикой</strong>.</span>
+            <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Смотреть тарифы</a>
+        </p>
+    </div>
+    @endif
+
+    <!-- Выручка по услугам / мастерам / локациям (табы, только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics))
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6" x-data="{ financialTab: 'services' }">
+        <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-slate-700 mb-4 pb-3">
+            <button @click="financialTab = 'services'" :class="financialTab === 'services' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                По услугам
+            </button>
+            <button @click="financialTab = 'masters'" :class="financialTab === 'masters' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                По мастерам
+            </button>
+            <button @click="financialTab = 'locations'" :class="financialTab === 'locations' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                По локациям
+            </button>
+        </div>
+        <div x-show="financialTab === 'services'" x-cloak>
+            @if(count($data['revenue_by_service']) > 0)
+                <div class="mb-6 h-64">
+                    <canvas id="revenueByServiceChart"></canvas>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-slate-800">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Услуга</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
-        @endif
+                        </thead>
+                        <tbody>
+                            @foreach($data['revenue_by_service'] as $item)
+                                <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['service_name'] }}</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
+                                    <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
+            @endif
+        </div>
+        <div x-show="financialTab === 'masters'" x-cloak>
+            @if(count($data['revenue_by_master']) > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-slate-800">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Мастер</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data['revenue_by_master'] as $item)
+                                <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['master_name'] }}</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
+                                    <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
+            @endif
+        </div>
+        <div x-show="financialTab === 'locations'" x-cloak>
+            @if(count($data['revenue_by_location']) > 0)
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-slate-800">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Локация</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data['revenue_by_location'] as $item)
+                                <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['location_name'] }}</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
+                                    <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
+            @endif
+        </div>
     </div>
 
-    <!-- Revenue by Master -->
-    @if(count($data['revenue_by_master']) > 0)
+    <!-- Revenue by Day of Week (только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics) && isset($data['revenue_by_day_of_week']) && count($data['revenue_by_day_of_week']) > 0)
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выручка по мастерам</h2>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выручка по дням недели</h2>
+        <div class="mb-4 h-64">
+            <canvas id="revenueByDayOfWeekChart"></canvas>
+        </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead>
                     <tr class="border-b border-gray-200 dark:border-slate-800">
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Мастер</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
+                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">День</th>
+                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Записей</th>
                         <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($data['revenue_by_master'] as $item)
-                        <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['master_name'] }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
-                        </tr>
+                    @foreach($data['revenue_by_day_of_week'] as $row)
+                    <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $row['day'] }}</td>
+                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $row['count'] }}</td>
+                        <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($row['revenue'], 0, ',', ' ') }} BYN</td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
     @endif
-
-    <!-- Revenue by Location -->
-    @if(count($data['revenue_by_location']) > 0)
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Выручка по локациям</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-gray-200 dark:border-slate-800">
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Локация</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Количество</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Выручка</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($data['revenue_by_location'] as $item)
-                        <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['location_name'] }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['count'] }}</td>
-                            <td class="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ number_format($item['revenue'], 0, ',', ' ') }} BYN</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
     @endif
 </div>
 
@@ -320,6 +362,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const revenueData = @json($data['revenue_by_period']);
         const revenueByService = @json($data['revenue_by_service']);
+        const revenueByDayOfWeek = @json($data['revenue_by_day_of_week'] ?? []);
         
         const isDarkMode = () => {
             return document.documentElement.classList.contains('dark');
@@ -555,6 +598,55 @@
                             grid: {
                                 color: colors.grid
                             }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Revenue by Day of Week
+        const revenueByDayOfWeekCtx = document.getElementById('revenueByDayOfWeekChart');
+        if (revenueByDayOfWeekCtx && revenueByDayOfWeek.length > 0) {
+            const colors = getThemeColors();
+            new Chart(revenueByDayOfWeekCtx, {
+                type: 'bar',
+                data: {
+                    labels: revenueByDayOfWeek.map(item => item.day),
+                    datasets: [{
+                        label: 'Выручка (BYN)',
+                        data: revenueByDayOfWeek.map(item => item.revenue),
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderColor: 'rgb(99, 102, 241)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Выручка: ' + new Intl.NumberFormat('ru-RU').format(context.parsed.y) + ' BYN';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: colors.textSecondary },
+                            grid: { color: colors.grid }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: colors.textSecondary,
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('ru-RU').format(value) + ' BYN';
+                                }
+                            },
+                            grid: { color: colors.grid }
                         }
                     }
                 }
