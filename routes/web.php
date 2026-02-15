@@ -231,6 +231,14 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 \App\Http\Controllers\AnalyticsController::class,
                 'clients',
             ])->name('analytics.clients');
+            Route::get('/analytics/financial/export', [
+                \App\Http\Controllers\AnalyticsController::class,
+                'exportFinancial',
+            ])->name('analytics.financial.export');
+            Route::get('/analytics/clients/export', [
+                \App\Http\Controllers\AnalyticsController::class,
+                'exportClients',
+            ])->name('analytics.clients.export');
         });
 
         // Клиенты

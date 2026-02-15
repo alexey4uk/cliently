@@ -34,293 +34,235 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <form method="GET" action="{{ route('analytics.general') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата начала</label>
-                <input type="date" name="date_from" value="{{ $filters['date_from'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата конца</label>
-                <input type="date" name="date_to" value="{{ $filters['date_to'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Услуга</label>
-                <select name="service_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все услуги</option>
-                    @foreach($business->services as $service)
-                        <option value="{{ $service->id }}" {{ $filters['service_id'] == $service->id ? 'selected' : '' }}>
-                            {{ $service->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Мастер</label>
-                <select name="master_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все мастера</option>
-                    @foreach($business->masters as $master)
-                        <option value="{{ $master->id }}" {{ $filters['master_id'] == $master->id ? 'selected' : '' }}>
-                            {{ $master->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Локация</label>
-                <select name="location_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все локации</option>
-                    @foreach($business->locations as $location)
-                        <option value="{{ $location->id }}" {{ $filters['location_id'] == $location->id ? 'selected' : '' }}>
-                            {{ $location->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-5 flex gap-2">
-                <button type="submit" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                    <i class="fa-solid fa-filter mr-2"></i>
-                    Применить фильтры
-                </button>
-                <a href="{{ route('analytics.general') }}" 
-                   class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <i class="fa-solid fa-xmark mr-2"></i>
-                    Сбросить
-                </a>
-            </div>
-        </form>
+    <div class="mb-6">
+        <x-analytics-filters
+            route-name="analytics.general"
+            :filters="$filters"
+            :filter-presets="$filterPresets ?? []"
+            :business="$business"
+        />
     </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Всего записей</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['total'], 0, ',', ' ') }}</p>
-                    @if(isset($comparison) && isset($comparison['total_change_percent']))
-                        <div class="flex items-center mt-2">
-                            @if($comparison['total_change_percent'] > 0)
-                                <span class="text-sm font-semibold text-green-600 dark:text-green-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                    +{{ abs($comparison['total_change_percent']) }}%
-                                </span>
-                            @elseif($comparison['total_change_percent'] < 0)
-                                <span class="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                    {{ $comparison['total_change_percent'] }}%
-                                </span>
-                            @else
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Без изменений</span>
-                            @endif
-                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">к предыдущему периоду</span>
-                        </div>
-                    @endif
-                </div>
-                <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Завершено</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['stats_by_status']['completed'], 0, ',', ' ') }}</p>
-                    @if(isset($comparison) && isset($comparison['completed_change_percent']))
-                        <div class="flex items-center mt-2">
-                            @if($comparison['completed_change_percent'] > 0)
-                                <span class="text-sm font-semibold text-green-600 dark:text-green-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                    +{{ abs($comparison['completed_change_percent']) }}%
-                                </span>
-                            @elseif($comparison['completed_change_percent'] < 0)
-                                <span class="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                    {{ $comparison['completed_change_percent'] }}%
-                                </span>
-                            @else
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Без изменений</span>
-                            @endif
-                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">к предыдущему периоду</span>
-                        </div>
-                    @endif
-                </div>
-                <div class="w-12 h-12 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-check-circle text-green-600 dark:text-green-400 text-xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Конверсия</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $data['conversion_rate'] }}%</p>
-                    @if(isset($comparison) && isset($comparison['conversion_change']))
-                        <div class="flex items-center mt-2">
-                            @if($comparison['conversion_change'] > 0)
-                                <span class="text-sm font-semibold text-green-600 dark:text-green-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                    +{{ number_format(abs($comparison['conversion_change']), 1) }}%
-                                </span>
-                            @elseif($comparison['conversion_change'] < 0)
-                                <span class="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                    {{ number_format($comparison['conversion_change'], 1) }}%
-                                </span>
-                            @else
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Без изменений</span>
-                            @endif
-                            <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">к предыдущему периоду</span>
-                        </div>
-                    @endif
-                </div>
-                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-chart-line text-blue-600 dark:text-blue-400 text-xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Отменено</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($data['stats_by_status']['cancelled'], 0, ',', ' ') }}</p>
-                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $data['cancellation_rate'] }}%</p>
-                    @if(isset($comparison) && isset($comparison['cancellation_change']))
-                        <div class="flex items-center mt-1">
-                            @if($comparison['cancellation_change'] < 0)
-                                <span class="text-xs font-semibold text-green-600 dark:text-green-400 flex items-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                    </svg>
-                                    {{ number_format($comparison['cancellation_change'], 1) }}%
-                                </span>
-                            @elseif($comparison['cancellation_change'] > 0)
-                                <span class="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                    </svg>
-                                    +{{ number_format($comparison['cancellation_change'], 1) }}%
-                                </span>
-                            @endif
-                        </div>
-                    @endif
-                </div>
-                <div class="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-xmark-circle text-red-600 dark:text-red-400 text-xl"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Status Distribution Chart -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Распределение по статусам</h2>
-        <div class="h-80">
-            <canvas id="statusChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Appointments Chart -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Записи по периодам</h2>
-        <div class="h-80">
-            <canvas id="appointmentsChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Stats by Service -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Статистика по услугам</h2>
-        @if(count($data['stats_by_service']) > 0)
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-gray-200 dark:border-slate-800">
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Услуга</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Всего</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Завершено</th>
-                            <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Отменено</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($data['stats_by_service'] as $item)
-                            <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                                <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['service_name'] }}</td>
-                                <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['total'] }}</td>
-                                <td class="py-3 px-4 text-sm text-green-600 dark:text-green-400 text-right">{{ $item['completed'] }}</td>
-                                <td class="py-3 px-4 text-sm text-red-600 dark:text-red-400 text-right">{{ $item['cancelled'] }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
-        @endif
-    </div>
-
-    <!-- Stats by Master with Efficiency -->
-    @if(count($data['stats_by_master']) > 0)
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Эффективность мастеров</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b border-gray-200 dark:border-slate-800">
-                        <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Мастер</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Всего</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Завершено</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Конверсия</th>
-                        <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Отменено</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($data['stats_by_master'] as $item)
-                        @php
-                            $conversionRate = $item['total'] > 0 ? round(($item['completed'] / $item['total']) * 100, 1) : 0;
-                        @endphp
-                        <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                            <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['master_name'] }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['total'] }}</td>
-                            <td class="py-3 px-4 text-sm text-green-600 dark:text-green-400 text-right">{{ $item['completed'] }}</td>
-                            <td class="py-3 px-4 text-sm font-semibold text-right">
-                                <span class="{{ $conversionRate >= 80 ? 'text-green-600 dark:text-green-400' : ($conversionRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400') }}">
-                                    {{ $conversionRate }}%
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-sm text-red-600 dark:text-red-400 text-right">{{ $item['cancelled'] }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+    @if($business && !$hasAdvancedAnalytics)
+    <div class="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200">
+        <p class="text-sm flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-chart-bar text-amber-600 dark:text-amber-400"></i>
+            <span>Сравнение с предыдущим периодом и блок «Популярные часы и дни недели» доступны на тарифах с <strong>расширенной аналитикой</strong>.</span>
+            <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Сменить тариф</a>
+        </p>
     </div>
     @endif
 
-    <!-- Time Analytics -->
-    @if(isset($timeAnalytics))
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {{-- Всего записей --}}
+        <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Всего записей</p>
+                    <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ number_format($data['total'], 0, ',', ' ') }}</p>
+                    @if(isset($comparison) && isset($comparison['total_change_percent']))
+                        <p class="mt-2 flex items-center gap-1.5 text-xs">
+                            @if($comparison['total_change_percent'] > 0)
+                                <span class="inline-flex items-center font-medium text-green-600 dark:text-green-400"><i class="fa-solid fa-arrow-up text-[10px]"></i> +{{ abs($comparison['total_change_percent']) }}%</span>
+                            @elseif($comparison['total_change_percent'] < 0)
+                                <span class="inline-flex items-center font-medium text-red-600 dark:text-red-400"><i class="fa-solid fa-arrow-down text-[10px]"></i> {{ $comparison['total_change_percent'] }}%</span>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400">Без изменений</span>
+                            @endif
+                            <span class="text-gray-400 dark:text-gray-500">к пред. периоду</span>
+                        </p>
+                    @endif
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
+                    <i class="fa-solid fa-calendar-check text-indigo-600 dark:text-indigo-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        {{-- Завершено --}}
+        <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Завершено</p>
+                    <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ number_format($data['stats_by_status']['completed'], 0, ',', ' ') }}</p>
+                    @if(isset($comparison) && isset($comparison['completed_change_percent']))
+                        <p class="mt-2 flex items-center gap-1.5 text-xs">
+                            @if($comparison['completed_change_percent'] > 0)
+                                <span class="inline-flex items-center font-medium text-green-600 dark:text-green-400"><i class="fa-solid fa-arrow-up text-[10px]"></i> +{{ abs($comparison['completed_change_percent']) }}%</span>
+                            @elseif($comparison['completed_change_percent'] < 0)
+                                <span class="inline-flex items-center font-medium text-red-600 dark:text-red-400"><i class="fa-solid fa-arrow-down text-[10px]"></i> {{ $comparison['completed_change_percent'] }}%</span>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400">Без изменений</span>
+                            @endif
+                            <span class="text-gray-400 dark:text-gray-500">к пред. периоду</span>
+                        </p>
+                    @endif
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-500/20">
+                    <i class="fa-solid fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        {{-- Конверсия --}}
+        <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Конверсия</p>
+                    <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ $data['conversion_rate'] }}%</p>
+                    @if(isset($comparison) && isset($comparison['conversion_change']))
+                        <p class="mt-2 flex items-center gap-1.5 text-xs">
+                            @if($comparison['conversion_change'] > 0)
+                                <span class="inline-flex items-center font-medium text-green-600 dark:text-green-400"><i class="fa-solid fa-arrow-up text-[10px]"></i> +{{ number_format(abs($comparison['conversion_change']), 1) }}%</span>
+                            @elseif($comparison['conversion_change'] < 0)
+                                <span class="inline-flex items-center font-medium text-red-600 dark:text-red-400"><i class="fa-solid fa-arrow-down text-[10px]"></i> {{ number_format($comparison['conversion_change'], 1) }}%</span>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400">Без изменений</span>
+                            @endif
+                            <span class="text-gray-400 dark:text-gray-500">к пред. периоду</span>
+                        </p>
+                    @endif
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                    <i class="fa-solid fa-chart-line text-blue-600 dark:text-blue-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        {{-- Отменено --}}
+        <div class="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Отменено</p>
+                    <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">{{ number_format($data['stats_by_status']['cancelled'], 0, ',', ' ') }}</p>
+                    <p class="mt-0.5 text-sm font-medium text-red-600 dark:text-red-400">{{ $data['cancellation_rate'] }}% от записей</p>
+                    @if(isset($comparison) && isset($comparison['cancellation_change']))
+                        <p class="mt-2 flex items-center gap-1.5 text-xs">
+                            @if($comparison['cancellation_change'] < 0)
+                                <span class="inline-flex items-center font-medium text-green-600 dark:text-green-400"><i class="fa-solid fa-arrow-down text-[10px]"></i> {{ number_format($comparison['cancellation_change'], 1) }}%</span>
+                            @elseif($comparison['cancellation_change'] > 0)
+                                <span class="inline-flex items-center font-medium text-red-600 dark:text-red-400"><i class="fa-solid fa-arrow-up text-[10px]"></i> +{{ number_format($comparison['cancellation_change'], 1) }}%</span>
+                            @else
+                                <span class="text-gray-500 dark:text-gray-400">Без изменений</span>
+                            @endif
+                            <span class="text-gray-400 dark:text-gray-500">к пред. периоду</span>
+                        </p>
+                    @endif
+                </div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-red-100 dark:bg-red-500/20">
+                    <i class="fa-solid fa-xmark-circle text-red-600 dark:text-red-400 text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div x-data="{ generalTab: 'funnel' }" class="mb-6">
+        <div class="flex flex-wrap gap-2 border-b border-gray-200 dark:border-slate-700 mb-4 pb-3">
+            <button @click="generalTab = 'funnel'" :class="generalTab === 'funnel' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                Воронка и статусы
+            </button>
+            @if(!empty($hasAdvancedAnalytics))
+            <button @click="generalTab = 'services_masters'" :class="generalTab === 'services_masters' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                По услугам и мастерам
+            </button>
+            <button @click="generalTab = 'time'" :class="generalTab === 'time' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                По времени
+            </button>
+            <button @click="generalTab = 'sources'" :class="generalTab === 'sources' ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                Источники
+            </button>
+            @endif
+        </div>
+
+        <div x-show="generalTab === 'funnel'" x-cloak>
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Распределение по статусам</h2>
+                <div class="h-80">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Записи по периодам</h2>
+                <div class="h-80">
+                    <canvas id="appointmentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        @if(!empty($hasAdvancedAnalytics))
+        <div x-show="generalTab === 'services_masters'" x-cloak>
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Статистика по услугам</h2>
+                @if(count($data['stats_by_service']) > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200 dark:border-slate-800">
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Услуга</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Всего</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Завершено</th>
+                                    <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Отменено</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($data['stats_by_service'] as $item)
+                                    <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                        <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['service_name'] }}</td>
+                                        <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['total'] }}</td>
+                                        <td class="py-3 px-4 text-sm text-green-600 dark:text-green-400 text-right">{{ $item['completed'] }}</td>
+                                        <td class="py-3 px-4 text-sm text-red-600 dark:text-red-400 text-right">{{ $item['cancelled'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-8">Нет данных за выбранный период</p>
+                @endif
+            </div>
+            @if(count($data['stats_by_master']) > 0)
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Эффективность мастеров</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-slate-800">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Мастер</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Всего</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Завершено</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Конверсия</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Отменено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data['stats_by_master'] as $item)
+                                @php
+                                    $conversionRate = $item['total'] > 0 ? round(($item['completed'] / $item['total']) * 100, 1) : 0;
+                                @endphp
+                                <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                    <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $item['master_name'] }}</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $item['total'] }}</td>
+                                    <td class="py-3 px-4 text-sm text-green-600 dark:text-green-400 text-right">{{ $item['completed'] }}</td>
+                                    <td class="py-3 px-4 text-sm font-semibold text-right">
+                                        <span class="{{ $conversionRate >= 80 ? 'text-green-600 dark:text-green-400' : ($conversionRate >= 60 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400') }}">
+                                            {{ $conversionRate }}%
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-red-600 dark:text-red-400 text-right">{{ $item['cancelled'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
+        </div>
+        @endif
+
+        @if(!empty($hasAdvancedAnalytics))
+        <div x-show="generalTab === 'time'" x-cloak>
+            @if(isset($timeAnalytics))
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Популярные часы и дни недели</h2>
         <div class="overflow-x-auto mb-6">
@@ -386,7 +328,44 @@
         </div>
     </div>
     @endif
-    @endif
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 py-6">Аналитика по времени доступна на тарифах с расширенной аналитикой.</p>
+            @endif
+        </div>
+        @endif
+
+        @if(!empty($hasAdvancedAnalytics))
+        <div x-show="generalTab === 'sources'" x-cloak>
+            @if(isset($data['stats_by_source']) && count($data['stats_by_source']) > 0)
+            <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Записи по источникам</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-slate-800">
+                                <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Источник</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Всего</th>
+                                <th class="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Завершено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($data['stats_by_source'] as $row)
+                            <tr class="border-b border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/50">
+                                <td class="py-3 px-4 text-sm text-gray-900 dark:text-white">{{ $row['label'] }}</td>
+                                <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 text-right">{{ $row['count'] }}</td>
+                                <td class="py-3 px-4 text-sm text-green-600 dark:text-green-400 text-right">{{ $row['completed'] }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @else
+                <p class="text-sm text-gray-500 dark:text-gray-400 py-6">Нет данных по источникам за выбранный период.</p>
+            @endif
+        </div>
+        @endif
+    </div>
 </div>
 
 @push('scripts')

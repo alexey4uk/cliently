@@ -25,76 +25,31 @@
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Аналитика клиентов</h1>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Статистика по клиентам и их поведению</p>
             </div>
-            <a href="{{ route('analytics.index') }}" 
-               class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                <span>Назад</span>
-            </a>
+            <div class="flex items-center gap-2">
+                @if($business && !empty($hasAdvancedAnalytics))
+                <a href="{{ route('analytics.clients.export', $filters) }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>Экспорт CSV</span>
+                </a>
+                @endif
+                <a href="{{ route('analytics.index') }}" 
+                   class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <i class="fa-solid fa-arrow-left text-xs"></i>
+                    <span>Назад</span>
+                </a>
+            </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <form method="GET" action="{{ route('analytics.clients') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата начала</label>
-                <input type="date" name="date_from" value="{{ $filters['date_from'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Дата конца</label>
-                <input type="date" name="date_to" value="{{ $filters['date_to'] }}" 
-                       class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Услуга</label>
-                <select name="service_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все услуги</option>
-                    @foreach($business->services as $service)
-                        <option value="{{ $service->id }}" {{ $filters['service_id'] == $service->id ? 'selected' : '' }}>
-                            {{ $service->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Мастер</label>
-                <select name="master_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все мастера</option>
-                    @foreach($business->masters as $master)
-                        <option value="{{ $master->id }}" {{ $filters['master_id'] == $master->id ? 'selected' : '' }}>
-                            {{ $master->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Локация</label>
-                <select name="location_id" 
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">Все локации</option>
-                    @foreach($business->locations as $location)
-                        <option value="{{ $location->id }}" {{ $filters['location_id'] == $location->id ? 'selected' : '' }}>
-                            {{ $location->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="md:col-span-5 flex gap-2">
-                <button type="submit" 
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                    <i class="fa-solid fa-filter mr-2"></i>
-                    Применить фильтры
-                </button>
-                <a href="{{ route('analytics.clients') }}" 
-                   class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                    <i class="fa-solid fa-xmark mr-2"></i>
-                    Сбросить
-                </a>
-            </div>
-        </form>
+    <div class="mb-6">
+        <x-analytics-filters
+            route-name="analytics.clients"
+            :filters="$filters"
+            :filter-presets="$filterPresets ?? []"
+            :business="$business"
+        />
     </div>
 
     <!-- Stats Cards -->
@@ -160,16 +115,49 @@
         </div>
     </div>
 
-    <!-- New Clients by Period Chart -->
-    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Привлечение новых клиентов</h2>
+    @if(empty($hasAdvancedAnalytics) && $business)
+    <div class="mb-6 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200">
+        <p class="text-sm flex items-center gap-2 flex-wrap">
+            <i class="fa-solid fa-chart-bar text-amber-600 dark:text-amber-400"></i>
+            <span>Динамика новых клиентов, топ клиентов по выручке и экспорт в CSV доступны в тарифе с <strong>расширенной аналитикой</strong>.</span>
+            <a href="{{ route('subscription.index') }}" class="shrink-0 font-medium underline hover:no-underline">Смотреть тарифы</a>
+        </p>
+    </div>
+    @endif
+
+    <!-- Динамика новых клиентов (только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics))
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6 ring-1 ring-indigo-500/10 dark:ring-indigo-400/10">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-indigo-500 dark:text-indigo-400"></i>
+            Динамика новых клиентов
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Как менялось привлечение новых клиентов по дням выбранного периода</p>
         <div class="h-80">
             <canvas id="newClientsChart"></canvas>
         </div>
     </div>
+    @endif
 
-    <!-- Top Clients by Revenue -->
-    @if(count($data['top_clients']) > 0)
+    <!-- Топ-3 клиента (карточки, только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics) && count($data['top_clients']) > 0)
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        @foreach(array_slice($data['top_clients'], 0, 3) as $index => $client)
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                <span class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ $index + 1 }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-gray-900 dark:text-white truncate" title="{{ $client['client_name'] }}">{{ $client['client_name'] }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($client['ltv'], 0, ',', ' ') }} BYN · {{ $client['appointments_count'] }} записей</p>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    @endif
+
+    <!-- Top Clients by Revenue (только расширенная) -->
+    @if(!empty($hasAdvancedAnalytics) && count($data['top_clients']) > 0)
     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 p-5 mb-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Топ клиентов по выручке</h2>
         <div class="mb-6 h-64">
