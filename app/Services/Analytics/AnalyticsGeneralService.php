@@ -75,7 +75,9 @@ class AnalyticsGeneralService
         $maxValue = 0;
         foreach ($heatmap as $day) {
             foreach ($day as $c) {
-                if ($c > $maxValue) $maxValue = $c;
+                if ($c > $maxValue) {
+                    $maxValue = $c;
+                }
             }
         }
 
@@ -99,7 +101,7 @@ class AnalyticsGeneralService
         $byMonth = [];
         foreach ($appointments as $a) {
             $key = $a->date->format('Y-m');
-            if (!isset($byMonth[$key])) {
+            if (! isset($byMonth[$key])) {
                 $byMonth[$key] = [
                     'month' => $a->date->format('F Y'),
                     'label' => $a->date->locale('ru')->translatedFormat('M Y'),
@@ -174,6 +176,7 @@ class AnalyticsGeneralService
             ];
             $current->addDay();
         }
+
         return $result;
     }
 
@@ -189,6 +192,7 @@ class AnalyticsGeneralService
 
         return $appointments->groupBy('service_id')->map(function ($group, $serviceId) {
             $service = $group->first()->service;
+
             return [
                 'service_id' => $serviceId,
                 'service_name' => $service ? $service->name : 'Неизвестная услуга',
@@ -212,6 +216,7 @@ class AnalyticsGeneralService
         return $appointments->groupBy('master_id')->map(function ($group, $masterId) {
             $master = $group->first()->master;
             $name = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+
             return [
                 'master_id' => $masterId,
                 'master_name' => $name,
@@ -224,8 +229,14 @@ class AnalyticsGeneralService
 
     private function applyFilters($query, array $filters): void
     {
-        if (!empty($filters['service_id'])) $query->where('service_id', $filters['service_id']);
-        if (!empty($filters['master_id'])) $query->where('master_id', $filters['master_id']);
-        if (!empty($filters['location_id'])) $query->where('location_id', $filters['location_id']);
+        if (! empty($filters['service_id'])) {
+            $query->where('service_id', $filters['service_id']);
+        }
+        if (! empty($filters['master_id'])) {
+            $query->where('master_id', $filters['master_id']);
+        }
+        if (! empty($filters['location_id'])) {
+            $query->where('location_id', $filters['location_id']);
+        }
     }
 }

@@ -294,6 +294,7 @@ class AnalyticsController extends Controller
     private function filterPresets(): array
     {
         $now = Carbon::now();
+
         return [
             ['key' => '7d', 'label' => '7 дней', 'date_from' => $now->copy()->subDays(6)->format('Y-m-d'), 'date_to' => $now->format('Y-m-d')],
             ['key' => '30d', 'label' => '30 дней', 'date_from' => $now->copy()->subDays(29)->format('Y-m-d'), 'date_to' => $now->format('Y-m-d')],
@@ -309,6 +310,7 @@ class AnalyticsController extends Controller
         if (! $owner) {
             return false;
         }
+
         return $subscriptionService->getLimit($owner, 'advanced_analytics_enabled') === true;
     }
 
@@ -325,6 +327,7 @@ class AnalyticsController extends Controller
         if (! $ownerPivot) {
             return null;
         }
+
         return \App\Models\User::find($ownerPivot->user_id);
     }
 
@@ -343,6 +346,7 @@ class AnalyticsController extends Controller
     private function financialEmptyView(Request $request)
     {
         $filters = $this->getFilters($request);
+
         return view('analytics.financial', [
             'business' => null,
             'data' => [
@@ -365,6 +369,7 @@ class AnalyticsController extends Controller
     private function generalEmptyView(Request $request)
     {
         $filters = $this->getFilters($request);
+
         return view('analytics.general', [
             'business' => null,
             'data' => [
@@ -388,6 +393,7 @@ class AnalyticsController extends Controller
     private function clientsEmptyView(Request $request)
     {
         $filters = $this->getFilters($request);
+
         return view('analytics.clients', [
             'business' => null,
             'data' => [

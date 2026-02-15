@@ -30,6 +30,7 @@ class AnalyticsComparisonService
         if ($type === 'financial') {
             $current = $financialService->getFinancialData($businessId, $filters);
             $previous = $financialService->getFinancialData($businessId, $previousFilters);
+
             return [
                 'revenue_change' => $current['total_revenue'] - $previous['total_revenue'],
                 'revenue_change_percent' => $this->percentChange($previous['total_revenue'], $current['total_revenue']),
@@ -47,6 +48,7 @@ class AnalyticsComparisonService
 
         $current = $generalService->getGeneralData($businessId, $filters);
         $previous = $generalService->getGeneralData($businessId, $previousFilters);
+
         return [
             'total_change' => $current['total'] - $previous['total'],
             'total_change_percent' => $this->percentChange($previous['total'], $current['total']),
@@ -71,6 +73,7 @@ class AnalyticsComparisonService
         if ($previous == 0) {
             return $current > 0 ? 100.0 : 0.0;
         }
+
         return round((($current - $previous) / $previous) * 100, 1);
     }
 }

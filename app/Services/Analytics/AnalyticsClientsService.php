@@ -46,6 +46,7 @@ class AnalyticsClientsService
 
         $clientsLTV = $completedAppointments->groupBy('client_id')->map(function ($group, $clientId) {
             $client = $group->first()->client;
+
             return [
                 'client_id' => $clientId,
                 'client_name' => $client ? $client->full_name : 'Неизвестный клиент',
@@ -78,7 +79,7 @@ class AnalyticsClientsService
 
         $firstByClient = [];
         foreach ($allAppointments as $a) {
-            if (!isset($firstByClient[$a->client_id])) {
+            if (! isset($firstByClient[$a->client_id])) {
                 $firstByClient[$a->client_id] = $a->date->format('Y-m-d');
             }
         }
@@ -95,6 +96,7 @@ class AnalyticsClientsService
             $result[] = ['date' => $dateStr, 'label' => $current->format('d.m'), 'count' => $newOnDay];
             $current->addDay();
         }
+
         return $result;
     }
 }

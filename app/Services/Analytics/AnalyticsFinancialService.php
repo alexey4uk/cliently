@@ -75,6 +75,7 @@ class AnalyticsFinancialService
 
         return $appointments->groupBy('service_id')->map(function ($group, $serviceId) {
             $service = $group->first()->service;
+
             return [
                 'service_id' => $serviceId,
                 'service_name' => $service ? $service->name : 'Неизвестная услуга',
@@ -98,6 +99,7 @@ class AnalyticsFinancialService
         return $appointments->groupBy('master_id')->map(function ($group, $masterId) {
             $master = $group->first()->master;
             $name = $master ? trim($master->first_name.' '.($master->last_name ?? '')) : 'Неизвестный мастер';
+
             return [
                 'master_id' => $masterId,
                 'master_name' => $name,
@@ -120,6 +122,7 @@ class AnalyticsFinancialService
 
         return $appointments->groupBy('location_id')->map(function ($group, $locationId) {
             $location = $group->first()->location;
+
             return [
                 'location_id' => $locationId,
                 'location_name' => $location ? $location->name : 'Неизвестная локация',
@@ -161,13 +164,13 @@ class AnalyticsFinancialService
 
     private function applyFilters($query, array $filters): void
     {
-        if (!empty($filters['service_id'])) {
+        if (! empty($filters['service_id'])) {
             $query->where('service_id', $filters['service_id']);
         }
-        if (!empty($filters['master_id'])) {
+        if (! empty($filters['master_id'])) {
             $query->where('master_id', $filters['master_id']);
         }
-        if (!empty($filters['location_id'])) {
+        if (! empty($filters['location_id'])) {
             $query->where('location_id', $filters['location_id']);
         }
     }
