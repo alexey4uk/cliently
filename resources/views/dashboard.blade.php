@@ -343,6 +343,7 @@
             'max_clients' => 'Клиенты',
             'max_appointments_per_month' => 'Записи в месяц',
             'max_business_users' => 'Пользователи',
+            'max_businesses' => 'Бизнесы',
         ];
     @endphp
     <div class="mt-6 group relative bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-800/10 rounded-2xl border border-teal-200/50 dark:border-teal-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">

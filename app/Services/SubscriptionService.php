@@ -41,15 +41,20 @@ class SubscriptionService
             }
         }
 
+        $isFreePlan = $plan->slug === 'free';
+
         if ($isTrial && $plan->trial_days > 0) {
             $trialEndsAt = $now->copy()->addDays($plan->trial_days);
             $status = 'trial';
         } else {
             $status = 'active';
-            if ($plan->interval === 'monthly') {
-                $endsAt = $now->copy()->addMonth();
-            } elseif ($plan->interval === 'yearly') {
-                $endsAt = $now->copy()->addYear();
+            // Бесплатный тариф не имеет срока окончания — подписка действует бессрочно (без продления)
+            if (! $isFreePlan) {
+                if ($plan->interval === 'monthly') {
+                    $endsAt = $now->copy()->addMonth();
+                } elseif ($plan->interval === 'yearly') {
+                    $endsAt = $now->copy()->addYear();
+                }
             }
         }
 
