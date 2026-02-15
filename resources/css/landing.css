@@ -1,0 +1,86 @@
+/* Landing-specific styles. Tailwind via app.css. */
+
+/* Типографика: основной текст — sans, заголовки — display */
+.landing-page {
+    font-family: var(--font-sans), system-ui, sans-serif;
+}
+.landing-page .landing-heading {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+/* Ритм секций: единые отступы заголовка и подзаголовка */
+.landing-page .landing-section-title {
+    margin-bottom: 0.75rem;
+}
+.landing-page .landing-section-lead {
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Hero — градиент и акцент заголовка */
+.landing-hero {
+    background: linear-gradient(180deg, rgb(249 250 251 / 1) 0%, rgb(255 255 255 / 1) 100%);
+}
+.dark .landing-hero {
+    background: linear-gradient(180deg, rgb(17 24 39 / 0.6) 0%, rgb(17 24 39 / 1) 100%);
+}
+
+/* Mobile menu */
+.landing-mobile-menu {
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+}
+.landing-mobile-menu.open {
+    transform: translateX(0);
+}
+.landing-mobile-overlay {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+.landing-mobile-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* FAQ accordion */
+.landing-faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+}
+.landing-faq-item.active .landing-faq-answer {
+    max-height: 500px;
+}
+.landing-faq-item.active .landing-faq-answer > div {
+    padding-top: 0.75rem;
+    padding-bottom: 1rem;
+}
+.landing-faq-item.active .landing-faq-chevron {
+    transform: rotate(180deg);
+}
+
+/* Scroll to top */
+.landing-scroll-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 50;
+    cursor: pointer;
+}
+.landing-scroll-top.visible {
+    opacity: 1;
+    visibility: visible;
+}

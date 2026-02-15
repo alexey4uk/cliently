@@ -1,0 +1,19 @@
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+    plugins: [
+        tailwindcss(),
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/css/landing.css',
+                'resources/js/welcome.js',
+                'resources/js/public-booking-select-time.js',
+            ],
+            refresh: true,
+        }),
+    ],
+});
