@@ -157,7 +157,7 @@
             <!-- Client Info -->
             <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-                
+                @if($appointment->client)
                 <div class="flex items-center mb-4">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=64" 
                         class="w-16 h-16 rounded-full" 
@@ -200,6 +200,9 @@
                         Открыть профиль клиента →
                     </a>
                 </div>
+                @else
+                <p class="text-slate-500 dark:text-slate-400">Клиент удалён</p>
+                @endif
             </div>
         </div>
 
@@ -224,7 +227,7 @@
                                     <span>Подтвердить</span>
                                 </button>
                             </form>
-                            @if($appointment->client->telegram_user_id ?? null)
+                            @if($appointment->client?->telegram_user_id)
                                 <form method="POST" action="{{ route('appointments.send-telegram-confirmation', $appointment) }}" class="inline">
                                     @csrf
                                     <button type="submit"

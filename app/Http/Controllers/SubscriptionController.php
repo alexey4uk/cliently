@@ -254,20 +254,23 @@ class SubscriptionController extends Controller
         $plan = $subscription->getEffectivePlan();
         $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
 
-        // Метрики и лимиты активного тарифа
+        // Метрики и лимиты активного тарифа (только метрики с лимитом: число > 0 или безлимит -1)
         $metricsInPlan = $plan->features
             ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
             ->sortBy(fn ($f) => $f->metric->sort_order)
             ->values()
             ->map(function ($feature) use ($user, $subscriptionService) {
                 $key = $feature->metric->key;
+                $limit = $subscriptionService->getLimit($user, $key);
 
                 return [
                     'metric' => $feature->metric,
-                    'limit' => $subscriptionService->getLimit($user, $key),
+                    'limit' => $limit,
                     'current' => $subscriptionService->getCurrentUsage($user, $key),
                 ];
             })
+            ->filter(fn ($item) => $item['limit'] !== null && $item['limit'] !== false && $item['limit'] !== 0)
+            ->values()
             ->all();
 
         $role = $this->getCurrentBusinessRole();
@@ -392,8 +395,14 @@ class SubscriptionController extends Controller
         $result = $subscriptionService->cancelSubscription($user);
 
         if ($result) {
-            return redirect()->route('subscription.current')
-                ->with('success', 'Подписка успешно отменена. Она будет активна до '.$subscription->fresh()->ends_at->format('d.m.Y').'.');
+            $updated = $subscription->fresh();
+            $message = 'Подписка успешно отменена.';
+            if ($updated && $updated->ends_at) {
+                $message .= ' Она будет активна до '.$updated->ends_at->format('d.m.Y').'.';
+            } else {
+                $message .= ' Она будет активна до окончания текущего периода.';
+            }
+            return redirect()->route('subscription.current')->with('success', $message);
         }
 
         return redirect()->route('subscription.current')

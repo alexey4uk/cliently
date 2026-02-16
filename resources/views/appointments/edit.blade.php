@@ -54,7 +54,7 @@
         <!-- Client Info (Read Only) -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-            
+            @if($appointment->client)
             <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=48" 
                     class="w-12 h-12 rounded-full" 
@@ -76,6 +76,9 @@
                     Профиль клиента
                 </a>
             </div>
+            @else
+            <p class="text-slate-500 dark:text-slate-400 py-2">Клиент удалён</p>
+            @endif
         </div>
 
         <!-- Service Selection -->

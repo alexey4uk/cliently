@@ -94,10 +94,10 @@
         </div>
     </div>
 
-    <!-- Stats Cards: записи сегодня, клиенты, завершено за месяц -->
+    <!-- Stats Cards: записи сегодня, клиенты, завершено за месяц, тариф -->
     @php
-        $statsCount = ($canViewAppointments ? 2 : 0) + ($canViewClients ? 1 : 0);
-        $gridCols = $statsCount <= 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+        $statsCount = ($canViewAppointments ? 2 : 0) + ($canViewClients ? 1 : 0) + ($canViewSubscription && isset($subscriptionStatus) ? 1 : 0);
+        $gridCols = $statsCount <= 2 ? 'grid-cols-1 sm:grid-cols-2' : ($statsCount === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4');
     @endphp
 
     @if($statsCount > 0)
@@ -172,6 +172,41 @@
                 </div>
             </div>
         </div>
+        @endif
+
+        @if($canViewSubscription && isset($subscriptionStatus))
+        <a href="{{ route('subscription.current') }}" class="group relative bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-800/10 rounded-2xl p-5 border border-teal-200/50 dark:border-teal-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden block">
+            <div class="absolute top-0 right-0 w-28 h-28 bg-teal-200/30 dark:bg-teal-800/20 rounded-full -mr-14 -mt-14 blur-2xl"></div>
+            <div class="relative flex items-start gap-4">
+                <div class="p-2.5 bg-teal-500/10 dark:bg-teal-500/20 rounded-xl shrink-0">
+                    <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Тариф</p>
+                    <p class="text-lg font-bold text-slate-900 dark:text-white mt-0.5 truncate">{{ $subscriptionStatus['plan_name'] }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        @if(($subscriptionStatus['plan_price'] ?? 0) > 0)
+                            {{ number_format($subscriptionStatus['plan_price'], 0, ',', ' ') }} BYN
+                            @if(!empty($subscriptionStatus['ends_at']))
+                                · до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}
+                            @endif
+                        @else
+                            @if(!empty($subscriptionStatus['ends_at']))
+                                до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}
+                            @else
+                                Бессрочно
+                            @endif
+                        @endif
+                    </p>
+                    @if($hasBusinessPermission('client.subscription.manage') && isset($subscriptionStatus['is_cancelled']) && $subscriptionStatus['is_cancelled'])
+                        <span class="inline-block text-xs font-medium text-amber-600 dark:text-amber-400 mt-1">Отменена</span>
+                    @endif
+                </div>
+                <span class="shrink-0 text-teal-600 dark:text-teal-400 group-hover:translate-x-0.5 transition-transform"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+            </div>
+        </a>
         @endif
     </div>
     @endif
@@ -329,115 +364,6 @@
                 </svg>
                 <span>Открыть аналитику</span>
             </a>
-        </div>
-    </div>
-    @endif
-
-    <!-- Тариф и подписка — единый виджет -->
-    @if($canViewSubscription && isset($subscriptionStatus))
-    @php
-        $metricLabels = [
-            'max_locations' => 'Локации',
-            'max_masters' => 'Мастера',
-            'max_services' => 'Услуги',
-            'max_clients' => 'Клиенты',
-            'max_appointments_per_month' => 'Записи в месяц',
-            'max_business_users' => 'Пользователи',
-            'max_businesses' => 'Бизнесы',
-        ];
-    @endphp
-    <div class="mt-6 group relative bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-900/20 dark:to-cyan-800/10 rounded-2xl border border-teal-200/50 dark:border-teal-800/50 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-        <div class="absolute top-0 right-0 w-40 h-40 bg-teal-200/30 dark:bg-teal-800/20 rounded-full -mr-20 -mt-20 blur-2xl"></div>
-        <div class="relative p-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <div class="flex items-start gap-4">
-                    <div class="p-3 bg-teal-500/10 dark:bg-teal-500/20 rounded-xl shrink-0">
-                        <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-sm font-medium text-slate-600 dark:text-slate-400">Ваш тариф</h2>
-                        <p class="text-xl font-bold text-slate-900 dark:text-white mt-0.5">{{ $subscriptionStatus['plan_name'] }}</p>
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                            <span class="text-sm font-semibold text-teal-600 dark:text-teal-400">{{ number_format($subscriptionStatus['plan_price'] ?? 0, 0, ',', ' ') }} BYN</span>
-                            @if(!empty($subscriptionStatus['ends_at']))
-                                <span class="text-xs text-slate-500 dark:text-slate-400">Действует до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}</span>
-                            @endif
-                        </div>
-                        @if(!empty($subscriptionStatus['is_preserved_period']) && !empty($subscriptionStatus['ends_at']) && !empty($subscriptionStatus['next_plan_name']))
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                После этой даты будет подключён тариф «{{ $subscriptionStatus['next_plan_name'] }}»
-                            </p>
-                        @endif
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-3 shrink-0">
-                    <a href="{{ route('subscription.index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                        </svg>
-                        Сменить тариф
-                    </a>
-                    <a href="{{ route('subscription.current') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 border border-teal-200 dark:border-teal-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Детали подписки
-                    </a>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                @foreach($subscriptionStatus['usage'] ?? [] as $metric => $data)
-                @php
-                    $limit = $data['limit'] ?? null;
-                    $current = (int) ($data['current'] ?? 0);
-                    $hasLimit = $limit !== null && $limit !== -1 && $limit > 0;
-                    $limitLabel = ($limit === -1 || $limit === null) ? '∞' : (int) $limit;
-                    $limitInt = $hasLimit ? (int) $limit : 0;
-                    $percentage = $hasLimit ? min((float) ($data['percentage'] ?? 0), 100) : 0;
-                    $limitReached = $hasLimit && $current >= $limitInt;
-                    $warning = !empty($data['warning']);
-                @endphp
-                <div class="bg-white/60 dark:bg-slate-800/40 rounded-xl p-4 border border-teal-100/50 dark:border-teal-800/30">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-medium text-slate-600 dark:text-slate-400">{{ $metricLabels[$metric] ?? $metric }}</span>
-                        <span class="text-xs font-semibold {{ $limitReached ? 'text-amber-600 dark:text-amber-400' : ($warning ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-slate-300') }}">
-                            {{ $current }} / {{ $limitLabel }}
-                        </span>
-                    </div>
-                    @if($hasLimit)
-                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                        <div class="h-1.5 rounded-full {{ $limitReached ? 'bg-amber-500' : ($warning ? 'bg-amber-500' : 'bg-teal-500') }}" style="width: {{ $percentage }}%"></div>
-                    </div>
-                    @if($limitReached)
-                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Лимит достигнут</p>
-                    @elseif($warning)
-                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Близко к лимиту</p>
-                    @endif
-                    @else
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Без ограничений</p>
-                    @endif
-                </div>
-                @endforeach
-            </div>
-
-            @if($hasBusinessPermission('client.subscription.manage'))
-                @if(isset($subscriptionStatus['is_cancelled']) && $subscriptionStatus['is_cancelled'])
-                <div class="flex items-start gap-3 p-4 bg-amber-50/80 dark:bg-amber-500/10 rounded-xl border border-amber-200/50 dark:border-amber-500/20">
-                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <div>
-                        <p class="text-sm font-medium text-amber-800 dark:text-amber-300">Подписка отменена</p>
-                        @if(!empty($subscriptionStatus['ends_at']))
-                        <p class="text-xs text-amber-600 dark:text-amber-400 mt-1">Доступ сохранится до {{ \Carbon\Carbon::parse($subscriptionStatus['ends_at'])->format('d.m.Y') }}</p>
-                        @endif
-                    </div>
-                </div>
-                @endif
-            @endif
         </div>
     </div>
     @endif

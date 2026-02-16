@@ -415,9 +415,9 @@
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-slate-900 dark:text-white">
-                                                {{ $appointment->client->full_name }}
+                                                {{ $appointment->client?->full_name ?? 'Клиент удалён' }}
                                             </div>
-                                            @if($appointment->client->phone)
+                                            @if($appointment->client?->phone)
                                                 <button type="button"
                                                     data-phone="{{ $appointment->client->phone }}"
                                                     data-phone-display="{{ $appointment->client->phone }}"
@@ -519,7 +519,7 @@
                                                                 <span>Подтвердить</span>
                                                             </button>
                                                         </form>
-                                                        @if($appointment->client->telegram_user_id ?? null)
+                                                        @if($appointment->client?->telegram_user_id)
                                                         <form method="POST" action="{{ route('appointments.send-telegram-confirmation', $appointment) }}">
                                                             @csrf
                                                             <button type="submit"
@@ -598,8 +598,8 @@
                                 <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
                             </span>
                             <div class="min-w-0 flex-1">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client->full_name }}</p>
-                                @if($appointment->client->phone)
+                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
+                                @if($appointment->client?->phone)
                                     <button type="button" data-phone="{{ $appointment->client->phone }}" data-phone-display="{{ $appointment->client->phone }}" data-client-name="{{ $appointment->client->full_name }}"
                                         @click="openPhoneModal($event)"
                                         class="min-h-[44px] -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
@@ -677,7 +677,7 @@
                                                 <span>Подтвердить</span>
                                             </button>
                                         </form>
-                                        @if($appointment->client->telegram_user_id ?? null)
+                                        @if($appointment->client?->telegram_user_id)
                                         <form method="POST" action="{{ route('appointments.send-telegram-confirmation', $appointment) }}">
                                             @csrf
                                             <button type="submit" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
