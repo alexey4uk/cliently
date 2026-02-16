@@ -1,0 +1,609 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Contracts\PaymentGatewayInterface;
+use App\Models\Invoice;
+use App\Models\Plan;
+use App\Models\SubscriptionMetric;
+use App\Services\BusinessRolePermissionService;
+use App\Services\SubscriptionService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+class SubscriptionController extends Controller
+{
+    /**
+     * Список доступных тарифов (страница выбора)
+     */
+    public function index()
+    {
+        $user = Auth::user();
+
+        $plans = Plan::where('is_active', true)
+            ->orderBy('sort_order')
+            ->with('features')
+            ->get();
+
+        $currentSubscription = $user->activeSubscription();
+        $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
+
+        // Получаем активные метрики с сортировкой
+        $metrics = SubscriptionMetric::getActiveCached();
+
+        // Проверяем для всех тарифов сразу, использовал ли пользователь пробный период (оптимизация N+1)
+        $subscriptionService = app(SubscriptionService::class);
+        $plansWithTrial = $plans->filter(fn ($plan) => $plan->trial_days > 0 && $plan->price !== null);
+        $trialUsage = $plansWithTrial->isNotEmpty()
+            ? $subscriptionService->hasUsedTrialForPlans($user, $plansWithTrial)
+            : [];
+
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
+        return view('subscription.index', [
+            'plans' => $plans,
+            'user' => $user,
+            'currentPlan' => $currentPlan,
+            'currentSubscription' => $currentSubscription,
+            'metrics' => $metrics,
+            'trialUsage' => $trialUsage,
+            'hasActivePaidSubscription' => $hasActivePaidSubscription,
+        ]);
+    }
+
+    /**
+     * Детали тарифа
+     */
+    public function show(Plan $plan)
+    {
+        $user = Auth::user();
+
+        if (! $plan->is_active) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Этот тариф недоступен.');
+        }
+
+        // Используем subscription, а не activeSubscription, чтобы показывать даже истекшие подписки
+        // Это нужно для правильного отображения информации о сохранении времени
+        $currentSubscription = $user->subscription;
+        $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
+
+        $plan->load('features');
+
+        // Получаем активные метрики с сортировкой
+        $metrics = SubscriptionMetric::getActiveCached();
+
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
+        return view('subscription.show', [
+            'plan' => $plan,
+            'user' => $user,
+            'currentPlan' => $currentPlan,
+            'currentSubscription' => $currentSubscription,
+            'metrics' => $metrics,
+            'hasActivePaidSubscription' => $hasActivePaidSubscription,
+        ]);
+    }
+
+    /**
+     * Оформление подписки (POST)
+     */
+    public function subscribe(Request $request, Plan $plan)
+    {
+        $user = Auth::user();
+
+        if (! $plan->is_active) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Этот тариф недоступен.');
+        }
+
+        $subscriptionService = app(SubscriptionService::class);
+        $paymentGateway = app(PaymentGatewayInterface::class);
+
+        // Проверяем, может ли пользователь использовать пробный период
+        $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
+        $hasUsedTrial = false;
+        $useTrial = $request->input('use_trial', false);
+        // Преобразуем значение в boolean (строка "1" или "0" или true/false)
+        $useTrial = filter_var($useTrial, FILTER_VALIDATE_BOOLEAN);
+
+        if ($canUseTrial) {
+            $hasUsedTrial = $subscriptionService->hasUsedTrialForPlan($user, $plan);
+        }
+
+        // Проверяем текущую подписку для определения типа смены тарифа
+        $currentSubscription = $user->activeSubscription();
+        $currentPlan = $currentSubscription ? $currentSubscription->plan : null;
+        $isPlanChange = $currentPlan && $currentPlan->id !== $plan->id;
+        $isUpgrade = false;
+        $isDowngrade = false;
+
+        if ($isPlanChange && $currentPlan && $plan->price) {
+            $currentPrice = $currentPlan->price ?? 0;
+            $newPrice = $plan->price ?? 0;
+            $isUpgrade = $newPrice > $currentPrice;
+            $isDowngrade = $newPrice < $currentPrice && $newPrice > 0;
+        }
+
+        // Если тариф бесплатный или выбран пробный период - активируем сразу
+        $isTrial = $canUseTrial && ! $hasUsedTrial && $useTrial;
+        $isFree = $plan->price === null || $plan->price == 0;
+        $hasActivePaidSubscription = $currentSubscription
+            && $currentPlan
+            && $currentPlan->price !== null
+            && (float) $currentPlan->price > 0
+            && $currentSubscription->ends_at
+            && $currentSubscription->ends_at->isFuture()
+            && ! $currentSubscription->isCancelled();
+
+        // Нельзя перейти на бесплатный тариф при активной платной подписке (не отменённой) — сначала отмена
+        if ($isFree && $hasActivePaidSubscription) {
+            return redirect()->back()
+                ->with('error', 'Чтобы перейти на бесплатный тариф, отмените текущую платную подписку на странице «Текущая подписка». Она останется активной до конца оплаченного периода, после чего будет подключён бесплатный тариф.');
+        }
+
+        if ($isFree || $isTrial) {
+            // Создаем или обновляем подписку без оплаты
+            $subscription = $subscriptionService->createSubscription($user, $plan, $isTrial);
+
+            $message = "Тариф «{$plan->name}» успешно активирован!";
+
+            if ($isTrial) {
+                $trialDays = $plan->trial_days;
+                $trialText = $trialDays === 1 ? 'день' : ($trialDays < 5 ? 'дня' : 'дней');
+                $message .= " У вас {$trialDays} {$trialText} пробного периода.";
+            } elseif ($hasUsedTrial && $canUseTrial) {
+                $message .= ' Пробный период для этого тарифа уже был использован ранее.';
+            }
+
+            // Если это смена тарифа, добавляем информацию о сохранении времени
+            if ($isPlanChange && $currentSubscription && $currentSubscription->ends_at && $currentSubscription->ends_at->isFuture()) {
+                $message .= " Оплаченное время сохранено до {$currentSubscription->ends_at->format('d.m.Y')}.";
+            }
+
+            return redirect()->route('subscription.current')
+                ->with('success', $message);
+        }
+
+        // Для платных тарифов создаем Invoice и перенаправляем на оплату
+        try {
+            if (! config('bepaid.enabled')) {
+                return redirect()->back()
+                    ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
+            }
+
+            // Создаем Invoice
+            $invoiceMetadata = [
+                'plan_name' => $plan->name,
+                'plan_interval' => $plan->interval,
+            ];
+
+            // Если это смена тарифа, добавляем информацию в metadata
+            if ($isPlanChange && $currentSubscription) {
+                $invoiceMetadata['is_plan_change'] = true;
+                $invoiceMetadata['old_plan_id'] = $currentPlan->id;
+                $invoiceMetadata['old_plan_name'] = $currentPlan->name;
+                // Сохраняем ends_at от старой подписки для сохранения оплаченного времени
+                if ($currentSubscription->ends_at && $currentSubscription->ends_at->isFuture()) {
+                    $invoiceMetadata['preserve_ends_at'] = true;
+                    $invoiceMetadata['old_ends_at'] = $currentSubscription->ends_at->toIso8601String();
+                }
+            }
+
+            $invoice = Invoice::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'amount' => $plan->price,
+                'currency' => config('bepaid.currency', 'BYN'),
+                'status' => 'pending',
+                'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
+                'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
+                'metadata' => $invoiceMetadata,
+            ]);
+
+            // Создаем платежный токен
+            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
+
+            // Перенаправляем на страницу оплаты или сразу на bePaid
+            if ($invoice->payment_method === 'redirect') {
+                // Редирект на страницу bePaid
+                return redirect($paymentData['redirect_url']);
+            } else {
+                // Виджет - перенаправляем на страницу с виджетом
+                return redirect()->route('subscription.payment', $invoice)
+                    ->with('payment_token', $paymentData['token']);
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Ошибка при создании платежа: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Текущая подписка
+     */
+    public function current()
+    {
+        $user = Auth::user();
+
+        // Используем subscription, а не activeSubscription, чтобы показывать даже истекшие подписки
+        // Это нужно для возможности продления истекших подписок
+        $subscription = $user->subscription()->with(['plan', 'invoices'])->first();
+
+        if (! $subscription) {
+            return redirect()->route('subscription.index')
+                ->with('info', 'У вас нет подписки. Выберите тариф.');
+        }
+
+        $subscriptionService = app(SubscriptionService::class);
+        // Показываем активный тариф (пока действует оплаченный период — предыдущий план)
+        $plan = $subscription->getEffectivePlan();
+        $plan->load(['features.metric' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')]);
+
+        // Метрики и лимиты активного тарифа (только метрики с лимитом: число > 0 или безлимит -1)
+        $metricsInPlan = $plan->features
+            ->filter(fn ($f) => $f->metric && $f->metric->type === 'integer')
+            ->sortBy(fn ($f) => $f->metric->sort_order)
+            ->values()
+            ->map(function ($feature) use ($user, $subscriptionService) {
+                $key = $feature->metric->key;
+                $limit = $subscriptionService->getLimit($user, $key);
+
+                return [
+                    'metric' => $feature->metric,
+                    'limit' => $limit,
+                    'current' => $subscriptionService->getCurrentUsage($user, $key),
+                ];
+            })
+            ->filter(fn ($item) => $item['limit'] !== null && $item['limit'] !== false && $item['limit'] !== 0)
+            ->values()
+            ->all();
+
+        $role = $this->getCurrentBusinessRole();
+        $canManageSubscription = $role && app(BusinessRolePermissionService::class)->hasPermission($role->id, 'client.subscription.manage');
+
+        // Если показываем предыдущий план (оплаченный период), после даты будет подключён текущий план
+        $nextPlanName = null;
+        if ($plan->id !== $subscription->plan->id && $subscription->ends_at && $subscription->ends_at->isFuture()) {
+            $nextPlanName = $subscription->plan->name;
+        }
+
+        return view('subscription.current', [
+            'user' => $user,
+            'subscription' => $subscription,
+            'plan' => $plan,
+            'metricsInPlan' => $metricsInPlan,
+            'canManageSubscription' => $canManageSubscription,
+            'nextPlanName' => $nextPlanName,
+        ]);
+    }
+
+    /**
+     * Продлить подписку
+     */
+    public function renew(Request $request)
+    {
+        $this->authorizeBusinessPermission('client.subscription.manage');
+
+        $user = Auth::user();
+        // Используем subscription, а не activeSubscription, чтобы можно было продлить даже истекшую подписку
+        $subscription = $user->subscription;
+
+        // Проверяем наличие подписки
+        if (! $subscription) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'У вас нет подписки. Выберите тариф.');
+        }
+
+        $plan = $subscription->plan;
+
+        // Проверяем, что тариф платный
+        if ($plan->price === null || $plan->price == 0) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'Бесплатный тариф нельзя продлить.');
+        }
+
+        $paymentGateway = app(PaymentGatewayInterface::class);
+
+        if (! config('bepaid.enabled')) {
+            return redirect()->back()
+                ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
+        }
+
+        try {
+            // Создаем новый Invoice для продления
+            $invoice = Invoice::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'amount' => $plan->price,
+                'currency' => config('bepaid.currency', 'BYN'),
+                'status' => 'pending',
+                'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
+                'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
+                'metadata' => [
+                    'plan_name' => $plan->name,
+                    'plan_interval' => $plan->interval,
+                    'is_renewal' => true, // Помечаем как продление
+                    'previous_subscription_id' => $subscription->id,
+                ],
+            ]);
+
+            // Создаем платежный токен
+            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
+
+            // Перенаправляем на страницу оплаты или сразу на bePaid
+            if ($invoice->payment_method === 'redirect') {
+                // Редирект на страницу bePaid
+                return redirect($paymentData['redirect_url']);
+            } else {
+                // Виджет - перенаправляем на страницу с виджетом
+                return redirect()->route('subscription.payment', $invoice)
+                    ->with('payment_token', $paymentData['token']);
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Ошибка при создании платежа для продления: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Отменить подписку
+     */
+    public function cancel(Request $request)
+    {
+        $this->authorizeBusinessPermission('client.subscription.manage');
+
+        $user = Auth::user();
+        $subscriptionService = app(SubscriptionService::class);
+
+        $subscription = $user->activeSubscription();
+
+        // Проверяем наличие активной подписки
+        if (! $subscription) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'У вас нет активной подписки.');
+        }
+
+        // Проверяем, что тариф не бесплатный
+        if ($subscription->plan->slug === 'free') {
+            return redirect()->route('subscription.current')
+                ->with('error', 'Бесплатный тариф нельзя отменять.');
+        }
+
+        // Проверяем, что подписка еще не отменена
+        if ($subscription->isCancelled()) {
+            return redirect()->route('subscription.current')
+                ->with('error', 'Подписка уже отменена.');
+        }
+
+        // Отменяем подписку
+        $result = $subscriptionService->cancelSubscription($user);
+
+        if ($result) {
+            $updated = $subscription->fresh();
+            $message = 'Подписка успешно отменена.';
+            if ($updated && $updated->ends_at) {
+                $message .= ' Она будет активна до '.$updated->ends_at->format('d.m.Y').'.';
+            } else {
+                $message .= ' Она будет активна до окончания текущего периода.';
+            }
+
+            return redirect()->route('subscription.current')->with('success', $message);
+        }
+
+        return redirect()->route('subscription.current')
+            ->with('error', 'Не удалось отменить подписку. Попробуйте позже.');
+    }
+
+    /**
+     * Страница оплаты (для виджета)
+     */
+    public function payment(Invoice $invoice)
+    {
+        $user = Auth::user();
+
+        // Проверяем, что инвойс принадлежит пользователю
+        if ($invoice->user_id !== $user->id) {
+            abort(403, 'Доступ запрещен');
+        }
+
+        // Проверяем, что инвойс еще не оплачен
+        if ($invoice->isPaid()) {
+            return redirect()->route('subscription.current')
+                ->with('info', 'Этот платеж уже оплачен.');
+        }
+
+        // Проверяем, не истек ли срок
+        if ($invoice->isExpired()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Срок действия платежа истек. Создайте новый.');
+        }
+
+        $paymentToken = session('payment_token') ?? $invoice->bepaid_payment_token;
+
+        return view('subscription.payment', [
+            'invoice' => $invoice,
+            'plan' => $invoice->plan,
+            'payment_token' => $paymentToken,
+        ]);
+    }
+
+    /**
+     * Callback успешной оплаты
+     */
+    public function paymentSuccess(Request $request)
+    {
+        $invoiceId = $request->input('invoice');
+
+        if (! $invoiceId) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Неверные параметры запроса.');
+        }
+
+        $invoice = Invoice::find($invoiceId);
+
+        if (! $invoice) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Инвойс не найден.');
+        }
+
+        if ($invoice->user_id !== auth()->id()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Доступ запрещён.');
+        }
+
+        // Проверяем статус инвойса
+        if ($invoice->isPaid()) {
+            // Проверяем, не пытаемся ли мы повторно активировать подписку
+            if ($invoice->subscription_id && $invoice->subscription->status === 'active') {
+                if (config('bepaid.logging.enabled')) {
+                    Log::info('Payment success callback: subscription already active', [
+                        'invoice_id' => $invoice->id,
+                        'subscription_id' => $invoice->subscription_id,
+                    ]);
+                }
+            }
+
+            return redirect()->route('subscription.current')
+                ->with('success', 'Платеж успешно обработан! Подписка активирована.');
+        }
+
+        // Если еще не оплачен, проверяем статус через API
+        if ($invoice->bepaid_transaction_id) {
+            try {
+                $paymentGateway = app(PaymentGatewayInterface::class);
+                $status = $paymentGateway->checkPaymentStatus($invoice->bepaid_transaction_id);
+
+                if ($status['paid']) {
+                    $invoice->update([
+                        'status' => 'paid',
+                        'paid_at' => now(),
+                        'bepaid_transaction_id' => $status['uid'] ?? $invoice->bepaid_transaction_id,
+                    ]);
+
+                    // Активируем подписку
+                    $subscriptionService = app(SubscriptionService::class);
+                    if ($invoice->subscription_id) {
+                        $subscription = $invoice->subscription;
+
+                        // Идемпотентность: проверяем, не активирована ли уже подписка
+                        if ($subscription->status === 'active' && $subscription->invoice_id === $invoice->id) {
+                            if (config('bepaid.logging.enabled')) {
+                                Log::info('Payment success callback: subscription already activated for this invoice', [
+                                    'invoice_id' => $invoice->id,
+                                    'subscription_id' => $subscription->id,
+                                ]);
+                            }
+                        } else {
+                            $subscription->update([
+                                'status' => 'active',
+                                'payment_status' => 'paid',
+                                'invoice_id' => $invoice->id,
+                            ]);
+
+                            if (config('bepaid.logging.enabled')) {
+                                Log::info('Payment success callback: subscription activated', [
+                                    'invoice_id' => $invoice->id,
+                                    'subscription_id' => $subscription->id,
+                                ]);
+                            }
+                        }
+                    } else {
+                        // Создаем подписку, если её еще нет
+                        $subscription = $subscriptionService->createSubscription($invoice->user, $invoice->plan, false, $invoice);
+
+                        if (config('bepaid.logging.enabled')) {
+                            Log::info('Payment success callback: subscription created', [
+                                'invoice_id' => $invoice->id,
+                                'subscription_id' => $subscription->id,
+                            ]);
+                        }
+                    }
+
+                    return redirect()->route('subscription.current')
+                        ->with('success', 'Платеж успешно обработан! Подписка активирована.');
+                }
+            } catch (\Exception $e) {
+                // Логируем все ошибки при проверке статуса платежа
+                Log::error('Payment success callback: error checking payment status', [
+                    'invoice_id' => $invoice->id,
+                    'transaction_id' => $invoice->bepaid_transaction_id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+        }
+
+        return redirect()->route('subscription.current')
+            ->with('info', 'Платеж обрабатывается. Подписка будет активирована после подтверждения платежа.');
+    }
+
+    /**
+     * Callback отклоненной оплаты
+     */
+    public function paymentDecline(Request $request)
+    {
+        $invoiceId = $request->input('invoice');
+
+        if ($invoiceId) {
+            $invoice = Invoice::find($invoiceId);
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
+                $invoice->update(['status' => 'failed']);
+            }
+        }
+
+        return redirect()->route('subscription.index')
+            ->with('error', 'Платеж был отклонен. Попробуйте еще раз или выберите другой способ оплаты.');
+    }
+
+    /**
+     * Callback неудачной оплаты
+     */
+    public function paymentFail(Request $request)
+    {
+        $invoiceId = $request->input('invoice');
+
+        if ($invoiceId) {
+            $invoice = Invoice::find($invoiceId);
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
+                $invoice->update(['status' => 'failed']);
+            }
+        }
+
+        return redirect()->route('subscription.index')
+            ->with('error', 'Произошла ошибка при обработке платежа. Попробуйте еще раз.');
+    }
+
+    /**
+     * Callback отмены оплаты
+     */
+    public function paymentCancel(Request $request)
+    {
+        $invoiceId = $request->input('invoice');
+
+        if ($invoiceId) {
+            $invoice = Invoice::find($invoiceId);
+            if ($invoice && $invoice->user_id === auth()->id() && $invoice->isPending()) {
+                $invoice->update(['status' => 'cancelled']);
+            }
+        }
+
+        return redirect()->route('subscription.index')
+            ->with('info', 'Оплата отменена. Вы можете попробовать снова позже.');
+    }
+}
