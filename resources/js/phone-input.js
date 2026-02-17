@@ -10,10 +10,10 @@ function initPhoneInputs() {
         const input = container.querySelector('input[type="tel"]');
         const hiddenPhone = container.querySelector('input[name="phone"]');
         const hiddenCountryId = container.querySelector(
-            'input[name="phone_country_id"]'
+            'input[name="phone_country_id"]',
         );
         const hiddenCountryCode = container.querySelector(
-            'input[name="phone_country_code"]'
+            'input[name="phone_country_code"]',
         );
         const sendCountryCode =
             (container.dataset.sendCountryCode || "") === "1";
@@ -57,19 +57,6 @@ function initPhoneInputs() {
 
         const iti = intlTelInput(input, options);
 
-        // В режиме с отдельным кодом (флаг+код) у контейнера есть padding-left; добавляем к отступу инпута, чтобы номер не наезжал
-        function addContainerPaddingToInput() {
-            if (internationalFormat) return;
-            const countryContainer = input
-                .closest(".iti")
-                ?.querySelector(".iti__country-container");
-            if (!countryContainer) return;
-            const style = getComputedStyle(countryContainer);
-            const extraPx = parseFloat(style.paddingLeft) || 0;
-            const currentPx = parseFloat(input.style.paddingLeft) || 0;
-            input.style.paddingLeft = `${currentPx + extraPx}px`;
-        }
-
         function syncHiddenFields() {
             const fullNumber = iti.getNumber();
             const selectedData = iti.getSelectedCountryData();
@@ -91,21 +78,16 @@ function initPhoneInputs() {
 
         iti.promise
             .then(() => {
-                setTimeout(addContainerPaddingToInput, 0);
                 if (initialPhone) {
                     iti.setNumber(initialPhone);
                 }
                 syncHiddenFields();
             })
             .catch(() => {
-                setTimeout(addContainerPaddingToInput, 0);
                 syncHiddenFields();
             });
 
-        input.addEventListener("countrychange", () => {
-            setTimeout(addContainerPaddingToInput, 0);
-            syncHiddenFields();
-        });
+        input.addEventListener("countrychange", syncHiddenFields);
         input.addEventListener("input", syncHiddenFields);
         input.addEventListener("blur", syncHiddenFields);
 
