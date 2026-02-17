@@ -157,6 +157,10 @@ class RolePermissionSeeder extends Seeder
             'client.subscription.manage' => 'Управление подпиской',
             'client.subscription.pay' => 'Оплата подписки',
 
+            // Подписки (админ-панель: просмотр и управление статусами/сроками)
+            'panel.subscriptions.view' => 'Просмотр подписок пользователей в админ-панели',
+            'panel.subscriptions.manage' => 'Управление подписками: смена статуса, продление, выдача на любой срок',
+
             // Платежи (админ-панель)
             'panel.payments.settings' => 'Настройки bePaid (только админ)',
             'panel.payments.view' => 'Просмотр платежей/инвойсов в админ-панели',
@@ -215,6 +219,8 @@ class RolePermissionSeeder extends Seeder
             'panel.tickets.assign',
             'panel.tickets.categories.manage',
             'panel.payments.view',
+            'panel.subscriptions.view',
+            'panel.subscriptions.manage',
             'panel.business.roles.manage',
             'panel.notifications.view',
             'panel.broadcasts.send',

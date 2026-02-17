@@ -169,12 +169,13 @@ class SubscriptionService
     }
 
     /**
-     * Инициализировать usage для всех метрик тарифа
+     * Инициализировать usage для всех метрик тарифа (период от даты начала подписки).
      */
     protected function initializeUsage(Subscription $subscription): void
     {
-        $periodStart = now()->startOfMonth();
-        $periodEnd = now()->endOfMonth();
+        $period = $this->getCurrentPeriodForSubscription($subscription);
+        $periodStart = $period['period_start'];
+        $periodEnd = $period['period_end'];
 
         $features = $subscription->plan->features()->with('metric')->get();
 
@@ -183,7 +184,6 @@ class SubscriptionService
             if (! $metric) {
                 continue;
             }
-            // Инициализируем usage только для месячных метрик (integer)
             if (
                 $metric->type === 'integer' &&
                 $this->isMonthlyMetric($metric->key)
@@ -264,12 +264,12 @@ class SubscriptionService
             return 0;
         }
 
-        // Для месячных метрик получаем usage напрямую
+        // Для месячных метрик — период от даты начала подписки
         if ($this->isMonthlyMetric($featureKey)) {
+            $period = $this->getCurrentPeriodForSubscription($subscription);
             $usage = SubscriptionUsage::where('user_id', $user->id)
                 ->where('feature_key', $featureKey)
-                ->where('period_start', '<=', now())
-                ->where('period_end', '>=', now())
+                ->where('period_start', $period['period_start'])
                 ->first();
 
             return $usage ? $usage->current_usage : 0;
@@ -335,7 +335,7 @@ class SubscriptionService
             ]);
         }
 
-        // Получаем все usage для месячных метрик одним запросом
+        // Получаем все usage для месячных метрик одним запросом (период от starts_at)
         $monthlyKeys = array_filter(
             $featureKeys,
             fn ($key) => $this->isMonthlyMetric($key),
@@ -343,10 +343,10 @@ class SubscriptionService
 
         $usageData = [];
         if (! empty($monthlyKeys)) {
+            $period = $this->getCurrentPeriodForSubscription($subscription);
             $usages = SubscriptionUsage::where('user_id', $user->id)
                 ->whereIn('feature_key', $monthlyKeys)
-                ->where('period_start', '<=', now())
-                ->where('period_end', '>=', now())
+                ->where('period_start', $period['period_start'])
                 ->get()
                 ->keyBy('feature_key');
 
@@ -394,21 +394,20 @@ class SubscriptionService
             return;
         }
 
-        // Для месячных метрик обновляем usage
+        // Для месячных метрик — период от даты начала подписки
         if ($this->isMonthlyMetric($featureKey)) {
-            $periodStart = now()->startOfMonth();
-            $periodEnd = now()->endOfMonth();
+            $period = $this->getCurrentPeriodForSubscription($subscription);
 
             $usage = SubscriptionUsage::firstOrCreate(
                 [
                     'subscription_id' => $subscription->id,
                     'user_id' => $user->id,
                     'feature_key' => $featureKey,
-                    'period_start' => $periodStart,
+                    'period_start' => $period['period_start'],
                 ],
                 [
                     'current_usage' => 0,
-                    'period_end' => $periodEnd,
+                    'period_end' => $period['period_end'],
                 ],
             );
 
@@ -430,12 +429,12 @@ class SubscriptionService
             return;
         }
 
-        // Для месячных метрик обновляем usage
+        // Для месячных метрик — период от даты начала подписки
         if ($this->isMonthlyMetric($featureKey)) {
+            $period = $this->getCurrentPeriodForSubscription($subscription);
             $usage = SubscriptionUsage::where('user_id', $user->id)
                 ->where('feature_key', $featureKey)
-                ->where('period_start', '<=', now())
-                ->where('period_end', '>=', now())
+                ->where('period_start', $period['period_start'])
                 ->first();
 
             if ($usage) {
@@ -448,8 +447,8 @@ class SubscriptionService
     }
 
     /**
-     * Сбросить месячные метрики
-     * Удаляем старые периоды и создаём записи на текущий месяц с нулём, чтобы не нарушать unique (user_id, feature_key, period_start).
+     * Обеспечить наличие записей usage для текущего периода (от starts_at) и удалить старые.
+     * Обнуление по календарю не используется — период у каждого от даты начала подписки.
      */
     public function resetMonthlyUsage(User $user): void
     {
@@ -459,10 +458,11 @@ class SubscriptionService
             return;
         }
 
-        $periodStart = now()->startOfMonth();
-        $periodEnd = now()->endOfMonth();
+        $period = $this->getCurrentPeriodForSubscription($subscription);
+        $periodStart = $period['period_start'];
+        $periodEnd = $period['period_end'];
 
-        // Удаляем все старые записи месячных метрик (избегаем дубликата при обновлении)
+        // Удаляем старые записи (периоды, которые уже закончились)
         SubscriptionUsage::where('user_id', $user->id)
             ->where('period_end', '<', $periodStart)
             ->where(function ($query) {
@@ -473,7 +473,7 @@ class SubscriptionService
             })
             ->delete();
 
-        // Инициализируем текущий месяц для всех месячных метрик тарифа (если ещё нет записи)
+        // Создаём записи для текущего периода, если ещё нет
         $features = $subscription->plan->features()->with('metric')->get();
         foreach ($features as $feature) {
             $metric = $feature->metric;
@@ -580,6 +580,30 @@ class SubscriptionService
     {
         return str_contains($featureKey, '_per_month') ||
             str_contains($featureKey, '_monthly');
+    }
+
+    /**
+     * Текущий период использования для подписки (от даты начала подписки, не календарный месяц).
+     * Возвращает [period_start, period_end] — период, в который попадает now().
+     */
+    public function getCurrentPeriodForSubscription(Subscription $subscription): array
+    {
+        $anchor = $subscription->starts_at->copy()->startOfDay();
+        $now = now();
+        if ($now->lt($anchor)) {
+            return [
+                'period_start' => $anchor,
+                'period_end' => $anchor->copy()->addMonth()->subDay(),
+            ];
+        }
+        $monthsSinceStart = (int) $anchor->diffInMonths($now);
+        $periodStart = $anchor->copy()->addMonths($monthsSinceStart);
+        $periodEnd = $periodStart->copy()->addMonth()->subDay();
+
+        return [
+            'period_start' => $periodStart,
+            'period_end' => $periodEnd,
+        ];
     }
 
     /**
@@ -693,5 +717,117 @@ class SubscriptionService
         ]);
 
         return true;
+    }
+
+    /**
+     * Админ: изменить статус подписки
+     */
+    public function adminUpdateStatus(Subscription $subscription, string $status): void
+    {
+        $allowed = ['trial', 'active', 'past_due', 'cancelled', 'expired'];
+        if (! in_array($status, $allowed, true)) {
+            return;
+        }
+        $data = ['status' => $status];
+        if ($status === 'cancelled' && $subscription->cancelled_at === null) {
+            $data['cancelled_at'] = now();
+        }
+        if (in_array($status, ['active', 'trial'], true)) {
+            $data['cancelled_at'] = null;
+        }
+        $subscription->update($data);
+        $subscription->user?->clearSubscriptionCache();
+    }
+
+    /**
+     * Админ: продлить подписку до указанной даты
+     */
+    public function adminExtend(Subscription $subscription, \DateTimeInterface|string $endsAt): void
+    {
+        $date = $endsAt instanceof \DateTimeInterface
+            ? \Carbon\Carbon::instance($endsAt)
+            : \Carbon\Carbon::parse($endsAt);
+        $subscription->update(['ends_at' => $date]);
+        if ($subscription->status === 'expired') {
+            $subscription->update(['status' => 'active', 'cancelled_at' => null]);
+        }
+        $subscription->user?->clearSubscriptionCache();
+    }
+
+    /**
+     * Админ: отменить подписку в конце периода (установить cancelled_at, продление не будет).
+     */
+    public function adminCancelAtEnd(Subscription $subscription): void
+    {
+        if ($subscription->cancelled_at !== null) {
+            return;
+        }
+        $subscription->update(['cancelled_at' => now()]);
+        $subscription->user?->clearSubscriptionCache();
+    }
+
+    /**
+     * Админ: выдать подписку пользователю на любой тариф и срок.
+     * Если у пользователя уже есть подписка — она обновляется (план, даты, статус).
+     *
+     * @param  int|null  $days  количество дней (если null и plan не free — по умолчанию 1 месяц)
+     */
+    public function adminGrant(User $user, Plan $plan, ?\DateTimeInterface $endsAt = null, bool $asTrial = false, ?int $days = null): Subscription
+    {
+        $now = now();
+        $trialEndsAt = null;
+        // Явно указанные дата или кол-во дней имеют приоритет (в т.ч. для триала)
+        if ($days !== null) {
+            $calculatedEndsAt = $now->copy()->addDays($days);
+        } else {
+            $calculatedEndsAt = $endsAt;
+        }
+
+        if ($asTrial) {
+            if ($calculatedEndsAt !== null) {
+                $trialEndsAt = $calculatedEndsAt;
+            } elseif ($plan->trial_days > 0) {
+                $trialEndsAt = $now->copy()->addDays($plan->trial_days);
+                $calculatedEndsAt = $trialEndsAt;
+            }
+        } elseif ($calculatedEndsAt === null && $plan->slug !== 'free') {
+            $calculatedEndsAt = $plan->interval === 'yearly'
+                ? $now->copy()->addYear()
+                : $now->copy()->addMonth();
+        }
+
+        $status = $asTrial ? 'trial' : 'active';
+        $subscription = $user->subscription()->first();
+
+        $metadata = $subscription?->metadata ?? [];
+        if ($asTrial && $plan->trial_days > 0) {
+            $usedTrials = $metadata['used_trials'] ?? [];
+            if (! in_array($plan->id, $usedTrials)) {
+                $usedTrials[] = $plan->id;
+                $metadata['used_trials'] = $usedTrials;
+            }
+        }
+
+        $payload = [
+            'plan_id' => $plan->id,
+            'status' => $status,
+            'starts_at' => $now,
+            'ends_at' => $calculatedEndsAt,
+            'trial_ends_at' => $trialEndsAt,
+            'cancelled_at' => null,
+            'metadata' => $metadata,
+        ];
+
+        if ($subscription) {
+            $subscription->update($payload);
+            $sub = $subscription->fresh();
+        } else {
+            $sub = Subscription::create(array_merge($payload, ['user_id' => $user->id]));
+        }
+
+        $this->initializeUsage($sub);
+        $user->clearSubscriptionCache();
+
+        return $sub;
     }
 }

@@ -61,11 +61,7 @@ class AnalyticsOverviewService
             ->where('paid_at', '>=', $monthAgo)
             ->sum('amount');
 
-        $activeSubscriptions = \App\Models\Subscription::where('status', 'active')
-            ->where(function ($query) {
-                $query->whereNull('ends_at')->orWhere('ends_at', '>', now());
-            })
-            ->count();
+        $activeSubscriptions = \App\Models\Subscription::where('status', 'active')->count();
 
         $newBusinessesLastMonth = Business::whereBetween('created_at', [$twoMonthsAgo, $monthAgo])->count();
         $newBusinessesThisMonth = Business::where('created_at', '>=', $monthAgo)->count();

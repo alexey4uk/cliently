@@ -21,15 +21,8 @@ class AnalyticsSubscriptionsService
             $query->where('status', $filters['status']);
         }
 
-        $activeSubscriptions = Subscription::where('status', 'active')
-            ->where(function ($q) {
-                $q->whereNull('ends_at')->orWhere('ends_at', '>', now());
-            })
-            ->count();
-
-        $trialSubscriptions = Subscription::where('status', 'trial')
-            ->where('trial_ends_at', '>', now())
-            ->count();
+        $activeSubscriptions = Subscription::where('status', 'active')->count();
+        $trialSubscriptions = Subscription::where('status', 'trial')->count();
 
         $cancelledSubscriptions = Subscription::whereNotNull('cancelled_at')->count();
 

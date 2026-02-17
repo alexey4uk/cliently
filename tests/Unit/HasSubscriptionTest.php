@@ -28,15 +28,15 @@ class HasSubscriptionTest extends TestCase
 
         $this->assertNotNull($activeSubscription);
         $this->assertEquals('active', $activeSubscription->status);
+        $this->assertTrue($user->hasActiveSubscription());
     }
 
     public function test_active_subscription_returns_null_when_no_subscription()
     {
         $user = User::factory()->create();
 
-        $activeSubscription = $user->activeSubscription();
-
-        $this->assertNull($activeSubscription);
+        $this->assertNull($user->activeSubscription());
+        $this->assertFalse($user->hasActiveSubscription());
     }
 
     public function test_active_subscription_returns_null_when_subscription_expired()
@@ -44,12 +44,12 @@ class HasSubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()
-            ->expired()
-            ->create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-            ]);
+        // После обработки кроном статус не active/trial — активной подписки нет
+        Subscription::factory()->expired()->create([
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'expired',
+        ]);
 
         $activeSubscription = $user->activeSubscription();
 
@@ -79,38 +79,16 @@ class HasSubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        Subscription::factory()
-            ->expiredTrial()
-            ->create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-            ]);
+        // После обработки кроном статус не trial — активной подписки нет
+        Subscription::factory()->expiredTrial()->create([
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => 'expired',
+        ]);
 
         $activeSubscription = $user->activeSubscription();
 
         $this->assertNull($activeSubscription);
-    }
-
-    public function test_has_active_subscription_returns_true_when_active()
-    {
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create();
-
-        Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => now()->addMonth(),
-        ]);
-
-        $this->assertTrue($user->hasActiveSubscription());
-    }
-
-    public function test_has_active_subscription_returns_false_when_no_subscription()
-    {
-        $user = User::factory()->create();
-
-        $this->assertFalse($user->hasActiveSubscription());
     }
 
     public function test_get_current_plan_returns_plan_when_active_subscription_exists()

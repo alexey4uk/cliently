@@ -1028,6 +1028,15 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 ])->name('appointments.update');
             });
 
+            Route::middleware([
+                'check.permission:panel.appointments.delete',
+            ])->group(function () {
+                Route::delete('/appointments/{appointment}', [
+                    \App\Http\Controllers\Panel\AppointmentController::class,
+                    'destroy',
+                ])->name('appointments.destroy');
+            });
+
             // Клиенты (админ и менеджер): /clients/create перед /clients/{client}
             Route::middleware(['check.permission:panel.clients.create'])->group(
                 function () {
@@ -1468,6 +1477,32 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                         \App\Http\Controllers\Panel\SubscriptionMetricController::class,
                         'destroy',
                     ])->name('plans.properties.destroy');
+                },
+            );
+
+            // Управление подписками пользователей
+            Route::middleware(['check.permission:panel.subscriptions.view'])->group(
+                function () {
+                    Route::get('/subscriptions', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'index',
+                    ])->name('subscriptions.index');
+                    Route::get('/subscriptions/{subscription}', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'show',
+                    ])->name('subscriptions.show');
+                },
+            );
+            Route::middleware(['check.permission:panel.subscriptions.manage'])->group(
+                function () {
+                    Route::post('/subscriptions/{subscription}/cancel', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'cancel',
+                    ])->name('subscriptions.cancel');
+                    Route::post('/subscriptions/grant', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'grant',
+                    ])->name('subscriptions.grant');
                 },
             );
 

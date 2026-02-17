@@ -18,10 +18,10 @@ class ProcessExpiredTrials extends Command
     {
         $this->info('Поиск истекших пробных периодов...');
 
-        // Находим подписки со статусом trial, у которых trial_ends_at уже в прошлом
+        // Находим подписки со статусом trial, у которых дата окончания пробного периода строго раньше сегодня
         $expiredTrials = Subscription::where('status', 'trial')
             ->whereNotNull('trial_ends_at')
-            ->where('trial_ends_at', '<=', now())
+            ->where('trial_ends_at', '<', now()->startOfDay())
             ->with(['user', 'plan'])
             ->get();
 

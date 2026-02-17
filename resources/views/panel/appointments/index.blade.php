@@ -221,29 +221,29 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-3">
                                             <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                                                <span class="text-white font-bold text-xs">{{ substr($appointment->client->first_name ?? 'Н', 0, 1) }}</span>
+                                                <span class="text-white font-bold text-xs">{{ substr(optional($appointment->client)->first_name ?? 'Н', 0, 1) }}</span>
                                             </div>
                                             <div>
-                                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->client->full_name }}</p>
-                                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $appointment->client->phone }}</p>
+                                                <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ optional($appointment->client)->full_name ?? '—' }}</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ optional($appointment->client)->phone ?? '—' }}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ optional($appointment->service)->name ?? '—' }}</p>
                                         @if($appointment->duration)
                                             <p class="text-xs text-slate-500 dark:text-slate-400">{{ $appointment->duration }} мин</p>
                                         @endif
                                 </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($appointment->master)
-                                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
+                                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ optional($appointment->master)->name ?? '—' }}</p>
                                         @else
                                             <span class="text-sm text-slate-400 dark:text-slate-500 italic">Не назначен</span>
                                         @endif
                                 </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->business->name }}</p>
+                                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ optional($appointment->business)->name ?? '—' }}</p>
                                 </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center gap-2">
@@ -321,11 +321,11 @@
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm shadow-md">
-                                        {{ substr($appointment->client->first_name ?? 'Н', 0, 1) }}
+                                        {{ substr(optional($appointment->client)->first_name ?? 'Н', 0, 1) }}
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <h3 class="text-base font-bold text-slate-900 dark:text-white truncate mb-1">
-                                            {{ $appointment->client->full_name }}
+                                            {{ optional($appointment->client)->full_name ?? '—' }}
                                         </h3>
                                         <p class="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
                                             <i class="fa-solid fa-calendar text-xs"></i>
@@ -392,7 +392,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Услуга</p>
-                                    <p class="text-base font-semibold text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                                    <p class="text-base font-semibold text-slate-900 dark:text-white">{{ optional($appointment->service)->name ?? '—' }}</p>
                                     @if($appointment->duration)
                                         <p class="text-sm text-slate-600 dark:text-slate-400">{{ $appointment->duration }} мин</p>
                                     @endif
@@ -409,7 +409,7 @@
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Мастер</p>
-                                        <p class="text-base font-semibold text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
+                                        <p class="text-base font-semibold text-slate-900 dark:text-white">{{ optional($appointment->master)->name ?? '—' }}</p>
                                     </div>
                                 </div>
                             @endif
@@ -423,7 +423,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Бизнес</p>
-                                    <p class="text-base font-semibold text-slate-900 dark:text-white">{{ $appointment->business->name }}</p>
+                                    <p class="text-base font-semibold text-slate-900 dark:text-white">{{ optional($appointment->business)->name ?? '—' }}</p>
                                 </div>
                             </div>
 
