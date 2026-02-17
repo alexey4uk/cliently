@@ -41,6 +41,8 @@
 
     @include('landing._footer')
 
+    @include('landing._cookie-notice')
+
     <button id="landing-scroll-top" class="landing-scroll-top bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" aria-label="Вернуться наверх">
         <x-icon name="arrow-up" variant="outline" size="md" class="text-gray-600 dark:text-gray-300" />
     </button>
