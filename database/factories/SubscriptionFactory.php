@@ -52,7 +52,7 @@ class SubscriptionFactory extends Factory
     }
 
     /**
-     * Истекшая подписка
+     * Истекшая по дате подписка (крон ищет status=active и ends_at в прошлом)
      */
     public function expired(): static
     {
@@ -79,7 +79,7 @@ class SubscriptionFactory extends Factory
     }
 
     /**
-     * Истекший триал
+     * Истекший по дате триал (крон ищет status=trial и trial_ends_at в прошлом)
      */
     public function expiredTrial(): static
     {

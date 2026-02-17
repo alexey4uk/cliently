@@ -24,26 +24,14 @@ trait HasSubscription
     }
 
     /**
-     * Получить активную подписку (без кеширования)
+     * Получить активную подписку (без кеширования).
+     * Статусы управляются кроном — берём подписку по полю status.
      */
     public function activeSubscription()
     {
         return $this->subscription()
             ->whereIn('status', ['active', 'trial'])
-            ->where(function ($query) {
-                $query->whereNull('ends_at')->orWhere('ends_at', '>', now());
-            })
-            ->where(function ($query) {
-                // Для пробных подписок проверяем, что пробный период еще не истек
-                $query->where('status', '!=', 'trial')->orWhere(function ($q) {
-                    $q->where('status', 'trial')->where(function ($subQ) {
-                        $subQ
-                            ->whereNull('trial_ends_at')
-                            ->orWhere('trial_ends_at', '>', now());
-                    });
-                });
-            })
-            ->with('plan') // Загружаем план сразу, чтобы избежать N+1
+            ->with('plan')
             ->first();
     }
 

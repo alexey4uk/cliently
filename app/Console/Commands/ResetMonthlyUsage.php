@@ -20,7 +20,7 @@ class ResetMonthlyUsage extends Command
      *
      * @var string
      */
-    protected $description = 'Сброс месячных метрик для всех активных подписок';
+    protected $description = 'Обеспечить записи usage для текущего периода (от даты начала подписки) и удалить старые';
 
     /**
      * Execute the console command.
@@ -31,12 +31,8 @@ class ResetMonthlyUsage extends Command
 
         $subscriptionService = app(SubscriptionService::class);
 
-        // Получаем все активные подписки
+        // Получаем все активные подписки (статусами управляет крон)
         $subscriptions = Subscription::whereIn('status', ['active', 'trial'])
-            ->where(function ($query) {
-                $query->whereNull('ends_at')
-                    ->orWhere('ends_at', '>', now());
-            })
             ->with('user')
             ->get();
 

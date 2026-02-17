@@ -1480,6 +1480,32 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 },
             );
 
+            // Управление подписками пользователей
+            Route::middleware(['check.permission:panel.subscriptions.view'])->group(
+                function () {
+                    Route::get('/subscriptions', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'index',
+                    ])->name('subscriptions.index');
+                    Route::get('/subscriptions/{subscription}', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'show',
+                    ])->name('subscriptions.show');
+                },
+            );
+            Route::middleware(['check.permission:panel.subscriptions.manage'])->group(
+                function () {
+                    Route::post('/subscriptions/{subscription}/cancel', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'cancel',
+                    ])->name('subscriptions.cancel');
+                    Route::post('/subscriptions/grant', [
+                        \App\Http\Controllers\Panel\SubscriptionController::class,
+                        'grant',
+                    ])->name('subscriptions.grant');
+                },
+            );
+
             // Страны (справочник): /countries/create перед /countries/{country}
             Route::middleware(['check.permission:panel.countries.create'])->group(
                 function () {

@@ -13,7 +13,8 @@ class SubscriptionTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_subscription_is_active_when_status_is_active_and_ends_at_in_future()
+    /** isActive() зависит только от status, не от дат */
+    public function test_subscription_is_active_when_status_is_active()
     {
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
@@ -48,29 +49,14 @@ class SubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        $subscription = Subscription::factory()->create([
+        // Истекшая подписка: после крона статус не active
+        $subscription = Subscription::factory()->expired()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => now()->subDay(),
+            'status' => 'expired',
         ]);
 
         $this->assertFalse($subscription->isActive());
-    }
-
-    public function test_subscription_is_active_when_ends_at_is_null()
-    {
-        $user = User::factory()->create();
-        $plan = Plan::factory()->create();
-
-        $subscription = Subscription::factory()->create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'status' => 'active',
-            'ends_at' => null,
-        ]);
-
-        $this->assertTrue($subscription->isActive());
     }
 
     public function test_subscription_is_trial_when_status_is_trial_and_trial_ends_at_in_future()
@@ -91,9 +77,11 @@ class SubscriptionTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
+        // Истекший триал: после крона статус не trial
         $subscription = Subscription::factory()->expiredTrial()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
+            'status' => 'expired',
         ]);
 
         $this->assertFalse($subscription->isTrial());
@@ -178,10 +166,12 @@ class SubscriptionTest extends TestCase
         $currentPlan = Plan::factory()->free()->create();
         $previousPlan = Plan::factory()->create();
 
+        // После истечения кроном выставляется неактивный статус — эффективный план текущий
         $subscription = Subscription::factory()->withPreviousPlan($previousPlan->id, $previousPlan->name)->create([
             'user_id' => $user->id,
             'plan_id' => $currentPlan->id,
             'ends_at' => now()->subDay(),
+            'status' => 'expired',
         ]);
 
         $effectivePlan = $subscription->getEffectivePlan();

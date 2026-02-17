@@ -18,11 +18,11 @@ class ProcessExpiredSubscriptions extends Command
     {
         $this->info('Поиск истекших платных подписок...');
 
-        // Находим подписки со статусом active, у которых ends_at уже в прошлом
+        // Находим подписки со статусом active, у которых дата окончания строго раньше сегодня (истекли вчера и ранее)
         // Исключаем бесплатные тарифы (price === null)
         $expiredSubscriptions = Subscription::where('status', 'active')
             ->whereNotNull('ends_at')
-            ->where('ends_at', '<=', now())
+            ->where('ends_at', '<', now()->startOfDay())
             ->whereHas('plan', function ($query) {
                 $query->whereNotNull('price')
                     ->where('price', '>', 0);

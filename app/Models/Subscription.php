@@ -58,19 +58,19 @@ class Subscription extends Model
     }
 
     /**
-     * Проверить, активна ли подписка
+     * Проверить, активна ли подписка. Статусами управляет крон.
      */
     public function isActive(): bool
     {
-        return $this->status === 'active' && ($this->ends_at === null || $this->ends_at->isFuture());
+        return $this->status === 'active';
     }
 
     /**
-     * Проверить, является ли подписка пробной
+     * Проверить, является ли подписка пробной. Статусами управляет крон.
      */
     public function isTrial(): bool
     {
-        return $this->status === 'trial' && $this->trial_ends_at && $this->trial_ends_at->isFuture();
+        return $this->status === 'trial';
     }
 
     /**
@@ -98,8 +98,8 @@ class Subscription extends Model
         $metadata = $this->metadata ?? [];
         $previousPlanId = $metadata['previous_plan_id'] ?? null;
 
-        // Если есть предыдущий план и ends_at еще не истек - используем предыдущий план
-        if ($previousPlanId && $this->ends_at && $this->ends_at->isFuture()) {
+        // Если есть предыдущий план и подписка ещё активна (статус управляется кроном) — используем предыдущий план
+        if ($previousPlanId && $this->ends_at && in_array($this->status, ['active', 'trial'], true)) {
             $previousPlan = Plan::find($previousPlanId);
             if ($previousPlan) {
                 return $previousPlan;

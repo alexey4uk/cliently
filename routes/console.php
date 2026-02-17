@@ -11,8 +11,9 @@ Artisan::command('inspire', function () {
 Schedule::command('subscription:notify-expiring')->daily();
 Schedule::command('subscription:notify-trial-ending')->daily();
 Schedule::command('subscription:process-expired-trials')->daily();
-Schedule::command('subscription:process-expired')->daily();
-Schedule::command('subscription:reset-monthly')->monthlyOn(1, '00:00');
+Schedule::command('subscription:process-expired')->hourly();
+// Период у каждой подписки от starts_at; команда создаёт записи текущего периода и удаляет старые
+Schedule::command('subscription:reset-monthly')->dailyAt('00:15');
 Schedule::command('business:notify-inactive')->daily();
 Schedule::command('ticket:notify-critical')->daily();
 Schedule::command('notifications:clean')->dailyAt('03:00');
