@@ -157,7 +157,7 @@
             <!-- Client Info -->
             <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-                @if($appointment->client)
+                @if($appointment->client && !$appointment->client->trashed())
                 <div class="flex items-center mb-4">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=64" 
                         class="w-16 h-16 rounded-full" 
@@ -200,8 +200,24 @@
                         Открыть профиль клиента →
                     </a>
                 </div>
+                @elseif($appointment->client && $appointment->client->trashed())
+                <div class="flex items-center mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <div class="w-16 h-16 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-user-slash text-slate-500 dark:text-slate-400 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-lg font-medium text-slate-600 dark:text-slate-400">
+                            Клиент удалён
+                        </p>
+                        <p class="text-sm text-slate-500 dark:text-slate-500">
+                            {{ $appointment->client->full_name }} (ID: {{ $appointment->client->id }})
+                        </p>
+                    </div>
+                </div>
                 @else
-                <p class="text-slate-500 dark:text-slate-400">Клиент удалён</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <p class="text-slate-500 dark:text-slate-400">Клиент не найден</p>
+                </div>
                 @endif
             </div>
         </div>

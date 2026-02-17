@@ -419,12 +419,12 @@
                                             </div>
                                             @if($appointment->client?->phone)
                                                 <button type="button"
-                                                    data-phone="{{ $appointment->client->phone }}"
-                                                    data-phone-display="{{ $appointment->client->phone }}"
-                                                    data-client-name="{{ $appointment->client->full_name }}"
+                                                    data-phone="{{ $appointment->client?->phone }}"
+                                                    data-phone-display="{{ $appointment->client?->phone }}"
+                                                    data-client-name="{{ $appointment->client?->full_name ?? 'Клиент удалён' }}"
                                                     @click="openPhoneModal($event)"
                                                     class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                                                    {{ $appointment->client->phone }}
+                                                    {{ $appointment->client?->phone }}
                                                 </button>
                                             @endif
                                         </div>
@@ -600,10 +600,10 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
                                 @if($appointment->client?->phone)
-                                    <button type="button" data-phone="{{ $appointment->client->phone }}" data-phone-display="{{ $appointment->client->phone }}" data-client-name="{{ $appointment->client->full_name }}"
+                                    <button type="button" data-phone="{{ $appointment->client?->phone }}" data-phone-display="{{ $appointment->client?->phone }}" data-client-name="{{ $appointment->client?->full_name ?? 'Клиент удалён' }}"
                                         @click="openPhoneModal($event)"
                                         class="min-h-[44px] -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
-                                        {{ $appointment->client->phone }}
+                                        {{ $appointment->client?->phone }}
                                     </button>
                                 @endif
                             </div>

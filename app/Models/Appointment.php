@@ -113,9 +113,13 @@ class Appointment extends Model
         return $this->belongsTo(Business::class);
     }
 
+    /**
+     * Связь с клиентом (включая удалённых через soft delete).
+     * Используем withTrashed(), чтобы записи сохраняли доступ к данным клиента даже после его удаления.
+     */
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function service(): BelongsTo

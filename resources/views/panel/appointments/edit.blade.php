@@ -24,11 +24,11 @@
                 <!-- Клиент -->
                 <div class="flex items-center gap-4">
                     <div class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                        <span class="text-white font-bold text-sm">{{ substr($appointment->client->first_name ?? 'Н', 0, 1) }}</span>
+                        <span class="text-white font-bold text-sm">{{ substr($appointment->client?->first_name ?? 'Н', 0, 1) }}</span>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->client->full_name }}</p>
-                        <p class="text-xs text-slate-600 dark:text-slate-400">{{ $appointment->client->phone }}</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-400">{{ $appointment->client?->phone ?? '—' }}</p>
                     </div>
                 </div>
 

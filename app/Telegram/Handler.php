@@ -884,7 +884,7 @@ class Handler extends WebhookHandler
                 return;
             }
             $client = $appointment->client;
-            if ((string) $client->telegram_user_id !== (string) $userId) {
+            if (! $client || (string) $client->telegram_user_id !== (string) $userId) {
                 return;
             }
 

@@ -259,7 +259,7 @@
                                     </div>
                                     <div class="shrink-0 w-px h-12 bg-indigo-200 dark:bg-indigo-800"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client->full_name }}</p>
+                                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service->name }}</p>
                                     </div>
                                     <span class="shrink-0 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/20 rounded-full">Подтверждено</span>
@@ -278,7 +278,7 @@
                                     </div>
                                     <div class="shrink-0 w-px h-12 bg-amber-200 dark:bg-amber-800"></div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client->full_name }}</p>
+                                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service->name }}</p>
                                     </div>
                                     <span class="shrink-0 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 rounded-full">Ожидает</span>

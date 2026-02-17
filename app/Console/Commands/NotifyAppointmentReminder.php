@@ -45,11 +45,12 @@ class NotifyAppointmentReminder extends Command
 
         $sent = 0;
         foreach ($appointments as $appointment) {
-            if (! $appointment->client->telegram_user_id) {
+            if (! $appointment->client || ! $appointment->client->telegram_user_id) {
                 continue;
             }
             if ($dryRun) {
-                $this->line("  — Запись #{$appointment->id}: {$appointment->client->full_name}, {$appointment->date->format('d.m.Y')} {$appointment->time}");
+                $clientName = $appointment->client?->full_name ?? 'Клиент удалён';
+                $this->line("  — Запись #{$appointment->id}: {$clientName}, {$appointment->date->format('d.m.Y')} {$appointment->time}");
                 $sent++;
             } elseif (TelegramNotificationService::sendAppointmentReminderToClient($appointment)) {
                 $appointment->update(['reminder_sent_at' => Carbon::now()]);

@@ -46,10 +46,12 @@ class AppointmentStatusChanged extends Notification implements ShouldQueue
             default => 'обновлена',
         };
 
+        $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
+
         return (new MailMessage)
             ->subject('Запись '.$statusText)
             ->line('Статус записи изменен: '.$statusText)
-            ->line('Клиент: '.($client->first_name ?? '').' '.($client->last_name ?? ''))
+            ->line('Клиент: '.$clientName)
             ->line('Услуга: '.($service->name ?? ''))
             ->line('Дата: '.$appointment->date->format('d.m.Y'))
             ->line('Время: '.$appointment->time)

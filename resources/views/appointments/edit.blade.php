@@ -54,7 +54,7 @@
         <!-- Client Info (Read Only) -->
         <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-            @if($appointment->client)
+            @if($appointment->client && !$appointment->client->trashed())
             <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=48" 
                     class="w-12 h-12 rounded-full" 
@@ -75,6 +75,20 @@
                     class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium transition-colors">
                     Профиль клиента
                 </a>
+            </div>
+            @elseif($appointment->client && $appointment->client->trashed())
+            <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-amber-200 dark:border-amber-800">
+                <div class="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                    <i class="fa-solid fa-user-slash text-slate-500 dark:text-slate-400"></i>
+                </div>
+                <div class="ml-4 flex-1">
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">
+                        Клиент удалён
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-500">
+                        {{ $appointment->client->full_name }} (ID: {{ $appointment->client->id }})
+                    </p>
+                </div>
             </div>
             @else
             <p class="text-slate-500 dark:text-slate-400 py-2">Клиент удалён</p>
