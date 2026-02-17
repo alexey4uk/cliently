@@ -251,7 +251,7 @@
                                 <a href="{{ route('appointments.show', $appointment->id) }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                                     <div class="shrink-0 w-14 text-center">
                                         <p class="text-base font-bold text-slate-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</p>
-                                        @if($appointment->service->duration)
+                                        @if($appointment->service && $appointment->service->duration)
                                             <p class="text-xs text-slate-500 dark:text-slate-400">
                                                 {{ \Carbon\Carbon::parse($appointment->time)->addMinutes($appointment->service->duration)->format('H:i') }}
                                             </p>
@@ -260,7 +260,7 @@
                                     <div class="shrink-0 w-px h-12 bg-indigo-200 dark:bg-indigo-800"></div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service->name }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                                     </div>
                                     <span class="shrink-0 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/20 rounded-full">Подтверждено</span>
                                 </a>
@@ -279,7 +279,7 @@
                                     <div class="shrink-0 w-px h-12 bg-amber-200 dark:bg-amber-800"></div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service->name }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                                     </div>
                                     <span class="shrink-0 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 rounded-full">Ожидает</span>
                                 </a>

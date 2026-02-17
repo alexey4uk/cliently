@@ -135,7 +135,7 @@ class TelegramNotificationService
         $appointment->loadMissing(['business', 'service', 'master']);
         $business = $appointment->business;
         $masterName = $appointment->master
-            ? $appointment->master->first_name.' '.$appointment->master->last_name
+            ? trim(($appointment->master->first_name ?? '').' '.($appointment->master->last_name ?? ''))
             : 'Мастер не назначен';
 
         $message = TelegramMessages::format(TelegramMessages::MSG_APPOINTMENT_REMINDER, [
@@ -148,6 +148,7 @@ class TelegramNotificationService
 
         if ($appointment->client && $appointment->client->telegram_user_id) {
             self::sendMessageForClient((string) $appointment->client->telegram_user_id, $message);
+
             return true;
         }
 
@@ -233,19 +234,23 @@ class TelegramNotificationService
         $location = $appointment->location;
 
         $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
+        $serviceName = $service?->name ?? 'Услуга удалена';
+        $masterName = $master ? trim(($master->first_name ?? '').' '.($master->last_name ?? '')) : null;
+        $locationName = $location?->name ?? null;
+
         $message = "📅 {$action}\n\n";
         $message .= "Клиент: {$clientName}\n";
         if ($client && $client->phone) {
             $message .= "Телефон: {$client->phone}\n";
         }
-        $message .= "Услуга: {$service->name}\n";
+        $message .= "Услуга: {$serviceName}\n";
 
-        if ($master) {
-            $message .= "Мастер: {$master->first_name} {$master->last_name}\n";
+        if ($masterName) {
+            $message .= "Мастер: {$masterName}\n";
         }
 
-        if ($location) {
-            $message .= "Локация: {$location->name}\n";
+        if ($locationName) {
+            $message .= "Локация: {$locationName}\n";
         }
 
         $message .= "Дата: {$appointment->date->format('d.m.Y')}\n";

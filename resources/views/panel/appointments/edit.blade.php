@@ -38,7 +38,7 @@
                         <i class="fa-solid fa-scissors text-white text-lg"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                         @if($appointment->duration)
                             <p class="text-xs text-slate-600 dark:text-slate-400">{{ $appointment->duration }} мин</p>
                         @endif
@@ -52,7 +52,7 @@
                             <i class="fa-solid fa-user-tie text-white text-lg"></i>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ $appointment->master?->name ?? 'Не назначен' }}</p>
                         </div>
                     </div>
                 @endif

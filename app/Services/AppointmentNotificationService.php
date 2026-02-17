@@ -220,7 +220,7 @@ class AppointmentNotificationService
                 'message' => sprintf(
                     'Запись: %s %s %s',
                     $appointment->client?->first_name ?? 'Клиент удалён',
-                    $appointment->service->name ?? '',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->date->format('d.m.Y')
                 ),
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
@@ -334,7 +334,7 @@ class AppointmentNotificationService
                 'message' => sprintf(
                     '%s %s %s - %s',
                     $appointment->client?->first_name ?? 'Клиент удалён',
-                    $appointment->service->name ?? '',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->date->format('d.m.Y'),
                     $statusText
                 ),
@@ -435,7 +435,7 @@ class AppointmentNotificationService
                 'message' => sprintf(
                     'Запись через час: %s %s %s',
                     $appointment->client?->first_name ?? 'Клиент удалён',
-                    $appointment->service->name ?? '',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->time
                 ),
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
@@ -693,7 +693,7 @@ class AppointmentNotificationService
                 'message' => sprintf(
                     '%s записался на %s',
                     $appointment->client?->first_name ?? 'Клиент удалён',
-                    $appointment->service->name ?? 'услугу'
+                    $appointment->service?->name ?? 'услугу'
                 ),
                 'required_permission' => null,
                 'data' => [

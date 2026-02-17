@@ -277,7 +277,7 @@
                                     'id' => $apt->id,
                                     'time' => \Carbon\Carbon::parse($apt->time)->format('H:i'),
                                     'client' => $apt->client?->full_name ?? 'Клиент удалён',
-                                    'service' => $apt->service->name,
+                                    'service' => $apt->service?->name ?? 'Услуга удалена',
                                     'master' => $apt->master ? $apt->master->name : null,
                                     'status' => $apt->status,
                                     'url' => route('appointments.show', $apt)
@@ -333,7 +333,7 @@
                                                     : ($appointment->status === 'confirmed' 
                                                         ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-l-2 border-blue-500' 
                                                         : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-l-2 border-amber-500')) }}"
-                                            title="{{ ($appointment->client?->full_name ?? 'Клиент удалён') }} - {{ $appointment->service->name }}">
+                                            title="{{ ($appointment->client?->full_name ?? 'Клиент удалён') }} - {{ $appointment->service?->name ?? 'Услуга удалена' }}">
                                             <div class="flex items-center gap-1 whitespace-nowrap">
                                                 <span class="font-semibold text-[10px] shrink-0">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
                                                 <span class="truncate text-[10px]">{{ $appointment->client?->first_name ?? '—' }}</span>
@@ -359,7 +359,7 @@
                                                     : ($appointment->status === 'confirmed' 
                                                         ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-l-2 border-blue-500' 
                                                         : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-l-2 border-amber-500')) }}"
-                                            title="{{ ($appointment->client?->full_name ?? 'Клиент удалён') }} - {{ $appointment->service->name }}@if($appointment->master) ({{ $appointment->master->name }})@endif">
+                                            title="{{ ($appointment->client?->full_name ?? 'Клиент удалён') }} - {{ $appointment->service?->name ?? 'Услуга удалена' }}@if($appointment->master) ({{ $appointment->master?->name ?? 'Не назначен' }})@endif">
                                             <div class="flex items-center gap-1.5 whitespace-nowrap">
                                                 <span class="font-semibold text-xs shrink-0">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</span>
                                                 <span class="truncate text-xs">{{ $appointment->client?->first_name ?? '—' }}</span>

@@ -81,7 +81,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Услуга</p>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service && !$appointment->service->trashed() ? $appointment->service->name : 'Услуга удалена' }}</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Длительность: {{ $appointment->final_duration }} мин</p>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                         </div>
                         <div class="ml-4 flex-1 min-w-0">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Мастер</p>
-                            @if($appointment->master)
+                            @if($appointment->master && !$appointment->master->trashed())
                                 <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
                             @else
                                 <p class="text-sm font-medium text-amber-700 dark:text-amber-300">Не назначен</p>
@@ -130,7 +130,7 @@
                     </div>
 
                     <!-- Локация -->
-                    @if($appointment->location)
+                            @if($appointment->location && !$appointment->location->trashed())
                     <div class="flex items-start">
                         <div class="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-500/20 rounded-lg flex items-center justify-center">
                             <i class="fa-solid fa-location-dot text-amber-600 dark:text-amber-400"></i>
@@ -138,7 +138,7 @@
                         <div class="ml-4">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Локация</p>
                             <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->location->name }}</p>
-                            @if($appointment->location->full_address)
+                            @if($appointment->location && $appointment->location->full_address)
                                 <p class="text-xs text-slate-500 dark:text-slate-400">{{ $appointment->location->full_address }}</p>
                             @endif
                         </div>

@@ -346,7 +346,7 @@ class DashboardController extends Controller
             ->with('service')
             ->get()
             ->sum(function ($appointment) {
-                return $appointment->price ?? $appointment->service->price ?? 0;
+                return $appointment->price ?? $appointment->service?->price ?? 0;
             });
 
         // Выручка за неделю
@@ -355,7 +355,7 @@ class DashboardController extends Controller
             ->with('service')
             ->get()
             ->sum(function ($appointment) {
-                return $appointment->price ?? $appointment->service->price ?? 0;
+                return $appointment->price ?? $appointment->service?->price ?? 0;
             });
 
         // Выручка за прошлый месяц
@@ -364,7 +364,7 @@ class DashboardController extends Controller
             ->with('service')
             ->get()
             ->sum(function ($appointment) {
-                return $appointment->price ?? $appointment->service->price ?? 0;
+                return $appointment->price ?? $appointment->service?->price ?? 0;
             });
 
         // Рост выручки
@@ -408,7 +408,7 @@ class DashboardController extends Controller
                 'service_id' => $serviceId,
                 'service_name' => $service ? $service->name : 'Неизвестная услуга',
                 'revenue' => $group->sum(function ($appointment) {
-                    return $appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0;
+                    return $appointment->price ?? $appointment->service?->price ?? 0;
                 }),
                 'count' => $group->count(),
             ];
@@ -438,7 +438,7 @@ class DashboardController extends Controller
                 'master_id' => $masterId,
                 'master_name' => $masterName,
                 'revenue' => $group->sum(function ($appointment) {
-                    return $appointment->price ?? ($appointment->service ? $appointment->service->price : 0) ?? 0;
+                    return $appointment->price ?? $appointment->service?->price ?? 0;
                 }),
                 'count' => $group->count(),
             ];

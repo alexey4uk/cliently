@@ -31,13 +31,13 @@
             @if(isset($appointment->service))
             <div>
                 <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Услуга</span>
-                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
             </div>
             @endif
             
             <div>
                 <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Мастер</span>
-                @if(isset($appointment->master) && $appointment->master)
+                @if(isset($appointment->master) && $appointment->master && !$appointment->master->trashed())
                 <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</p>
                 @else
                 <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-600 dark:text-slate-400">Будет назначен</p>
@@ -47,7 +47,7 @@
             @if(isset($appointment->location))
             <div>
                 <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">Локация</span>
-                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->location->name }}</p>
+                <p class="text-sm sm:text-base lg:text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->location?->name ?? 'Локация удалена' }}</p>
             </div>
             @endif
             

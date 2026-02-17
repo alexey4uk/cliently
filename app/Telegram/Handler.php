@@ -1519,8 +1519,8 @@ class Handler extends WebhookHandler
             // Сбрасываем lastMessageId чтобы отправить новое сообщение
             $this->lastMessageId = null;
 
-            $masterName = $appointment->master
-                ? $appointment->master->first_name.' '.$appointment->master->last_name
+            $masterName = $appointment->master && ! $appointment->master->trashed()
+                ? trim(($appointment->master->first_name ?? '').' '.($appointment->master->last_name ?? ''))
                 : TelegramMessages::MSG_ANY_MASTER;
 
             $message = TelegramMessages::format(
@@ -1528,9 +1528,9 @@ class Handler extends WebhookHandler
                 [
                     'date' => $formattedDate,
                     'time' => $formattedTime,
-                    'service' => $appointment->service->name,
+                    'service' => $appointment->service?->name ?? 'Услуга удалена',
                     'master' => $masterName,
-                    'location' => $appointment->location->name,
+                    'location' => $appointment->location?->name ?? 'Локация удалена',
                 ],
             );
 

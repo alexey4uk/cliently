@@ -432,7 +432,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-slate-900 dark:text-white font-medium">
-                                        {{ $appointment->service->name }}
+                                        {{ $appointment->service?->name ?? 'Услуга удалена' }}
                                     </div>
                                     @if ($appointment->final_duration)
                                         <div class="text-xs text-slate-500 dark:text-slate-400">
@@ -441,7 +441,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                                    {{ $appointment->master->name ?? 'Не назначен' }}
+                                    {{ $appointment->master?->name ?? 'Не назначен' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
@@ -610,14 +610,14 @@
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             <i class="fa-solid fa-scissors text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
-                            <span class="truncate">{{ $appointment->service->name }}</span>
+                            <span class="truncate">{{ $appointment->service?->name ?? 'Услуга удалена' }}</span>
                             @if ($appointment->final_duration)
                                 <span class="shrink-0">· {{ $appointment->final_duration }} мин</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             <i class="fa-solid fa-user-tie text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
-                            <span class="truncate">{{ $appointment->master->name ?? 'Не назначен' }}</span>
+                            <span class="truncate">{{ $appointment->master?->name ?? 'Не назначен' }}</span>
                         </div>
                         @if ($appointment->final_price)
                             <div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white pt-0.5">

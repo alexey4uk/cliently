@@ -833,13 +833,17 @@ class AppointmentsController extends Controller
 
             // Данные записей
             foreach ($appointments as $appointment) {
+                $masterName = $appointment->master && ! $appointment->master->trashed()
+                    ? trim(($appointment->master->first_name ?? '').' '.($appointment->master->last_name ?? ''))
+                    : 'Не назначен';
+
                 fputcsv($file, [
                     $appointment->date->format('d.m.Y'),
                     \Carbon\Carbon::parse($appointment->time)->format('H:i'),
                     $appointment->client?->full_name ?? 'Клиент удалён',
                     $appointment->client?->phone ?? '—',
-                    $appointment->service->name,
-                    $appointment->master ? $appointment->master->first_name.' '.$appointment->master->last_name : 'Не назначен',
+                    $appointment->service?->name ?? 'Услуга удалена',
+                    $masterName,
                     $statusLabels[$appointment->status] ?? $appointment->status,
                     $appointment->final_price ? number_format($appointment->final_price, 0, ',', ' ').' BYN' : '',
                 ]);
