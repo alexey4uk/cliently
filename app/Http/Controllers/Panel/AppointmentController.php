@@ -191,4 +191,14 @@ class AppointmentController extends Controller
 
         return redirect()->route('panel.appointments')->with('success', 'Запись обновлена успешно');
     }
+
+    /**
+     * Remove the specified appointment from storage.
+     */
+    public function destroy(Appointment $appointment)
+    {
+        $appointment->delete();
+
+        return redirect()->route('panel.appointments')->with('success', 'Запись удалена');
+    }
 }

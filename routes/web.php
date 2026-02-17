@@ -1028,6 +1028,15 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 ])->name('appointments.update');
             });
 
+            Route::middleware([
+                'check.permission:panel.appointments.delete',
+            ])->group(function () {
+                Route::delete('/appointments/{appointment}', [
+                    \App\Http\Controllers\Panel\AppointmentController::class,
+                    'destroy',
+                ])->name('appointments.destroy');
+            });
+
             // Клиенты (админ и менеджер): /clients/create перед /clients/{client}
             Route::middleware(['check.permission:panel.clients.create'])->group(
                 function () {
