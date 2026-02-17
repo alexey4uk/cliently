@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Client;
+use App\Models\Subscription;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -152,6 +153,10 @@ class PanelController extends Controller
         // Средние метрики
         $data['stats']['avg_appointments_per_business'] = $totalBusinesses > 0 ? round($totalAppointments / $totalBusinesses, 1) : 0;
         $data['stats']['avg_clients_per_business'] = $totalBusinesses > 0 ? round($totalClients / $totalBusinesses, 1) : 0;
+
+        // 7. Подписки (для виджета на дашборде)
+        $data['stats']['subscriptions_active'] = Subscription::whereIn('status', ['active', 'trial'])->count();
+        $data['stats']['subscriptions_trial'] = Subscription::where('status', 'trial')->count();
 
         return $data;
     }
