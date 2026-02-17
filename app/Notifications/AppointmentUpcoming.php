@@ -38,10 +38,12 @@ class AppointmentUpcoming extends Notification implements ShouldQueue
         $client = $appointment->client;
         $service = $appointment->service;
 
+        $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
+
         return (new MailMessage)
             ->subject('Приближающаяся запись')
             ->line('Напоминание: у вас запись через час')
-            ->line('Клиент: '.($client->first_name ?? '').' '.($client->last_name ?? ''))
+            ->line('Клиент: '.$clientName)
             ->line('Услуга: '.($service->name ?? ''))
             ->line('Дата: '.$appointment->date->format('d.m.Y'))
             ->line('Время: '.$appointment->time)

@@ -27,10 +27,12 @@ class ClientNew extends Notification implements ShouldQueue
         $client = $appointment->client;
         $service = $appointment->service;
 
+        $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
+
         return (new MailMessage)
-            ->subject('Новый клиент: '.($client->first_name ?? '').' '.($client->last_name ?? 'Клиент'))
+            ->subject('Новый клиент: '.$clientName)
             ->line('Новый клиент записался на услугу.')
-            ->line('Клиент: '.($client->first_name ?? '').' '.($client->last_name ?? ''))
+            ->line('Клиент: '.$clientName)
             ->line('Услуга: '.($service->name ?? ''))
             ->line('Дата: '.$appointment->date->format('d.m.Y').', время: '.$appointment->time)
             ->action('Открыть запись', route('appointments.show', $appointment))
@@ -41,7 +43,7 @@ class ClientNew extends Notification implements ShouldQueue
     {
         return [
             'appointment_id' => $this->appointment->id,
-            'client_id' => $this->appointment->client_id,
+            'client_id' => $this->appointment->client_id, // Может быть null, если клиент удалён
             'title' => 'Новый клиент',
             'message' => 'Записался на услугу',
         ];

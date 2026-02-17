@@ -65,8 +65,8 @@ class TelegramNotificationService
         Appointment $appointment,
         ?string $oldStatus = null,
     ) {
-        // Проверяем, есть ли у клиента telegram_user_id
-        if (! $appointment->client->telegram_user_id) {
+        // Проверяем, есть ли клиент и telegram_user_id
+        if (! $appointment->client || ! $appointment->client->telegram_user_id) {
             return;
         }
 
@@ -88,10 +88,12 @@ class TelegramNotificationService
             );
         }
 
-        self::sendMessageForClient(
-            $appointment->client->telegram_user_id,
-            $message,
-        );
+        if ($appointment->client && $appointment->client->telegram_user_id) {
+            self::sendMessageForClient(
+                $appointment->client->telegram_user_id,
+                $message,
+            );
+        }
     }
 
     /**
@@ -102,7 +104,7 @@ class TelegramNotificationService
      */
     public static function sendAppointmentConfirmationRequest(Appointment $appointment): bool
     {
-        if (! $appointment->client->telegram_user_id) {
+        if (! $appointment->client || ! $appointment->client->telegram_user_id) {
             return false;
         }
 
@@ -126,14 +128,14 @@ class TelegramNotificationService
      */
     public static function sendAppointmentReminderToClient(Appointment $appointment): bool
     {
-        if (! $appointment->client->telegram_user_id) {
+        if (! $appointment->client || ! $appointment->client->telegram_user_id) {
             return false;
         }
 
         $appointment->loadMissing(['business', 'service', 'master']);
         $business = $appointment->business;
         $masterName = $appointment->master
-            ? $appointment->master->first_name.' '.$appointment->master->last_name
+            ? trim(($appointment->master->first_name ?? '').' '.($appointment->master->last_name ?? ''))
             : 'Мастер не назначен';
 
         $message = TelegramMessages::format(TelegramMessages::MSG_APPOINTMENT_REMINDER, [
@@ -144,9 +146,13 @@ class TelegramNotificationService
             'master' => $masterName,
         ]);
 
-        self::sendMessageForClient((string) $appointment->client->telegram_user_id, $message);
+        if ($appointment->client && $appointment->client->telegram_user_id) {
+            self::sendMessageForClient((string) $appointment->client->telegram_user_id, $message);
 
-        return true;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -180,6 +186,9 @@ class TelegramNotificationService
             return;
         }
         $appointment->loadMissing(['client', 'service']);
+        if (! $appointment->client) {
+            return;
+        }
         $client = $appointment->client;
         $message = TelegramMessages::format(TelegramMessages::MSG_CLIENT_NEW, [
             'client_name' => trim(($client->first_name ?? '').' '.($client->last_name ?? '')) ?: 'Клиент',
@@ -199,6 +208,9 @@ class TelegramNotificationService
             return;
         }
         $appointment->loadMissing(['client', 'service']);
+        if (! $appointment->client) {
+            return;
+        }
         $client = $appointment->client;
         $message = TelegramMessages::format(TelegramMessages::MSG_APPOINTMENT_UPCOMING, [
             'client_name' => trim(($client->first_name ?? '').' '.($client->last_name ?? '')) ?: 'Клиент',
@@ -221,17 +233,24 @@ class TelegramNotificationService
         $master = $appointment->master;
         $location = $appointment->location;
 
-        $message = "📅 {$action}\n\n";
-        $message .= "Клиент: {$client->first_name} {$client->last_name}\n";
-        $message .= "Телефон: {$client->phone}\n";
-        $message .= "Услуга: {$service->name}\n";
+        $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
+        $serviceName = $service?->name ?? 'Услуга удалена';
+        $masterName = $master ? trim(($master->first_name ?? '').' '.($master->last_name ?? '')) : null;
+        $locationName = $location?->name ?? null;
 
-        if ($master) {
-            $message .= "Мастер: {$master->first_name} {$master->last_name}\n";
+        $message = "📅 {$action}\n\n";
+        $message .= "Клиент: {$clientName}\n";
+        if ($client && $client->phone) {
+            $message .= "Телефон: {$client->phone}\n";
+        }
+        $message .= "Услуга: {$serviceName}\n";
+
+        if ($masterName) {
+            $message .= "Мастер: {$masterName}\n";
         }
 
-        if ($location) {
-            $message .= "Локация: {$location->name}\n";
+        if ($locationName) {
+            $message .= "Локация: {$locationName}\n";
         }
 
         $message .= "Дата: {$appointment->date->format('d.m.Y')}\n";

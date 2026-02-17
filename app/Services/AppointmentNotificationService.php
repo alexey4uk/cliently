@@ -219,8 +219,8 @@ class AppointmentNotificationService
                 'title' => 'Новая запись',
                 'message' => sprintf(
                     'Запись: %s %s %s',
-                    $appointment->client->first_name ?? 'Клиент',
-                    $appointment->service->name ?? '',
+                    $appointment->client?->first_name ?? 'Клиент удалён',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->date->format('d.m.Y')
                 ),
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
@@ -333,8 +333,8 @@ class AppointmentNotificationService
                 'title' => 'Запись '.$statusText,
                 'message' => sprintf(
                     '%s %s %s - %s',
-                    $appointment->client->first_name ?? 'Клиент',
-                    $appointment->service->name ?? '',
+                    $appointment->client?->first_name ?? 'Клиент удалён',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->date->format('d.m.Y'),
                     $statusText
                 ),
@@ -434,8 +434,8 @@ class AppointmentNotificationService
                 'title' => 'Приближается запись',
                 'message' => sprintf(
                     'Запись через час: %s %s %s',
-                    $appointment->client->first_name ?? 'Клиент',
-                    $appointment->service->name ?? '',
+                    $appointment->client?->first_name ?? 'Клиент удалён',
+                    $appointment->service?->name ?? 'Услуга удалена',
                     $appointment->time
                 ),
                 'required_permission' => null, // Не требуем права при создании - проверяем только при отображении
@@ -692,13 +692,13 @@ class AppointmentNotificationService
                 'title' => 'Новый клиент',
                 'message' => sprintf(
                     '%s записался на %s',
-                    $appointment->client->first_name ?? 'Клиент',
-                    $appointment->service->name ?? 'услугу'
+                    $appointment->client?->first_name ?? 'Клиент удалён',
+                    $appointment->service?->name ?? 'услугу'
                 ),
                 'required_permission' => null,
                 'data' => [
-                    'client_id' => $appointment->client->id,
-                    'url' => self::getClientRoute($user, $appointment->client),
+                    'client_id' => $appointment->client?->id,
+                    'url' => $appointment->client ? self::getClientRoute($user, $appointment->client) : null,
                 ],
             ]);
 

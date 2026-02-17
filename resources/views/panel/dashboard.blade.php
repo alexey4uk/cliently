@@ -265,8 +265,8 @@
                     <ul class="divide-y divide-slate-200 dark:divide-slate-800">
                         @foreach($recentAppointments->take(5) as $apt)
                         <li class="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $apt->client->full_name ?? '—' }}</p>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $apt->business->name ?? '—' }} · {{ $apt->service->name ?? '—' }} · {{ \Carbon\Carbon::parse($apt->date)->format('d.m.Y') }}</p>
+                            <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $apt->client?->full_name ?? 'Клиент удалён' }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $apt->business->name ?? '—' }} · {{ $apt->service?->name ?? '—' }} · {{ \Carbon\Carbon::parse($apt->date)->format('d.m.Y') }}</p>
                         </li>
                         @endforeach
                     </ul>

@@ -57,7 +57,7 @@
                         <div class="flex-1 min-w-0">
                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Услуга</p>
                             <h4 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">
-                                {{ $appointment->service->name }}</h4>
+                                {{ $appointment->service?->name ?? 'Услуга удалена' }}</h4>
                             <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                                 {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN •
                                 {{ $appointment->final_duration }} мин
@@ -73,7 +73,7 @@
                         </div>
                         <div>
                             <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Специалист</p>
-                            @if ($appointment->master)
+                            @if ($appointment->master && !$appointment->master->trashed())
                             <h4 class="text-base font-bold text-slate-900 dark:text-white">
                                 {{ $appointment->master->first_name }} {{ $appointment->master->last_name }}</h4>
                             @else
@@ -92,9 +92,9 @@
                             <div class="min-w-0">
                                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Место</p>
                                 <h4 class="text-base font-bold text-slate-900 dark:text-white truncate">
-                                    {{ $appointment->location->name }}</h4>
+                                    {{ $appointment->location?->name ?? 'Локация удалена' }}</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 truncate">
-                                    {{ $appointment->location->full_address }}</p>
+                                    {{ $appointment->location?->full_address ?? '' }}</p>
                             </div>
                         </div>
                     @endif

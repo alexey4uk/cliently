@@ -143,10 +143,10 @@
                                     </div>
                                     <div class="flex-shrink-0 w-px h-12 bg-indigo-200 dark:bg-indigo-500/30 mx-4"></div>
                                     <div class="flex-1">
-                                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                                         <p class="text-sm text-slate-500 dark:text-slate-400">
                                             @if ($appointment->master)
-                                                Мастер: {{ $appointment->master->name }}
+                                                Мастер: {{ $appointment->master?->name ?? 'Не назначен' }}
                                             @else
                                                 Мастер не назначен
                                             @endif
@@ -177,10 +177,10 @@
                                     <p class="text-xs text-slate-500 dark:text-slate-400">{{ \Carbon\Carbon::parse($appointment->date)->format('Y') }}</p>
                                 </div>
                                 <div class="flex-1 ml-4">
-                                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                                     <p class="text-sm text-slate-500 dark:text-slate-400">
                                         @if ($appointment->master)
-                                            {{ $appointment->master->name }}
+                                            {{ $appointment->master?->name ?? 'Не назначен' }}
                                         @else
                                             Мастер не назначен
                                         @endif

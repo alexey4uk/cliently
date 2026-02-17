@@ -419,12 +419,12 @@
                                             </div>
                                             @if($appointment->client?->phone)
                                                 <button type="button"
-                                                    data-phone="{{ $appointment->client->phone }}"
-                                                    data-phone-display="{{ $appointment->client->phone }}"
-                                                    data-client-name="{{ $appointment->client->full_name }}"
+                                                    data-phone="{{ $appointment->client?->phone }}"
+                                                    data-phone-display="{{ $appointment->client?->phone }}"
+                                                    data-client-name="{{ $appointment->client?->full_name ?? 'Клиент удалён' }}"
                                                     @click="openPhoneModal($event)"
                                                     class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
-                                                    {{ $appointment->client->phone }}
+                                                    {{ $appointment->client?->phone }}
                                                 </button>
                                             @endif
                                         </div>
@@ -432,7 +432,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-slate-900 dark:text-white font-medium">
-                                        {{ $appointment->service->name }}
+                                        {{ $appointment->service?->name ?? 'Услуга удалена' }}
                                     </div>
                                     @if ($appointment->final_duration)
                                         <div class="text-xs text-slate-500 dark:text-slate-400">
@@ -441,7 +441,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
-                                    {{ $appointment->master->name ?? 'Не назначен' }}
+                                    {{ $appointment->master?->name ?? 'Не назначен' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
@@ -600,24 +600,24 @@
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
                                 @if($appointment->client?->phone)
-                                    <button type="button" data-phone="{{ $appointment->client->phone }}" data-phone-display="{{ $appointment->client->phone }}" data-client-name="{{ $appointment->client->full_name }}"
+                                    <button type="button" data-phone="{{ $appointment->client?->phone }}" data-phone-display="{{ $appointment->client?->phone }}" data-client-name="{{ $appointment->client?->full_name ?? 'Клиент удалён' }}"
                                         @click="openPhoneModal($event)"
                                         class="min-h-[44px] -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
-                                        {{ $appointment->client->phone }}
+                                        {{ $appointment->client?->phone }}
                                     </button>
                                 @endif
                             </div>
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             <i class="fa-solid fa-scissors text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
-                            <span class="truncate">{{ $appointment->service->name }}</span>
+                            <span class="truncate">{{ $appointment->service?->name ?? 'Услуга удалена' }}</span>
                             @if ($appointment->final_duration)
                                 <span class="shrink-0">· {{ $appointment->final_duration }} мин</span>
                             @endif
                         </div>
                         <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             <i class="fa-solid fa-user-tie text-slate-400 dark:text-slate-500 w-4 text-center shrink-0"></i>
-                            <span class="truncate">{{ $appointment->master->name ?? 'Не назначен' }}</span>
+                            <span class="truncate">{{ $appointment->master?->name ?? 'Не назначен' }}</span>
                         </div>
                         @if ($appointment->final_price)
                             <div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white pt-0.5">

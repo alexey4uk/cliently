@@ -81,7 +81,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Услуга</p>
-                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service->name }}</p>
+                            <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service && !$appointment->service->trashed() ? $appointment->service->name : 'Услуга удалена' }}</p>
                             <p class="text-xs text-slate-500 dark:text-slate-400">Длительность: {{ $appointment->final_duration }} мин</p>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                         </div>
                         <div class="ml-4 flex-1 min-w-0">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Мастер</p>
-                            @if($appointment->master)
+                            @if($appointment->master && !$appointment->master->trashed())
                                 <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->master->name }}</p>
                             @else
                                 <p class="text-sm font-medium text-amber-700 dark:text-amber-300">Не назначен</p>
@@ -130,7 +130,7 @@
                     </div>
 
                     <!-- Локация -->
-                    @if($appointment->location)
+                            @if($appointment->location && !$appointment->location->trashed())
                     <div class="flex items-start">
                         <div class="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-500/20 rounded-lg flex items-center justify-center">
                             <i class="fa-solid fa-location-dot text-amber-600 dark:text-amber-400"></i>
@@ -138,7 +138,7 @@
                         <div class="ml-4">
                             <p class="text-sm text-slate-500 dark:text-slate-400">Локация</p>
                             <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->location->name }}</p>
-                            @if($appointment->location->full_address)
+                            @if($appointment->location && $appointment->location->full_address)
                                 <p class="text-xs text-slate-500 dark:text-slate-400">{{ $appointment->location->full_address }}</p>
                             @endif
                         </div>
@@ -157,7 +157,7 @@
             <!-- Client Info -->
             <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-                @if($appointment->client)
+                @if($appointment->client && !$appointment->client->trashed())
                 <div class="flex items-center mb-4">
                     <img src="https://ui-avatars.com/api/?name={{ urlencode($appointment->client->full_name) }}&background=6366f1&color=fff&size=64" 
                         class="w-16 h-16 rounded-full" 
@@ -200,8 +200,24 @@
                         Открыть профиль клиента →
                     </a>
                 </div>
+                @elseif($appointment->client && $appointment->client->trashed())
+                <div class="flex items-center mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <div class="w-16 h-16 rounded-full bg-slate-300 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-user-slash text-slate-500 dark:text-slate-400 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-lg font-medium text-slate-600 dark:text-slate-400">
+                            Клиент удалён
+                        </p>
+                        <p class="text-sm text-slate-500 dark:text-slate-500">
+                            {{ $appointment->client->full_name }} (ID: {{ $appointment->client->id }})
+                        </p>
+                    </div>
+                </div>
                 @else
-                <p class="text-slate-500 dark:text-slate-400">Клиент удалён</p>
+                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <p class="text-slate-500 dark:text-slate-400">Клиент не найден</p>
+                </div>
                 @endif
             </div>
         </div>

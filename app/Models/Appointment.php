@@ -113,24 +113,40 @@ class Appointment extends Model
         return $this->belongsTo(Business::class);
     }
 
+    /**
+     * Связь с клиентом (включая удалённых через soft delete).
+     * Используем withTrashed(), чтобы записи сохраняли доступ к данным клиента даже после его удаления.
+     */
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
+    /**
+     * Связь с услугой (включая удалённых через soft delete).
+     * Используем withTrashed(), чтобы записи сохраняли доступ к данным услуги даже после её удаления.
+     */
     public function service(): BelongsTo
     {
-        return $this->belongsTo(Service::class);
+        return $this->belongsTo(Service::class)->withTrashed();
     }
 
+    /**
+     * Связь с мастером (включая удалённых через soft delete).
+     * Используем withTrashed(), чтобы записи сохраняли доступ к данным мастера даже после его удаления.
+     */
     public function master(): BelongsTo
     {
-        return $this->belongsTo(Master::class);
+        return $this->belongsTo(Master::class)->withTrashed();
     }
 
+    /**
+     * Связь с локацией (включая удалённых через soft delete).
+     * Используем withTrashed(), чтобы записи сохраняли доступ к данным локации даже после её удаления.
+     */
     public function location(): BelongsTo
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsTo(Location::class)->withTrashed();
     }
 
     /**
@@ -146,7 +162,7 @@ class Appointment extends Model
      */
     public function getFinalPriceAttribute(): float
     {
-        return $this->price ?? $this->service->price;
+        return $this->price ?? $this->service?->price ?? 0.0;
     }
 
     /**
