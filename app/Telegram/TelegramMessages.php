@@ -34,13 +34,13 @@ class TelegramMessages
     public const MSG_USE_BUTTONS = 'Используйте кнопки для выбора.';
 
     // ==================== ВЫБОР ДАННЫХ (один эмодзи на шаг для навигации) ====================
-    public const MSG_SELECT_LOCATION = '📍 Выберите локацию:';
+    public const MSG_SELECT_LOCATION = '📍 Выберите салон:';
 
-    public const MSG_SELECT_SERVICE = '✂️ Выберите услугу:';
+    public const MSG_SELECT_SERVICE = 'Выберите услугу:';
 
     public const MSG_SELECT_MASTER = '👤 Выберите мастера:';
 
-    public const MSG_SELECT_DATE = '📅 Выберите дату для {master}:';
+    public const MSG_SELECT_DATE = '📅 Выберите дату';
 
     public const MSG_SELECT_DATE_ANY_MASTER = '📅 Выберите дату:';
 
@@ -50,7 +50,7 @@ class TelegramMessages
 
     public const MSG_SELECT_CONFIRM = 'Подтвердите запись:';
 
-    // ==================== ВАЛИДАЦИЯ (без эмодзи — подсказка, не критичная ошибка) ====================
+    // ==================== ВАЛИДАЦИЯ ====================
     public const MSG_PHONE_INVALID = "Неверный формат\n\nПравильно: +375291234567\nИли: 375291234567\n\nВведите номер:";
 
     public const MSG_NOTES_TOO_LONG = "Слишком длинно (макс. 200 символов)\n\nСократите:";
@@ -63,11 +63,11 @@ class TelegramMessages
     public const MSG_ENTER_NOTES = "Примечание (необязательно):\nАллергия, предпочтения и т.д.\n\nИли нажмите Пропустить";
 
     // ==================== ПОДТВЕРЖДЕНИЕ ====================
-    public const MSG_CONFIRMATION_HEADER = "📋 ПОДТВЕРЖДЕНИЕ\n\n";
+    public const MSG_CONFIRMATION_HEADER = "Подтверждение\n\n";
 
     public const MSG_CONFIRMATION_LINE = '{label}: {value}';
 
-    public const MSG_APPOINTMENT_CREATED = "✅ Запись создана!\n\nДата: {date}\nВремя: {time}\nУслуга: {service}\nМастер: {master}\nЛокация: {location}\n\nСвяжемся для подтверждения.";
+    public const MSG_APPOINTMENT_CREATED = "✅ Запись создана\n\nДата: {date}\nВремя: {time}\nУслуга: {service}\nМастер: {master}\nЛокация: {location}\n\nСвяжемся для подтверждения.";
 
     /** Вопрос после создания записи: подтвердить сразу или отменить */
     public const MSG_CONFIRM_APPOINTMENT_QUESTION = 'Подтверждаете запись?';
@@ -80,19 +80,20 @@ class TelegramMessages
      * Сообщение клиенту при завершении записи (благодарность).
      * Плейсхолдер: {business_name}. Варианты: «Спасибо, что выбрали {business_name}!» или «Благодарим за визит в {business_name}!»
      */
-    public const MSG_APPOINTMENT_COMPLETED_FOR_CLIENT = "✅ Запись завершена.\n\nСпасибо, что выбрали {business_name}! Будем рады видеть вас снова.";
+    public const MSG_APPOINTMENT_COMPLETED_FOR_CLIENT = "Запись завершена.\n\nСпасибо, что выбрали {business_name}! Будем рады видеть вас снова.";
 
     /** Напоминание о предстоящей записи (клиенту). Плейсхолдеры: business_name, date, time, service, master */
-    public const MSG_APPOINTMENT_REMINDER = "⏰ Напоминание от {business_name}\n\nВаша запись:\n📅 {date}\n🕐 {time}\n✂️ {service}\n👤 {master}\n\nЖдём вас!";
+    public const MSG_APPOINTMENT_REMINDER = "Напоминание от {business_name}\n\n{date}, {time}, {service}, Мастер: {master}\n\nЖдём вас!
+";
 
     /** Приглашение записаться снова. Плейсхолдеры: business_name, booking_url */
-    public const MSG_REENGAGEMENT = "👋 {business_name}\n\nСкучаем! Давно не виделись — будем рады снова вас видеть.\n\nЗаписаться: {booking_url}";
+    public const MSG_REENGAGEMENT = "{business_name}\n\nСкучаем! Давно не виделись — будем рады снова вас видеть.\n\nЗаписаться: {booking_url}";
 
-    /** Новый клиент (сотрудникам). Краткое сообщение. */
-    public const MSG_CLIENT_NEW = "👤 Новый клиент записался\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
+    /** Новый клиент (сотрудникам) */
+    public const MSG_CLIENT_NEW = "Новый клиент записался\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
 
     /** Приближающаяся запись (сотрудникам). */
-    public const MSG_APPOINTMENT_UPCOMING = "⏰ Приближается запись\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
+    public const MSG_APPOINTMENT_UPCOMING = "Приближается запись\n\n{client_name}\nУслуга: {service}\nДата: {date}, время: {time}";
 
     // ==================== СТАТУСЫ ВВОДА (краткий итог перед следующим полем) ====================
     public const MSG_STATUS_NAME = '👤 Имя: {name}';
