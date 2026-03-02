@@ -162,7 +162,7 @@ class RolePermissionSeeder extends Seeder
             'panel.subscriptions.manage' => 'Управление подписками: смена статуса, продление, выдача на любой срок',
 
             // Платежи (админ-панель)
-            'panel.payments.settings' => 'Настройки bePaid (только админ)',
+            'panel.payments.settings' => 'Настройки платёжных шлюзов (только админ)',
             'panel.payments.view' => 'Просмотр платежей/инвойсов в админ-панели',
             'panel.payments.manage' => 'Управление платежами в админ-панели (возвраты и т.д.)',
 

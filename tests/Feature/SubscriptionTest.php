@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
+use App\Models\PaymentGatewaySetting;
+use App\Models\PaymentTypeSetting;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\SubscriptionMetric;
@@ -462,9 +464,20 @@ class SubscriptionTest extends TestCase
             'ends_at' => now()->addMonth(),
         ]);
 
-        \Illuminate\Support\Facades\Config::set('bepaid.enabled', true);
-        \Illuminate\Support\Facades\Config::set('bepaid.shop_id', 'test');
-        \Illuminate\Support\Facades\Config::set('bepaid.secret_key', 'test');
+        \Illuminate\Support\Facades\Config::set('payments.gateways.bepaid.available', true);
+        \Illuminate\Support\Facades\Config::set('payments.gateways.bepaid.shop_id', 'test');
+        \Illuminate\Support\Facades\Config::set('payments.gateways.bepaid.secret_key', 'test');
+
+        // Шлюз считается включённым, если есть запись в БД с enabled=true
+        PaymentGatewaySetting::updateOrCreate(
+            ['gateway' => 'bepaid'],
+            ['enabled' => true]
+        );
+        // Тип "subscription" должен иметь bepaid в разрешённых шлюзах
+        PaymentTypeSetting::updateOrCreate(
+            ['type' => 'subscription'],
+            ['enabled' => true, 'allowed_gateways' => ['bepaid'], 'default_gateway' => 'bepaid']
+        );
 
         $this->withBusinessSession($data)
             ->actingAs($user)

@@ -19,14 +19,14 @@ class SubscriptionWebhookTest extends TestCase
     {
         parent::setUp();
 
-        Config::set('bepaid.enabled', true);
-        Config::set('bepaid.shop_id', 'test_shop');
-        Config::set('bepaid.secret_key', 'test_secret');
+        Config::set('payments.gateways.bepaid.available', true);
+        Config::set('payments.gateways.bepaid.shop_id', 'test_shop');
+        Config::set('payments.gateways.bepaid.secret_key', 'test_secret');
     }
 
     protected function getBasicAuthHeader(): string
     {
-        return 'Basic '.base64_encode(config('bepaid.shop_id').':'.config('bepaid.secret_key'));
+        return 'Basic '.base64_encode(config('payments.gateways.bepaid.shop_id').':'.config('payments.gateways.bepaid.secret_key'));
     }
 
     public function test_webhook_activates_subscription_after_payment()
@@ -36,14 +36,16 @@ class SubscriptionWebhookTest extends TestCase
         $user = User::factory()->create();
         $plan = Plan::factory()->create();
 
-        $invoice = Invoice::factory()->paid()->create([
+        // Инвойс в pending, чтобы webhook обработался и вызвал handler (создание подписки)
+        $invoice = Invoice::factory()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
+            'payment_type' => 'subscription',
         ]);
 
         $payload = [
             'transaction' => [
-                'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
+                'uid' => 'test_transaction_123',
                 'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
@@ -83,15 +85,17 @@ class SubscriptionWebhookTest extends TestCase
             'ends_at' => $futureEndsAt,
         ]);
 
-        $invoice = Invoice::factory()->paid()->renewal()->create([
+        // Инвойс в pending (продление), чтобы webhook вызвал handler и продлил подписку
+        $invoice = Invoice::factory()->renewal()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
             'subscription_id' => $subscription->id,
+            'payment_type' => 'subscription',
         ]);
 
         $payload = [
             'transaction' => [
-                'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
+                'uid' => 'test_transaction_renewal',
                 'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),
@@ -131,15 +135,17 @@ class SubscriptionWebhookTest extends TestCase
             'ends_at' => $futureEndsAt,
         ]);
 
-        $invoice = Invoice::factory()->paid()->planChange($oldPlan->id, $oldPlan->name)->create([
+        // Инвойс в pending (смена плана), чтобы webhook вызвал handler и обновил план с сохранением ends_at
+        $invoice = Invoice::factory()->planChange($oldPlan->id, $oldPlan->name)->create([
             'user_id' => $user->id,
             'plan_id' => $newPlan->id,
             'subscription_id' => $subscription->id,
+            'payment_type' => 'subscription',
         ]);
 
         $payload = [
             'transaction' => [
-                'uid' => $invoice->bepaid_transaction_id ?? 'test_transaction_123',
+                'uid' => 'test_transaction_plan_change',
                 'tracking_id' => 'invoice_'.$invoice->id,
                 'status' => 'successful',
                 'amount' => (int) round($invoice->amount * 100),

@@ -17,12 +17,19 @@ class Invoice extends Model
         'amount',
         'currency',
         'status',
+        'payment_type',
+        'gateway',
         'bepaid_transaction_id',
         'bepaid_payment_token',
+        'gateway_transaction_id',
+        'gateway_payment_url',
+        'gateway_response',
         'payment_method',
         'paid_at',
         'expires_at',
         'metadata',
+        'payable_type',
+        'payable_id',
     ];
 
     protected $casts = [
@@ -30,6 +37,7 @@ class Invoice extends Model
         'paid_at' => 'datetime',
         'expires_at' => 'datetime',
         'metadata' => 'array',
+        'gateway_response' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -45,6 +53,30 @@ class Invoice extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * Полиморфная связь с оплачиваемой сущностью
+     */
+    public function payable()
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Получить эффективный ID транзакции (универсальный или bepaid)
+     */
+    public function getTransactionId(): ?string
+    {
+        return $this->gateway_transaction_id ?? $this->bepaid_transaction_id;
+    }
+
+    /**
+     * Получить название шлюза для отображения
+     */
+    public function getGatewayDisplayName(): string
+    {
+        return config("payments.gateways.{$this->gateway}.display_name", $this->gateway ?? 'bePaid');
     }
 
     /**

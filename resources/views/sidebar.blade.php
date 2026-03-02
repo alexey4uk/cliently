@@ -40,7 +40,8 @@
     }},
     subscriptionOpen: {{ 
         (!Str::startsWith(Request::path(), 'panel') && (
-            Request::routeIs('subscription.*')
+            Request::routeIs('subscription.*') ||
+            Request::routeIs('invoices.*')
         )) 
         ? 'true' : 'false' 
     }},
@@ -58,70 +59,36 @@
         ? 'true' : 'false' 
     }},
     analyticsOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/analytics')
-        )) || 
-        (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'analytics')
-        )) 
+        (Request::routeIs('panel.analytics*') || Request::routeIs('analytics*')) 
         ? 'true' : 'false' 
     }},
     supportOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/support') ||
-            Str::startsWith(Request::path(), 'panel/tickets') ||
-            Str::startsWith(Request::path(), 'panel/ticket-categories')
-        )) || 
-        (!Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'tickets')
-        )) 
+        (Request::routeIs('panel.tickets*') || Request::routeIs('panel.ticket-categories*') || Request::routeIs('panel.support*') || Request::routeIs('tickets*')) 
         ? 'true' : 'false' 
     }},
     // Переменные для админ-панели
     panelOperationsOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/appointments') ||
-            Str::startsWith(Request::path(), 'panel/clients') ||
-            Str::startsWith(Request::path(), 'panel/businesses')
-        )) 
+        (Request::routeIs('panel.appointments*') || Request::routeIs('panel.clients*') || Request::routeIs('panel.businesses*')) 
         ? 'true' : 'false' 
     }},
     adminAccessOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/users') ||
-            Str::startsWith(Request::path(), 'panel/roles') ||
-            Str::startsWith(Request::path(), 'panel/permissions') ||
-            Str::startsWith(Request::path(), 'panel/business-roles')
-        )) 
+        (Request::routeIs('panel.users*') || Request::routeIs('panel.roles*') || Request::routeIs('panel.permissions*') || Request::routeIs('panel.business-roles*')) 
         ? 'true' : 'false' 
     }},
     commsOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/broadcasts') ||
-            Str::startsWith(Request::path(), 'panel/notifications') ||
-            Str::startsWith(Request::path(), 'panel/settings/notifications')
-        )) 
+        (Request::routeIs('panel.broadcasts*') || Request::routeIs('panel.notifications*') || Request::routeIs('panel.settings.notifications*')) 
         ? 'true' : 'false' 
     }},
     platformOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/plans') ||
-            Str::startsWith(Request::path(), 'panel/invoices')
-        )) 
+        (Request::routeIs('panel.plans*') || Request::routeIs('panel.subscriptions*') || Request::routeIs('panel.invoices*') || Request::routeIs('panel.settings.payments*') || Request::routeIs('panel.countries*')) 
         ? 'true' : 'false' 
     }},
     panelIntegrationsOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/telegram-management')
-        )) 
+        Request::routeIs('panel.telegram.management*') 
         ? 'true' : 'false' 
     }},
     contentOpen: {{ 
-        (Str::startsWith(Request::path(), 'panel') && (
-            Str::startsWith(Request::path(), 'panel/services') ||
-            Str::startsWith(Request::path(), 'panel/locations') ||
-            Str::startsWith(Request::path(), 'panel/masters')
-        )) 
+        (Request::routeIs('panel.services*') || Request::routeIs('panel.locations*') || Request::routeIs('panel.masters*')) 
         ? 'true' : 'false' 
     }},
     collapsed: false

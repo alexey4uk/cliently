@@ -1304,7 +1304,7 @@ class Handler extends WebhookHandler
 
         $formattedDate = Carbon::parse($date)
             ->locale('ru')
-            ->format('d.m.Y (l)');
+            ->format('d.m.Y');
         $message = TelegramMessages::format(TelegramMessages::MSG_SELECT_TIME, [
             'date' => $formattedDate,
         ]);

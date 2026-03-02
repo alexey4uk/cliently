@@ -8,16 +8,16 @@
     clientOnlineOpen: {{ (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('settings.online-booking*')) ? 'true' : 'false' }},
     clientTeamOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('settings.users*') || Request::routeIs('settings.roles*'))) ? 'true' : 'false' }},
     clientIntegrationsOpen: {{ (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('settings.telegram*')) ? 'true' : 'false' }},
-    subscriptionOpen: {{ (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('subscription.*')) ? 'true' : 'false' }},
+    subscriptionOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('subscription.*') || Request::routeIs('invoices.*'))) ? 'true' : 'false' }},
     businessSettingsOpen: {{ (!Str::startsWith(Request::path(), 'panel') && (Request::routeIs('settings.index') || Request::routeIs('settings.online-booking*') || Request::routeIs('services.*') || Request::routeIs('settings.masters*') || Request::routeIs('settings.locations*') || Request::routeIs('settings.users*') || Request::routeIs('settings.roles*') || Request::routeIs('settings.telegram*'))) ? 'true' : 'false' }},
-    analyticsOpen: {{ (Str::startsWith(Request::path(), 'panel') && Str::startsWith(Request::path(), 'panel/analytics')) || (!Str::startsWith(Request::path(), 'panel') && Str::startsWith(Request::path(), 'analytics')) ? 'true' : 'false' }},
-    supportOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/support') || Str::startsWith(Request::path(), 'panel/tickets') || Str::startsWith(Request::path(), 'panel/ticket-categories'))) || (!Str::startsWith(Request::path(), 'panel') && Request::routeIs('tickets')) ? 'true' : 'false' }},
-    panelOperationsOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/appointments') || Str::startsWith(Request::path(), 'panel/clients') || Str::startsWith(Request::path(), 'panel/businesses'))) ? 'true' : 'false' }},
-    adminAccessOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/users') || Str::startsWith(Request::path(), 'panel/roles') || Str::startsWith(Request::path(), 'panel/permissions') || Str::startsWith(Request::path(), 'panel/business-roles'))) ? 'true' : 'false' }},
-    commsOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/broadcasts') || Str::startsWith(Request::path(), 'panel/notifications') || Str::startsWith(Request::path(), 'panel/settings/notifications'))) ? 'true' : 'false' }},
-    platformOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/plans') || Str::startsWith(Request::path(), 'panel/invoices'))) ? 'true' : 'false' }},
-    panelIntegrationsOpen: {{ (Str::startsWith(Request::path(), 'panel') && Str::startsWith(Request::path(), 'panel/telegram-management')) ? 'true' : 'false' }},
-    contentOpen: {{ (Str::startsWith(Request::path(), 'panel') && (Str::startsWith(Request::path(), 'panel/services') || Str::startsWith(Request::path(), 'panel/locations') || Str::startsWith(Request::path(), 'panel/masters'))) ? 'true' : 'false' }},
+    analyticsOpen: {{ (Request::routeIs('panel.analytics*') || Request::routeIs('analytics*')) ? 'true' : 'false' }},
+    supportOpen: {{ (Request::routeIs('panel.tickets*') || Request::routeIs('panel.ticket-categories*') || Request::routeIs('panel.support*') || Request::routeIs('tickets*')) ? 'true' : 'false' }},
+    panelOperationsOpen: {{ (Request::routeIs('panel.appointments*') || Request::routeIs('panel.clients*') || Request::routeIs('panel.businesses*')) ? 'true' : 'false' }},
+    adminAccessOpen: {{ (Request::routeIs('panel.users*') || Request::routeIs('panel.roles*') || Request::routeIs('panel.permissions*') || Request::routeIs('panel.business-roles*')) ? 'true' : 'false' }},
+    commsOpen: {{ (Request::routeIs('panel.broadcasts*') || Request::routeIs('panel.notifications*') || Request::routeIs('panel.settings.notifications*')) ? 'true' : 'false' }},
+    platformOpen: {{ (Request::routeIs('panel.plans*') || Request::routeIs('panel.subscriptions*') || Request::routeIs('panel.invoices*') || Request::routeIs('panel.settings.payments*') || Request::routeIs('panel.countries*')) ? 'true' : 'false' }},
+    panelIntegrationsOpen: {{ Request::routeIs('panel.telegram.management*') ? 'true' : 'false' }},
+    contentOpen: {{ (Request::routeIs('panel.services*') || Request::routeIs('panel.locations*') || Request::routeIs('panel.masters*')) ? 'true' : 'false' }},
     closeMenu() {
         this.open = false;
         document.body.style.overflow = '';
@@ -168,6 +168,13 @@ style="width: 0; height: 0;">
                             </div>
                         </a>
                     @endif
+                    <a href="{{ route('invoices.index') }}" @click="closeMenu()"
+                       class="block mb-3 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-slate-600 dark:text-slate-400 text-sm"></i>
+                            <span class="text-xs font-semibold text-slate-900 dark:text-white truncate">Мои счета</span>
+                        </div>
+                    </a>
                 @endif
             @endauth
 
