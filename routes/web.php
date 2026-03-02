@@ -27,12 +27,30 @@ Route::get('/setup', [
 ])->name('setup');
 Route::post('/setup', [\App\Http\Controllers\SetupController::class, 'store']);
 
-// Webhook для bePaid (без CSRF и авторизации)
+// Webhook для платёжных шлюзов (без CSRF и авторизации)
 Route::post('/webhooks/bepaid', [
     \App\Http\Controllers\Webhook\BepaidWebhookController::class,
     'handle',
 ])
     ->name('webhooks.bepaid')
+    ->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
+
+Route::post('/webhooks/freekassa', [
+    \App\Http\Controllers\Webhook\FreekassaWebhookController::class,
+    'handle',
+])
+    ->name('webhooks.freekassa')
+    ->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    ]);
+
+Route::post('/webhooks/expresspay', [
+    \App\Http\Controllers\Webhook\ExpressPayWebhookController::class,
+    'handle',
+])
+    ->name('webhooks.expresspay')
     ->withoutMiddleware([
         \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
     ]);
@@ -486,6 +504,20 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
             ])->name('subscription.show');
         });
 
+        // Мои счета (все типы: подписка, пополнение баланса и т.д.)
+        Route::middleware([
+            'check.business.permission:client.subscription.view',
+        ])->group(function () {
+            Route::get('/invoices', [
+                \App\Http\Controllers\ClientInvoiceController::class,
+                'index',
+            ])->name('invoices.index');
+            Route::get('/invoices/{invoice}', [
+                \App\Http\Controllers\ClientInvoiceController::class,
+                'show',
+            ])->name('invoices.show');
+        });
+
         Route::middleware([
             'check.business.permission:client.subscription.manage',
         ])->group(function () {
@@ -507,10 +539,29 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
         Route::middleware([
             'check.business.permission:client.subscription.pay',
         ])->group(function () {
-            Route::get('/subscription/payment/{invoice}', [
-                \App\Http\Controllers\SubscriptionController::class,
-                'payment',
-            ])->name('subscription.payment');
+            // Выбор способа оплаты
+            Route::get('/payment/{invoice}/select', [
+                \App\Http\Controllers\PaymentMethodController::class,
+                'show',
+            ])->name('payment.select');
+            Route::post('/payment/{invoice}/process', [
+                \App\Http\Controllers\PaymentMethodController::class,
+                'process',
+            ])->name('payment.process');
+
+            // Инструкции для оплаты через ЕРИП
+            Route::get('/payment/{invoice}/erip', [
+                \App\Http\Controllers\PaymentMethodController::class,
+                'eripInstructions',
+            ])->name('payment.erip.instructions');
+
+            // QR-код для оплаты
+            Route::get('/payment/{invoice}/qr', [
+                \App\Http\Controllers\PaymentMethodController::class,
+                'paymentQr',
+            ])->name('payment.qr');
+
+            // Callback URL после оплаты (должны быть ДО динамического {invoice})
             Route::get('/subscription/payment/success', [
                 \App\Http\Controllers\SubscriptionController::class,
                 'paymentSuccess',
@@ -527,6 +578,12 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                 \App\Http\Controllers\SubscriptionController::class,
                 'paymentCancel',
             ])->name('subscription.payment.cancel');
+
+            // Страница оплаты по инвойсу (старый виджет bePaid)
+            Route::get('/subscription/payment/{invoice}', [
+                \App\Http\Controllers\SubscriptionController::class,
+                'payment',
+            ])->name('subscription.payment');
         });
 
         // Настройки бизнеса
@@ -1608,7 +1665,7 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                     ])->name('telegram.disconnect');
                 });
 
-            // Настройки bePaid перенесены в .env (config/bepaid.php). Маршруты админки удалены.
+            // Настройки bePaid в config/payments.php (gateways.bepaid). Маршруты админки удалены.
 
             // Управление платежами (инвойсы)
             Route::middleware(['check.permission:panel.payments.view'])->group(
@@ -1631,6 +1688,28 @@ Route::middleware(['auth', 'verified.or.oauth'])->group(function () {
                     \App\Http\Controllers\Panel\InvoiceController::class,
                     'refund',
                 ])->name('invoices.refund');
+            });
+
+            // Настройки платежей
+            Route::middleware([
+                'check.permission:panel.payments.settings',
+            ])->group(function () {
+                Route::get('/settings/payments', [
+                    \App\Http\Controllers\Panel\PaymentSettingsController::class,
+                    'index',
+                ])->name('settings.payments');
+                Route::post('/settings/payments', [
+                    \App\Http\Controllers\Panel\PaymentSettingsController::class,
+                    'update',
+                ])->name('settings.payments.update');
+                Route::post('/settings/payments/gateway/{gateway}', [
+                    \App\Http\Controllers\Panel\PaymentSettingsController::class,
+                    'updateGateway',
+                ])->name('settings.payments.gateway');
+                Route::post('/settings/payments/type/{type}', [
+                    \App\Http\Controllers\Panel\PaymentSettingsController::class,
+                    'updateType',
+                ])->name('settings.payments.type');
             });
         });
 });

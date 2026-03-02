@@ -26,12 +26,12 @@ class BepaidService implements PaymentGatewayInterface
      */
     public function initializeSettings(): void
     {
-        if (! config('bepaid.enabled')) {
-            throw new \RuntimeException('bePaid отключен. Установите BEPAID_ENABLED=true в .env.');
+        if (! config('payments.gateways.bepaid.available', true)) {
+            throw new \RuntimeException('bePaid отключен. Установите BEPAID_AVAILABLE=true в .env.');
         }
 
-        $shopId = config('bepaid.shop_id');
-        $secretKey = config('bepaid.secret_key');
+        $shopId = config('payments.gateways.bepaid.shop_id');
+        $secretKey = config('payments.gateways.bepaid.secret_key');
 
         if (empty($shopId) || empty($secretKey)) {
             throw new \RuntimeException('bePaid настройки не заполнены. Укажите BEPAID_SHOP_ID и BEPAID_SECRET_KEY в .env.');
@@ -44,12 +44,16 @@ class BepaidService implements PaymentGatewayInterface
 
         BeGatewaySettings::$shopId = $shopId;
         BeGatewaySettings::$shopKey = (string) trim($secretKey);
-        BeGatewaySettings::$gatewayBase = config('bepaid.gateway_base');
-        BeGatewaySettings::$checkoutBase = config('bepaid.checkout_base');
 
-        if (config('bepaid.logging.enabled')) {
+        $testMode = (bool) config('payments.gateways.bepaid.test_mode', true);
+        BeGatewaySettings::$gatewayBase = config('payments.gateways.bepaid.gateway_base')
+            ?: ($testMode ? 'https://gateway.sandbox.bepaid.by' : 'https://gateway.bepaid.by');
+        BeGatewaySettings::$checkoutBase = config('payments.gateways.bepaid.checkout_base')
+            ?: ($testMode ? 'https://checkout.sandbox.bepaid.by' : 'https://checkout.bepaid.by');
+
+        if (config('payments.gateways.bepaid.logging')) {
             Log::info('bePaid settings initialized', [
-                'test_mode' => config('bepaid.test_mode'),
+                'test_mode' => $testMode,
                 'shop_id' => $shopId,
                 'has_secret_key' => ! empty($secretKey),
                 'gateway_base' => BeGatewaySettings::$gatewayBase,
@@ -90,7 +94,7 @@ class BepaidService implements PaymentGatewayInterface
         $transaction->setTrackingId("invoice_{$invoice->id}");
 
         // Язык интерфейса чекаута
-        $transaction->setLanguage(config('bepaid.checkout_language', 'ru'));
+        $transaction->setLanguage(config('payments.gateways.bepaid.checkout_language', 'ru'));
 
         // URL для уведомлений (webhook)
         //
@@ -114,18 +118,19 @@ class BepaidService implements PaymentGatewayInterface
         // ВАЖНО: Мы НЕ задаем Basic Auth здесь!
         // bePaid сам использует shop_id и secret_key из настроек магазина.
         // Мы только указываем URL, куда отправлять webhook.
-        $webhookUrl = config('bepaid.webhook.url');
+        $webhookUrl = config('payments.gateways.bepaid.webhook_url');
         if ($webhookUrl) {
             // url() - формирует полный URL (например: https://example.com/webhooks/bepaid)
             $transaction->setNotificationUrl(url($webhookUrl));
         }
 
-        // URL для возврата после оплаты
-        $callbackUrls = config('bepaid.callback_urls');
-        $transaction->setSuccessUrl(url($callbackUrls['success'])."?invoice={$invoice->id}");
-        $transaction->setDeclineUrl(url($callbackUrls['decline'])."?invoice={$invoice->id}");
-        $transaction->setFailUrl(url($callbackUrls['fail'])."?invoice={$invoice->id}");
-        $transaction->setCancelUrl(url($callbackUrls['cancel'])."?invoice={$invoice->id}");
+        // URL для возврата после оплаты (в конфиге полный URL или путь)
+        $callbackUrls = config('payments.gateways.bepaid.callback_urls', []);
+        $invoiceParam = '?invoice='.$invoice->id;
+        $transaction->setSuccessUrl(url($callbackUrls['success'] ?? '').$invoiceParam);
+        $transaction->setDeclineUrl(url($callbackUrls['decline'] ?? '').$invoiceParam);
+        $transaction->setFailUrl(url($callbackUrls['fail'] ?? '').$invoiceParam);
+        $transaction->setCancelUrl(url($callbackUrls['cancel'] ?? '').$invoiceParam);
 
         // Информация о клиенте
         $user = $invoice->user;
@@ -148,7 +153,7 @@ class BepaidService implements PaymentGatewayInterface
                 ]),
             ]);
 
-            if (config('bepaid.logging.enabled')) {
+            if (config('payments.gateways.bepaid.logging')) {
                 Log::info('bePaid payment token created', [
                     'invoice_id' => $invoice->id,
                     'token' => $response->getToken(),
@@ -175,7 +180,7 @@ class BepaidService implements PaymentGatewayInterface
             'error_code' => $errorCode,
             'response' => method_exists($response, 'getResponse') ? $response->getResponse() : null,
             'shop_id' => BeGatewaySettings::$shopId ?? null,
-            'test_mode' => config('bepaid.test_mode'),
+            'test_mode' => config('payments.gateways.bepaid.test_mode'),
         ]);
 
         throw new \RuntimeException("Ошибка создания платежа: {$errorMessage}");
@@ -249,7 +254,7 @@ class BepaidService implements PaymentGatewayInterface
                 ]),
             ]);
 
-            if (config('bepaid.logging.enabled')) {
+            if (config('payments.gateways.bepaid.logging')) {
                 Log::info('bePaid refund successful', [
                     'invoice_id' => $invoice->id,
                     'refund_uid' => $response->getUid(),
@@ -267,7 +272,7 @@ class BepaidService implements PaymentGatewayInterface
 
         $errorMessage = $response->getMessage() ?? 'Неизвестная ошибка при возврате';
 
-        if (config('bepaid.logging.enabled')) {
+        if (config('payments.gateways.bepaid.logging')) {
             Log::error('bePaid refund failed', [
                 'invoice_id' => $invoice->id,
                 'error' => $errorMessage,
@@ -354,7 +359,7 @@ class BepaidService implements PaymentGatewayInterface
 
             // Идемпотентность: если инвойс уже обработан с тем же transaction_id
             if ($invoice->bepaid_transaction_id === $transactionUid) {
-                if (config('bepaid.logging.enabled')) {
+                if (config('payments.gateways.bepaid.logging')) {
                     Log::info('bePaid webhook: duplicate transaction, already processed', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'current_status' => $invoice->status,
                     ]));
@@ -365,7 +370,7 @@ class BepaidService implements PaymentGatewayInterface
 
             // Если инвойс уже оплачен, но приходит другой transaction_id - логируем
             if ($invoice->isPaid() && $invoice->bepaid_transaction_id !== $transactionUid) {
-                if (config('bepaid.logging.enabled')) {
+                if (config('payments.gateways.bepaid.logging')) {
                     Log::warning('bePaid webhook: invoice already paid with different transaction', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'existing_transaction_id' => $invoice->bepaid_transaction_id,
                     ]));
@@ -413,7 +418,7 @@ class BepaidService implements PaymentGatewayInterface
 
             // Логируем неизвестные статусы
             if (! in_array($status, ['successful', 'failed', 'canceled', 'cancelled', 'expired', 'pending', 'processing'])) {
-                if (config('bepaid.logging.enabled')) {
+                if (config('payments.gateways.bepaid.logging')) {
                     Log::warning('bePaid webhook: unknown transaction status', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                         'status' => $status,
                     ]));
@@ -435,7 +440,7 @@ class BepaidService implements PaymentGatewayInterface
 
             $invoice->update($updateData);
 
-            if (config('bepaid.logging.enabled')) {
+            if (config('payments.gateways.bepaid.logging')) {
                 Log::info('bePaid webhook processed', array_merge($this->webhookLogContext($invoice->id, $transactionUid), [
                     'status' => $newStatus,
                     'original_status' => $status,

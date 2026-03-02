@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'check.permission' => \App\Http\Middleware\CheckPermission::class,
             'check.plan.limit' => \App\Http\Middleware\CheckPlanLimit::class,
             'check.business.permission' => \App\Http\Middleware\CheckBusinessRolePermission::class,
             'verified.or.oauth' => \App\Http\Middleware\EnsureEmailIsVerifiedOrOAuth::class,

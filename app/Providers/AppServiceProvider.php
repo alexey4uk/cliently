@@ -45,10 +45,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Repositories\TelegramUserStateRepository::class,
         );
 
-        $this->app->bind(
-            \App\Contracts\PaymentGatewayInterface::class,
-            \App\Services\BepaidService::class,
-        );
+        // PaymentGatewayInterface теперь регистрируется в PaymentServiceProvider
     }
 
     /**

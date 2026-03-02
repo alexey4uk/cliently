@@ -47,9 +47,21 @@
             </div>
         </div>
 
+        <div class="border-t border-gray-800 py-6 flex flex-wrap justify-center items-center gap-8">
+            <a href="https://express-pay.by" target="_blank" rel="noopener noreferrer" class="opacity-70 hover:opacity-100 transition-opacity" title="Express Pay — оплата картой и ЕРИП">
+                <img src="https://express-pay.by/brandbook/logo_w.png" alt="Express Pay" class="h-8 w-auto" loading="lazy">
+            </a>
+            <a href="https://raschet.by" target="_blank" rel="noopener noreferrer" class="opacity-70 hover:opacity-100 transition-opacity" title="ЕРИП — Единое расчётное информационное пространство">
+                <img src="https://raschet.by/assets/img/logo.svg" alt="ЕРИП" class="h-8 w-auto" loading="lazy">
+            </a>
+            <a href="https://e-pos.by" target="_blank" rel="noopener noreferrer" class="opacity-70 hover:opacity-100 transition-opacity" title="E-POS — оплата счетов в ЕРИП через QR-коды">
+                <img src="https://e-pos.by/img/8.png" alt="E-POS" class="h-8 w-auto" loading="lazy">
+            </a>
+        </div>
+
         <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-sm text-gray-400 text-center md:text-left">© {{ date('Y') }} CLIENTLY.BY</p>
-            <div class="flex gap-6 text-sm">
+            <p class="text-sm text-gray-400 text-center md:text-left">CLIENTLY.BY © {{ date('Y') }}</p>
+            <div class="flex flex-wrap items-center justify-center md:justify-end gap-6 text-sm">
                 <a href="{{ route('public.offer') }}" class="text-gray-400 hover:text-white transition-colors">Оферта</a>
                 <a href="{{ route('privacy.policy') }}" class="text-gray-400 hover:text-white transition-colors">Конфиденциальность</a>
             </div>

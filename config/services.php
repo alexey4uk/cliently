@@ -92,7 +92,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Configuration for bePaid payment gateway.
-    | Main configuration is in config/bepaid.php
+    | Main configuration is in config/payments.php (gateways.bepaid)
     |
     */
 

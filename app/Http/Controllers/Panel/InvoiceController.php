@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
@@ -98,13 +99,16 @@ class InvoiceController extends Controller
         ]);
 
         try {
-            $bepaidService = app(BepaidService::class);
             $refundAmount = $request->input('amount');
+            $result = app(PaymentService::class)->refund($invoice, $refundAmount);
 
-            $result = $paymentGateway->refund($invoice, $refundAmount);
+            if ($result->success) {
+                return redirect()->route('panel.invoices.show', $invoice)
+                    ->with('success', 'Возврат средств успешно выполнен.');
+            }
 
-            return redirect()->route('panel.invoices.show', $invoice)
-                ->with('success', 'Возврат средств успешно выполнен.');
+            return redirect()->back()
+                ->with('error', 'Ошибка при возврате средств: '.($result->errorMessage ?? 'Неизвестная ошибка'));
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Ошибка при возврате средств: '.$e->getMessage());

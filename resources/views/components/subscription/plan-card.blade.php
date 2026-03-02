@@ -92,11 +92,11 @@
             @if($blockFreeBecausePaid)
                 <div class="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                     <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">
-                        Чтобы перейти на бесплатный тариф, сначала отмените платную подписку. Она останется активной до конца оплаченного периода.
+                        Сначала отмените платную подписку. Она останется активной до конца оплаченного периода.
                     </p>
                     <a href="{{ route('subscription.current') }}" class="w-full min-h-[44px] py-2.5 sm:py-3 px-4 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors">
                         <i class="fa-solid fa-external-link-alt"></i>
-                        Перейти к подписке и отмене
+                        Подписка
                     </a>
                 </div>
             @else

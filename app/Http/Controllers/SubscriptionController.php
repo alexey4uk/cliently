@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\PaymentGatewayInterface;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\SubscriptionMetric;
 use App\Services\BusinessRolePermissionService;
+use App\Services\GatewayManager;
+use App\Services\PaymentSettingsService;
 use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
+// Импорты для обратной совместимости удалены - используем новую платёжную систему
 
 class SubscriptionController extends Controller
 {
@@ -111,7 +114,6 @@ class SubscriptionController extends Controller
         }
 
         $subscriptionService = app(SubscriptionService::class);
-        $paymentGateway = app(PaymentGatewayInterface::class);
 
         // Проверяем, может ли пользователь использовать пробный период
         $canUseTrial = $plan->trial_days > 0 && $plan->price !== null;
@@ -178,11 +180,37 @@ class SubscriptionController extends Controller
                 ->with('success', $message);
         }
 
-        // Для платных тарифов создаем Invoice и перенаправляем на оплату
+        // Для платных тарифов создаем Invoice и перенаправляем на выбор способа оплаты
         try {
-            if (! config('bepaid.enabled')) {
+            $paymentSettings = app(PaymentSettingsService::class);
+
+            // Проверяем, включён ли тип оплаты "subscription"
+            if (! $paymentSettings->isTypeEnabled('subscription')) {
                 return redirect()->back()
                     ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
+            }
+
+            // Есть ли уже неоплаченный инвойс по этому тарифу — используем его, не плодим новые
+            $existingInvoice = Invoice::where('user_id', $user->id)
+                ->where('plan_id', $plan->id)
+                ->where('status', 'pending')
+                ->where('payment_type', 'subscription')
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                })
+                ->whereNull('subscription_id') // подписка ещё не создана по этому инвойсу
+                ->orderByDesc('created_at')
+                ->first();
+            if ($existingInvoice) {
+                return redirect()->route('payment.select', $existingInvoice)
+                    ->with('info', 'У вас уже есть счёт к оплате по этому тарифу. Оплатите его или дождитесь истечения срока.');
+            }
+
+            // Получаем доступный шлюз для подписок
+            $gateway = $paymentSettings->getDefaultGatewayForType('subscription');
+            if (! $gateway) {
+                return redirect()->back()
+                    ->with('error', 'Нет доступных способов оплаты. Обратитесь в поддержку.');
             }
 
             // Создаем Invoice
@@ -203,31 +231,31 @@ class SubscriptionController extends Controller
                 }
             }
 
+            // Валюта берётся из тарифа
+            $currency = $plan->currency ?? config('payments.default_currency', 'BYN');
+
             $invoice = Invoice::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'amount' => $plan->price,
-                'currency' => config('bepaid.currency', 'BYN'),
+                'currency' => $currency,
                 'status' => 'pending',
-                'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
-                'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
+                'payment_type' => 'subscription',
+                'gateway' => $gateway,
+                'payment_method' => 'redirect',
+                'expires_at' => now()->addDays(config('payments.default_invoice_expiration_days', 7)),
                 'metadata' => $invoiceMetadata,
             ]);
 
-            // Создаем платежный токен
-            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
-
-            // Перенаправляем на страницу оплаты или сразу на bePaid
-            if ($invoice->payment_method === 'redirect') {
-                // Редирект на страницу bePaid
-                return redirect($paymentData['redirect_url']);
-            } else {
-                // Виджет - перенаправляем на страницу с виджетом
-                return redirect()->route('subscription.payment', $invoice)
-                    ->with('payment_token', $paymentData['token']);
-            }
+            // Перенаправляем на страницу выбора способа оплаты
+            return redirect()->route('payment.select', $invoice);
 
         } catch (\Exception $e) {
+            Log::error('Invoice creation exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()->back()
                 ->with('error', 'Ошибка при создании платежа: '.$e->getMessage());
         }
@@ -317,45 +345,70 @@ class SubscriptionController extends Controller
                 ->with('error', 'Бесплатный тариф нельзя продлить.');
         }
 
-        $paymentGateway = app(PaymentGatewayInterface::class);
+        $paymentSettings = app(PaymentSettingsService::class);
 
-        if (! config('bepaid.enabled')) {
+        // Проверяем, включён ли тип оплаты "subscription"
+        if (! $paymentSettings->isTypeEnabled('subscription')) {
             return redirect()->back()
                 ->with('error', 'Платежная система временно недоступна. Обратитесь в поддержку.');
         }
 
+        // Получаем доступный шлюз для подписок
+        $gateway = $paymentSettings->getDefaultGatewayForType('subscription');
+        if (! $gateway) {
+            return redirect()->back()
+                ->with('error', 'Нет доступных способов оплаты. Обратитесь в поддержку.');
+        }
+
         try {
+            // Есть ли уже неоплаченный инвойс на продление по этой подписке — используем его
+            $existingInvoice = Invoice::where('user_id', $user->id)
+                ->where('plan_id', $plan->id)
+                ->where('status', 'pending')
+                ->where('payment_type', 'subscription')
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+                })
+                ->where('metadata->is_renewal', true)
+                ->where('metadata->previous_subscription_id', $subscription->id)
+                ->orderByDesc('created_at')
+                ->first();
+            if ($existingInvoice) {
+                return redirect()->route('payment.select', $existingInvoice)
+                    ->with('info', 'У вас уже есть счёт на продление. Оплатите его или дождитесь истечения срока.');
+            }
+
+            // Валюта берётся из тарифа
+            $currency = $plan->currency ?? config('payments.default_currency', 'BYN');
+
             // Создаем новый Invoice для продления
             $invoice = Invoice::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'amount' => $plan->price,
-                'currency' => config('bepaid.currency', 'BYN'),
+                'currency' => $currency,
                 'status' => 'pending',
-                'payment_method' => $request->input('payment_method', config('bepaid.default_payment_method', 'redirect')),
-                'expires_at' => now()->addDays(7), // Срок действия инвойса - 7 дней
+                'payment_type' => 'subscription',
+                'gateway' => $gateway,
+                'payment_method' => 'redirect',
+                'expires_at' => now()->addDays(config('payments.default_invoice_expiration_days', 7)),
                 'metadata' => [
                     'plan_name' => $plan->name,
                     'plan_interval' => $plan->interval,
-                    'is_renewal' => true, // Помечаем как продление
+                    'is_renewal' => true,
                     'previous_subscription_id' => $subscription->id,
                 ],
             ]);
 
-            // Создаем платежный токен
-            $paymentData = $paymentGateway->createPaymentToken($invoice, $invoice->payment_method);
-
-            // Перенаправляем на страницу оплаты или сразу на bePaid
-            if ($invoice->payment_method === 'redirect') {
-                // Редирект на страницу bePaid
-                return redirect($paymentData['redirect_url']);
-            } else {
-                // Виджет - перенаправляем на страницу с виджетом
-                return redirect()->route('subscription.payment', $invoice)
-                    ->with('payment_token', $paymentData['token']);
-            }
+            // Перенаправляем на страницу выбора способа оплаты
+            return redirect()->route('payment.select', $invoice);
 
         } catch (\Exception $e) {
+            Log::error('Invoice creation exception for renewal', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return redirect()->back()
                 ->with('error', 'Ошибка при создании платежа для продления: '.$e->getMessage());
         }
@@ -448,12 +501,16 @@ class SubscriptionController extends Controller
      */
     public function paymentSuccess(Request $request)
     {
-        $invoiceId = $request->input('invoice');
+        // Получаем invoice_id из query-параметра или сессии
+        $invoiceId = $request->input('invoice') ?? session('payment_invoice_id');
 
         if (! $invoiceId) {
             return redirect()->route('subscription.index')
                 ->with('error', 'Неверные параметры запроса.');
         }
+
+        // Очищаем сессию
+        session()->forget('payment_invoice_id');
 
         $invoice = Invoice::find($invoiceId);
 
@@ -471,7 +528,7 @@ class SubscriptionController extends Controller
         if ($invoice->isPaid()) {
             // Проверяем, не пытаемся ли мы повторно активировать подписку
             if ($invoice->subscription_id && $invoice->subscription->status === 'active') {
-                if (config('bepaid.logging.enabled')) {
+                if (config('payments.gateways.bepaid.logging')) {
                     Log::info('Payment success callback: subscription already active', [
                         'invoice_id' => $invoice->id,
                         'subscription_id' => $invoice->subscription_id,
@@ -484,16 +541,19 @@ class SubscriptionController extends Controller
         }
 
         // Если еще не оплачен, проверяем статус через API
-        if ($invoice->bepaid_transaction_id) {
+        $transactionId = $invoice->getTransactionId();
+        if ($transactionId) {
             try {
-                $paymentGateway = app(PaymentGatewayInterface::class);
-                $status = $paymentGateway->checkPaymentStatus($invoice->bepaid_transaction_id);
+                $gatewayManager = app(GatewayManager::class);
+                $gatewayName = $invoice->gateway ?? 'bepaid';
+                $gateway = $gatewayManager->get($gatewayName);
+                $status = $gateway->checkPaymentStatus($transactionId);
 
-                if ($status['paid']) {
+                if ($status->isPaid()) {
                     $invoice->update([
                         'status' => 'paid',
                         'paid_at' => now(),
-                        'bepaid_transaction_id' => $status['uid'] ?? $invoice->bepaid_transaction_id,
+                        'gateway_transaction_id' => $status->transactionId ?? $transactionId,
                     ]);
 
                     // Активируем подписку
@@ -503,7 +563,7 @@ class SubscriptionController extends Controller
 
                         // Идемпотентность: проверяем, не активирована ли уже подписка
                         if ($subscription->status === 'active' && $subscription->invoice_id === $invoice->id) {
-                            if (config('bepaid.logging.enabled')) {
+                            if (config('payments.logging', false)) {
                                 Log::info('Payment success callback: subscription already activated for this invoice', [
                                     'invoice_id' => $invoice->id,
                                     'subscription_id' => $subscription->id,
@@ -516,7 +576,7 @@ class SubscriptionController extends Controller
                                 'invoice_id' => $invoice->id,
                             ]);
 
-                            if (config('bepaid.logging.enabled')) {
+                            if (config('payments.logging', false)) {
                                 Log::info('Payment success callback: subscription activated', [
                                     'invoice_id' => $invoice->id,
                                     'subscription_id' => $subscription->id,
@@ -527,7 +587,7 @@ class SubscriptionController extends Controller
                         // Создаем подписку, если её еще нет
                         $subscription = $subscriptionService->createSubscription($invoice->user, $invoice->plan, false, $invoice);
 
-                        if (config('bepaid.logging.enabled')) {
+                        if (config('payments.logging', false)) {
                             Log::info('Payment success callback: subscription created', [
                                 'invoice_id' => $invoice->id,
                                 'subscription_id' => $subscription->id,
@@ -542,7 +602,7 @@ class SubscriptionController extends Controller
                 // Логируем все ошибки при проверке статуса платежа
                 Log::error('Payment success callback: error checking payment status', [
                     'invoice_id' => $invoice->id,
-                    'transaction_id' => $invoice->bepaid_transaction_id,
+                    'transaction_id' => $transactionId,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
@@ -558,7 +618,8 @@ class SubscriptionController extends Controller
      */
     public function paymentDecline(Request $request)
     {
-        $invoiceId = $request->input('invoice');
+        $invoiceId = $request->input('invoice') ?? session('payment_invoice_id');
+        session()->forget('payment_invoice_id');
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
@@ -576,7 +637,8 @@ class SubscriptionController extends Controller
      */
     public function paymentFail(Request $request)
     {
-        $invoiceId = $request->input('invoice');
+        $invoiceId = $request->input('invoice') ?? session('payment_invoice_id');
+        session()->forget('payment_invoice_id');
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
@@ -594,7 +656,8 @@ class SubscriptionController extends Controller
      */
     public function paymentCancel(Request $request)
     {
-        $invoiceId = $request->input('invoice');
+        $invoiceId = $request->input('invoice') ?? session('payment_invoice_id');
+        session()->forget('payment_invoice_id');
 
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);
