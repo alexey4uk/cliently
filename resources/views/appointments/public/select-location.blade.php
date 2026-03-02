@@ -18,9 +18,9 @@
                        class="group block rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden transition-all duration-200 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md active:scale-[0.99] touch-manipulation min-h-[56px] sm:min-h-0 flex items-stretch">
 
                         <div class="px-3 py-3 sm:px-4 sm:py-3 flex items-center gap-3 w-full min-w-0">
-                            <div class="shrink-0 w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            {{-- <div class="shrink-0 w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                                 <i class="fa-solid fa-location-dot text-base sm:text-sm"></i>
-                            </div>
+                            </div> --}}
                             <div class="min-w-0 flex-1">
                                 <h3 class="text-base font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
                                     {{ $location->name }}

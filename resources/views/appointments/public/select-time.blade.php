@@ -132,7 +132,7 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Имя *</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 ml-1">Имя <span class="text-rose-500">*</span></label>
                             <input type="text" name="first_name" required
                                 value="{{ old('first_name') }}"
                                 class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border {{ $errors->has('first_name') ? 'border-rose-500' : 'border-slate-100 dark:border-slate-700' }} rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
