@@ -44,9 +44,9 @@ class PlanSeeder extends Seeder
         $basicPlan = Plan::firstOrCreate(
             ['slug' => 'basic'],
             [
-                'name' => 'Стартовый',
-                'description' => 'Несколько мастеров и локаций, команда до 2 человек.',
-                'price' => 29.00,
+                'name' => 'Старт',
+                'description' => 'Несколько мастеров и локаций, расширенная аналитика.',
+                'price' => 10.00,
                 'interval' => 'monthly',
                 'trial_days' => 7,
                 'is_active' => true,
@@ -61,8 +61,8 @@ class PlanSeeder extends Seeder
             ['key' => 'max_services', 'value' => '25', 'type' => 'integer'],
             ['key' => 'max_clients', 'value' => '300', 'type' => 'integer'],
             ['key' => 'max_appointments_per_month', 'value' => '300', 'type' => 'integer'],
-            ['key' => 'max_business_users', 'value' => '2', 'type' => 'integer'],
-            ['key' => 'max_businesses', 'value' => '2', 'type' => 'integer'],
+            ['key' => 'max_business_users', 'value' => '0', 'type' => 'integer'],
+            ['key' => 'max_businesses', 'value' => '1', 'type' => 'integer'],
             ['key' => 'telegram_bot_enabled', 'value' => 'true', 'type' => 'boolean'],
             ['key' => 'analytics_enabled', 'value' => 'true', 'type' => 'boolean'],
             ['key' => 'advanced_analytics_enabled', 'value' => 'false', 'type' => 'boolean'],
@@ -77,7 +77,7 @@ class PlanSeeder extends Seeder
                 'price' => 69.00,
                 'interval' => 'monthly',
                 'trial_days' => 14,
-                'is_active' => true,
+                'is_active' => false,
                 'is_default' => false,
                 'sort_order' => 3,
             ]

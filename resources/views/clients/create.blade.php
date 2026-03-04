@@ -93,6 +93,7 @@
                                 :old-national="old('phone_national')"
                                 :required="true"
                                 helper-text="Формат: код страны + номер"
+                                :all-countries-from-library="true"
                             />
                         </div>
 
