@@ -87,6 +87,8 @@
                         :old-national="old('phone_national', $phoneNational)"
                         :required="true"
                         helper-text=""
+                        :all-countries-from-library="true"
+
                     />
 
                     <!-- Email -->

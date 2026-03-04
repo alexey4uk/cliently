@@ -77,6 +77,7 @@
                         :old-national="old('phone_national')"
                         :required="true"
                         helper-text=""
+                        :all-countries-from-library="true"
                     />
 
                     <!-- Email -->
