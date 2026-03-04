@@ -27,6 +27,12 @@ class TelegramMessages
 
     public const MSG_NO_MASTERS = 'Нет доступных мастеров.';
 
+    public const MSG_NO_MASTERS_IN_LOCATION = 'В этом филиале пока нет мастеров. Выберите другой салон.';
+
+    public const MSG_NO_SERVICES_IN_LOCATION = 'В этом филиале нет услуг для онлайн-записи. Выберите другой салон.';
+
+    public const MSG_NO_MASTERS_FOR_SERVICE = 'В этом филиале никто не оказывает выбранную услугу. Выберите другую услугу или другой салон.';
+
     public const MSG_EMPTY_NAME = 'Имя не может быть пустым:';
 
     public const MSG_SHORT_NAME = 'Имя слишком короткое:';
