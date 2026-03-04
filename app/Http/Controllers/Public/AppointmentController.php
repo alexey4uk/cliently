@@ -65,11 +65,30 @@ class AppointmentController extends Controller
 
         $location = $business->locations()->findOrFail($locationId);
 
-        // Получаем все активные услуги бизнеса
+        // Если в филиале нет ни одного мастера — показываем сообщение и предложение выбрать другой филиал
+        if (! $location->masters()->where('is_active', true)->exists()) {
+            return view('appointments.public.no-masters-in-location', [
+                'business' => $business,
+                'location' => $location,
+                'backUrl' => route('public.appointments.show', $business->slug),
+                'backText' => 'Выбрать другой филиал',
+            ]);
+        }
+
+        // Показываем только услуги, которые оказывает хотя бы один мастер этого филиала
         $services = $business->services()
             ->where('is_active', true)
+            ->whereHas('masters', function ($q) use ($locationId) {
+                $q->where('masters.is_active', true)
+                    ->whereHas('locations', fn ($q2) => $q2->where('locations.id', $locationId));
+            })
             ->orderBy('name')
             ->get();
+
+        // В филиале есть мастера, но ни один не оказывает услуги бизнеса — не путаем клиента, сразу сообщаем
+        if ($services->isEmpty()) {
+            return view('appointments.public.no-services-in-location', compact('business', 'location'));
+        }
 
         return view('appointments.public.select-service', compact('business', 'location', 'services'))->with('currentStep', 2);
     }
@@ -92,9 +111,17 @@ class AppointmentController extends Controller
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
 
-        // Получаем мастеров, которые:
-        // 1. Работают в выбранной локации
-        // 2. Предоставляют выбранную услугу
+        // Если в филиале нет ни одного мастера (прямой переход по URL или мастера убрали)
+        if (! $location->masters()->where('is_active', true)->exists()) {
+            return view('appointments.public.no-masters-in-location', [
+                'business' => $business,
+                'location' => $location,
+                'backUrl' => route('public.appointments.show', $business->slug),
+                'backText' => 'Выбрать другой филиал',
+            ]);
+        }
+
+        // Получаем мастеров, которые работают в локации и предоставляют выбранную услугу
         $masters = $location->masters()
             ->with('services')
             ->where('is_active', true)
@@ -104,25 +131,9 @@ class AppointmentController extends Controller
             ->orderBy('first_name')
             ->get();
 
-        // Если нет мастеров с услугой в локации, показываем всех мастеров локации
+        // В филиале есть мастера, но никто не оказывает эту услугу — показываем отдельный экран
         if ($masters->isEmpty()) {
-            $masters = $location->masters()
-                ->with('services')
-                ->where('is_active', true)
-                ->orderBy('first_name')
-                ->get();
-        }
-
-        // Если все еще нет мастеров, показываем всех мастеров бизнеса, которые предоставляют услугу
-        if ($masters->isEmpty()) {
-            $masters = $business->masters()
-                ->with('services')
-                ->where('is_active', true)
-                ->whereHas('services', function ($q) use ($serviceId) {
-                    $q->where('services.id', $serviceId);
-                })
-                ->orderBy('first_name')
-                ->get();
+            return view('appointments.public.no-masters-for-service', compact('business', 'location', 'service'));
         }
 
         return view('appointments.public.select-master', compact('business', 'location', 'service', 'masters'))->with('currentStep', 3);
@@ -229,6 +240,19 @@ class AppointmentController extends Controller
 
         $location = $business->locations()->findOrFail($locationId);
         $service = $business->services()->findOrFail($serviceId);
+
+        // Если в филиале нет мастеров (выбран «любой мастер») — не показываем календарь, предлагаем вернуться
+        if (! $location->masters()->where('is_active', true)->exists()) {
+            return view('appointments.public.no-masters-in-location', [
+                'business' => $business,
+                'location' => $location,
+                'backUrl' => route('public.appointments.select-location', [
+                    'slug' => $business->slug,
+                    'locationId' => $locationId,
+                ]),
+                'backText' => 'К выбору услуги',
+            ]);
+        }
 
         $date = request()->get('date', Carbon::today()->format('Y-m-d'));
         $selectedDate = Carbon::parse($date);

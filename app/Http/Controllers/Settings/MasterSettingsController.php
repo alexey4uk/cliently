@@ -252,12 +252,14 @@ class MasterSettingsController extends Controller
             ]);
         }
 
+        // Всегда синхронизируем связи: при снятии всех галочек в запросе нет location_ids/service_ids,
+        // поэтому используем ?? [] и всегда вызываем sync
         $allowedLocationIds = $business->locations()->whereIn('id', $validated['location_ids'] ?? [])->pluck('id');
         $allowedServiceIds = $business->services()->whereIn('id', $validated['service_ids'] ?? [])->pluck('id');
-        if (isset($validated['location_ids'])) {
+        if ($business->locations()->exists()) {
             $master->locations()->sync($allowedLocationIds);
         }
-        if (isset($validated['service_ids'])) {
+        if ($business->services()->exists()) {
             $master->services()->sync($allowedServiceIds);
         }
 

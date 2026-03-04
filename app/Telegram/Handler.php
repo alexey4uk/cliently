@@ -748,14 +748,48 @@ class Handler extends WebhookHandler
     }
 
     /**
-     * Показ выбора услуги
+     * Показ выбора услуги (после выбора филиала)
      */
     protected function showServiceSelection(Business $business, $locationId)
     {
-        $services = $this->botService->getServicesForBusiness($business->id);
+        $location = $business->locations()->find($locationId);
+        if (! $location) {
+            $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
+
+            return;
+        }
+
+        // В филиале нет мастеров — показываем сообщение и снова список салонов
+        if (! $location->masters()->where('is_active', true)->exists()) {
+            $locations = $this->botService->getLocationsForBusiness($business->id);
+            $this->replyWithMessage(
+                TelegramMessages::MSG_NO_MASTERS_IN_LOCATION,
+                TelegramKeyboards::locations($locations),
+            );
+            $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, TelegramUserState::STEP_SELECT_LOCATION);
+
+            return;
+        }
+
+        // Только услуги, которые оказывает хотя бы один мастер этого филиала
+        $services = $business->services()
+            ->where('is_active', true)
+            ->whereHas('masters', function ($q) use ($locationId) {
+                $q->where('masters.is_active', true)
+                    ->whereHas('locations', fn ($q2) => $q2->where('locations.id', $locationId));
+            })
+            ->orderBy('name')
+            ->get();
 
         if ($services->isEmpty()) {
-            $this->replyWithMessage(TelegramMessages::MSG_NO_SERVICES);
+            $locations = $this->botService->getLocationsForBusiness($business->id);
+            $this->replyWithMessage(
+                TelegramMessages::MSG_NO_SERVICES_IN_LOCATION,
+                TelegramKeyboards::locations($locations),
+            );
+            $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, TelegramUserState::STEP_SELECT_LOCATION);
 
             return;
         }
@@ -794,6 +828,19 @@ class Handler extends WebhookHandler
             return;
         }
 
+        // В филиале нет мастеров — показываем сообщение и список салонов
+        if (! $location->masters()->where('is_active', true)->exists()) {
+            $locations = $this->botService->getLocationsForBusiness($business->id);
+            $this->replyWithMessage(
+                TelegramMessages::MSG_NO_MASTERS_IN_LOCATION,
+                TelegramKeyboards::locations($locations),
+            );
+            $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, TelegramUserState::STEP_SELECT_LOCATION);
+
+            return;
+        }
+
         $masters = $location
             ->masters()
             ->where('is_active', true)
@@ -803,26 +850,15 @@ class Handler extends WebhookHandler
             ->orderBy('first_name')
             ->get();
 
+        // В филиале есть мастера, но никто не оказывает эту услугу — показываем сообщение и снова выбор услуги
         if ($masters->isEmpty()) {
-            $masters = $location
-                ->masters()
-                ->where('is_active', true)
-                ->orderBy('first_name')
-                ->get();
+            $this->replyWithMessage(TelegramMessages::MSG_NO_MASTERS_FOR_SERVICE);
+            $this->showServiceSelection($business, $locationId);
+
+            return;
         }
 
-        if ($masters->isEmpty()) {
-            $masters = $business
-                ->masters()
-                ->where('is_active', true)
-                ->whereHas('services', function ($q) use ($serviceId) {
-                    $q->where('services.id', $serviceId);
-                })
-                ->orderBy('first_name')
-                ->get();
-        }
-
-        // Показываем выбор: «Любой мастер» всегда доступен, плюс список мастеров (если есть)
+        // Показываем выбор: «Любой мастер» и список мастеров
         $this->replyWithMessage(
             TelegramMessages::MSG_SELECT_MASTER,
             TelegramKeyboards::masters($masters),
@@ -1210,6 +1246,19 @@ class Handler extends WebhookHandler
         // При выборе конкретного мастера проверяем, что он есть
         if ($masterId !== null && ! $master) {
             $this->replyWithMessage(TelegramMessages::MSG_NOT_FOUND);
+
+            return;
+        }
+
+        // «Любой мастер»: если в филиале нет мастеров — не показываем календарь, возврат к выбору салона
+        if ($masterId === null && ! $location->masters()->where('is_active', true)->exists()) {
+            $locations = $this->botService->getLocationsForBusiness($business->id);
+            $this->replyWithMessage(
+                TelegramMessages::MSG_NO_MASTERS_IN_LOCATION,
+                TelegramKeyboards::locations($locations),
+            );
+            $userId = $this->callbackQuery?->from()->id() ?? $this->message->from()->id();
+            TelegramUserState::updateStateKeepMessageId($userId, $business->id, TelegramUserState::STEP_SELECT_LOCATION);
 
             return;
         }

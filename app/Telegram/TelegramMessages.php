@@ -11,7 +11,7 @@ class TelegramMessages
     // ==================== ОБЩИЕ СООБЩЕНИЯ ====================
     public const MSG_CANCEL = 'Отменено.';
 
-    public const MSG_ERROR = '❌ Ошибка при создании записи. Попробуйте снова.';
+    public const MSG_ERROR = 'Ошибка при создании записи. Попробуйте снова.';
 
     public const MSG_NOT_FOUND = 'Данные не найдены.';
 
@@ -27,16 +27,22 @@ class TelegramMessages
 
     public const MSG_NO_MASTERS = 'Нет доступных мастеров.';
 
+    public const MSG_NO_MASTERS_IN_LOCATION = 'В этом филиале пока нет мастеров. Выберите другой салон.';
+
+    public const MSG_NO_SERVICES_IN_LOCATION = 'В этом филиале нет услуг для онлайн-записи. Выберите другой салон.';
+
+    public const MSG_NO_MASTERS_FOR_SERVICE = 'В этом филиале никто не оказывает выбранную услугу. Выберите другую услугу или другой салон.';
+
     public const MSG_EMPTY_NAME = 'Имя не может быть пустым:';
 
     public const MSG_SHORT_NAME = 'Имя слишком короткое:';
 
     public const MSG_USE_BUTTONS = 'Используйте кнопки для выбора.';
 
-    // ==================== ВЫБОР ДАННЫХ (один эмодзи на шаг для навигации) ====================
-    public const MSG_SELECT_LOCATION = '📍 Выберите салон:';
+    // ==================== ВЫБОР ДАННЫХ ====================
+    public const MSG_SELECT_LOCATION = '🏠 Выберите филиал';
 
-    public const MSG_SELECT_SERVICE = 'Выберите услугу:';
+    public const MSG_SELECT_SERVICE = '💅 Выберите услугу';
 
     public const MSG_SELECT_MASTER = '👤 Выберите мастера:';
 
@@ -72,7 +78,7 @@ class TelegramMessages
     /** Вопрос после создания записи: подтвердить сразу или отменить */
     public const MSG_CONFIRM_APPOINTMENT_QUESTION = 'Подтверждаете запись?';
 
-    public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = '✅ Запись подтверждена.';
+    public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = '✅ Запись подтверждена';
 
     public const MSG_APPOINTMENT_CANCELLED_BY_YOU = 'Запись отменена.';
 
@@ -123,18 +129,18 @@ class TelegramMessages
 
     public const MSG_BUSINESS_NOT_FOUND = 'Бизнес не найден.';
 
-    public const MSG_ACCOUNT_CONNECTED = '✅ Аккаунт подключен. Вы будете получать уведомления.';
+    public const MSG_ACCOUNT_CONNECTED = '✅ Аккаунт подключен';
 
     public const MSG_NO_BUSINESSES = 'Нет доступных бизнесов.';
 
     public const MSG_SELECT_BUSINESS_CATALOG = '🏢 Выберите бизнес для записи:';
 
     // ==================== ПОИСК ====================
-    public const MSG_SEARCH_PROMPT = 'Введите название бизнеса для поиска:';
+    public const MSG_SEARCH_PROMPT = 'Введите название для поиска:';
 
     public const MSG_SEARCH_RESULTS = 'Результаты поиска по "{query}":';
 
-    public const MSG_SEARCH_NO_RESULTS = 'Бизнесы с таким названием не найдены.';
+    public const MSG_SEARCH_NO_RESULTS = 'Ничего не найдено';
 
     public const MSG_SEARCH_TOO_SHORT = 'Введите минимум 2 символа для поиска.';
 
@@ -145,19 +151,19 @@ class TelegramMessages
     public const MSG_NO_NEXT_PAGE = 'Нет следующей страницы.';
 
     // ==================== КРИТИЧЕСКИЕ ОШИБКИ (с ❌ — только реальные сбои/ограничения) ====================
-    public const MSG_BOOKING_DISABLED = '❌ Запись через Telegram бота недоступна для этого бизнеса. Пожалуйста, используйте веб-форму для записи.';
+    public const MSG_BOOKING_DISABLED = 'Запись через Telegram бота недоступна. Пожалуйста, используйте веб-форму для записи.';
 
-    public const MSG_ONLINE_BOOKING_DISABLED = '❌ Онлайн-запись временно недоступна. Пожалуйста, свяжитесь с нами напрямую для записи.';
+    public const MSG_ONLINE_BOOKING_DISABLED = 'Онлайн-запись временно недоступна. Пожалуйста, свяжитесь с нами напрямую для записи.';
 
-    public const MSG_DATA_ERROR = '❌ Ошибка данных. Попробуйте снова.';
+    public const MSG_DATA_ERROR = 'Ошибка данных. Попробуйте снова';
 
-    public const MSG_SESSION_NOT_FOUND = '❌ Сессия не найдена.';
+    public const MSG_SESSION_NOT_FOUND = 'Сессия не найдена';
 
-    public const MSG_REQUEST_ERROR = '❌ Ошибка при обработке запроса. Пожалуйста, попробуйте позже.';
+    public const MSG_REQUEST_ERROR = 'Ошибка при обработке запроса. Пожалуйста, попробуйте позже.';
 
-    public const MSG_MONTHLY_LIMIT = '❌ Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.';
+    public const MSG_MONTHLY_LIMIT = 'Достигнут месячный лимит записей. Пожалуйста, свяжитесь с нами напрямую для записи.';
 
-    public const MSG_CLIENT_LIMIT = '❌ Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.';
+    public const MSG_CLIENT_LIMIT = 'Достигнут лимит клиентов. Пожалуйста, свяжитесь с нами напрямую для записи.';
 
     /**
      * Форматирует сообщение с подстановкой значений

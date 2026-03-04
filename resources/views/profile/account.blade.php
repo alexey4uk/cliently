@@ -28,11 +28,11 @@
         <input type="hidden" name="remove_avatar" id="remove_avatar" :value="removeAvatar ? '1' : '0'">
 
     <!-- Карточка профиля с аватаром -->
-    <div class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl overflow-hidden">
+    <div class="bg-linear-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl shadow-xl overflow-hidden">
         <div class="p-8 sm:p-10">
             <div class="flex flex-col sm:flex-row items-center gap-6">
                 <!-- Аватар -->
-                <div class="relative flex-shrink-0 group">
+                <div class="relative shrink-0 group">
                     <label for="avatar" class="cursor-pointer block" :class="isUploading ? 'pointer-events-none' : ''">
                         <div 
                             id="avatarPreview"
@@ -127,7 +127,7 @@
             <!-- Подсказки по аватару -->
             <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                 <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 mt-0.5">
+                    <div class="shrink-0 mt-0.5">
                         <i class="fa-solid fa-info-circle text-blue-500 text-lg"></i>
                     </div>
                     <div class="flex-1">
@@ -153,7 +153,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Имя -->
                 <div>
-                    <label for="name" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+                    <label for="name" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 items-center">
                         <i class="fa-solid fa-user mr-2 text-slate-400"></i>
                         Имя <span class="text-rose-500 ml-1">*</span>
                     </label>
@@ -175,7 +175,7 @@
 
                 <!-- Email -->
                 <div>
-                    <label for="email" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+                    <label for="email" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 items-center">
                         <i class="fa-solid fa-envelope mr-2 text-slate-400"></i>
                         Email <span class="text-rose-500 ml-1">*</span>
                     </label>
@@ -220,7 +220,7 @@
                 <button 
                     type="submit" 
                     :disabled="isSubmitting"
-                    class="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    class="px-6 py-3 text-sm font-semibold text-white bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     <template x-if="!isSubmitting">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-save"></i>
@@ -259,7 +259,7 @@
 
             <!-- Текущий пароль -->
             <div>
-                <label for="current_password" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+                <label for="current_password" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 items-center">
                     <i class="fa-solid fa-key mr-2 text-slate-400"></i>
                     Текущий пароль <span class="text-rose-500 ml-1">*</span>
                 </label>
@@ -289,7 +289,7 @@
 
             <!-- Новый пароль -->
             <div>
-                <label for="password" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+                <label for="password" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 items-center">
                     <i class="fa-solid fa-lock mr-2 text-slate-400"></i>
                     Новый пароль <span class="text-rose-500 ml-1">*</span>
                 </label>
@@ -338,7 +338,7 @@
 
             <!-- Подтверждение нового пароля -->
             <div>
-                <label for="password_confirmation" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
+                <label for="password_confirmation" class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center">
                     <i class="fa-solid fa-check-circle mr-2 text-slate-400"></i>
                     Подтверждение нового пароля <span class="text-rose-500 ml-1">*</span>
                 </label>
@@ -365,7 +365,7 @@
                 <button 
                     type="submit"
                     :disabled="isSubmittingPassword"
-                    class="px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    class="px-6 py-3 text-sm font-semibold text-white bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-xl transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     <template x-if="!isSubmittingPassword">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-shield-halved"></i>
@@ -404,7 +404,7 @@
             x-transition:leave-end="opacity-0 scale-90 translate-y-4"
             class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 max-w-md w-full">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-500 mb-5 shadow-lg">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-linear-to-br from-rose-500 to-pink-500 mb-5 shadow-lg">
                     <i class="fa-solid fa-trash-alt text-white text-2xl"></i>
                 </div>
                 <h3 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-3">
@@ -422,7 +422,7 @@
                     </button>
                     <button 
                         @click="confirmRemoveAvatar"
-                        class="flex-1 px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 rounded-xl transition-all shadow-md hover:shadow-lg">
+                        class="flex-1 px-5 py-3 text-sm font-semibold text-white bg-linear-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 rounded-xl transition-all shadow-md hover:shadow-lg">
                         <i class="fa-solid fa-trash-alt mr-2"></i>
                         Удалить
                     </button>
@@ -447,7 +447,7 @@
             isUploading: false,
             avatarError: null,
             hasAvatar: {{ $user->avatar ? 'true' : 'false' }},
-            userInitials: '{{ strtoupper(mb_substr($user->name, 0, 2)) }}',
+            userInitials: '{{ strtoupper(mb_substr($user->name, 0, 1)) }}',
             profileUpdateUrl: '{{ route($profileUpdateRoute) }}',
             passwordVisible: {
                 current_password: false,

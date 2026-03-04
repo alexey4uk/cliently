@@ -16,8 +16,8 @@
                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                      referrerpolicy="no-referrer">
             @else
-                <span class="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
-                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                <span class="h-full w-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-semibold">
+                    {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
                 </span>
             @endif
         </button>
@@ -42,7 +42,7 @@
         x-transition:leave="transition ease-in duration-150"
         x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="transform opacity-0 scale-95 translate-y-1"
-        class="fixed z-[100] w-[calc(100vw-1.5rem)] sm:w-64 max-w-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-xl overflow-hidden"
+        class="fixed z-100 w-[calc(100vw-1.5rem)] sm:w-64 max-w-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-xl overflow-hidden"
         style="display: none;"
         x-init="
             $watch('open', value => {
@@ -76,17 +76,17 @@
         ">
         <!-- Информация о пользователе -->
         @auth
-            <div class="px-4 py-3.5 bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-800/50 dark:to-slate-900/50 border-b border-slate-200/50 dark:border-slate-800/50">
+            <div class="px-4 py-3.5 bg-linear-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-800/50 dark:to-slate-900/50 border-b border-slate-200/50 dark:border-slate-800/50">
                 <a href="{{ Str::startsWith(Request::path(), 'panel') ? route('panel.profile.edit') : route('profile.edit') }}" 
                    class="flex items-center gap-3 group hover:opacity-90 transition-opacity">
-                    <div class="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden shrink-0 ring-2 ring-white/50 dark:ring-slate-700/50 shadow-sm">
+                    <div class="h-11 w-11 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-semibold text-white overflow-hidden shrink-0 ring-2 ring-white/50 dark:ring-slate-700/50 shadow-sm">
                         @if(Auth::user()->getAvatarUrl())
                             <img src="{{ Auth::user()->getAvatarUrl() }}" 
                                  alt="{{ Auth::user()->name }}" 
                                  class="w-full h-full object-cover"
                                  referrerpolicy="no-referrer">
                         @else
-                            {{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}
+                            {{ strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
                         @endif
                     </div>
                     <div class="min-w-0 flex-1">
