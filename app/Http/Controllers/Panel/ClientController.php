@@ -29,40 +29,35 @@ class ClientController extends Controller
         $perPage = min((int) request('per_page', 20), 100);
         $businessFilter = request('business_id', '');
 
-        // ОПТИМИЗИРОВАНО: убрали with(['appointments']) - критично медленно!
-        // Добавили подзапросы для COUNT вместо withCount
         $query = Client::query()
             ->with(['business'])
-            ->selectRaw(
-                'clients.*, 
-                (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id) as appointments_count,
-                (SELECT COUNT(*) FROM appointments WHERE appointments.client_id = clients.id AND CONCAT(date, " ", time) > ?) as upcoming_appointments_count',
-                [now()->toDateTimeString()]
-            );
+            ->withCount('appointments')
+            ->withCount(['appointments as upcoming_appointments_count' => function ($q) {
+                $q->whereRaw("(date || ' ' || time)::timestamp > ?", [now()]);
+            }]);
 
         if ($search) {
-            $searchTerm = $search.'*';
-            $query->where(function ($q) use ($search, $searchTerm) {
-                $q->whereRaw('MATCH(first_name, last_name) AGAINST(? IN BOOLEAN MODE)', [$searchTerm])
+            $query->where(function ($q) use ($search) {
+                // В PostgreSQL вместо MATCH AGAINST используем ILIKE (регистронезависимый)
+                $q->where('first_name', 'ILIKE', "%{$search}%")
+                    ->orWhere('last_name', 'ILIKE', "%{$search}%")
                     ->orWhereIn('id', function ($subquery) use ($search) {
                         $subquery->select('phoneable_id')
                             ->from('phones')
                             ->where('phoneable_type', Client::class)
                             ->where('phone', 'like', "%{$search}%");
                     });
-            })->limit(1000);
+            });
         }
 
-        // Фильтр по бизнесу
         if ($businessFilter) {
             $query->where('business_id', $businessFilter);
         }
 
-        // Сортировка
         $allowedSorts = ['created_at', 'name', 'email'];
         if (in_array($sort, $allowedSorts)) {
             if ($sort === 'name') {
-                $query->orderByRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) {$direction}");
+                $query->orderByRaw("(COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')) {$direction}");
             } else {
                 $query->orderBy($sort, $direction);
             }
@@ -70,10 +65,8 @@ class ClientController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        // ОПТИМИЗАЦИЯ: simplePaginate вместо paginate (без медленного COUNT)
         $clients = $query->simplePaginate($perPage)->withQueryString();
 
-        // Получаем список бизнесов для фильтра
         $businesses = $this->businessRepository->getAllForFilter();
 
         return view('panel.clients.index', compact(
