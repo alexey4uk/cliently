@@ -428,6 +428,7 @@ class AppointmentController extends Controller
             'date' => $validated['date'],
             'time' => $validated['time'],
             'status' => 'pending',
+            'source' => 'online',
             'notes' => $validated['notes'] ?? null,
         ]);
 
