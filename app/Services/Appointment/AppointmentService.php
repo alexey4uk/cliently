@@ -11,12 +11,12 @@ class AppointmentService
      */
     public function __construct(
         protected AppointmentRepositoryInterface $appointmentRepository
-        ){}
+    ) {}
 
     public function makeLink(int $appointmentId)
     {
         $appointment = $this->appointmentRepository->findOrFail($appointmentId);
 
-        return env('APP_URL') . "/a/{$appointment->token}";
+        return env('APP_URL')."/a/{$appointment->token}";
     }
 }

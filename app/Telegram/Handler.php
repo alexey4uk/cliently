@@ -923,13 +923,13 @@ class Handler extends WebhookHandler
 
             $appointment = Appointment::with('client')->find($appointmentId);
             $appointmenLink = $this->appointmentService->makeLink((int) $appointment->id);
-            
+
             if (! $appointment) {
                 return;
             }
 
             $client = $appointment->client;
-            if (! $client || (string) $client->telegram_user_id !== (string) $userId && !empty($client->telegram_user_id)) {
+            if (! $client || (string) $client->telegram_user_id !== (string) $userId && ! empty($client->telegram_user_id)) {
                 return;
             }
 
