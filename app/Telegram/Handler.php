@@ -8,6 +8,7 @@ use App\Models\BusinessRole;
 use App\Models\Client;
 use App\Models\TelegramUserState;
 use App\Models\User;
+use App\Services\Appointment\AppointmentService;
 use App\Services\AppointmentSlotService;
 use App\Services\SubscriptionService;
 use App\Services\TelegramBotService;
@@ -25,14 +26,19 @@ class Handler extends WebhookHandler
 
     protected TelegramBotService $botService;
 
+    protected AppointmentService $appointmentService;
+
     protected ?int $lastMessageId = null;
 
     public function __construct(
         AppointmentSlotService $slotService,
         TelegramBotService $botService,
+        AppointmentService $appointmentService
+
     ) {
         $this->slotService = $slotService;
         $this->botService = $botService;
+        $this->appointmentService = $appointmentService;
     }
 
     /**
@@ -916,11 +922,14 @@ class Handler extends WebhookHandler
             $isConfirm = str_starts_with($action, 'apt_confirm_');
 
             $appointment = Appointment::with('client')->find($appointmentId);
-            if (! $appointment || $appointment->source !== 'telegram') {
+            $appointmenLink = $this->appointmentService->makeLink((int) $appointment->id);
+
+            if (! $appointment) {
                 return;
             }
+
             $client = $appointment->client;
-            if (! $client || (string) $client->telegram_user_id !== (string) $userId) {
+            if (! $client || (string) $client->telegram_user_id !== (string) $userId && ! empty($client->telegram_user_id)) {
                 return;
             }
 
@@ -942,6 +951,7 @@ class Handler extends WebhookHandler
                 try {
                     $this->chat->edit($messageId)->message($resultText)->send();
                     $this->chat->replaceKeyboard($messageId, Keyboard::make())->send();
+                    $this->chat->message($appointmenLink)->send();
                 } catch (\Throwable $e) {
                     Log::warning('Failed to edit appointment confirm message', [
                         'message_id' => $messageId,

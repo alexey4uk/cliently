@@ -882,7 +882,7 @@ class TelegramNotificationService
             'user_id' => $user->id,
             'type' => 'telegram.connected',
             'title' => 'Telegram подключен',
-            'message' => 'Ваш Telegram аккаунт успешно подключен. Теперь вы будете получать уведомления в Telegram.',
+            'message' => 'Ваш аккаунт успешно подключен.',
             'data' => [],
         ]);
 
@@ -928,7 +928,7 @@ class TelegramNotificationService
             'user_id' => $user->id,
             'type' => 'telegram.disconnected',
             'title' => 'Telegram отключен',
-            'message' => 'Ваш Telegram аккаунт отключен. Вы больше не будете получать уведомления в Telegram.',
+            'message' => 'Ваш Telegram аккаунт отключен.',
             'data' => [],
         ]);
 
