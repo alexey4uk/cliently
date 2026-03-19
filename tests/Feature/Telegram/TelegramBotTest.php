@@ -58,7 +58,8 @@ class TelegramBotTest extends TestCase
         // Создаем handler с моками
         $this->handler = new Handler(
             app(\App\Services\AppointmentSlotService::class),
-            app(\App\Services\TelegramBotService::class)
+            app(\App\Services\TelegramBotService::class),
+            app(\App\Services\Appointment\AppointmentService::class)
         );
 
         // Устанавливаем моки через reflection
