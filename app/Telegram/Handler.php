@@ -1519,15 +1519,6 @@ class Handler extends WebhookHandler
                     'phone' => $phone,
                     'phone_country_code' => $countryBy?->code ?? 'BY',
                 ]);
-            } else {
-                $client->update([
-                    'first_name' => $data['client_data']['first_name'],
-                    'last_name' => $data['client_data']['last_name'] ?? $client->last_name,
-                    'email' => $data['client_data']['email'] ?? $client->email,
-                    'telegram_user_id' => (string) $this->callbackQuery->from()->id(),
-                    'phone' => $phone,
-                    'phone_country_code' => $countryBy?->code ?? $client->phone_country_code,
-                ]);
             }
 
             // Форматируем время

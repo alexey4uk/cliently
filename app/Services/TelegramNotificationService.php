@@ -7,6 +7,7 @@ use App\Models\Business;
 use App\Models\Ticket;
 use App\Models\TicketComment;
 use App\Models\User;
+use App\Services\Appointment\AppointmentService;
 use App\Telegram\TelegramKeyboards;
 use App\Telegram\TelegramMessages;
 use DefStudio\Telegraph\Keyboard\Keyboard;
@@ -92,6 +93,10 @@ class TelegramNotificationService
             self::sendMessageForClient(
                 $appointment->client->telegram_user_id,
                 $message,
+            );
+            self::sendMessageForClient(
+                $appointment->client->telegram_user_id,
+                app(AppointmentService::class)->makeLink($appointment->id),
             );
         }
     }
