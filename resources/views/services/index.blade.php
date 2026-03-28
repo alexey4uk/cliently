@@ -13,7 +13,7 @@
 
 @section('content')
 
-<div class="max-w-[1400px] mx-auto">
+<div class="max-w-350 mx-auto">
     <div x-data="{ 
     showDeleteModal: false,
     serviceToDelete: null,
@@ -111,7 +111,6 @@
 
     <!-- Список услуг -->
     @if($services->count() > 0)
-        <!-- Таблица для больших экранов -->
         <div class="hidden md:block">
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <table class="w-full">
@@ -131,19 +130,14 @@
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
-                                            <i class="fa-solid fa-scissors text-purple-600 dark:text-purple-400"></i>
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">
+                                            {{ $service->name }}
                                         </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white">
-                                                {{ $service->name }}
+                                        @if($service->description)
+                                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                                                {{ $service->description }}
                                             </div>
-                                            @if($service->description)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                                                    {{ $service->description }}
-                                                </div>
-                                            @endif
-                                        </div>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">

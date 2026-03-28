@@ -73,10 +73,9 @@ class TelegramKeyboards
     {
         $buttons = [];
         foreach ($locations as $location) {
-            $buttons[] = Button::make($location->name)->action("location_{$location->id}");
+            $buttons[] = Button::make("$location->name - $location->full_address")->action("location_{$location->id}");
         }
 
-        // Локация - первый шаг, кнопка "Назад" не нужна
         return Keyboard::make()
             ->row($buttons)
             ->chunk(1)
@@ -94,7 +93,7 @@ class TelegramKeyboards
     {
         $buttons = [];
         foreach ($services as $service) {
-            $buttons[] = Button::make("{$service->name} ({$service->duration} мин)")->action("service_{$service->id}");
+            $buttons[] = Button::make("{$service->name} ~ {$service->duration} мин")->action("service_{$service->id}");
         }
 
         return self::selectionGrid($buttons, 1);

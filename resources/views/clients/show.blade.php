@@ -41,7 +41,6 @@
                             {{ $client->initials }}
                         </div>
                         <h1 class="text-xl font-semibold text-slate-900 dark:text-white">{{ $client->full_name }}</h1>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">ID: {{ $client->id }}</p>
                         @if ($totalAppointments > 0)
                             <span class="inline-block mt-2 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/20 rounded-full border border-emerald-200 dark:border-emerald-600">
                                 Активный клиент
@@ -137,11 +136,11 @@
                         <div class="p-5 space-y-4">
                             @foreach ($upcomingAppointmentsList as $appointment)
                                 <div class="flex items-center p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg border border-indigo-100 dark:border-indigo-500/20">
-                                    <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="shrink-0 w-16 text-center">
                                         <p class="text-lg font-bold text-indigo-600 dark:text-indigo-400">{{ \Carbon\Carbon::parse($appointment->time)->format('H:i') }}</p>
                                         <p class="text-xs text-indigo-500 dark:text-indigo-400">{{ \Carbon\Carbon::parse($appointment->date)->format('d M') }}</p>
                                     </div>
-                                    <div class="flex-shrink-0 w-px h-12 bg-indigo-200 dark:bg-indigo-500/30 mx-4"></div>
+                                    <div class="shrink-0 w-px h-12 bg-indigo-200 dark:bg-indigo-500/30 mx-4"></div>
                                     <div class="flex-1">
                                         <p class="text-sm font-medium text-slate-900 dark:text-white">{{ $appointment->service?->name ?? 'Услуга удалена' }}</p>
                                         <p class="text-sm text-slate-500 dark:text-slate-400">
@@ -172,7 +171,7 @@
                     <div class="divide-y divide-slate-200 dark:divide-slate-700">
                         @forelse ($appointmentHistory as $appointment)
                             <div class="p-5 flex items-center">
-                                <div class="flex-shrink-0 w-16 text-center">
+                                <div class="shrink-0 w-16 text-center">
                                     <p class="text-sm font-medium text-slate-900 dark:text-white">{{ \Carbon\Carbon::parse($appointment->date)->format('d M') }}</p>
                                     <p class="text-xs text-slate-500 dark:text-slate-400">{{ \Carbon\Carbon::parse($appointment->date)->format('Y') }}</p>
                                 </div>

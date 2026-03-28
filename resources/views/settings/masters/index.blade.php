@@ -126,9 +126,9 @@
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($master->name) }}&background=10b981&color=fff&size=40" 
-                                             class="w-10 h-10 rounded-full" 
-                                             alt="{{ $master->name }}">
+                                        <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                            {{ Str::substr($master->name, 0, 1) }}
+                                        </div>
                                         <div>
                                             <div class="text-sm font-medium text-slate-900 dark:text-white">
                                                 {{ $master->name }}
@@ -236,9 +236,9 @@
                 <x-mobile-card>
                     <x-mobile-card-header class="!p-4">
                         <div class="flex items-center gap-3 mb-3">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($master->name) }}&background=10b981&color=fff&size=64" 
-                                 class="w-12 h-12 rounded-full" 
-                                 alt="{{ $master->name }}">
+                            <div class="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                {{ Str::substr($master->name, 0, 1) }}
+                            </div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">
                                     {{ $master->name }}

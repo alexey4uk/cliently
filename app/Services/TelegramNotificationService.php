@@ -7,10 +7,12 @@ use App\Models\Business;
 use App\Models\Ticket;
 use App\Models\TicketComment;
 use App\Models\User;
+use App\Services\Appointment\AppointmentService;
 use App\Telegram\TelegramKeyboards;
 use App\Telegram\TelegramMessages;
 use DefStudio\Telegraph\Keyboard\Keyboard;
 use DefStudio\Telegraph\Models\TelegraphChat;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class TelegramNotificationService
@@ -26,7 +28,7 @@ class TelegramNotificationService
             return;
         }
 
-        $message = self::formatAppointmentMessage($appointment, 'новая запись');
+        $message = self::formatAppointmentMessage($appointment, 'Новая запись');
 
         self::sendMessageToUser($user, $message);
     }
@@ -80,11 +82,11 @@ class TelegramNotificationService
             $statusText = match ($appointment->status) {
                 'confirmed' => 'подтверждена',
                 'cancelled' => 'отменена',
-                default => 'обновлена',
+                default => 'Обновлена',
             };
             $message = self::formatAppointmentMessage(
                 $appointment,
-                "запись {$statusText}",
+                "Запись {$statusText}",
             );
         }
 
@@ -93,6 +95,12 @@ class TelegramNotificationService
                 $appointment->client->telegram_user_id,
                 $message,
             );
+            if ($appointment->status === 'confirmed') {
+                self::sendMessageForClient(
+                    $appointment->client->telegram_user_id,
+                    app(AppointmentService::class)->makeLink($appointment->id),
+                );
+            }
         }
     }
 
@@ -108,9 +116,8 @@ class TelegramNotificationService
             return false;
         }
 
-        $message = self::formatAppointmentMessage($appointment, 'подтверждение записи')
-            ."\n\n"
-            .TelegramMessages::MSG_CONFIRM_APPOINTMENT_QUESTION;
+        $message = self::formatAppointmentMessage($appointment, 'Подтверждение записи')
+            ."\n\n";
 
         $keyboard = TelegramKeyboards::appointmentConfirmCancel($appointment->id);
 
@@ -228,41 +235,50 @@ class TelegramNotificationService
         Appointment $appointment,
         string $action,
     ): string {
+        $business = $appointment->business;
         $client = $appointment->client;
         $service = $appointment->service;
         $master = $appointment->master;
         $location = $appointment->location;
 
+        $businessName = $business->name;
         $clientName = $client ? trim(($client->first_name ?? '').' '.($client->last_name ?? '')) : 'Клиент удалён';
         $serviceName = $service?->name ?? 'Услуга удалена';
         $masterName = $master ? trim(($master->first_name ?? '').' '.($master->last_name ?? '')) : null;
         $locationName = $location?->name ?? null;
+        $dateIsoFormat = $appointment->date->locale('ru')->isoFormat('D MMMM Y [г.]');
+        $appointmentTime = Carbon::parse($appointment->time)->format('H:i');
+        $locationAdress = $appointment->location->full_address;
 
-        $message = "📅 {$action}\n\n";
-        $message .= "Клиент: {$clientName}\n";
-        if ($client && $client->phone) {
-            $message .= "Телефон: {$client->phone}\n";
-        }
-        $message .= "Услуга: {$serviceName}\n";
+        // $message = "{$action}\n\n";
+        // $message .= "Клиент: {$clientName}\n";
+        // if ($client && $client->phone) {
+        //     $message .= "Телефон: {$client->phone}\n";
+        // }
+        // $message .= "Услуга: {$serviceName}\n";
 
-        if ($masterName) {
-            $message .= "Мастер: {$masterName}\n";
-        }
+        // if ($masterName) {
+        //     $message .= "Мастер: {$masterName}\n";
+        // }
 
-        if ($locationName) {
-            $message .= "Локация: {$locationName}\n";
-        }
+        // if ($locationName) {
+        //     $message .= "Локация: {$locationName}\n";
+        //     $message .= "Адресс: Немига 3\n";
+        // }
 
-        $message .= "Дата: {$appointment->date->format('d.m.Y')}\n";
-        $message .= "Время: {$appointment->time}\n";
+        // $message .= "Дата: {$appointment->date->format('d.m.Y')}\n";
+        // $message .= "Время: {$appointment->time}\n";
 
-        if ($appointment->price) {
-            $message .= "Цена: {$appointment->price} BYN\n";
-        }
+        // if ($appointment->price) {
+        //     $message .= "Цена: {$appointment->price} BYN\n";
+        // }
 
-        if ($appointment->notes) {
-            $message .= "Заметки: {$appointment->notes}\n";
-        }
+        // if ($appointment->notes) {
+        //     $message .= "Заметки: {$appointment->notes}\n";
+        // }
+
+        $message = "$action\n\n";
+        $message .= "{$businessName}: $serviceName к специалисту $masterName на $dateIsoFormat в $appointmentTime. Адрес: $locationAdress";
 
         return $message;
     }

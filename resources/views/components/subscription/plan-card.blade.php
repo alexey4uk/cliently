@@ -28,7 +28,7 @@
         hover:shadow-xl transition-all duration-300 overflow-hidden">
         {{-- Header --}}
         <div class="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4
-            {{ $isPopular ? 'bg-gradient-to-br from-indigo-50 to-slate-50 dark:from-indigo-900/20 dark:to-slate-800/50' : 'bg-slate-50 dark:bg-slate-800/50' }}
+            {{ $isPopular ? 'bg-linear-to-br from-indigo-50 to-slate-50 dark:from-indigo-900/20 dark:to-slate-800/50' : 'bg-slate-50 dark:bg-slate-800/50' }}
             border-b border-slate-200 dark:border-slate-700">
             <h3 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-0.5">{{ $plan->name }}</h3>
             @if($plan->description)
@@ -94,7 +94,7 @@
                     <p class="text-sm text-amber-800 dark:text-amber-300 mb-3">
                         Сначала отмените платную подписку. Она останется активной до конца оплаченного периода.
                     </p>
-                    <a href="{{ route('subscription.current') }}" class="w-full min-h-[44px] py-2.5 sm:py-3 px-4 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors">
+                    <a href="{{ route('subscription.current') }}" class="w-full min-h-11 py-2.5 sm:py-3 px-4 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-semibold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 transition-colors">
                         <i class="fa-solid fa-external-link-alt"></i>
                         Подписка
                     </a>
@@ -107,16 +107,16 @@
                 @endif
                 @if($isCurrent)
                     <button type="button" disabled
-                        class="w-full min-h-[44px] py-2.5 sm:py-3 px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-sm sm:text-base font-semibold cursor-not-allowed">
+                        class="w-full min-h-11 py-2.5 sm:py-3 px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-sm sm:text-base font-semibold cursor-not-allowed">
                         Текущий тариф
                     </button>
                 @else
                     <button type="button"
                         @click="openConfirmModal('{{ addslashes($plan->name) }}', {{ $plan->price ? number_format($plan->price, 2, '.', '') : 0 }}, '{{ $plan->interval }}', {{ $plan->trial_days ?? 0 }}, {{ $hasUsedTrial ? 'true' : 'false' }}, $refs['form-{{ $plan->id }}'])"
-                        class="subscription-submit-btn w-full min-h-[44px] py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md hover:shadow-lg">
+                        class="subscription-submit-btn w-full min-h-11 py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold text-white transition-all duration-200 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md hover:shadow-lg">
                         <span class="btn-text">
-                            <i class="fa-solid fa-check-circle mr-2"></i>
-                            {{ $plan->price ? 'Выбрать тариф' : 'Начать бесплатно' }}
+                            {{-- <i class="fa-solid fa-check-circle mr-2"></i> --}}
+                            {{ $plan->price ? 'Выбрать' : 'Начать бесплатно' }}
                         </span>
                     </button>
                 @endif

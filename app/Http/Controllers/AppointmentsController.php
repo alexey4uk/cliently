@@ -9,6 +9,7 @@ use App\Repositories\AppointmentRepositoryInterface;
 use App\Repositories\ClientRepositoryInterface;
 use App\Repositories\MasterRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
+use App\Services\Appointment\AppointmentService;
 use App\Services\AppointmentNotificationService;
 use App\Services\BusinessRolePermissionService;
 use App\Services\SubscriptionService;
@@ -30,16 +31,20 @@ class AppointmentsController extends Controller
 
     private MasterRepositoryInterface $masterRepository;
 
+    private AppointmentService $appointmentService;
+
     public function __construct(
         AppointmentRepositoryInterface $appointmentRepository,
         ClientRepositoryInterface $clientRepository,
         ServiceRepositoryInterface $serviceRepository,
-        MasterRepositoryInterface $masterRepository
+        MasterRepositoryInterface $masterRepository,
+        AppointmentService $appointmentService
     ) {
         $this->appointmentRepository = $appointmentRepository;
         $this->clientRepository = $clientRepository;
         $this->serviceRepository = $serviceRepository;
         $this->masterRepository = $masterRepository;
+        $this->appointmentService = $appointmentService;
     }
 
     private function checkAppointmentBelongsToBusiness(Appointment $appointment)
@@ -482,6 +487,12 @@ class AppointmentsController extends Controller
      */
     public function edit(Appointment $appointment)
     {
+        $appointmentStatus = $appointment->status;
+
+        if ($appointmentStatus === 'cancelled') {
+            return redirect()->route('appointments.index');
+        }   
+
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
         if ($redirect) {
             return $redirect;
@@ -513,7 +524,14 @@ class AppointmentsController extends Controller
      */
     public function update(AppointmentRequest $request, Appointment $appointment)
     {
+        $appointmentStatus = $appointment->status;
+
+        if ($appointmentStatus === 'cancelled') {
+            return redirect()->route('appointments.index');
+        }  
+
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
+
         if ($redirect) {
             return $redirect;
         }
@@ -854,5 +872,12 @@ class AppointmentsController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    public function appintmentIsCancelled(string $status)
+    {
+        if ($status === 'cancelled') {
+            return redirect()->route('appointments.index');
+        }    
     }
 }
