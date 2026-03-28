@@ -50,7 +50,7 @@
     $canViewSubscription = $hasBusinessPermission('client.subscription.view');
 @endphp
 
-<div class="max-w-6xl 2xl:max-w-[1400px] mx-auto space-y-6">
+<div class="max-w-6xl 2xl:max-w-350 mx-auto space-y-6">
     @if(!$currentBusiness)
     <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50">
         <p class="text-amber-800 dark:text-amber-200 font-medium">Добавьте бизнес в настройках, чтобы начать работу.</p>
@@ -155,12 +155,9 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{{ $stats['appointments_today'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Записей сегодня</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Сегодня</p>
                     </div>
                 </div>
-                @if(isset($stats['appointments_week']) && $stats['appointments_week'] > 0)
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ $stats['appointments_week'] }} за неделю</p>
-                @endif
             </a>
             @endif
 
@@ -172,12 +169,9 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{{ number_format($stats['total_clients'] ?? 0, 0, ',', ' ') }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Клиентов</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ Str::ucFirst(trans_choice('messages.client_count', $clients->count())) }}</p>
                     </div>
                 </div>
-                @if(isset($stats['new_clients_week']) && $stats['new_clients_week'] > 0)
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">+{{ $stats['new_clients_week'] }} за неделю</p>
-                @endif
             </a>
             @endif
 
@@ -189,24 +183,27 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{{ $stats['completed_month'] ?? 0 }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Завершено за месяц</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">За месяц</p>
                     </div>
                 </div>
-                @if(isset($stats['completed_week']) && $stats['completed_week'] > 0)
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ $stats['completed_week'] }} за неделю</p>
-                @endif
             </div>
             @endif
 
             @if($canViewSubscription && isset($subscriptionStatus))
-            <a href="{{ route('subscription.current') }}" class="block p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
+            <a href="{{ route('subscription.current') }}" class="block p-3 py-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 rounded-lg bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400">
+                    <!-- 1. Иконка: добавлена фиксированная ширина/высота для идеального круга/квадрата -->
+                    <div class="shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400">
                         <i class="fa-solid fa-credit-card text-lg"></i>
                     </div>
+
                     <div class="min-w-0 flex-1">
-                        <p class="text-base font-bold text-slate-900 dark:text-white truncate">{{ $subscriptionStatus['plan_name'] }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        <!-- 2. Название: leading-tight убирает лишний отступ сверху -->
+                        <p class="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">
+                            {{ $subscriptionStatus['plan_name'] }}
+                        </p>
+                        
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                             @if(($subscriptionStatus['plan_price'] ?? 0) > 0)
                                 {{ number_format($subscriptionStatus['plan_price'], 0, ',', ' ') }} BYN
                                 @if(!empty($subscriptionStatus['ends_at']))
@@ -220,11 +217,13 @@
                                 @endif
                             @endif
                         </p>
+
                         @if($hasBusinessPermission('client.subscription.manage') && isset($subscriptionStatus['is_cancelled']) && $subscriptionStatus['is_cancelled'])
                             <span class="inline-block text-xs font-medium text-amber-600 dark:text-amber-400 mt-1">Отменена</span>
                         @endif
                     </div>
-                    <i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i>
+
+                    <i class="fa-solid fa-chevron-right text-slate-400 text-[10px] shrink-0 ml-2"></i>
                 </div>
             </a>
             @endif
@@ -288,13 +287,9 @@
                     </ul>
                 @else
                     <div class="text-center py-8">
-                        <div class="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                            <i class="fa-solid fa-calendar-day text-2xl text-slate-400 dark:text-slate-500"></i>
-                        </div>
-                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Нет записей на сегодня</h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Создайте новую запись для начала работы</p>
+                        <h4 class="text-sm font-semibold text-slate-900 dark:text-white mb-5">Нет записей</h4>
                         @if($hasBusinessPermission('client.appointments.create') && $canCreateAppointment)
-                        <a href="{{ route('appointments.create') }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors">
+                        <a href="{{ route('appointments.create') }}" class="inline-flex items-center gap-2 px-3 p-2 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors">
                             <i class="fa-solid fa-plus text-xs"></i>
                             <span>Новая запись</span>
                         </a>
@@ -320,7 +315,9 @@
                         @foreach($clients as $client)
                             <li>
                                 <a href="{{ route('clients.show', $client->id) }}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($client->full_name) }}&background=6366f1&color=fff&size=40" alt="" class="w-10 h-10 rounded-full shrink-0">
+                                    <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-2xl font-semibold text-slate-600 dark:text-slate-300">
+                                        {{ $client->initials }}
+                                    </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $client->full_name }}</p>
                                         <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ $client->phone }}</p>
