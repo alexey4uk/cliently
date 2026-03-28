@@ -19,7 +19,7 @@
 @php
     $currentPlanPriceForModal = $currentPlan && $currentPlan->price !== null ? (float) $currentPlan->price : 0;
 @endphp
-<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8" x-data="{
+<div class="max-w-350 mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-4 pb-6 sm:pb-8" x-data="{
         showConfirmModal: false,
         selectedPlan: null,
         selectedForm: null,
@@ -112,10 +112,12 @@
                  x-transition:leave-end="transform opacity-0 scale-95"
                  class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-md w-full overflow-hidden my-auto max-h-[90vh] flex flex-col">
                 <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 shrink-0">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Подтверждение активации тарифа</h3>
+                    <div class="flex items-center justify-between gap-4"> 
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white leading-none">
+                            Активация тарифа
+                        </h3>
                         <button @click="closeConfirmModal()"
-                            class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+                            class="flex items-center justify-center p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -193,13 +195,12 @@
                 </div>
                 <div class="px-6 py-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 flex items-center justify-end gap-3 shrink-0">
                     <button @click="closeConfirmModal()"
-                        class="px-4 py-2.5 min-h-[44px] text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+                        class="px-4 py-2.5 min-h-11 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
                         Отмена
                     </button>
                     <button @click="confirmSubscription()"
-                        class="px-6 py-2.5 min-h-[44px] text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-md hover:shadow-lg">
-                        <i class="fa-solid fa-check-circle mr-2"></i>
-                        Подтвердить активацию
+                        class="px-6 py-2.5 min-h-11 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                        Подтвердить
                     </button>
                 </div>
             </div>

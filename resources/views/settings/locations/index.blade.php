@@ -37,7 +37,7 @@
             }
         }
     }
-}" class="max-w-[1400px] mx-auto">
+}" class="max-w-350 mx-auto">
     <div class="space-y-4 md:space-y-6">
 
         @if(!$business)
@@ -96,13 +96,13 @@
                             placeholder="Название, адрес, описание..."
                             class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                     </div>
-                    <button type="submit" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] transition-all" aria-label="Искать">
+                    <button type="submit" class="min-h-11 min-w-11 flex items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] transition-all" aria-label="Искать">
                         <i class="fa-solid fa-magnifying-glass text-base"></i>
                     </button>
                 </form>
             </div>
 
-            <!-- Десктопная версия: поиск + действия в одной строке -->
+            <!-- Десктопная версия: поиск + действия -->
             <div class="hidden md:flex flex-col gap-4">
                 <div class="flex flex-wrap items-end gap-4">
                     <form method="GET" action="{{ route('settings.locations') }}" class="flex items-end gap-4 flex-1 min-w-0">
@@ -153,7 +153,6 @@
 
     <!-- Список локаций -->
     @if ($locations->count() > 0)
-        <!-- Таблица для больших экранов -->
         <div class="hidden md:block">
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <table class="w-full">
@@ -179,19 +178,14 @@
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                                            <i class="fa-solid fa-location-dot text-indigo-600 dark:text-indigo-400"></i>
+                                        <div class="text-sm font-medium text-slate-900 dark:text-white">
+                                            {{ $location->name }}
                                         </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white">
-                                                {{ $location->name }}
+                                        @if ($location->description)
+                                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                                                {{ $location->description }}
                                             </div>
-                                            @if ($location->description)
-                                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
-                                                    {{ $location->description }}
-                                                </div>
-                                            @endif
-                                        </div>
+                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">

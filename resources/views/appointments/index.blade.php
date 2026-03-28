@@ -30,7 +30,7 @@
     toggleFilters() {
         this.showFilters = !this.showFilters;
     }
-}" class="max-w-[1400px] mx-auto">
+}" class="max-w-350 mx-auto">
     <div class="space-y-4 md:space-y-6">
 
     @if(!$business)
@@ -126,11 +126,11 @@
                     <input id="mobile-search" type="text" name="search" value="{{ $search }}" placeholder="Клиент, услуга, мастер..."
                         class="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
                 </div>
-                <button type="submit" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] transition-all" aria-label="Искать">
+                <button type="submit" class="min-h-11 min-w-11 flex items-center justify-center rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98] transition-all" aria-label="Искать">
                     <i class="fa-solid fa-magnifying-glass text-base"></i>
                 </button>
                 <button type="button" @click="toggleFilters()" aria-label="Фильтры" :aria-expanded="showFilters"
-                    class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all shrink-0"
+                    class="min-h-11 min-w-11 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98] transition-all shrink-0"
                     :class="showFilters ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : ''">
                     <i class="fa-solid fa-sliders text-base"></i>
                 </button>
@@ -265,7 +265,7 @@
                     <input type="hidden" name="search" value="{{ $search }}">
 
                     <!-- Фильтр по дате -->
-                    <div class="min-w-[180px]">
+                    <div class="min-w-45">
                         <label for="date-filter"
                             class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
                             Дата
@@ -280,7 +280,7 @@
                     </div>
 
                     <!-- Фильтр по статусу -->
-                    <div class="min-w-[180px]">
+                    <div class="min-w-45">
                         <label for="status-filter"
                             class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Статус</label>
                         <div class="relative">
@@ -302,7 +302,7 @@
                     </div>
 
                     <!-- Фильтр по услуге -->
-                    <div class="min-w-[180px]">
+                    <div class="min-w-45">
                         <label for="service-filter"
                             class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Услуга</label>
                         <div class="relative">
@@ -325,7 +325,7 @@
                     </div>
 
                     <!-- Фильтр по мастеру -->
-                    <div class="min-w-[180px]">
+                    <div class="min-w-45">
                         <label for="master-filter"
                             class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Мастер</label>
                         <div class="relative">
@@ -395,9 +395,6 @@
                             <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors {{ !$appointment->master_id ? 'bg-amber-50/70 dark:bg-amber-900/10 border-l-4 border-l-amber-400 dark:border-l-amber-500' : '' }}">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-calendar text-slate-600 dark:text-slate-400"></i>
-                                        </div>
                                         <div>
                                             <div class="text-sm font-medium text-slate-900 dark:text-white">
                                                 {{ $appointment->date->format('d.m.Y') }}
@@ -410,9 +407,6 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                                            <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400"></i>
-                                        </div>
                                         <div>
                                             <div class="text-sm font-medium text-slate-900 dark:text-white">
                                                 {{ $appointment->client?->full_name ?? 'Клиент удалён' }}
@@ -434,11 +428,6 @@
                                     <div class="text-sm text-slate-900 dark:text-white font-medium">
                                         {{ $appointment->service?->name ?? 'Услуга удалена' }}
                                     </div>
-                                    @if ($appointment->final_duration)
-                                        <div class="text-xs text-slate-500 dark:text-slate-400">
-                                            {{ $appointment->final_duration }} мин
-                                        </div>
-                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
                                     {{ $appointment->master?->name ?? 'Не назначен' }}
@@ -490,7 +479,7 @@
                                                  x-transition:leave="transition ease-in duration-75"
                                                  x-transition:leave-start="transform opacity-100 scale-100"
                                                  x-transition:leave-end="transform opacity-0 scale-95"
-                                                 class="absolute right-0 z-10 mt-2 min-w-[11rem] origin-top-right rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg focus:outline-none py-1"
+                                                 class="absolute right-0 z-10 mt-2 min-w-44 origin-top-right rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg focus:outline-none py-1"
                                                  style="display: none;">
                                                     {{-- Просмотр и редактирование — для всех статусов --}}
                                                     @if($canViewAppointments)
@@ -500,7 +489,7 @@
                                                         <span>Просмотр</span>
                                                     </a>
                                                     @endif
-                                                    @if($canUpdateAppointments)
+                                                    @if($canUpdateAppointments && ($appointment->status !== 'cancelled' && $appointment->status !== 'completed'))
                                                     <a href="{{ route('appointments.edit', $appointment) }}"
                                                        class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-colors">
                                                         <span class="w-5 text-center text-slate-400 dark:text-slate-500"><i class="fa-regular fa-pen-to-square text-xs"></i></span>
@@ -594,15 +583,12 @@
                     {{-- Основная информация --}}
                     <div class="px-4 py-3 space-y-2.5">
                         <div class="flex items-start gap-3">
-                            <span class="shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                                <i class="fa-solid fa-user text-indigo-600 dark:text-indigo-400 text-xs"></i>
-                            </span>
                             <div class="min-w-0 flex-1">
                                 <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $appointment->client?->full_name ?? 'Клиент удалён' }}</p>
                                 @if($appointment->client?->phone)
                                     <button type="button" data-phone="{{ $appointment->client?->phone }}" data-phone-display="{{ $appointment->client?->phone }}" data-client-name="{{ $appointment->client?->full_name ?? 'Клиент удалён' }}"
                                         @click="openPhoneModal($event)"
-                                        class="min-h-[44px] -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
+                                        class="min-h-11 -ml-2 pl-2 pr-2 -mb-1 mt-0.5 text-left text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 active:bg-indigo-50 dark:active:bg-indigo-500/10 rounded-lg transition-colors">
                                         {{ $appointment->client?->phone }}
                                     </button>
                                 @endif
@@ -632,7 +618,7 @@
                         <div class="flex items-center gap-2">
                             @if($canViewAppointments)
                             <a href="{{ route('appointments.show', $appointment) }}"
-                                class="flex-1 min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-[0.98] transition-all">
+                                class="flex-1 min-h-11 flex items-center justify-center gap-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-[0.98] transition-all">
                                 <i class="fa-regular fa-eye text-sm"></i>Просмотр
                             </a>
                             @endif
@@ -641,7 +627,7 @@
                                  @click.outside="openActions = false"
                                  @keydown.escape.window="openActions = false">
                                 <button type="button" @click="openActions = !openActions" aria-label="Действия"
-                                    class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
+                                    class="min-h-11 min-w-11 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all">
                                     <i class="fa-solid fa-ellipsis-vertical text-base"></i>
                                 </button>
                                 <div x-show="openActions"
@@ -651,7 +637,7 @@
                                      x-transition:leave="transition ease-in duration-75"
                                      x-transition:leave-start="opacity-100 scale-100"
                                      x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute right-0 bottom-full mb-2 z-10 min-w-[11rem] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg py-1"
+                                     class="absolute right-0 bottom-full mb-2 z-10 min-w-44 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg py-1"
                                      style="display: none;">
                                     @if($canViewAppointments)
                                     <a href="{{ route('appointments.show', $appointment) }}"

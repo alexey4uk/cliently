@@ -48,7 +48,7 @@
         toggleFilters() {
             this.showFilters = !this.showFilters;
     }
-}" class="max-w-[1400px] mx-auto">
+}" class="max-w-350 mx-auto">
     <div class="space-y-4 md:space-y-6">
 
         @if(!$business)
@@ -324,7 +324,7 @@
                         <input type="hidden" name="search" value="{{ $search }}">
 
                         <!-- Фильтр по периоду -->
-                        <div class="min-w-[180px]">
+                        <div class="min-w-45">
                             <label for="period-filter"
                                 class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
                                 Период
@@ -351,7 +351,7 @@
                         </div>
 
                         <!-- Фильтр по активности -->
-                        <div class="min-w-[180px]">
+                        <div class="min-w-45">
                             <label for="activity-filter"
                                 class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Активность</label>
                             <div class="relative">
@@ -373,7 +373,7 @@
                         </div>
 
                         <!-- Сортировка -->
-                        <div class="min-w-[200px]">
+                        <div class="min-w-50">
                             <label for="sort-filter"
                                 class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Сортировка</label>
                             <div class="relative">
@@ -405,7 +405,7 @@
                         </div>
 
                         <!-- На странице -->
-                        <div class="min-w-[130px]">
+                        <div class="min-w-32.5">
                             <label for="per-page-filter"
                                 class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">На странице</label>
                             <div class="relative">
@@ -468,15 +468,11 @@
                                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
-                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($client->full_name) }}&background=6366f1&color=fff&size=40" 
-                                                class="w-10 h-10 rounded-full" 
-                                                alt="{{ $client->full_name }}">
                                             <div class="ml-3">
                                                 <a href="{{ route('clients.show', $client) }}" 
                                                     class="text-sm font-medium text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                                     {{ $client->full_name }}
                                                 </a>
-                                                <p class="text-xs text-slate-500 dark:text-slate-400">ID: {{ $client->id }}</p>
                                             </div>
                                         </div>
                                     </td>

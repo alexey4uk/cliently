@@ -10,7 +10,7 @@
 
             <!-- Верхний блок: Время и Дата -->
             <div
-                class="relative p-8 sm:p-10 text-center bg-gradient-to-b from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent border-b border-slate-100 dark:border-slate-800">
+                class="relative p-8 sm:p-10 text-center bg-linear-to-b from-slate-50/50 to-transparent dark:from-slate-800/30 dark:to-transparent border-b border-slate-100 dark:border-slate-800">
 
                 <!-- Статус в виде аккуратной точки и текста -->
                 <div
@@ -55,12 +55,10 @@
                             <x-icon name="sparkles" variant="solid" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Услуга</p>
                             <h4 class="text-base font-bold text-slate-900 dark:text-white leading-tight mb-1">
                                 {{ $appointment->service?->name ?? 'Услуга удалена' }}</h4>
                             <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN •
-                                {{ $appointment->final_duration }} мин
+                                {{ number_format($appointment->final_price, 0, ',', ' ') }} BYN
                             </p>
                         </div>
                     </div>
@@ -90,7 +88,6 @@
                                 <i class="fa-solid fa-location-dot text-xl"></i>
                             </div>
                             <div class="min-w-0">
-                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Место</p>
                                 <h4 class="text-base font-bold text-slate-900 dark:text-white truncate">
                                     {{ $appointment->location?->name ?? 'Локация удалена' }}</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 truncate">
@@ -103,7 +100,7 @@
                 <!-- Заметки -->
                 @if ($appointment->notes)
                     <div
-                        class="p-5 rounded-[1.5rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                        class="p-5 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                         <p class="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest">Ваш комментарий</p>
                         <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
                             «{{ $appointment->notes }}»</p>

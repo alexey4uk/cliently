@@ -122,9 +122,9 @@
                                value="{{ $master->id }}"
                                {{ in_array($master->id, old('masters', $serviceMasterIds)) ? 'checked' : '' }}
                                class="w-4 h-4 text-indigo-600 border-slate-300 dark:border-slate-700 rounded focus:ring-indigo-500">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($master->name) }}&background=6366f1&color=fff" 
-                             class="w-8 h-8 rounded-full ml-3" 
-                             alt="{{ $master->name }}">
+                        <div class="w-8 h-8 rounded-full ml-3 bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            {{ Str::substr($master->name, 0, 1) }}
+                        </div>
                         <span class="ml-3 text-sm font-medium text-slate-900 dark:text-white">{{ $master->name }}</span>
                     </label>
                 @endforeach
