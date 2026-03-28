@@ -916,7 +916,7 @@ class Handler extends WebhookHandler
             return;
         }
 
-        // Подтверждение/отмена записи после создания (без состояния — запись уже создана)
+        // Подтверждение/отмена записи по запросу в телеграм
         if (str_starts_with($action, 'apt_confirm_') || str_starts_with($action, 'apt_cancel_')) {
             $appointmentId = (int) str_replace(['apt_confirm_', 'apt_cancel_'], '', $action);
             $isConfirm = str_starts_with($action, 'apt_confirm_');
@@ -951,7 +951,9 @@ class Handler extends WebhookHandler
                 try {
                     $this->chat->edit($messageId)->message($resultText)->send();
                     $this->chat->replaceKeyboard($messageId, Keyboard::make())->send();
-                    $this->chat->message($appointmenLink)->send();
+                    if (str_starts_with($action, 'apt_confirm_')) {
+                        $this->chat->message($appointmenLink)->send();
+                    }
                 } catch (\Throwable $e) {
                     Log::warning('Failed to edit appointment confirm message', [
                         'message_id' => $messageId,
@@ -1070,7 +1072,7 @@ class Handler extends WebhookHandler
             return;
         }
 
-        // Ищем состояние с конкретным бизнесом (не поисковое)
+        // Ищем состояние с конкретным бизнесом
         $state = $states->firstWhere('business_id', '!=', null);
 
         // Если не нашли состояние с бизнесом, используем первое (может быть поиск)

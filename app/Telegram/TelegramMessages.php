@@ -9,7 +9,7 @@ namespace App\Telegram;
 class TelegramMessages
 {
     // ==================== ОБЩИЕ СООБЩЕНИЯ ====================
-    public const MSG_CANCEL = 'Отменено.';
+    public const MSG_CANCEL = 'Отменено';
 
     public const MSG_ERROR = 'Ошибка при создании записи. Попробуйте снова.';
 
@@ -40,11 +40,11 @@ class TelegramMessages
     public const MSG_USE_BUTTONS = 'Используйте кнопки для выбора.';
 
     // ==================== ВЫБОР ДАННЫХ ====================
-    public const MSG_SELECT_LOCATION = '🏠 Выберите филиал';
+    public const MSG_SELECT_LOCATION = 'Выберите салон';
 
-    public const MSG_SELECT_SERVICE = '💅 Выберите услугу';
+    public const MSG_SELECT_SERVICE = 'Выберите услугу';
 
-    public const MSG_SELECT_MASTER = '👤 Выберите мастера:';
+    public const MSG_SELECT_MASTER = 'Выберите мастера:';
 
     public const MSG_SELECT_DATE = '📅 Выберите дату';
 
@@ -78,9 +78,9 @@ class TelegramMessages
     /** Вопрос после создания записи: подтвердить сразу или отменить */
     public const MSG_CONFIRM_APPOINTMENT_QUESTION = 'Подтверждаете запись?';
 
-    public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = '✅ Запись подтверждена';
+    public const MSG_APPOINTMENT_CONFIRMED_BY_YOU = 'Запись подтверждена';
 
-    public const MSG_APPOINTMENT_CANCELLED_BY_YOU = 'Запись отменена.';
+    public const MSG_APPOINTMENT_CANCELLED_BY_YOU = 'Запись отменена';
 
     /**
      * Сообщение клиенту при завершении записи (благодарность).
