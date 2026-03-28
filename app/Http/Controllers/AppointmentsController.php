@@ -491,7 +491,7 @@ class AppointmentsController extends Controller
 
         if ($appointmentStatus === 'cancelled') {
             return redirect()->route('appointments.index');
-        }   
+        }
 
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
         if ($redirect) {
@@ -528,7 +528,7 @@ class AppointmentsController extends Controller
 
         if ($appointmentStatus === 'cancelled') {
             return redirect()->route('appointments.index');
-        }  
+        }
 
         $redirect = $this->checkAppointmentBelongsToBusiness($appointment);
 
@@ -878,6 +878,6 @@ class AppointmentsController extends Controller
     {
         if ($status === 'cancelled') {
             return redirect()->route('appointments.index');
-        }    
+        }
     }
 }
