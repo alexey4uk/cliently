@@ -34,10 +34,8 @@ class Business extends Model
         'online_booking_enabled' => 'boolean',
     ];
 
-    protected static function boot()
+    protected static function booted()
     {
-        parent::boot();
-
         static::creating(function ($business) {
             if (empty($business->telegram_token)) {
                 $business->telegram_token = Str::random(32);
