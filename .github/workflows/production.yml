@@ -138,23 +138,6 @@ jobs:
             CURRENT_BRANCH=$(git branch --show-current)
             echo "📍 Current branch: $CURRENT_BRANCH"
             
-            # ============================================
-            # DATABASE BACKUP
-            # ============================================
-            echo ""
-            echo "💾 Creating database backup..."
-            
-            # If using MySQL, backup with mysqldump
-            if command -v mysqldump &> /dev/null; then
-              mysqldump -u ${{ secrets.DB_USERNAME_PRODUCTION }} -p'${{ secrets.DB_PASSWORD_PRODUCTION }}' ${{ secrets.DB_DATABASE_PRODUCTION }} > "$BACKUP_PATH/database_${TIMESTAMP}.sql"
-              echo "✅ MySQL backup created: database_${TIMESTAMP}.sql"
-            fi
-
-            # Keep only last 7 backups
-            cd "$BACKUP_PATH"
-            ls -t database_*.sql 2>/dev/null | tail -n +8 | xargs -r rm
-            echo "🗑️  Old backups cleaned (keeping last 7)"
-            
             cd "$DEPLOY_PATH"
             
             # ============================================
