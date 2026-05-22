@@ -184,10 +184,35 @@ class AppointmentSlotController extends Controller
                 ? $service->preparation_time ?? null
                 : null;
 
+            // Получаем занятые слоты (существующие записи) для отображения загруженности мастера
+            $busySlots = [];
+            if ($masterId) {
+                $existingAppointments = \App\Models\Appointment::with([
+                    'service:id,name',
+                    'client:id,first_name,last_name',
+                ])
+                    ->where('date', $date)
+                    ->where('status', '!=', 'cancelled')
+                    ->where('master_id', $masterId)
+                    ->where('id', '!=', $appointmentId)
+                    ->orderBy('time')
+                    ->get(['id', 'service_id', 'client_id', 'time', 'duration']);
+
+                $busySlots = $existingAppointments->map(function ($a) {
+                    return [
+                        'time' => \Carbon\Carbon::parse($a->time)->format('H:i'),
+                        'duration' => $a->final_duration,
+                        'service_name' => $a->service?->name,
+                        'client_name' => $a->client?->full_name,
+                    ];
+                })->values()->toArray();
+            }
+
             $payload = [
                 'success' => true,
                 'slots' => $slots,
-                'preparation_time' => $preparationTime, // Время подготовки для показа уведомления
+                'busy_slots' => $busySlots,
+                'preparation_time' => $preparationTime,
             ];
             if (config('app.debug')) {
                 $payload['debug'] = $debugInfo;

@@ -2,7 +2,7 @@
 
 @section('title', 'Создание записи - Cliently')
 @section('page-title', 'Создание записи')
-@section('page-description', 'Создание новой записи')
+@section('page-description', 'Новая запись клиента')
 
 @push('breadcrumbs')
     <x-breadcrumbs :items="[
@@ -13,855 +13,658 @@
 
 @section('content')
 
-<div class="max-w-3xl mx-auto">
-    <!-- Page Header -->
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Создать запись</h1>
-        <p class="text-slate-600 dark:text-slate-400 mt-1">
-            Создание новой записи для клиента
-        </p>
+@if (!$business)
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <i class="fa-solid fa-briefcase text-2xl text-slate-400"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Бизнес не найден</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Сначала создайте бизнес или примите приглашение.</p>
+        </div>
     </div>
+@else
 
-    <!-- Form -->
-    <form method="POST" action="{{ route('appointments.store') }}" class="space-y-6">
-        @csrf
+<div class="max-w-6xl mx-auto" x-data="{
+    selectedService: null,
+    selectedMaster: null,
+    selectedLocation: null,
+    selectedClient: null,
+    date: '{{ old('date', date('Y-m-d')) }}',
+    time: '',
+    status: '{{ old('status', 'pending') }}',
+    notes: '{{ old('notes', '') }}',
 
-        <!-- Client Selection -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Клиент</h2>
-            
-            <div>
-                <label for="client_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Выберите клиента <span class="text-rose-500">*</span>
-                </label>
-                <div x-data="{
-                    open: false,
-                    search: '',
-                    selectedClient: null,
-                    dropdownPosition: { top: 0, left: 0, width: 0 },
-                    clients: {{ json_encode($clients->map(function ($client) {
-                        return [
-                            'id' => $client->id,
-                            'full_name' => $client->full_name,
-                            'phone' => $client->phone,
-                            'initials' => $client->initials,
-                        ];
-                    }), JSON_HEX_TAG) }},
-                    oldClientId: {{ old('client_id', $selectedClientId ?? 0) }},
-                    init() {
-                        if (this.oldClientId) {
-                            const client = this.clients.find(c => c.id === this.oldClientId);
-                            if (client) {
-                                this.selectedClient = client;
-                            }
-                        }
-                    },
-                    updatePosition() {
-                        if (!this.open) return;
-                        this.$nextTick(() => {
-                            const button = this.$el.querySelector('button');
-                            if (button) {
-                                const rect = button.getBoundingClientRect();
-                                this.dropdownPosition = {
-                                    top: rect.bottom + 4,
-                                    left: rect.left,
-                                    width: rect.width
-                                };
-                            }
-                        });
-                    },
-                    get filteredClients() {
-                        if (!this.search) {
-                            return this.clients;
-                        }
-                        const query = this.search.toLowerCase();
-                        return this.clients.filter(client =>
-                            client.full_name.toLowerCase().includes(query) ||
-                            client.phone.includes(query)
-                        );
-                    },
-                    selectClient(client) {
-                        this.selectedClient = client;
-                        this.search = '';
-                        this.open = false;
-                    },
-                    toggleOpen() {
-                        this.open = !this.open;
-                        if (this.open) {
-                            setTimeout(() => this.updatePosition(), 10);
-                        }
+    services: {{ json_encode($services->map(fn($s) => [
+        'id' => $s->id,
+        'name' => $s->name,
+        'price' => (int)$s->price,
+        'duration' => $s->duration,
+    ]), JSON_HEX_TAG) }},
+    masters: {{ json_encode($masters->map(fn($m) => [
+        'id' => $m->id,
+        'full_name' => trim($m->first_name . ' ' . ($m->last_name ?? '')),
+    ]), JSON_HEX_TAG) }},
+    locations: {{ json_encode($locations->map(fn($l) => [
+        'id' => $l->id,
+        'name' => $l->name,
+        'full_address' => $l->full_address ?? '',
+    ]), JSON_HEX_TAG) }},
+    clients: {{ json_encode($clients->map(fn($c) => [
+        'id' => $c->id,
+        'full_name' => $c->full_name,
+        'phone' => $c->phone,
+        'initials' => $c->initials,
+    ]), JSON_HEX_TAG) }},
+
+    clientSearch: '',
+    showQuickForm: false,
+    quickName: '',
+    quickPhone: '',
+    quickCreating: false,
+    quickError: '',
+    loadingSlots: false,
+    slots: [],
+    busySlots: [],
+    slotsError: '',
+    slotsLoaded: false,
+
+    init() {
+        const oldServiceId = {{ old('service_id', 0) }};
+        if (oldServiceId) {
+            const s = this.services.find(x => x.id === oldServiceId);
+            if (s) this.selectedService = s;
+        }
+        const oldMasterId = {{ old('master_id', 0) }};
+        if (oldMasterId) {
+            const m = this.masters.find(x => x.id === oldMasterId);
+            if (m) this.selectedMaster = m;
+        }
+        const oldLocationId = {{ old('location_id', 0) }};
+        if (oldLocationId) {
+            const l = this.locations.find(x => x.id === oldLocationId);
+            if (l) this.selectedLocation = l;
+        }
+        const oldClientId = {{ old('client_id', $selectedClientId ?? 0) }};
+        if (oldClientId) {
+            const c = this.clients.find(x => x.id === oldClientId);
+            if (c) this.selectedClient = c;
+        }
+        const oldTime = '{{ old('time', '') }}';
+        if (oldTime) this.time = oldTime;
+
+        if (this.locations.length === 1) {
+            this.selectedLocation = this.locations[0];
+        }
+
+        if (this.selectedService && this.date) {
+            this.$nextTick(() => this.loadSlots());
+        }
+    },
+
+    get filteredClients() {
+        if (!this.clientSearch) return [];
+        const q = this.clientSearch.toLowerCase();
+        return this.clients.filter(c =>
+            c.full_name.toLowerCase().includes(q) || c.phone.includes(q)
+        );
+    },
+
+    get canSubmit() {
+        return this.selectedService && this.date && this.time && this.selectedClient;
+    },
+
+    selectService(service) {
+        this.selectedService = service;
+        this.slotsLoaded = false;
+        this.time = '';
+        this.slots = [];
+        if (this.date) this.$nextTick(() => this.loadSlots());
+    },
+
+    selectMaster(master) {
+        this.selectedMaster = master;
+        this.slotsLoaded = false;
+        this.time = '';
+        this.slots = [];
+        this.loadSlots();
+    },
+
+    selectLocation(location) {
+        this.selectedLocation = location;
+        this.slotsLoaded = false;
+        this.time = '';
+        this.slots = [];
+        this.loadSlots();
+    },
+
+    onDateChange() {
+        this.slotsLoaded = false;
+        this.time = '';
+        this.slots = [];
+        if (this.selectedService) this.$nextTick(() => this.loadSlots());
+    },
+
+    loadSlots() {
+        if (!this.selectedService || !this.date) return;
+        this.loadingSlots = true;
+        this.slotsError = '';
+        this.slots = [];
+        this.busySlots = [];
+
+        const params = new URLSearchParams({
+            service_id: this.selectedService.id,
+            date: this.date,
+        });
+        if (this.selectedMaster) params.append('master_id', this.selectedMaster.id);
+        if (this.selectedLocation) params.append('location_id', this.selectedLocation.id);
+
+        const url = '{{ route("api.public.appointments.available-slots", $business->slug) }}';
+
+        fetch(url + '?' + params.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        })
+        .then(r => r.json())
+        .then(data => {
+            this.loadingSlots = false;
+            this.slotsLoaded = true;
+            if (data.success) {
+                this.slots = data.slots || [];
+                this.busySlots = data.busy_slots || [];
+                if (this.slots.length === 0 && this.busySlots.length === 0) {
+                    const today = new Date().toISOString().split('T')[0];
+                    if (this.date === today) {
+                        this.slotsError = 'На сегодня нет свободных окон. Выберите другую дату.';
+                    } else {
+                        this.slotsError = 'Нет свободных окон на эту дату. Попробуйте другую дату или мастера.';
                     }
-                }" 
-                x-init="$watch('open', () => updatePosition())"
-                @resize.window="updatePosition()"
-                @scroll.window="updatePosition()"
-                class="relative" 
-                @click.away="open = false">
-                    <input type="hidden" name="client_id" :value="selectedClient ? selectedClient.id : ''" required>
-                    
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                            <i class="fa-solid fa-user text-slate-400"></i>
+                } else if (this.slots.length === 0 && this.busySlots.length > 0) {
+                    this.slotsError = 'На эту дату все окна заняты.';
+                }
+            } else {
+                const today = new Date().toISOString().split('T')[0];
+                if (this.date === today) {
+                    this.slotsError = 'На сегодня нет свободных окон. Выберите другую дату.';
+                } else {
+                    this.slotsError = 'Нет свободных окон на эту дату. Попробуйте другую дату или мастера.';
+                }
+            }
+        })
+        .catch(() => {
+            this.loadingSlots = false;
+            this.slotsLoaded = true;
+            this.slotsError = 'Ошибка загрузки. Обновите страницу.';
+        });
+    },
+
+    selectTime(time) {
+        this.time = time;
+    },
+
+    quickCreate() {
+        if (!this.quickName.trim() || !this.quickPhone.trim()) return;
+        this.quickCreating = true;
+        this.quickError = '';
+
+        const formData = new FormData();
+        formData.append('first_name', this.quickName.trim());
+        formData.append('last_name', '');
+        formData.append('phone', this.quickPhone.trim());
+        formData.append('phone_country_code', 'BY');
+        formData.append('email', '');
+
+        const token = document.querySelector('meta[name=\'csrf-token\']')?.getAttribute('content');
+
+        fetch('{{ route('clients.store') }}', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token || '',
+            },
+            body: formData,
+        })
+        .then(r => r.json().then(data => ({ status: r.status, data })))
+        .then(({ status, data }) => {
+            this.quickCreating = false;
+            if (status === 201 && data.client) {
+                const newClient = {
+                    id: data.client.id,
+                    full_name: data.client.full_name,
+                    phone: data.client.phone,
+                    initials: data.client.initials,
+                };
+                this.clients.push(newClient);
+                this.selectedClient = newClient;
+                this.showQuickForm = false;
+                this.quickName = '';
+                this.quickPhone = '';
+                this.clientSearch = '';
+            } else if (status === 422 && data.errors) {
+                const firstError = Object.values(data.errors).flat()[0];
+                this.quickError = firstError || 'Ошибка валидации';
+            } else {
+                this.quickError = data.message || 'Ошибка при создании клиента';
+            }
+        })
+        .catch(() => {
+            this.quickCreating = false;
+            this.quickError = 'Ошибка соединения. Попробуйте снова.';
+        });
+    },
+
+    submit() {
+        if (!this.canSubmit) return;
+        this.$refs.form.submit();
+    }
+}">
+
+    <form method="POST" action="{{ route('appointments.store') }}" x-ref="form">
+        @csrf
+        <input type="hidden" name="service_id" :value="selectedService?.id || ''">
+        <input type="hidden" name="master_id" :value="selectedMaster?.id || ''">
+        <input type="hidden" name="location_id" :value="selectedLocation?.id || ''">
+        <input type="hidden" name="client_id" :value="selectedClient?.id || ''">
+        <input type="hidden" name="date" :value="date">
+        <input type="hidden" name="time" :value="time">
+        <input type="hidden" name="status" :value="status">
+        <input type="hidden" name="notes" :value="notes">
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+            <!-- Left Column: Service + Client + Extra -->
+            <div class="lg:col-span-3 space-y-5">
+
+                <!-- Service -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                            <i class="fa-solid fa-scissors text-sm"></i>
                         </div>
-                        <button type="button"
-                                @click="toggleOpen()"
-                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('client_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                            <span x-show="selectedClient" x-cloak class="text-slate-900 dark:text-white">
-                                <span x-text="selectedClient ? selectedClient.full_name : ''"></span> (<span x-text="selectedClient ? selectedClient.phone : ''"></span>)
-                            </span>
-                            <span x-show="!selectedClient" x-cloak class="text-slate-400 dark:text-slate-500">
-                                Выберите клиента
-                            </span>
-                        </button>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                        </div>
+                        <h2 class="text-base font-semibold text-slate-900 dark:text-white">Услуга</h2>
                     </div>
-                    
-                    <div x-show="open"
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                         :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                         style="display: none;">
-                        <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                    <i class="fa-solid fa-search text-slate-400 text-xs"></i>
+
+                    <div class="grid grid-cols-1 gap-1.5 max-h-[260px] overflow-y-auto pr-1">
+                        <template x-for="service in services" :key="service.id">
+                            <button type="button" @click="selectService(service)"
+                                class="w-full text-left p-3 rounded-xl border-2 transition-all duration-150"
+                                :class="selectedService?.id === service.id
+                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-sm font-semibold text-slate-900 dark:text-white truncate leading-tight" x-text="service.name"></div>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400" x-text="service.price.toLocaleString('ru-RU') + ' BYN'"></span>
+                                            <span class="text-xs text-slate-400">•</span>
+                                            <span class="text-xs text-slate-500"><i class="fa-solid fa-clock"></i> <span x-text="service.duration + ' мин'"></span></span>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                                        :class="selectedService?.id === service.id
+                                            ? 'border-indigo-500 bg-indigo-500'
+                                            : 'border-slate-300 dark:border-slate-600'">
+                                        <i x-show="selectedService?.id === service.id" class="fa-solid fa-check text-white text-[9px]"></i>
+                                    </div>
                                 </div>
-                                <input type="text"
-                                       x-model="search"
-                                       @click.stop
-                                       placeholder="Поиск клиента..."
-                                       class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
-                            </div>
+                            </button>
+                        </template>
+                    </div>
+                    @error('service_id')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Client -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                            <i class="fa-solid fa-user text-sm"></i>
                         </div>
-                        
-                        <div class="max-h-80 overflow-y-auto">
+                        <h2 class="text-base font-semibold text-slate-900 dark:text-white">Клиент</h2>
+                    </div>
+
+                    <div class="relative" @click.away="clientSearch = ''">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-search text-slate-400 text-sm"></i>
+                            </div>
+                            <input type="text" x-model="clientSearch"
+                                placeholder="Поиск клиента по имени или телефону..."
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                        </div>
+
+                        <div x-show="clientSearch.length > 0" x-cloak
+                            class="mt-1 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 shadow-lg overflow-hidden max-h-56 overflow-y-auto absolute z-20 w-full">
                             <template x-if="filteredClients.length === 0">
-                                <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                    Клиенты не найдены
-                                </div>
+                                <div class="p-4 text-center text-sm text-slate-500">Клиенты не найдены</div>
                             </template>
                             <template x-for="client in filteredClients" :key="client.id">
-                                <button type="button"
-                                        @click="selectClient(client)"
-                                        class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
-                                        :class="selectedClient && selectedClient.id === client.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="client.full_name"></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="client.phone"></div>
+                                <button type="button" @click="selectedClient = client; clientSearch = ''; showQuickForm = false"
+                                    class="w-full px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex items-center justify-between gap-3"
+                                    :class="selectedClient?.id === client.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0"
+                                            x-text="client.initials">
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate" x-text="client.full_name"></div>
+                                            <div class="text-xs text-slate-500" x-text="client.phone"></div>
+                                        </div>
                                     </div>
-                                    <i x-show="selectedClient && selectedClient.id === client.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
+                                    <i x-show="selectedClient?.id === client.id" class="fa-solid fa-check text-indigo-600 text-xs shrink-0"></i>
                                 </button>
                             </template>
-                        </div>
-                    </div>
-                </div>
-                @error('client_id')
-                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                @enderror
-            </div>
-        </div>
-
-        <!-- Service Selection -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Услуга</h2>
-            
-            <div>
-                <label for="service_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    Выберите услугу <span class="text-rose-500">*</span>
-                </label>
-                <div x-data="{
-                    open: false,
-                    search: '',
-                    selectedService: null,
-                    dropdownPosition: { top: 0, left: 0, width: 0 },
-                    services: {{ json_encode($services->map(function ($service) {
-                        return [
-                            'id' => $service->id,
-                            'name' => $service->name,
-                            'price' => number_format($service->price, 0, ',', ' '),
-                            'duration' => $service->duration,
-                        ];
-                    }), JSON_HEX_TAG) }},
-                    oldServiceId: {{ old('service_id', 0) }},
-                    init() {
-                        if (this.oldServiceId) {
-                            const service = this.services.find(s => s.id === this.oldServiceId);
-                            if (service) {
-                                this.selectedService = service;
-                            }
-                        }
-                    },
-                    updatePosition() {
-                        if (!this.open) return;
-                        this.$nextTick(() => {
-                            const button = this.$el.querySelector('button');
-                            if (button) {
-                                const rect = button.getBoundingClientRect();
-                                this.dropdownPosition = {
-                                    top: rect.bottom + 4,
-                                    left: rect.left,
-                                    width: rect.width
-                                };
-                            }
-                        });
-                    },
-                    get filteredServices() {
-                        if (!this.search) {
-                            return this.services;
-                        }
-                        const query = this.search.toLowerCase();
-                        return this.services.filter(service =>
-                            service.name.toLowerCase().includes(query)
-                        );
-                    },
-                    selectService(service) {
-                        this.selectedService = service;
-                        this.search = '';
-                        this.open = false;
-                        const hiddenInput = document.getElementById('service_id');
-                        if (hiddenInput) {
-                            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                    },
-                    toggleOpen() {
-                        this.open = !this.open;
-                        if (this.open) {
-                            setTimeout(() => this.updatePosition(), 10);
-                        }
-                    }
-                }" 
-                x-init="$watch('open', () => updatePosition())"
-                @resize.window="updatePosition()"
-                @scroll.window="updatePosition()"
-                class="relative" 
-                @click.away="open = false">
-                    <input type="hidden" id="service_id" name="service_id" :value="selectedService ? selectedService.id : ''" required>
-                    
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                            <i class="fa-solid fa-scissors text-slate-400"></i>
-                        </div>
-                        <button type="button"
-                                @click="toggleOpen()"
-                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('service_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                            <span x-show="selectedService" x-cloak class="text-slate-900 dark:text-white">
-                                <span x-text="selectedService ? selectedService.name : ''"></span> - <span x-text="selectedService ? selectedService.price : ''"></span> BYN (<span x-text="selectedService ? selectedService.duration : ''"></span> мин)
-                            </span>
-                            <span x-show="!selectedService" x-cloak class="text-slate-400 dark:text-slate-500">
-                                Выберите услугу
-                            </span>
-                        </button>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                        </div>
-                    </div>
-                    
-                    <div x-show="open"
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="transform opacity-0 scale-95"
-                         x-transition:enter-end="transform opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="transform opacity-100 scale-100"
-                         x-transition:leave-end="transform opacity-0 scale-95"
-                         class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                         :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                         style="display: none;">
-                        <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                    <i class="fa-solid fa-search text-slate-400 text-xs"></i>
+                            <button type="button" @click="showQuickForm = true; quickName = clientSearch; clientSearch = ''; selectedClient = null"
+                                class="w-full px-4 py-2.5 text-left hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors flex items-center gap-3 border-t border-slate-100 dark:border-slate-700">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                                    <i class="fa-solid fa-plus text-xs"></i>
                                 </div>
-                                <input type="text"
-                                       x-model="search"
-                                       @click.stop
-                                       placeholder="Поиск услуги..."
-                                       class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
-                            </div>
-                        </div>
-                        
-                        <div class="max-h-80 overflow-y-auto">
-                            <template x-if="filteredServices.length === 0">
-                                <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                    Услуги не найдены
+                                <div class="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                                    Создать «<span x-text="clientSearch"></span>»
                                 </div>
-                            </template>
-                            <template x-for="service in filteredServices" :key="service.id">
-                                <button type="button"
-                                        @click="selectService(service)"
-                                        class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
-                                        :class="selectedService && selectedService.id === service.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                    <div class="flex-1 min-w-0">
-                                        <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="service.name"></div>
-                                        <div class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="`${service.price} BYN • ${service.duration} мин`"></div>
-                                    </div>
-                                    <i x-show="selectedService && selectedService.id === service.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-                @error('service_id')
-                    <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span>{{ $message }}</span>
-                    </p>
-                @enderror
-            </div>
-        </div>
-
-        <!-- Master & Time -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Мастер и время</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="master_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Мастер</label>
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        selectedMaster: null,
-                        dropdownPosition: { top: 0, left: 0, width: 0 },
-                        masters: {{ json_encode($masters->map(function ($master) {
-                            return [
-                                'id' => $master->id,
-                                'first_name' => $master->first_name,
-                                'last_name' => $master->last_name,
-                                'full_name' => trim($master->first_name . ' ' . ($master->last_name ?? '')),
-                            ];
-                        }), JSON_HEX_TAG) }},
-                        oldMasterId: {{ old('master_id', 0) }},
-                        init() {
-                            if (this.oldMasterId) {
-                                const master = this.masters.find(m => m.id === this.oldMasterId);
-                                if (master) {
-                                    this.selectedMaster = master;
-                                }
-                            }
-                        },
-                        updatePosition() {
-                            if (!this.open) return;
-                            this.$nextTick(() => {
-                                const button = this.$el.querySelector('button');
-                                if (button) {
-                                    const rect = button.getBoundingClientRect();
-                                    this.dropdownPosition = {
-                                        top: rect.bottom + 4,
-                                        left: rect.left,
-                                        width: rect.width
-                                    };
-                                }
-                            });
-                        },
-                        get filteredMasters() {
-                            if (!this.search) {
-                                return this.masters;
-                            }
-                            const query = this.search.toLowerCase();
-                            return this.masters.filter(master =>
-                                master.full_name.toLowerCase().includes(query) ||
-                                (master.first_name && master.first_name.toLowerCase().includes(query)) ||
-                                (master.last_name && master.last_name.toLowerCase().includes(query))
-                            );
-                        },
-                        selectMaster(master) {
-                            this.selectedMaster = master;
-                            this.search = '';
-                            this.open = false;
-                            const hiddenInput = document.getElementById('master_id');
-                            if (hiddenInput) {
-                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        },
-                        toggleOpen() {
-                            this.open = !this.open;
-                            if (this.open) {
-                                setTimeout(() => this.updatePosition(), 10);
-                            }
-                        }
-                    }" 
-                    x-init="$watch('open', () => updatePosition())"
-                    @resize.window="updatePosition()"
-                    @scroll.window="updatePosition()"
-                    class="relative" 
-                    @click.away="open = false">
-                        <input type="hidden" id="master_id" name="master_id" :value="selectedMaster ? selectedMaster.id : ''">
-                        
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-user-tie text-slate-400"></i>
-                            </div>
-                            <button type="button"
-                                    @click="toggleOpen()"
-                                    class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('master_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <span x-show="selectedMaster" x-cloak class="text-slate-900 dark:text-white">
-                                    <span x-text="selectedMaster ? selectedMaster.full_name : ''"></span>
-                                </span>
-                                <span x-show="!selectedMaster" x-cloak class="text-slate-400 dark:text-slate-500">
-                                    Не выбран
-                                </span>
                             </button>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                            </div>
                         </div>
-                        
-                        <div x-show="open"
-                             x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                             :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                             style="display: none;">
-                            <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <i class="fa-solid fa-search text-slate-400 text-xs"></i>
-                                    </div>
-                                    <input type="text"
-                                           x-model="search"
-                                           @click.stop
-                                           placeholder="Поиск мастера..."
-                                           class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
+
+                        <!-- Quick-create form -->
+                        <div x-show="showQuickForm" x-cloak class="mt-3 p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/50 dark:bg-indigo-500/5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                                    <i class="fa-solid fa-plus text-[10px]"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-slate-900 dark:text-white">Новый клиент</span>
+                            </div>
+
+                            <div class="space-y-2.5">
+                                <input type="text" x-model="quickName" placeholder="Имя *"
+                                    class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" x-model="quickPhone" placeholder="Телефон * (+375...)"
+                                    class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                                <div x-show="quickError" x-cloak class="text-xs text-rose-600" x-text="quickError"></div>
+
+                                <div class="flex items-center gap-2">
+                                    <button type="button" @click="showQuickForm = false; quickError = ''"
+                                        class="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+                                        Отмена
+                                    </button>
+                                    <button type="button" @click="quickCreate"
+                                        :disabled="!quickName.trim() || !quickPhone.trim() || quickCreating"
+                                        class="px-4 py-1.5 text-xs font-medium text-white rounded-lg transition-all"
+                                        :class="!quickName.trim() || !quickPhone.trim() || quickCreating
+                                            ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
+                                            : 'bg-indigo-600 hover:bg-indigo-700'">
+                                        <span x-show="!quickCreating" x-cloak>Создать</span>
+                                        <span x-show="quickCreating" x-cloak><i class="fa-solid fa-spinner fa-spin"></i></span>
+                                    </button>
                                 </div>
                             </div>
-                            
-                            <div class="max-h-80 overflow-y-auto">
-                                <template x-if="filteredMasters.length === 0">
-                                    <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                        Мастера не найдены
+                        </div>
+
+                        <div x-show="selectedClient && clientSearch.length === 0" x-cloak class="mt-3">
+                            <div class="flex items-center gap-3 p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                                <div class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold shrink-0"
+                                    x-text="selectedClient?.initials">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-semibold text-indigo-900 dark:text-indigo-200 truncate" x-text="selectedClient?.full_name"></div>
+                                    <div class="text-xs text-indigo-600/70 dark:text-indigo-400/70" x-text="selectedClient?.phone"></div>
+                                </div>
+                                <button type="button" @click="selectedClient = null; clientSearch = ''"
+                                    class="shrink-0 w-7 h-7 rounded-full bg-indigo-200/50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-500 hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-colors">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @error('client_id')
+                        <p class="mt-2 text-xs text-rose-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Master & Location -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0">
+                            <i class="fa-solid fa-sliders text-sm"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-slate-900 dark:text-white">Дополнительно</h2>
+                            <p class="text-xs text-slate-400">Мастер и локация — можно не выбирать</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Мастер</label>
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" @click="selectedMaster = null"
+                                    class="px-3 py-1.5 rounded-lg border text-xs font-medium transition-all"
+                                    :class="!selectedMaster
+                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'">
+                                    Любой
+                                </button>
+                                <template x-for="master in masters" :key="master.id">
+                                    <button type="button" @click="selectMaster(master)"
+                                        class="px-3 py-1.5 rounded-lg border text-xs font-medium transition-all"
+                                        :class="selectedMaster?.id === master.id
+                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'"
+                                        x-text="master.full_name">
+                                    </button>
+                                </template>
+                            </div>
+                            @error('master_id')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Локация</label>
+                            <div class="flex flex-wrap gap-1.5">
+                                <template x-for="location in locations" :key="location.id">
+                                    <button type="button" @click="selectLocation(location)"
+                                        class="px-3 py-1.5 rounded-lg border text-xs font-medium transition-all max-w-full text-left"
+                                        :class="selectedLocation?.id === location.id
+                                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                                            : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'">
+                                        <span x-text="location.name"></span>
+                                    </button>
+                                </template>
+                            </div>
+                            @error('location_id')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Notes -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Статус</label>
+                            <select x-model="status"
+                                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none cursor-pointer">
+                                <option value="pending">Ожидает</option>
+                                <option value="confirmed">Подтверждено</option>
+                                <option value="completed">Завершено</option>
+                                <option value="cancelled">Отменено</option>
+                            </select>
+                            @error('status')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1.5">Заметки</label>
+                            <input type="text" x-model="notes" placeholder="Любые заметки..."
+                                class="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                            @error('notes')
+                                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Date & Time Grid -->
+            <div class="lg:col-span-2 space-y-5">
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                            <i class="fa-solid fa-calendar-clock text-sm"></i>
+                        </div>
+                        <h2 class="text-base font-semibold text-slate-900 dark:text-white">Дата и время</h2>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="mb-4">
+                        <input type="date" x-model="date" @change="onDateChange"
+                            min="{{ date('Y-m-d') }}"
+                            class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                        @error('date')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Time slots -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-medium text-slate-500">Доступное время</span>
+                            <button type="button" @click="loadSlots" x-show="slotsLoaded && (slots.length > 0 || busySlots.length > 0)" x-cloak
+                                class="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                                <i class="fa-solid fa-rotate mr-1"></i>Обновить
+                            </button>
+                        </div>
+
+                        <!-- No service selected -->
+                        <div x-show="!selectedService" class="py-8 text-center">
+                            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                <i class="fa-solid fa-hand-pointer text-base"></i>
+                            </div>
+                            <p class="text-sm text-slate-500">Сначала выберите услугу</p>
+                        </div>
+
+                        <!-- Loading -->
+                        <div x-show="loadingSlots" x-cloak class="py-8 text-center">
+                            <i class="fa-solid fa-spinner fa-spin text-xl text-indigo-500"></i>
+                            <p class="text-xs text-slate-500 mt-2">Загрузка...</p>
+                        </div>
+
+                        <!-- Error / no slots -->
+                        <div x-show="slotsError" x-cloak class="py-6 text-center">
+                            <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                <i class="fa-solid fa-clock text-base"></i>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-300" x-text="slotsError"></p>
+                        </div>
+
+                        <!-- Busy slots -->
+                        <div x-show="busySlots.length > 0" x-cloak class="mb-3">
+                            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-lock text-[9px]"></i>
+                                Занятые окна
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <template x-for="busy in busySlots" :key="busy.time">
+                                    <div class="py-2 px-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 text-center cursor-default">
+                                        <div class="text-sm font-semibold text-slate-400 dark:text-slate-500 line-through" x-text="busy.time"></div>
+                                        <div class="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate" x-text="busy.service_name"></div>
+                                        <div class="text-[9px] text-slate-400 dark:text-slate-500 truncate" x-text="busy.client_name"></div>
                                     </div>
                                 </template>
-                                <template x-for="master in filteredMasters" :key="master.id">
-                                    <button type="button"
-                                            @click="selectMaster(master)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
-                                            :class="selectedMaster && selectedMaster.id === master.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate" x-text="master.full_name"></div>
-                                        </div>
-                                        <i x-show="selectedMaster && selectedMaster.id === master.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
+                            </div>
+                        </div>
+
+                        <!-- Free slots grid -->
+                        <div x-show="slots.length > 0" x-cloak>
+                            <div x-show="busySlots.length > 0" class="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-check text-[9px]"></i>
+                                Свободно
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <template x-for="slot in slots" :key="slot">
+                                    <button type="button" @click="selectTime(slot)"
+                                        class="py-2.5 px-3 rounded-lg border-2 text-sm font-medium transition-all duration-100 text-center"
+                                        :class="time === slot
+                                            ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm'
+                                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'">
+                                        <span x-text="slot"></span>
                                     </button>
                                 </template>
                             </div>
                         </div>
+
+                        @error('time')
+                            <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                        @enderror
                     </div>
-                    @error('master_id')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
                 </div>
 
-                <div>
-                    <label for="location_id" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Локация</label>
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        selectedLocation: null,
-                        dropdownPosition: { top: 0, left: 0, width: 0 },
-                        locations: {{ json_encode($locations->map(function ($location) {
-                            return [
-                                'id' => $location->id,
-                                'name' => $location->name,
-                                'full_address' => $location->full_address,
-                                'phone' => $location->phone,
-                            ];
-                        }), JSON_HEX_TAG) }},
-                        oldLocationId: {{ old('location_id', 0) }},
-                        init() {
-                            if (this.oldLocationId) {
-                                const location = this.locations.find(l => l.id === this.oldLocationId);
-                                if (location) {
-                                    this.selectedLocation = location;
-                                }
-                            }
-                        },
-                        updatePosition() {
-                            if (!this.open) return;
-                            this.$nextTick(() => {
-                                const button = this.$el.querySelector('button');
-                                if (button) {
-                                    const rect = button.getBoundingClientRect();
-                                    this.dropdownPosition = {
-                                        top: rect.bottom + 4,
-                                        left: rect.left,
-                                        width: rect.width
-                                    };
-                                }
-                            });
-                        },
-                        get filteredLocations() {
-                            if (!this.search) {
-                                return this.locations;
-                            }
-                            const query = this.search.toLowerCase();
-                            return this.locations.filter(location =>
-                                location.name.toLowerCase().includes(query) ||
-                                (location.full_address && location.full_address.toLowerCase().includes(query)) ||
-                                (location.phone && location.phone.includes(query))
-                            );
-                        },
-                        selectLocation(location) {
-                            this.selectedLocation = location;
-                            this.search = '';
-                            this.open = false;
-                            const hiddenInput = document.getElementById('location_id');
-                            if (hiddenInput) {
-                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        },
-                        toggleOpen() {
-                            this.open = !this.open;
-                            if (this.open) {
-                                setTimeout(() => this.updatePosition(), 10);
-                            }
-                        }
-                    }" 
-                    x-init="$watch('open', () => updatePosition())"
-                    @resize.window="updatePosition()"
-                    @scroll.window="updatePosition()"
-                    class="relative" 
-                    @click.away="open = false">
-                        <input type="hidden" id="location_id" name="location_id" :value="selectedLocation ? selectedLocation.id : ''">
-                        
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                                <i class="fa-solid fa-location-dot text-slate-400"></i>
-                            </div>
-                            <button type="button"
-                                    @click="toggleOpen()"
-                                    class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('location_id') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                                <span x-show="selectedLocation" x-cloak class="text-slate-900 dark:text-white">
-                                    <span x-text="selectedLocation ? selectedLocation.name : ''"></span>
-                                </span>
-                                <span x-show="!selectedLocation" x-cloak class="text-slate-400 dark:text-slate-500">
-                                    Не выбрана
-                                </span>
-                            </button>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                            </div>
-                        </div>
-                        
-                        <div x-show="open"
-                             x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="fixed z-[100] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl overflow-hidden"
-                             :style="`top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; width: ${dropdownPosition.width}px;`"
-                             style="display: none;">
-                            <div class="p-2 border-b border-slate-200 dark:border-slate-800">
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                        <i class="fa-solid fa-search text-slate-400 text-xs"></i>
-                                    </div>
-                                    <input type="text"
-                                           x-model="search"
-                                           @click.stop
-                                           placeholder="Поиск локации..."
-                                           class="w-full pl-8 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500">
-                                </div>
-                            </div>
-                            
-                            <div class="max-h-80 overflow-y-auto">
-                                <template x-if="filteredLocations.length === 0">
-                                    <div class="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
-                                        Локации не найдены
-                                    </div>
-                                </template>
-                                <template x-for="location in filteredLocations" :key="location.id">
-                                    <button type="button"
-                                            @click="selectLocation(location)"
-                                            class="w-full px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-between gap-3"
-                                            :class="selectedLocation && selectedLocation.id === location.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-medium text-slate-900 dark:text-white truncate mb-0.5" x-text="location.name"></div>
-                                            <div x-show="location.full_address" class="text-xs text-slate-500 dark:text-slate-400 truncate" x-text="location.full_address"></div>
-                                        </div>
-                                        <i x-show="selectedLocation && selectedLocation.id === location.id" class="fa-solid fa-check text-indigo-600 dark:text-indigo-400 text-sm shrink-0"></i>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                    @error('location_id')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
-                </div>
+                <!-- Summary + Submit -->
+                <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 sticky top-24">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Создаваемая запись</h3>
 
-                <div>
-                    <label for="date" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Дата <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-calendar text-slate-400"></i>
+                    <div class="space-y-2.5 mb-5">
+                        <div class="flex items-center gap-2.5 text-sm">
+                            <div class="w-7 h-7 rounded-md bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                                <i class="fa-solid fa-scissors text-[10px]"></i>
+                            </div>
+                            <span x-text="selectedService?.name || 'Не выбрана'" class="text-slate-700 dark:text-slate-300 truncate"></span>
                         </div>
-                        <input type="date" id="date" name="date" required 
-                               value="{{ old('date', date('Y-m-d')) }}"
-                               min="{{ date('Y-m-d') }}"
-                               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border {{ $errors->has('date') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                        <div class="flex items-center gap-2.5 text-sm">
+                            <div class="w-7 h-7 rounded-md bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                                <i class="fa-solid fa-user text-[10px]"></i>
+                            </div>
+                            <span x-text="selectedClient?.full_name || 'Не выбран'" class="text-slate-700 dark:text-slate-300 truncate"></span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-sm">
+                            <div class="w-7 h-7 rounded-md bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                                <i class="fa-solid fa-clock text-[10px]"></i>
+                            </div>
+                            <span x-show="date && time" x-cloak>
+                                <span class="text-slate-700 dark:text-slate-300" x-text="new Date(date + 'T' + time).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) + ', ' + time"></span>
+                            </span>
+                            <span x-show="!date || !time" x-cloak class="text-slate-400">Не выбрано</span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-sm">
+                            <div class="w-7 h-7 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0">
+                                <i class="fa-solid fa-user-tie text-[10px]"></i>
+                            </div>
+                            <span x-text="selectedMaster?.full_name || 'Любой мастер'" class="text-slate-700 dark:text-slate-300 truncate"></span>
+                        </div>
+                        <div class="flex items-center gap-2.5 text-sm">
+                            <div class="w-7 h-7 rounded-md bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0">
+                                <i class="fa-solid fa-location-dot text-[10px]"></i>
+                            </div>
+                            <span x-text="selectedLocation?.name || 'Не выбрана'" class="text-slate-700 dark:text-slate-300 truncate"></span>
+                        </div>
                     </div>
-                    @error('date')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="time" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        Время <span class="text-rose-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-clock text-slate-400"></i>
-                        </div>
-                        <select id="time" name="time" required
-                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('time') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
-                            <option value="">{{ old('time') ? old('time') : 'Сначала выберите услугу и дату' }}</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                        </div>
-                    </div>
-                    <div id="time-loading" class="hidden mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-spinner fa-spin text-xs"></i>
-                        <span>Загрузка доступных слотов...</span>
-                    </div>
-                    <div id="time-error" class="hidden mt-2 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                        <span></span>
-                    </div>
-                    @error('time')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
+                    <button type="button" @click="submit"
+                        :disabled="!canSubmit"
+                        class="w-full py-3 text-sm font-bold text-white rounded-xl transition-all flex items-center justify-center gap-2"
+                        :class="canSubmit
+                            ? 'bg-indigo-600 hover:bg-indigo-700 shadow-sm'
+                            : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'">
+                        <i class="fa-solid fa-plus text-xs"></i>
+                        Создать запись
+                    </button>
+
+                    <p x-show="!canSubmit" x-cloak class="text-[10px] text-slate-400 text-center mt-2">
+                        Заполните услугу, дату, время и клиента
+                    </p>
                 </div>
             </div>
-        </div>
-
-        <!-- Status & Notes -->
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Статус и заметки</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label for="status" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Статус</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-info-circle text-slate-400"></i>
-                        </div>
-                        <select id="status" name="status"
-                                class="w-full pl-10 pr-10 py-2.5 text-sm rounded-lg border {{ $errors->has('status') ? 'border-rose-500' : 'border-slate-300 dark:border-slate-700' }} bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none cursor-pointer">
-                            <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Ожидает подтверждения</option>
-                            <option value="confirmed" {{ old('status') === 'confirmed' ? 'selected' : '' }}>Подтверждено</option>
-                            <option value="completed" {{ old('status') === 'completed' ? 'selected' : '' }}>Завершено</option>
-                            <option value="cancelled" {{ old('status') === 'cancelled' ? 'selected' : '' }}>Отменено</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
-                        </div>
-                    </div>
-                    @error('status')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="notes" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Заметки</label>
-                    <textarea id="notes" name="notes" rows="3"
-                              class="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
-                              placeholder="Любые заметки к записи...">{{ old('notes') }}</textarea>
-                    @error('notes')
-                        <p class="mt-1 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1">
-                            <i class="fa-solid fa-circle-exclamation text-xs"></i>
-                            <span>{{ $message }}</span>
-                        </p>
-                    @enderror
-                </div>
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-4">
-            <a href="{{ route('appointments.index') }}" 
-               class="px-6 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                Отмена
-            </a>
-            <button type="submit" 
-                    class="px-6 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                Создать запись
-            </button>
         </div>
     </form>
 </div>
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const serviceSelect = document.getElementById('service_id');
-    const masterSelect = document.getElementById('master_id');
-    const dateInput = document.getElementById('date');
-    const timeSelect = document.getElementById('time');
-    const timeLoading = document.getElementById('time-loading');
-    const timeError = document.getElementById('time-error');
-    const locationSelect = document.getElementById('location_id');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-    if (!serviceSelect || !dateInput || !timeSelect || !timeLoading || !timeError) {
-        console.error('Не найдены необходимые элементы для загрузки слотов');
-        return;
-    }
-
-    let currentOldTime = {!! json_encode(old('time', ''), JSON_HEX_TAG) !!};
-
-    function loadAvailableSlots() {
-        const serviceId = serviceSelect ? serviceSelect.value : '';
-        const date = dateInput ? dateInput.value : '';
-        const masterId = masterSelect ? (masterSelect.value || null) : null;
-        const locationId = locationSelect ? (locationSelect.value || null) : null;
-
-        timeSelect.innerHTML = '<option value="">Загрузка...</option>';
-        timeSelect.disabled = true;
-        timeLoading.classList.remove('hidden');
-        timeError.classList.add('hidden');
-
-        if (!serviceId || !date) {
-            timeSelect.innerHTML = '<option value="">Сначала выберите услугу и дату</option>';
-            timeSelect.disabled = false;
-            timeLoading.classList.add('hidden');
-            return;
-        }
-
-        const url = '{{ route('api.public.appointments.available-slots', $business->slug) }}';
-        const params = new URLSearchParams({
-            service_id: serviceId,
-            date: date,
-        });
-
-        if (masterId) {
-            params.append('master_id', masterId);
-        }
-
-        if (locationId) {
-            params.append('location_id', locationId);
-        }
-
-        fetch(`${url}?${params.toString()}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken || ''
-            },
-            credentials: 'same-origin',
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(errData => {
-                    throw new Error(errData.message || `Ошибка ${response.status}: ${response.statusText}`);
-                }).catch(() => {
-                    throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            timeLoading.classList.add('hidden');
-            timeSelect.disabled = false;
-
-            if (data.success && data.slots && data.slots.length > 0) {
-                timeSelect.innerHTML = '<option value="">Выберите время</option>';
-                data.slots.forEach(slot => {
-                    const option = document.createElement('option');
-                    option.value = slot;
-                    option.textContent = slot;
-                    if (currentOldTime === slot) {
-                        option.selected = true;
-                    }
-                    timeSelect.appendChild(option);
-                });
-                timeError.classList.add('hidden');
-            } else {
-                timeSelect.innerHTML = '<option value="">Нет доступных слотов</option>';
-
-                let errorMessage = data.message || 'На выбранную дату нет доступных временных слотов.';
-
-                const today = new Date().toISOString().split('T')[0];
-                const isToday = date === today;
-
-                if (!data.message) {
-                    if (isToday) {
-                        errorMessage = 'На сегодня нет доступных слотов. Пожалуйста, выберите другую дату.';
-                    } else {
-                        errorMessage = 'На выбранную дату нет доступных временных слотов. Пожалуйста, выберите другую дату или мастера.';
-                    }
-                }
-
-                timeError.textContent = errorMessage;
-                timeError.classList.remove('hidden');
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при загрузке слотов:', error);
-            timeLoading.classList.add('hidden');
-            timeSelect.disabled = false;
-            timeSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
-            const errorMessage = error.message || 'Произошла ошибка при загрузке доступных слотов. Пожалуйста, обновите страницу.';
-            timeError.textContent = errorMessage;
-            timeError.classList.remove('hidden');
-        });
-    }
-
-    if (serviceSelect) {
-        serviceSelect.addEventListener('change', loadAvailableSlots);
-    }
-    if (masterSelect) {
-        masterSelect.addEventListener('change', loadAvailableSlots);
-    }
-    if (dateInput) {
-        dateInput.addEventListener('change', loadAvailableSlots);
-    }
-    if (locationSelect) {
-        locationSelect.addEventListener('change', loadAvailableSlots);
-    }
-
-    if (serviceSelect && serviceSelect.value && dateInput && dateInput.value) {
-        loadAvailableSlots();
-    }
-});
-</script>
-@endpush
+@endif
 
 @endsection

@@ -390,24 +390,21 @@ class AppointmentSlotService
         ?int $preparationTime = null,
         ?int $excludeAppointmentId = null,
     ): array {
-        // Получаем существующие записи на эту дату
         $query = Appointment::where('date', $date->format('Y-m-d'))
-            ->where('status', '!=', 'cancelled')
-            ->where('service_id', $serviceId);
+            ->where('status', '!=', 'cancelled');
 
-        // Исключаем текущую запись при редактировании
         if ($excludeAppointmentId) {
             $query->where('id', '!=', $excludeAppointmentId);
         }
 
-        // Если мастер указан, проверяем только его записи
         if ($masterId) {
             $query->where(function ($q) use ($masterId) {
-                $q->where('master_id', $masterId)->orWhereNull('master_id'); // Также учитываем записи без мастера
+                $q->where('master_id', $masterId)->orWhereNull('master_id');
             });
+        } else {
+            $query->where('service_id', $serviceId);
         }
 
-        // КРИТИЧНО: предзагружаем service для избежания N+1 при обращении к final_duration accessor
         $existingAppointments = $query->with('service')->get();
 
         $availableSlots = [];
@@ -420,32 +417,22 @@ class AppointmentSlotService
             $isAvailable = true;
 
             foreach ($existingAppointments as $appointment) {
-
                 if (! $masterId && $appointment->master_id) {
                     continue;
                 }
 
                 $appointmentTime = Carbon::parse($date->format('Y-m-d').' '.$appointment->time);
                 $appointmentDuration =
-                    $appointment->final_duration ?? $duration; // Используем длительность услуги если final_duration не задан
+                    $appointment->final_duration ?? $duration;
                 $appointmentEndTime = $appointmentTime
                     ->copy()
                     ->addMinutes($appointmentDuration);
-
-                // Проверяем пересечение временных интервалов
-                //
-                // Время подготовки уже учтено при генерации слотов (интервал между слотами = длительность + подготовка)
-                // Поэтому здесь проверяем только прямое пересечение с существующими записями
-                //
-                // Слот блокируется если он пересекается с записью:
-                // slotTime < appointmentEndTime AND slotEndTime > appointmentTime
 
                 $hasOverlap =
                     $slotTime->lt($appointmentEndTime) &&
                     $slotEndTime->gt($appointmentTime);
 
                 if ($hasOverlap) {
-                    // Есть пересечение - слот занят
                     $isAvailable = false;
                     break;
                 }
@@ -483,17 +470,15 @@ class AppointmentSlotService
         // Используем уже загруженного мастера вместо запроса к БД
         $masters = collect([$master]);
 
-        // Получаем ВСЕ записи для всего периода календаря ОДНИМ запросом
         $allAppointments = Appointment::whereBetween('date', [
             $calendarStart->format('Y-m-d'),
             $calendarEnd->format('Y-m-d'),
         ])
             ->where('status', '!=', 'cancelled')
-            ->where('service_id', $service->id)
             ->where(function ($q) use ($masterId) {
                 $q->where('master_id', $masterId)->orWhereNull('master_id');
             })
-            ->with('service') // Предзагружаем service для избежания N+1 в accessor
+            ->with('service')
             ->get();
 
         // Группируем записи по датам для быстрого доступа
@@ -648,18 +633,18 @@ class AppointmentSlotService
             return [];
         }
 
-        // Получаем ВСЕ записи для этого периода ОДНИМ запросом
         $query = Appointment::whereBetween('date', [
             $startDate->format('Y-m-d'),
             $endDate->format('Y-m-d'),
         ])
-            ->where('status', '!=', 'cancelled')
-            ->where('service_id', $serviceId);
+            ->where('status', '!=', 'cancelled');
 
         if ($masterId) {
             $query->where(function ($q) use ($masterId) {
                 $q->where('master_id', $masterId)->orWhereNull('master_id');
             });
+        } else {
+            $query->where('service_id', $serviceId);
         }
 
         // КРИТИЧНО: предзагружаем service для избежания N+1 в accessor final_duration

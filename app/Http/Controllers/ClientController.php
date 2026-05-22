@@ -180,15 +180,22 @@ class ClientController extends Controller
         $business = $this->getCurrentBusiness();
 
         if (! $business) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Сначала создайте бизнес или примите приглашение.'], 400);
+            }
+
             return redirect()->back()->with('error', 'Сначала создайте бизнес или примите приглашение.');
         }
 
         $user = Auth::user();
 
-        // Проверка лимита клиентов
         $subscriptionService = app(SubscriptionService::class);
         if (! $subscriptionService->canCreateClient($user)) {
             \App\Services\AdminNotificationService::notifySubscriptionLimitExceededIfNotThrottled($business, 'max_clients');
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => \App\Services\SubscriptionService::planLimitErrorMessage()], 400);
+            }
 
             return redirect()->back()
                 ->withInput()
@@ -207,6 +214,17 @@ class ClientController extends Controller
             'phone' => $phoneE164,
             'phone_country_code' => $phoneCountryCode,
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'client' => [
+                    'id' => $client->id,
+                    'full_name' => $client->full_name,
+                    'phone' => $client->phone,
+                    'initials' => $client->initials,
+                ],
+            ], 201);
+        }
 
         return redirect()->route('clients.index')->with('success', 'Клиент добавлен');
     }
